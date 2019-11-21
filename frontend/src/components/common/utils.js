@@ -1,5 +1,5 @@
 //export const host = window.location.hostname.indexOf('localhost') == 0 ? 'http://localhost:9090' : `https://api.${window.location.hostname.replace('beta.', '')}`;
-export const host = "http://10.0.0.174:9090"
+export const host = "http://localhost:9090"
 //export const host = "http://10.0.0.249:9090";
 function shallowEqual(objA: mixed, objB: mixed): boolean {
   if (objA === objB) {

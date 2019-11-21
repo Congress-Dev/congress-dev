@@ -668,7 +668,7 @@ def parse_archive(path):
             str(name["bill_number"]),
             name,
         )
-        for name in names
+        for name in names[:100]
     )
     for r in frec:
         rec.extend(r)

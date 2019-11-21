@@ -1,26 +1,32 @@
 version: '3'
 services:
   parser_api:
+    container_name: congress_parser_api
     tty: true
     stdin_open: true
     environment:
     - STAGE=dev
     - PORT=9090
-    - db_host=10.0.0.174:5432
+    - db_host=congress_postgres:5432
     - db_user=parser
     - db_pass=parser
     - db_table=us_code
     build:
       context: ../backend
       dockerfile: .docker/Dockerfile
-    network_mode: "host"
     volumes:
     - ../backend:/usr/src/app/
     ports:
     - "9090:9090"
     entrypoint:
       - "bash"
+      - "start.sh"
+    depends_on:
+      - congress_postgres
+    networks:
+      parser:
   viewer_app:
+    container_name: congress_viewer_app
     tty: true
     stdin_open: true
     environment:
@@ -47,9 +53,19 @@ services:
   #   volumes:
   #     - /etc/letsencrypt:/etc/letsencrypt
   #     - ./nginx/:/etc/nginx/sites-enabled/
-volumes:
-  parser-pg-data:
-    driver: local
+  congress_postgres:
+    image: postgres:10.6
+    container_name: congress_postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: parser
+      POSTGRES_USER: parser
+      POSTGRES_DB: us_code
+    volumes:
+      - /opt/congress/postgres:/var/lib/postgresql/data
+    networks:
+      parser:
 networks:
   parser:
     external:
