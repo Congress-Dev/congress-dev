@@ -1,4 +1,4 @@
-from python:3.7.4-slim-stretch
+FROM python:3.7.4-slim-stretch
 
 RUN apt update
 RUN apt install wget -y
@@ -11,4 +11,6 @@ WORKDIR /usr/src/app
 
 EXPOSE 9090
 EXPOSE 80
-ENTRYPOINT ["bash"]
+
+ENTRYPOINT "python"
+CMD ["-m", "billparser"]

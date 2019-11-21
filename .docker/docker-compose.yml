@@ -18,9 +18,6 @@ services:
     - ../backend:/usr/src/app/
     ports:
     - "9090:9090"
-    entrypoint:
-      - "bash"
-      - "start.sh"
     depends_on:
       - congress_postgres
     networks:
@@ -31,18 +28,17 @@ services:
     stdin_open: true
     environment:
     - STAGE=dev
+    - CHOKIDAR_USEPOLLING=true
     build:
       context: ../frontend
       dockerfile: .docker/Dockerfile
     volumes:
-    - ../frontend:/usr/src/app
+    - ../frontend/public:/usr/src/app/public
+    - ../frontend/src:/usr/src/app/src
     ports:
     - "80:3000"
     networks:
       parser:
-    entrypoint:
-    - "bash"
-    - "start.sh"
   # nginx:
   #   image: nginx
   #   ports:
@@ -63,7 +59,7 @@ services:
       POSTGRES_USER: parser
       POSTGRES_DB: us_code
     volumes:
-      - /opt/congress/postgres:/var/lib/postgresql/data
+      - ../volumes/postgres:/var/lib/postgresql/data
     networks:
       parser:
 networks:
