@@ -1,0 +1,42 @@
+{
+  "name": "frontend",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "bootstrap": "3",
+    "bootstrap3": "^3.3.5",
+    "diff": "^3.5.0",
+    "lodash": "^4.17.15",
+    "query-string": "^6.4.2",
+    "react": "^16.7.0",
+    "react-addons-perf": "^15.4.2",
+    "react-bootstrap": "^0.32.4",
+    "react-custom-scrollbars": "^4.2.1",
+    "react-dom": "^16.7.0",
+    "react-router-dom": "^4.3.1",
+    "react-scripts": "2.1.2",
+    "react-scrollbar": "^0.5.4",
+    "react-spinners": "^0.6.1",
+    "react-update-url-on-scroll": "^3.5.0",
+    "yarn": "^1.13.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ],
+  "main": "index.js",
+  "repository": "git@github.com:mustyoshi/bill-viewer.git",
+  "author": "mustyoshi@gmail.com <mustyoshi@mustyoshi.com>",
+  "license": "MIT"
+}

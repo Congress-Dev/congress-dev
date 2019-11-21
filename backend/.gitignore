@@ -1,0 +1,9 @@
+**.csv
+**.xml
+**.pyc
+**.zip
+
+*.code-workspace
+bills/
+usc/
+.vscode/

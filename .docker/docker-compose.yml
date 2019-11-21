@@ -1,0 +1,56 @@
+version: '3'
+services:
+  parser_api:
+    tty: true
+    stdin_open: true
+    environment:
+    - STAGE=dev
+    - PORT=9090
+    - db_host=10.0.0.174:5432
+    - db_user=parser
+    - db_pass=parser
+    - db_table=us_code
+    build:
+      context: ../backend
+      dockerfile: .docker/Dockerfile
+    network_mode: "host"
+    volumes:
+    - ../backend:/usr/src/app/
+    ports:
+    - "9090:9090"
+    entrypoint:
+      - "bash"
+  viewer_app:
+    tty: true
+    stdin_open: true
+    environment:
+    - STAGE=dev
+    build:
+      context: ../frontend
+      dockerfile: .docker/Dockerfile
+    volumes:
+    - ../frontend:/usr/src/app
+    ports:
+    - "80:3000"
+    networks:
+      parser:
+    entrypoint:
+    - "bash"
+    - "start.sh"
+  # nginx:
+  #   image: nginx
+  #   ports:
+  #     - 80:80
+  #     - 443:443
+  #   networks:
+  #     parser:
+  #   volumes:
+  #     - /etc/letsencrypt:/etc/letsencrypt
+  #     - ./nginx/:/etc/nginx/sites-enabled/
+volumes:
+  parser-pg-data:
+    driver: local
+networks:
+  parser:
+    external:
+      name: docker_parser
