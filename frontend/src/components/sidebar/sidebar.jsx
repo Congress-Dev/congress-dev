@@ -1,7 +1,7 @@
-import { Scrollbars } from 'react-custom-scrollbars';
 import React, { Component } from 'react';
-import { shallowCompare } from '../../utils/utils.js';
 import PropTypes from 'prop-types';
+
+import { shallowCompare } from '../../utils/utils.js';
 
 
 const styles = {
@@ -24,7 +24,7 @@ class SideBar extends Component {
     render() {
         const {items, onClick, style, bsStyle} = this.props;
         return (
-            <Scrollbars>
+            <div>
                 <div style={{}}>
                     {
                     items.map((item, ind) => {
@@ -49,7 +49,7 @@ class SideBar extends Component {
                 }
                 
             </div>
-        </Scrollbars>
+        </div>
         );
     }
 }

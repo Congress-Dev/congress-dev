@@ -9,12 +9,8 @@ import _ from 'lodash';
 
 const styles = {
   'col_a': {
-    height: '90vh',
-    overflowX: 'wrap'
   },
   'col': {
-    height: '90vh',
-    overflowX: 'wrap'
   },
   'sidebar': {
   },

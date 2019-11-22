@@ -1,8 +1,9 @@
-import { Scrollbars } from 'react-custom-scrollbars';
-import React, { Component } from 'react';
-import { shallowCompare } from '../../utils/utils.js';
-import PropTypes from 'prop-types';
 import _ from 'lodash';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+
+import { shallowCompare } from '../../utils/utils.js';
+
 
 const styles = {
     bold: {
@@ -51,7 +52,7 @@ class NestedSideBar extends Component {
             .value();
         });
         return (
-            <Scrollbars>
+            <div>
                 <div style={{}}>
                     {
                     addItems.map((item, ind) => {
@@ -82,7 +83,7 @@ class NestedSideBar extends Component {
                 }
                 
             </div>
-        </Scrollbars>
+        </div>
         );
     }
 }

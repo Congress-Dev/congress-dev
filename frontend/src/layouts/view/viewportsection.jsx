@@ -1,9 +1,8 @@
+import _ from 'lodash';
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import { diffWords } from 'diff';
-import { Scrollbars } from 'react-custom-scrollbars';
-import _ from 'lodash';
 
 
 const styles={
@@ -157,9 +156,9 @@ class ViewportSection extends Component {
     });
     this.elementsSorted.sort((a,b) => {return a.offset - b.offset});
     console.log(this.scrollRef);
-    if(scrollTarget && scrollTarget !== '' && lookupMap[scrollTarget]){
-      this.scrollRef.current.scrollTop(lookupMap[scrollTarget]);
-    }
+    //if(scrollTarget && scrollTarget !== '' && lookupMap[scrollTarget]){
+    //  this.scrollRef.current.scrollTop(lookupMap[scrollTarget]);
+    //}
     const addedNodes = ReactDOM.findDOMNode(this).getElementsByClassName('added');
     const removedNodes = ReactDOM.findDOMNode(this).getElementsByClassName('removed');
     const scrollHeight = height;
@@ -235,12 +234,12 @@ class ViewportSection extends Component {
     }
     return (
       <span>
-      <Scrollbars
+      <div
       onScroll={this.handle_scroll}
       ref={this.scrollRef}>
         {this.generate_divs(items)}
 
-      </Scrollbars>
+      </div>
       <div style={styles.track}>
         { _.map(removedNodes, (elem, ind) => {
           return <div key={ind} onClick={()=>{this.handleGutterClick(elem.offsetTop)}} style={{...styles.scrollbarRemoved, top: `${100*(elem.offsetTop/scrollHeight)}%`}}/>
