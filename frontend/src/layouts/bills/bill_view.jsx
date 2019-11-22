@@ -1,8 +1,9 @@
-import React, { Component } from 'react';
-import { versionToFull, chamberToShort } from '../../utils/utils.js';
-import PropTypes from 'prop-types';
-import { Scrollbars } from 'react-custom-scrollbars';
 import _ from 'lodash';
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
+
+import { versionToFull, chamberToShort } from '../../utils/utils.js';
+
 
 const bgStyles = {
   [true]: {
@@ -142,7 +143,7 @@ class BillViewportSection extends Component {
       return null;
     }
     return (
-      <Scrollbars
+      <div
         ref={this.scrollRef}
         >
         {
@@ -152,7 +153,7 @@ class BillViewportSection extends Component {
           </>: null}
         
         {this.generate_divs(items)}
-      </Scrollbars>
+      </div>
       );
   }
 }

@@ -7,14 +7,10 @@
     "lodash": "^4.17.15",
     "query-string": "^6.4.2",
     "react": "^16.7.0",
-    "react-addons-perf": "^15.4.2",
-    "react-custom-scrollbars": "^4.2.1",
     "react-dom": "^16.7.0",
     "react-router-dom": "^4.3.1",
     "react-scripts": "2.1.2",
-    "react-scrollbar": "^0.5.4",
     "react-spinners": "^0.6.1",
-    "react-update-url-on-scroll": "^3.5.0",
     "yarn": "^1.13.0"
   },
   "scripts": {
