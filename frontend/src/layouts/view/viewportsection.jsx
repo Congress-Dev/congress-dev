@@ -59,12 +59,10 @@ class ViewportSection extends Component {
     this.elementsSorted = [];
     this.compute_diff = this.compute_diff.bind(this);
     this.diff_style = this.diff_style.bind(this);
-    this.handle_scroll = this.handle_scroll.bind(this);
     this.handle_header_click = this.handle_header_click.bind(this);
     this.set_pathname = this.set_pathname.bind(this);
     this.mounted = false;
     this.renderView = this.renderView.bind(this);
-    this.scrollRef = React.createRef();
     this.addedNodes = [];
     this.removedNodes = [];
     this.scrollHeight = 1;
@@ -73,7 +71,7 @@ class ViewportSection extends Component {
     this.state = {viewRef: this.props.viewRef, scrollHeight: 1, addedNodes: [], removedNodes: [], scrollTarget: path.splice(props.baseUrl.split('/').length).join('/')};
   }
   handleGutterClick(height) {
-    this.scrollRef.current.scrollTop(height);
+    //this.scrollRef.current.scrollTop(height);
   }
   handle_header_click(e){
     const target = e.target;
@@ -90,25 +88,6 @@ class ViewportSection extends Component {
     if(newPath !== window.location.pathname){
       window.history.replaceState({}, null, newPath);
     }
-  }
-  handle_scroll(e){
-    const {scroll} = this.props;
-    if(!this.mounted || scroll === false){
-      return;
-    }
-    let picked = '';
-    let lastPicked = null;
-    for(let ind in this.elementsSorted) {
-      let elem  = this.elementsSorted[ind];
-      if(elem) {
-        lastPicked = picked;
-        picked = elem.name;
-      }
-      if(elem && elem.offset >= e.target.scrollTop) {
-        break;
-      }
-    }
-    this.set_pathname(lastPicked || picked);
   }
   diff_style(diff_list) {
     return (
@@ -155,7 +134,7 @@ class ViewportSection extends Component {
       return {offset: element.offsetTop, name: element.getAttribute('name')};
     });
     this.elementsSorted.sort((a,b) => {return a.offset - b.offset});
-    console.log(this.scrollRef);
+    //console.log(this.scrollRef);
     //if(scrollTarget && scrollTarget !== '' && lookupMap[scrollTarget]){
     //  this.scrollRef.current.scrollTop(lookupMap[scrollTarget]);
     //}
@@ -234,11 +213,8 @@ class ViewportSection extends Component {
     }
     return (
       <span>
-      <div
-      onScroll={this.handle_scroll}
-      ref={this.scrollRef}>
+      <div>
         {this.generate_divs(items)}
-
       </div>
       <div style={styles.track}>
         { _.map(removedNodes, (elem, ind) => {
