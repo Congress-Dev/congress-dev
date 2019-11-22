@@ -1,7 +1,6 @@
 import { Scrollbars } from 'react-custom-scrollbars';
-import { ListGroup, ListGroupItem } from 'react-bootstrap';
 import React, { Component } from 'react';
-import { host, shallowCompare } from './utils';
+import { shallowCompare } from './utils';
 import PropTypes from 'prop-types';
 
 
@@ -26,7 +25,7 @@ class SideBar extends Component {
         const {items, onClick, style, bsStyle} = this.props;
         return (
             <Scrollbars>
-                <ListGroup style={{}}>
+                <div style={{}}>
                     {
                     items.map((item, ind) => {
                         let add = {
@@ -36,20 +35,20 @@ class SideBar extends Component {
                             add['bsStyle'] = bsStyle;
                         }
                         return (
-                            <ListGroupItem
+                            <div
                                 key={ind}
                                 onClick={()=>{onClick(item)} }
                                 {...add}
                             >
                                 <span style={styles.bold}>{item.display || item.number}</span>{' '}
                                 <span style={styles.light}>{item.heading || item.name}</span>
-                            </ListGroupItem>
+                            </div>
                         )
                     
                     })
                 }
                 
-            </ListGroup>
+            </div>
         </Scrollbars>
         );
     }

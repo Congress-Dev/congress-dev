@@ -12,5 +12,4 @@ WORKDIR /usr/src/app
 EXPOSE 9090
 EXPOSE 80
 
-ENTRYPOINT "python"
-CMD ["-m", "billparser"]
+ENTRYPOINT ["python", "-m", "billparser"]

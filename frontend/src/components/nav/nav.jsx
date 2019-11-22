@@ -1,6 +1,4 @@
 import React, { Component } from 'react';
-import { BrowserRouter as Router, Route, Link, Switch } from "react-router-dom";
-import { Navbar, Nav, NavItem, NavDropdown, MenuItem } from "react-bootstrap";
 import PropTypes from 'prop-types';
 
 
@@ -10,26 +8,26 @@ class NavBarClass extends Component {
     const versionLookup = JSON.parse(localStorage.getItem('versions'));
     console.log(version);
     return (
-    <Navbar style={{marginBottom: '10px'}}>
-      <Navbar.Brand>
+    <div style={{marginBottom: '10px'}}>
+      <div>
         Congress.dev{(version && versionLookup[version])? `- ${versionLookup[version].title}` : null} <span className="badge badge-pill badge-info">0.0.5</span>
-      </Navbar.Brand>
-      <Nav bsStyle='pills'>
-      <NavItem eventKey={1} href="/">
+      </div>
+      <div bsStyle='pills'>
+      <a eventKey={1} href="/">
         Titles
-      </NavItem>
-      <NavItem eventKey={2} href="/revisions">
+      </a>
+      <a eventKey={2} href="/revisions">
         US Code Revisions
-      </NavItem>
+      </a>
     
-      <NavItem eventKey={2} href="/bills">
+      <a eventKey={2} href="/bills">
         Bills
-      </NavItem>
-      <NavItem eventKey={2} href="/bills?incl=enr">
+      </a>
+      <a eventKey={2} href="/bills?incl=enr">
         Enrolled Bills
-      </NavItem>
-    </Nav>
-    </Navbar>);
+      </a>
+    </div>
+    </div>);
   }
 
 }

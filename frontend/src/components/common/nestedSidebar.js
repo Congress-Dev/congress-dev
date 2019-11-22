@@ -1,7 +1,6 @@
 import { Scrollbars } from 'react-custom-scrollbars';
-import { ListGroup, ListGroupItem } from 'react-bootstrap';
 import React, { Component } from 'react';
-import { host, shallowCompare } from './utils';
+import { shallowCompare } from './utils';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
 
@@ -53,7 +52,7 @@ class NestedSideBar extends Component {
         });
         return (
             <Scrollbars>
-                <ListGroup style={{}}>
+                <div style={{}}>
                     {
                     addItems.map((item, ind) => {
                         let add = {
@@ -68,7 +67,7 @@ class NestedSideBar extends Component {
                             width: `calc(100% -  ${indent}px)`
                         }
                         return (
-                            <ListGroupItem
+                            <div
                                 key={ind}
                                 onClick={()=>{onClick(item)} }
                                 style={calcStyle}
@@ -76,13 +75,13 @@ class NestedSideBar extends Component {
                             >
                                 <span style={styles.bold}>{item.display || item.number}</span>{' '}
                                 <span style={styles.light}>{item.heading || item.name}</span>
-                            </ListGroupItem>
+                            </div>
                         )
                     
                     })
                 }
                 
-            </ListGroup>
+            </div>
         </Scrollbars>
         );
     }

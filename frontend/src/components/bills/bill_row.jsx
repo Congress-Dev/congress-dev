@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
-import { host, versionToFull } from '../common/utils';
-import NavBarClass from '../nav/nav.jsx';
+import { versionToFull } from '../common/utils';
 import PropTypes from 'prop-types';
-import { Grid, Row, Col, Panel } from 'react-bootstrap';
 import { Link } from 'react-router-dom'
 
 
@@ -44,23 +42,23 @@ class BillRow extends Component {
     const billPrefix = `${chamberToAbbrv[bill.chamber]}${typeToAbbr[bill.bill_type]}`;
     const {versions} = bill;
     return (
-      <Panel style={styles.pan}>
-        <Grid>
-          <Col md={2}>
-            <Row><h4>{billPrefix}.{bill.bill_number}</h4></Row>
-            <Row><h5><em>{bill.bill_title}</em></h5></Row>
-          </Col>
-          <Col md={6}>
-            <Row style={{marginTop:'10px'}}>
+      <div style={styles.pan}>
+        <div>
+          <div md={2}>
+            <div><h4>{billPrefix}.{bill.bill_number}</h4></div>
+            <div><h5><em>{bill.bill_title}</em></h5></div>
+          </div>
+          <div md={6}>
+            <div style={{marginTop:'10px'}}>
               {
                 versions.map(({bill_version, bill_version_id}, ind) => {
                   return (<Link onClick={()=>this.storeName(bill, bill_version_id)} to={`bill/${bill_version_id}`} key={bill_version_id} style={styles.vers}>{versionToFull[bill_version]}</Link>)
                 })
               }
-            </Row>
-          </Col>
-        </Grid>
-      </Panel>
+            </div>
+          </div>
+        </div>
+      </div>
     )
   }
 
