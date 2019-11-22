@@ -59,10 +59,12 @@ services:
       POSTGRES_USER: parser
       POSTGRES_DB: us_code
     volumes:
-      - ../volumes/postgres:/var/lib/postgresql/data
+      - postgres-volume:/var/lib/postgresql/data
     networks:
       parser:
 networks:
   parser:
     external:
       name: docker_parser
+volumes:
+  postgres-volume:
