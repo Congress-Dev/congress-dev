@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { host } from '../common/utils';
 import NavBarClass from '../nav/nav.jsx';
-import { Grid, Row, Col } from 'react-bootstrap';
 import lodash from 'lodash';
 
 
@@ -60,10 +59,10 @@ class RevisionView extends Component {
         lookup[null] = { title: '' };
         const filteredVersions = lodash.filter(versions, (x) => { return selected_1 === null || x.version_id >= selected_1 });
         return (
-            <Grid>
-                <Row>
+            <div>
+                <div>
                     <NavBarClass />
-                </Row>
+                </div>
                 <div>
                     <button onClick={this.handleCompareClick} type='button'>Compare</button> {lookup[selected_1].title} with {lookup[selected_2].title}
                 </div>
@@ -82,7 +81,7 @@ class RevisionView extends Component {
                         return null;
                     })
                 }
-            </Grid>)
+            </div>)
     }
 
 }

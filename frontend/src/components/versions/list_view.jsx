@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { host } from '../common/utils';
 import NavBarClass from '../nav/nav.jsx';
-import { Grid, Row, Col } from 'react-bootstrap';
 
 
 class VersionView extends Component {
@@ -24,10 +23,10 @@ class VersionView extends Component {
   render() {
     const {versions = []} = this.state;
     return (
-      <Grid>
-        <Row>
+      <div>
+        <div>
           <NavBarClass/>
-        </Row>
+        </div>
         {
           versions.map((version) => {
             const {base_id, version_id, title} = version;
@@ -41,7 +40,7 @@ class VersionView extends Component {
             return null;
           })
         }
-      </Grid>)
+      </div>)
   }
 
 }

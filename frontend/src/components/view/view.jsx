@@ -1,15 +1,9 @@
 import React, { Component } from 'react';
-import { Grid, Row, Col } from 'react-bootstrap';
-import ReactDOM from 'react-dom';
-import Section from '../nav/sectionbutton.jsx';
 import ViewportSection from './viewportsection.jsx';
 import PropTypes from 'prop-types';
-import { host } from '../common/utils';
 import { getTitles, getTitleContent, getSectionContent, getVersionContent, getRevisionDiff } from '../common/titles.js';
 import SideBar from '../common/sidebar.js';
-import { ListGroup, ListGroupItem } from 'react-bootstrap';
 import NavBarClass from '../nav/nav.jsx';
-import { Scrollbars } from 'react-custom-scrollbars';
 import _ from 'lodash';
 
 
@@ -221,22 +215,22 @@ class ViewContainer extends Component {
   render() {
     const { version } = this.state;
     return (
-      <Grid>
-        <Row>
+      <div>
+        <div>
           <NavBarClass
             version={version}
           />
-        </Row>
-        <Row>
-          <Col lg={3} style={styles.col_a}>
+        </div>
+        <div>
+          <div lg={3} style={styles.col_a}>
             {this.renderSideBar()}
-          </Col>
-          <Col lg={9} style={styles.col} ref={this.viewportRef}>
+          </div>
+          <div lg={9} style={styles.col} ref={this.viewportRef}>
             {this.renderViewport()}
 
-          </Col>
-        </Row>
-      </Grid>
+          </div>
+        </div>
+      </div>
     )
   }
 }

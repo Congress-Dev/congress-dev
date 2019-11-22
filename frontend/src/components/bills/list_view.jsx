@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { host, shallowCompare, versionToFull } from '../common/utils';
 import NavBarClass from '../nav/nav.jsx';
-import { Grid, Row, Col, Form, Label, FormControl as Control, Checkbox } from 'react-bootstrap';
 import _ from 'lodash';
 import BillRow from './bill_row.jsx';
 import queryString from 'query-string'
@@ -78,7 +77,7 @@ class SearchConfig extends Component {
     const {chamber, statuses} = this.state;
     console.log(statuses);
     return(
-      <Form>
+      <form>
         Bill search <br/>
         <input type="text" name="searchString" onChange={this.handle_text}/>
         <input type="submit" value="Search" onClick={(e)=> {
@@ -104,7 +103,7 @@ class SearchConfig extends Component {
               </> )
           })
         }
-      </Form>
+      </form>
     )
   }
 }
@@ -192,26 +191,26 @@ class BillView extends Component {
       return a.bill_number - b.bill_number;
     });
     return (
-      <Grid>
-        <Row>
+      <div>
+        <div>
           <NavBarClass/>
-        </Row>
-        <Row>
-          <Col md={3}>
+        </div>
+        <div>
+          <div md={3}>
             <SearchConfig
               requestCallback={this.make_request}
               statuses = {statuses}
               chamber = {chamber}
               searchString = {searchString}
             />
-          </Col>
-          <Col md={9} style={styles.col}>
+          </div>
+          <div md={9} style={styles.col}>
             <BillRowHolder
               filteredBills={filteredBills}
               />
-          </Col>
-        </Row>
-      </Grid>)
+          </div>
+        </div>
+      </div>)
   }
 
 }

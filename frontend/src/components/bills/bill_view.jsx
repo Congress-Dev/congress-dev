@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
 import { versionToFull, chamberToShort } from '../common/utils';
 import PropTypes from 'prop-types';
-import { diffWords } from 'diff';
 import { Scrollbars } from 'react-custom-scrollbars';
 import _ from 'lodash';
 

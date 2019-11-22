@@ -1,9 +1,4 @@
-import React, { Component } from 'react';
-import { Grid, Row, Col } from 'react-bootstrap';
-import ReactDOM from 'react-dom';
-import Section from '../nav/sectionbutton.jsx';
-import ViewportSection from './viewportsection.jsx';
-import PropTypes from 'prop-types';
+import { Component } from 'react';
 import { host } from '../common/utils';
 
 class VersionView extends Component {

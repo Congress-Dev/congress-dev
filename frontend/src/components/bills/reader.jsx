@@ -1,14 +1,8 @@
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
-import { diffWords } from 'diff';
-import { host } from '../common/utils';
 import { getVersionContent, getBillContent, getBillContent2, getTitles, getTitleContent, getSectionContent } from '../common/titles.js';
 import NestedSideBar from '../common/nestedSidebar.js';
-import { Grid, Row, Col } from 'react-bootstrap';
-import { Scrollbars } from 'react-custom-scrollbars';
 import NavBarClass from '../nav/nav.jsx';
-import { ListGroup, ListGroupItem } from 'react-bootstrap';
 import ViewportSection from '../view/viewportsection.jsx';
 import BillViewportSection from './bill_view.jsx';
 import _ from 'lodash';
@@ -327,25 +321,31 @@ class BillReader extends Component {
         const {chapter} = this.props.match.params;
         // console.log(mergeContents(contents));
         return (
-            <Grid>
-            <Row>
+            <div>
+            <div>
               <NavBarClass/>
-            </Row>
-            <Row>
-              <Col lg={3} style={ styles.col_a }>
+            </div>
+            <div>
+              <div lg={3} style={ styles.col_a }>
                 {this.renderSideBar()}
+<<<<<<< HEAD
               </Col>
               <Col lg={9} style={ styles.col_a } ref={this.viewportRef}>
                 { chapter ? this.renderViewport() :
+=======
+              </div>
+              <div lg={9} style={ styles.col_a } ref={this.viewportRef}>
+                { chapter ? this.renderViewport() : 
+>>>>>>> Remove bootstrap
                 <>
                   {window.performance.mark('Reader') && null}
                   {this.generate_divs('Legis')}
                   {console.log("Reader", window.performance.now('Reader')) && null}
                 </>
                   }
-              </Col>
-            </Row>
-          </Grid>
+              </div>
+            </div>
+          </div>
           )
     }
 }
