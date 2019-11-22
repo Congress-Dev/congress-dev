@@ -1,5 +1,5 @@
 import { Component } from 'react';
-import { host } from '../common/utils';
+import { host } from '../../utils/utils.js';
 
 class VersionView extends Component {
   constructor(props) {

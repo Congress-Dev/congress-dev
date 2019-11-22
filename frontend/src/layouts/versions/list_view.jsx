@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { host } from '../common/utils';
-import NavBarClass from '../nav/nav.jsx';
+import { host } from '../../utils/utils.js';
+import NavBarClass from '../../components/nav/nav.jsx';
 
 
 class VersionView extends Component {

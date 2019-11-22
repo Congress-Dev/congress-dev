@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { host, shallowCompare, versionToFull } from '../../utils';
+import { host, shallowCompare, versionToFull } from '../../utils/utils.js';
 import NavBarClass from '../../components/nav/nav.jsx';
 import _ from 'lodash';
 import BillRow from './bill_row.jsx';

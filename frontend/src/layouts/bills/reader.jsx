@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { getVersionContent, getBillContent, getBillContent2, getTitles, getTitleContent, getSectionContent } from '../../titles.js';
+import { getVersionContent, getBillContent, getBillContent2, getTitles, getTitleContent, getSectionContent } from '../../utils/titles.js';
 import NestedSideBar from '../../components/sidebar/nestedSidebar.jsx';
 import NavBarClass from '../../components/nav/nav.jsx';
 import ViewportSection from '../view/viewportsection.jsx';

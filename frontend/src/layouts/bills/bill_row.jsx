@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { versionToFull } from '../../utils';
+import { versionToFull } from '../../utils/utils.js';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router-dom'
 

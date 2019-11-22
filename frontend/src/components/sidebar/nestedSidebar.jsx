@@ -1,6 +1,6 @@
 import { Scrollbars } from 'react-custom-scrollbars';
 import React, { Component } from 'react';
-import { shallowCompare } from '../../utils';
+import { shallowCompare } from '../../utils/utils.js';
 import PropTypes from 'prop-types';
 import _ from 'lodash';
 
