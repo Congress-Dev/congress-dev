@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import ViewportSection from './viewportsection.jsx';
 import PropTypes from 'prop-types';
-import { getTitles, getTitleContent, getSectionContent, getVersionContent, getRevisionDiff } from '../../titles.js';
+import { getTitles, getTitleContent, getSectionContent, getVersionContent, getRevisionDiff } from '../../utils/titles.js';
 import SideBar from '../../components/sidebar/sidebar.jsx';
 import NavBarClass from '../../components/nav/nav.jsx';
 import _ from 'lodash';

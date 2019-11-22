@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { host } from '../../utils';
+import { host } from '../../utils/utils.js';
 import NavBarClass from '../../components/nav/nav.jsx';
 import lodash from 'lodash';
 
