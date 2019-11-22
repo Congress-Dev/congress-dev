@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { getVersionContent, getBillContent, getBillContent2, getTitles, getTitleContent, getSectionContent } from '../common/titles.js';
-import NestedSideBar from '../common/nestedSidebar.js';
-import NavBarClass from '../nav/nav.jsx';
+import { getVersionContent, getBillContent, getBillContent2, getTitles, getTitleContent, getSectionContent } from '../../titles.js';
+import NestedSideBar from '../../components/sidebar/nestedSidebar.jsx';
+import NavBarClass from '../../components/nav/nav.jsx';
 import ViewportSection from '../view/viewportsection.jsx';
 import BillViewportSection from './bill_view.jsx';
 import _ from 'lodash';
@@ -328,19 +328,13 @@ class BillReader extends Component {
             <div>
               <div lg={3} style={ styles.col_a }>
                 {this.renderSideBar()}
-<<<<<<< HEAD
-              </Col>
-              <Col lg={9} style={ styles.col_a } ref={this.viewportRef}>
-                { chapter ? this.renderViewport() :
-=======
               </div>
               <div lg={9} style={ styles.col_a } ref={this.viewportRef}>
-                { chapter ? this.renderViewport() : 
->>>>>>> Remove bootstrap
+                { chapter ? this.renderViewport() :
                 <>
-                  {window.performance.mark('Reader') && null}
+                  {window.performance.mark('Reader')}
                   {this.generate_divs('Legis')}
-                  {console.log("Reader", window.performance.now('Reader')) && null}
+                  {console.log("Reader", window.performance.now('Reader'))}
                 </>
                   }
               </div>

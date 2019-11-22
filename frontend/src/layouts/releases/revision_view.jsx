@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { host } from '../common/utils';
-import NavBarClass from '../nav/nav.jsx';
+import { host } from '../../utils';
+import NavBarClass from '../../components/nav/nav.jsx';
 import lodash from 'lodash';
 
 
