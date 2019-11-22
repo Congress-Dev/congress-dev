@@ -143,9 +143,7 @@ class BillViewportSection extends Component {
       return null;
     }
     return (
-      <div
-        ref={this.scrollRef}
-        >
+      <div>
         {
           metadata ? <>
           <h1 style={{...styles.font, ...styles.centered}}>{chamberToShort[metadata.chamber]} {metadata.number}</h1>
