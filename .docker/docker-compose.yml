@@ -1,6 +1,6 @@
 version: '3'
 services:
-  parser_api:
+  congress_parser_api:
     container_name: congress_parser_api
     tty: true
     stdin_open: true
@@ -22,13 +22,14 @@ services:
       - congress_postgres
     networks:
       parser:
-  viewer_app:
+  congress_viewer_app:
     container_name: congress_viewer_app
     tty: true
     stdin_open: true
     environment:
     - STAGE=dev
     - CHOKIDAR_USEPOLLING=true
+    - API_URL=http://localhost:9090/
     build:
       context: ../frontend
       dockerfile: .docker/Dockerfile
@@ -39,16 +40,6 @@ services:
     - "80:3000"
     networks:
       parser:
-  # nginx:
-  #   image: nginx
-  #   ports:
-  #     - 80:80
-  #     - 443:443
-  #   networks:
-  #     parser:
-  #   volumes:
-  #     - /etc/letsencrypt:/etc/letsencrypt
-  #     - ./nginx/:/etc/nginx/sites-enabled/
   congress_postgres:
     image: postgres:10.6
     container_name: congress_postgres
