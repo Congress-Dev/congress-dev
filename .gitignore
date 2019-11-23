@@ -5,3 +5,4 @@ frontend/yarn-error.log
 .docker/docker-compose.local.yml
 backend/venv/
 venv/
+.legacy/

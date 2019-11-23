@@ -1,0 +1,58 @@
+#navigation {
+    background: #f8f8f8;
+    border-bottom: 1px solid #ccc;
+
+    height: 50px;
+    line-height: 48px;
+
+    padding: 0px 30px;
+    
+    .brand {
+        display: inline-block;
+        vertical-align: middle;
+        
+        margin-right: 30px;
+
+        h1, span {
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        h1 {
+            font-weight: bold;
+            margin-right: 5px;
+            margin-bottom: 0px;
+        }
+
+        span {
+            font-size: 14px;
+            font-style: italic;
+            background: #bbb;
+            color: #fff;
+
+            border-radius: 10px;
+
+            height: 20px;
+            line-height: 20px;
+            padding: 0 9px 0 8px;
+
+            text-shadow: 0px 1px 2px rgba(0,0,0,.5);
+        }
+    }
+
+    .links {
+        display: inline-block;
+        vertical-align: middle;
+
+        a {
+            color: #888;
+            text-decoration: none;
+            margin-right: 20px;
+
+            &:hover {
+                color: #333;
+                text-decoration: underline;
+            }
+        }
+    }
+}

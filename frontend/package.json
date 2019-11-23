@@ -5,6 +5,7 @@
   "dependencies": {
     "diff": "^3.5.0",
     "lodash": "^4.17.15",
+    "node-sass": "^4.13.0",
     "query-string": "^6.4.2",
     "react": "^16.7.0",
     "react-dom": "^16.7.0",
