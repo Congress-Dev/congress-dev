@@ -15,6 +15,7 @@ from flask_compress import Compress
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_sqlalchemy_session import flask_scoped_session
+from flask_sqlalchemy_session import current_session
 from sqlalchemy.orm import sessionmaker
 
 from billparser.db.handler import DATABASE_URI
@@ -31,7 +32,17 @@ from billparser.db.queries import (
     get_sections,
     get_versions,
     get_revisions,
-    get_revision_diff
+    get_revision_diff,
+)
+from billparser.db.models import (
+    Chapter,
+    Section,
+    Content,
+    ContentDiff,
+    Version,
+    Bill,
+    BillVersion,
+    BillContent,
 )
 from billparser.helpers import treeify
 
@@ -78,8 +89,21 @@ session = flask_scoped_session(session_factory, app.app)
 row2dict = lambda r: {c.name: str(getattr(r, c.name)) for c in r.__table__.columns}
 
 
-@app.route("/bills")
-def bills():
+@app.route("/bills", methods=["GET"])
+def bills() -> str:
+    """
+    This is the bill search function. There are a few query parameters:
+    Params:
+        h (int): Boolean of if they requested House bills
+        s (int): Boolean of if they requested Senate bills
+        q (str): Text to search for
+
+        These are kinda dumb.
+        incl (str): Mutually exclusive search for specific bill version types (include)
+        decl (str): Mutually exclusive search for specific bill version types (exclude)
+    Returns:
+        str: Array of objects representing the bills that match the search
+    """
     house = request.args.get("h", default=1, type=int)
     senate = request.args.get("s", default=1, type=int)
     query = request.args.get("q", default="", type=str)
@@ -109,57 +133,94 @@ def bills():
     return res
 
 
-@app.route("/bill/<string:bill_version>")
-def bill_content(bill_version):
+@app.route("/bill/<string:bill_version>", methods=["GET"])
+def bill_content(bill_version: str) -> str:
+    """
+    Returns the bill text, broken down by the way the XML was structured
+
+    Args:
+        bill_version (str): bill_version_id used as a fk on the BillContent table
+
+    Returns:
+        str: String json array of bills
+    """
     results = get_bill_contents(bill_version)
     results = [x.to_dict() for x in results]
-    # print(treeify(results))
-    ret_obj = {"contents": results}
     return json.dumps(results)
 
 
-@app.route("/bill_tree/<string:bill_version>")
-def bill_content_tree(bill_version):
+@app.route("/bill_tree/<string:bill_version>", methods=["GET"])
+def bill_content_tree(bill_version: str) -> str:
+    """
+    Handles assembling the bill tree for a particular bill
+
+    Args:
+        bill_version (str): bill_version_id used as a fk on the BillContent table
+
+    Returns:
+        str: A treeified version of the bill, and the associated metadata
+    """
     results = get_bill_contents(bill_version)
     results = [x.to_dict() for x in results]
     metadata = get_bill_metadata(bill_version)
     res = treeify(results)["child"][0]
-    # ['"`print(res)
     return json.dumps({"content": res, "metadata": metadata})
 
 
-@app.route("/titles")
-def titles():
-    res = []
-    for chapter in get_chapters():
-        res.append(chapter.to_dict())
+@app.route("/titles", methods=["GET"])
+def titles() -> str:
+    """
+    Returns all the chapters of the USCode
+
+    Returns:
+        str: str array of the chapter objects
+    """
+    res = [chapter.to_dict() for chapter in get_chapters()]
     return json.dumps(res)
 
 
-@app.route("/versions")
-def versions():
+@app.route("/versions", methods=["GET"])
+def versions() -> str:
+    """
+    More of a debug function that lists all the Version rows
+    These represent the different USCode release points, and the bills themselves
+
+    Returns:
+        str: Dump of the Version table
+    """
     res = []
     for version in get_versions():
         res.append(version.to_dict())
     return json.dumps(res)
 
 
-@app.route("/revisions")
-def revisions():
+@app.route("/revisions", methods=["GET"])
+def revisions() -> str:
+    """
+    Returns a dump of the USCode release points available in the database.
+    These are the XML dumps that are put out when an enrolled bill is codified.
+
+    Returns:
+        str: Dump of the Version table where base_id == None
+    """
     res = []
     for version in get_revisions():
         res.append(version.to_dict())
     return json.dumps(res)
 
-@app.route("/test")
-def test():
-    return get_revision_diff(1,2)
 
 @app.route("/version", methods=["POST"])
-def version():
-    print(request)
+def version() -> str:
+    """
+    Grabs the diff for a specific bill_version_id.
+    ContentDiff is a preprocessed table with all the diffs, this merely returns them.
+
+    Currently the entire set is returned.
+
+    Returns:
+        str: Object with the diffs and the contents enumerated for a specific bill version
+    """
     req = request.json
-    print(req)
     res = {"diffs": [], "contents": []}
     if "version" in req:
         for diff in get_diffs(int(req["version"])):
@@ -170,7 +231,23 @@ def version():
 
 
 @app.route("/latest/chapter/<string:chapter_number>", methods=["GET"])
-def latest_sections(chapter_number):
+def latest_sections(chapter_number: str) -> str:
+    """
+    Returns the sections for a given chapter in the latest version of the USCode
+
+    # TODO: Paginate
+    Currently not paginated, might also be useless to return them all, as a user likely
+    wants a specific one, and it's sort of unintelligble to look at them all at once.
+
+
+    Args:
+        chapter_number (str): Chapter "Number" which is actually not a number,
+            It's more of the Chapter's official "number", all pulled from the uscode.house.gov
+            05, 11, 18, 28, 50 all have *A varients.
+
+    Returns:
+        str: Stringified array of the rows
+    """
     res = []
     for section in get_latest_sections(chapter_number):
         res.append(section.to_dict())
@@ -178,7 +255,18 @@ def latest_sections(chapter_number):
 
 
 @app.route("/chapter/<int:chapter_id>", methods=["GET"])
-def sections(chapter_id):
+def sections(chapter_id: int) -> str:
+    """
+    Gets the sections for a specific chapter id.
+
+    # TODO: Unused function?
+
+    Args:
+        chapter_id (int): PK on the Chapter table
+
+    Returns:
+        str: Stringifed array of the rows
+    """
     latest_base = (
         current_session.query(Version).filter(Version.base_id == None).all()[0]
     )
@@ -191,7 +279,21 @@ def sections(chapter_id):
 @app.route(
     "/latest/section/<string:chapter_number>/<string:section_number>", methods=["GET"]
 )
-def latest_contents(chapter_number, section_number):
+def latest_contents(chapter_number: str, section_number: str) ->  str:
+    """
+    Grabs the content for a given section inside a given chapter.
+
+    # TODO: Create a typevar for chapter_number
+
+    Args:
+        chapter_number (str): Chapter "Number" which is actually not a number,
+            It's more of the Chapter's official "number", all pulled from the uscode.house.gov
+            05, 11, 18, 28, 50 all have *A varients.
+        section_number (str): Section "Number" basically the same as above, they are not really numbers
+
+    Returns:
+        str: Stringifed array of the rows
+    """
     res = []
     for section in get_latest_content(chapter_number, section_number):
         res.append(section.to_dict())
@@ -199,7 +301,16 @@ def latest_contents(chapter_number, section_number):
 
 
 @app.route("/section/<int:section_id>", methods=["GET"])
-def contents(section_id):
+def contents(section_id: int) -> str:
+    """
+    Returns the data for a given section_id
+
+    Args:
+        section_id (int): PK on the Section table
+
+    Returns:
+        str: Stringified array of the content rows
+    """
     latest_base = (
         current_session.query(Version).filter(Version.base_id == None).all()[0]
     )
@@ -211,6 +322,9 @@ def contents(section_id):
 
 @app.app.after_request
 def add_header(response):
+    """
+    This was something I was doing for logging requests for a goaccess endpoint which isn't used anymore
+    """
     if not windows:
         if "X-Real-Ip" in request.headers:
             remote_addr = request.headers.getlist("X-Real-Ip")[0].strip()
