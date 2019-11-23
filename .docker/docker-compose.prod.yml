@@ -4,6 +4,12 @@ services:
     environment:
     - STAGE=prod
     - db_host=10.0.0.248:5432
+  congress_viewer_app:
+    volumes:
+    - /var/www/congress:/usr/src/app/build
+    entrypoint:
+    - "yarn"
+    - "build"
   congress_nginx:
     container_name: congress_nginx
     image: nginx
