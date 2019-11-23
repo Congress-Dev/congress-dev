@@ -1,0 +1,68 @@
+html, body {
+    height: 100%;
+    width: 100%;
+}
+
+body {
+    font-family: 'Alegreya Sans', sans-serif;
+}
+
+hr {
+    border-bottom: 1px solid #ddd;
+    border-top: none;
+    margin: 15px 0;
+}
+
+h1, h2, h3, h4, h5, h6 { font-weight: bold; margin-bottom: 10px }
+
+h1 { font-size: 20px; }
+h2 { font-size: 18px; }
+h3 { font-size: 16px; }
+h4 { font-size: 14px; }
+h5 { font-size: 13px; }
+h6 { font-size: 12px; }
+
+p {
+    font-size: 15px;
+    margin-bottom: 10px;
+}
+
+form {
+    font-size: 15px;
+
+    label {
+        font-weight: bold;
+    }
+}
+
+#root {
+    height: 100%;
+
+    .layout { 
+        height: 100%;
+
+        .sidebar, .content { 
+            height: calc(100% - 51px);
+
+            display: inline-block;
+            vertical-align: top;
+
+            overflow: auto;
+        }
+
+        .sidebar {
+            width: 250px;
+            border-right: 1px solid #eee;
+
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        .content {
+            width: calc(100% - 251px);
+            padding: 30px;
+            box-sizing: border-box;
+            -moz-box-sizing: border-box;
+        }
+    }
+}
