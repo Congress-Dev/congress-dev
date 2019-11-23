@@ -13,6 +13,8 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from dogpile.cache.region import make_region
 from dogpile.cache.api import NO_VALUE
 
+# This is the same dumb library we use at Groundspeed and I don't think it works
+# And I was the one who added it to our stuff at Groundspeed. RIP
 
 def md5_key_mangler(key):
     """

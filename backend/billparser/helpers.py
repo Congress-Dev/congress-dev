@@ -6,11 +6,22 @@ from billparser.transformer import insert_after_element
 
 from unidecode import unidecode
 
-cite_regex = re.compile("^(\d+) [USC\.]+ (.*?)(\(.+\))?$", re.IGNORECASE)
-section_regex = re.compile("^Section (.*?)(\(.*?\))?$", re.IGNORECASE)
-part_regex = re.compile("\((.*?)\)", re.IGNORECASE)
+# TODO: I think this is mostly unused
+
+cite_regex = re.compile(r"^(\d+) [USC\.]+ (.*?)(\(.+\))?$", re.IGNORECASE)
+section_regex = re.compile(r"^Section (.*?)(\(.*?\))?$", re.IGNORECASE)
+part_regex = re.compile(r"\((.*?)\)", re.IGNORECASE)
 # /us/usc/t7/s7333/e
 def convert_to_usc_id(xref):
+    """
+    # TODO: This is complicated
+
+    Args:
+        xref ([type]): [description]
+
+    Returns:
+        [type]: [description]
+    """
     try:
         # doc = xref.attrib['legal-doc']
         cite = unidecode(xref.attrib["parsable-cite"])
@@ -45,6 +56,7 @@ def convert_to_usc_id(xref):
 
 
 def determine_action(xref):
+    # TODO: Unused function?
     par = xref.getparent()
     texts = [x for x in par.itertext() if x != xref.text]
     print("actions", texts[-1])
