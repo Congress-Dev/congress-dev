@@ -3,6 +3,7 @@ services:
   congress_parser_api:
     environment:
     - STAGE=prod
+    - db_host=10.0.0.248:5432
   congress_nginx:
     container_name: congress_nginx
     image: nginx
@@ -14,6 +15,8 @@ services:
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt
       - ./nginx/:/etc/nginx/sites-enabled/
+  congress_postgres:
+    image: tianon/true 
 networks:
   parser:
     external:
