@@ -1,12 +1,14 @@
 FROM node
 
 RUN curl -o- -L https://yarnpkg.com/install.sh | bash
-WORKDIR /usr/src/app
 
+COPY package.json /usr/src/app/package.json
 COPY yarn.lock /usr/src/app/yarn.lock
+WORKDIR /usr/src/app
 RUN yarn install
 
-COPY . /usr/src/app
+COPY ./src /usr/src/app/src
+COPY ./public /usr/src/app/public
+COPY ./start.sh /usr/src/app/start.sh
 
-
-ENTRYPOINT [ "bash" ]
+ENTRYPOINT ["bash", "start.sh"]
