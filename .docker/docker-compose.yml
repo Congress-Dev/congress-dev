@@ -37,7 +37,7 @@ services:
     - ../frontend/public:/usr/src/app/public
     - ../frontend/src:/usr/src/app/src
     ports:
-    - "80:3000"
+    - "3000:3000"
     networks:
       parser:
   congress_postgres:

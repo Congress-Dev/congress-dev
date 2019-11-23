@@ -12,7 +12,9 @@ services:
     - "build"
   congress_nginx:
     container_name: congress_nginx
-    image: nginx
+    build:
+      context: ../
+      dockerfile: .docker/nginx.dockerfile
     ports:
       - 80:80
       - 443:443
@@ -20,7 +22,8 @@ services:
       parser:
     volumes:
       - /etc/letsencrypt:/etc/letsencrypt
-      - ./nginx/:/etc/nginx/sites-enabled/
+      - ../frontend/.nginx/:/etc/nginx/sites-enabled/
+      - /var/www/congress:/var/www/congress
   congress_postgres:
     image: tianon/true 
 networks:
