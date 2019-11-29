@@ -21,6 +21,7 @@ engine = create_engine(DATABASE_URI, poolclass=NullPool)
 
 Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine, query_cls=query_callable(regions))
+ribber = string.ascii_letters + string.digits
 
 
 def unidecode_str(input_str: str) -> str:
@@ -37,10 +38,16 @@ def open_usc(file):
     return lookup
 
 
-ribber = string.ascii_letters + string.digits
+def get_number(ident: str) -> float:
+    """
+    Converts a usc_ident into a number that is supposed to impart some implicit order
 
+    Args:
+        ident (str): The usc ident
 
-def get_number(ident):
+    Returns:
+        float: The supposed order
+    """
     ident = unidecode_str(ident)
     if "..." in ident:
         ident = ident.split("...")[0]

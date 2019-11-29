@@ -2,12 +2,20 @@ from billparser.transformer import Session
 from billparser.db.models import ContentDiff, Section, Content
 from billparser.logger import log
 import re
+from billparser.actions import ActionObject
 
 
 name_extract = re.compile(r"\((?P<name>.+?)")
 
 
-def redesignate(action_obj, session):
+def redesignate(action_obj: ActionObject, session: "Session") -> None:
+    """
+    Handles changing the display letter to something new for a section
+
+    Args:
+        action_obj (ActionObject): Parsed action
+        session (Session): Current database session
+    """
     action = action_obj.action
     new_vers_id = action_obj.version_id
     cited_content = action_obj.cited_content
