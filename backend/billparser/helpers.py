@@ -68,6 +68,7 @@ def determine_action(xref):
 
 
 def look_for_directions(text):
+    # TODO: Unused function?
     if "by striking" in text:
         overall = "striking"
     print("Directions", text)
@@ -81,6 +82,7 @@ def look_for_directions(text):
 
 
 def determine_result(paragraph):
+    # TODO: Unused function
     print("dtrs")
     text = [x.strip() for x in paragraph.itertext() if x.strip() != ""]
     print(text[0])
@@ -93,6 +95,7 @@ usc_29 = {}
 
 
 def parse_usc(title):
+    # TODO: Unused function?
     global usc_root, usc_29
     with open("usc/usc{}.xml".format(title), "rb") as file:
         usc_root = etree.fromstring(file.read())
@@ -102,6 +105,7 @@ def parse_usc(title):
 
 
 def parse(file, name):
+    # TODO: Unused function?
     global usc_root, usc_29
     ref_boi = []
     try:
@@ -137,7 +141,6 @@ def parse(file, name):
         for para in root.xpath("//paragraph"):
             print(etree.tostring(para, pretty_print=True).decode())
             print(etree.tostring(translate_paragraph(para), pretty_print=True).decode())
-            # insert_after(translate_paragraph(para), usc_29['/us/usc/t29/s203/e/5'])
     except:
         return []
 
