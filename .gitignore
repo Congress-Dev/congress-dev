@@ -2,3 +2,4 @@
 **/node_modules
 frontend/yarn-error.log
 .vscode
+.docker/docker-compose.local.yml

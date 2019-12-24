@@ -22,6 +22,10 @@ services:
       - congress_postgres
     networks:
       parser:
+    entrypoint: "python3"
+    command:
+    - "-m"
+    - "billparser"
   viewer_app:
     container_name: congress_viewer_app
     tty: true
@@ -39,6 +43,8 @@ services:
     - "80:3000"
     networks:
       parser:
+    command:
+    - "start.sh"
   # nginx:
   #   image: nginx
   #   ports:

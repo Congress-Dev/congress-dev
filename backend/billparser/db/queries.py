@@ -266,6 +266,15 @@ def get_diffs(bill_version_id: int) -> List[ContentDiff]:
 
 @cached(cache=TTLCache(maxsize=512, ttl=CACHE_TIME))
 def get_bill_contents(bill_version_id: int) -> List[BillContent]:
+    """
+    Returns the BillContent for a given bill_version
+
+    Args:
+        bill_version_id (int): BillVersion PK on the BillContent table
+
+    Returns:
+        List[BillContent]: Matching BillContent rows
+    """
     results = (
         current_session.query(BillContent)
         .filter(BillContent.bill_version_id == bill_version_id)
@@ -291,7 +300,7 @@ def get_bill_metadata(bill_version_id: int) -> dict:
             return {
                 "chamber": bill[0].chamber,
                 "number": bill[0].bill_number,
-                "version": bill_version[0].bill_versiIon,
+                "version": bill_version[0].bill_version,
             }
 
     return {}
