@@ -12,7 +12,7 @@ class NavBarClass extends Component {
     return (
     <Navbar style={{marginBottom: '10px'}}>
       <Navbar.Brand>
-        Congress.dev{(version && versionLookup[version])? `- ${versionLookup[version].title}` : null} <span className="badge badge-pill badge-info">0.0.5</span>
+        Congress.dev{(version && versionLookup[version])? `- ${versionLookup[version].title}` : null} <span className="badge badge-pill badge-info">0.0.6</span>
       </Navbar.Brand>
       <Nav bsStyle='pills'>
       <NavItem eventKey={1} href="/">
@@ -21,7 +21,7 @@ class NavBarClass extends Component {
       <NavItem eventKey={2} href="/revisions">
         US Code Revisions
       </NavItem>
-    
+
       <NavItem eventKey={2} href="/bills">
         Bills
       </NavItem>
