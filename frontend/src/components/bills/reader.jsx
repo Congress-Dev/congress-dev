@@ -31,7 +31,7 @@ const styles={
       marginBottom: '0px'
     },
     unchanged: {},
-  
+
     added: {
       backgroundColor: '#cdffd8'
     },
@@ -191,7 +191,7 @@ class BillReader extends Component {
                     // console.log(sectionLookup[sectionId]);
                     getSectionContent(intTitles[sectionLookup[sectionId].chapter_id].number, sectionLookup[sectionId].number);
                     intTitles[sectionLookup[sectionId].chapter_id].sub.push(sectionLookup[sectionId]);
-                  } 
+                  }
                 });
                 const {diffTitles = {}} = this.state;
                 this.setState({diffTitles: {...diffTitles, ...intTitles}});
@@ -254,7 +254,7 @@ class BillReader extends Component {
           metadata={metadata}
         />
         )
-      
+
         const {childLookup = {}, parentLookup= {}} = this.state;
         const items = childLookup[parent] || [];
         if(Object.keys(childLookup).length === 0) {
@@ -336,11 +336,11 @@ class BillReader extends Component {
                 {this.renderSideBar()}
               </Col>
               <Col lg={9} style={ styles.col_a } ref={this.viewportRef}>
-                { chapter ? this.renderViewport() : 
+                { chapter ? this.renderViewport() :
                 <>
-                  {window.performance.mark('Reader')}
+                  {window.performance.mark('Reader') && null}
                   {this.generate_divs('Legis')}
-                  {console.log("Reader", window.performance.now('Reader'))}
+                  {console.log("Reader", window.performance.now('Reader')) && null}
                 </>
                   }
               </Col>

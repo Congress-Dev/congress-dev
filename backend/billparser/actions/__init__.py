@@ -1,7 +1,14 @@
 import re
 from billparser.logger import log
+from unidecode import unidecode
 
 
+# TODO: This whole file is some honkin bullshit. It's entirely unsustainable, but at the same time, unless I can get them to follow standards, I'm not sure
+# I can actually do anything else but maintain a long ass list of regexes.
+
+
+# These regexes all have named capture groups, because they are incredibly useful
+# The capture groups are typically consistent, especially when the same functions are used between different 'actions'
 regex_holder = {
     "SHORT-TITLE": [
         r"This (?P<context_type>(?:act|(?:sub)?title)) may be cited as the (?P<title>.+?)\."
@@ -79,13 +86,28 @@ regex_holder = {
     "TERM-DEFINITION": [r"The term \"(?P<term>.+?)\" means (?P<term_def>.+?)."],
 }
 
-from unidecode import unidecode
+SuchCodeRegex = re.compile(r"(Section|paragraph) (?P<section>\d*)\(", re.IGNORECASE)
+SubParts = re.compile(r"\((.*?)\)")
+DupeFinder = re.compile(r"(\/.{1,}\b)\1")
+
 
 for action in regex_holder:
     regex_holder[action] = [re.compile(x, flags=re.I) for x in regex_holder[action]]
 
 
-def determine_action(text):
+def determine_action(text: str) -> dict:
+    """
+    Parses the input string against all the regexes
+    Searches each action's regexes until it finds one
+    The order in which the regexes are placed are important, because the most general ones need to be last
+    Especially if there is information in the more specific ones that is important for action.
+
+    Args:
+        text (str): Input bill clause string
+
+    Returns:
+        dict: A dict of the matching action regexes
+    """
     actions = {}
     text = unidecode(text).replace("--", "-")
     for action in regex_holder:
@@ -101,12 +123,18 @@ def determine_action(text):
     return actions
 
 
-SuchCodeRegex = re.compile(r"(Section|paragraph) (?P<section>\d*)\(", re.IGNORECASE)
-SubParts = re.compile(r"\((.*?)\)")
-DupeFinder = re.compile(r"(\/.{1,}\b)\1")
+def parse_such_code(text: str, title: str) -> str:
+    """
+    Sometimes clauses in a bill will reference "such code", which means we've already been given the Chapter
+    and all we have to do is attempt to match up the section to that Chapter
 
+    Args:
+        text (str): String containing the such code reference
+        title (str): Chapter
 
-def parse_such_code(text, title):
+    Returns:
+        str: A usc cite according to the such code logic
+    """
     SuchCodeRegex_match = SuchCodeRegex.search(text)
     if SuchCodeRegex_match:
         cite = "/us/usc/t{}/s{}".format(title, SuchCodeRegex_match["section"])

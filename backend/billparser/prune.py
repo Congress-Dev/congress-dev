@@ -3,6 +3,9 @@ from billparser.transformer import Session
 
 
 def run_prune():
+    # This is removing any bills that I was unable to generate differences for
+    # The thought behind this is that they stay in the list, but they don't show anything
+    # So they distract from the functionality of the site
     session = Session()
     boys = session.query(ContentDiff.version_id).distinct(ContentDiff.version_id).all()
     session.execute("ALTER TABLE version DISABLE TRIGGER ALL;")

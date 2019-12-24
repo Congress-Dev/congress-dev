@@ -35,18 +35,39 @@ from billparser.transformer import (
 from billparser.translater import translate_paragraph
 
 from joblib import Parallel, delayed
-
+from typing import List
 
 text_paths = ["legis-body/section/subsection/text", "legis-body/section/text"]
 
 BASE_VERSION = 1
 THREADS = 16
 
-def strip_arr(arr):
+Element = etree.Element
+
+def strip_arr(arr: List[str]) -> List[str]:
+    """
+    Strips all the strings in the input array
+
+    Args:
+        arr (List[str]): List of strings to strip
+
+    Returns:
+        List[str]: Stripped strings
+    """
     return [x.strip() for x in arr]
 
 
-def convert_to_text(element, inside_quote=False):
+def convert_to_text(element: Element, inside_quote: bool=False) -> str:
+    """
+    Converts an element to a string, if there is a quote tag it will add quotes.
+
+    Args:
+        element (Element): Input element
+        inside_quote (bool, optional): Doesn't actually do anything. Defaults to False.
+
+    Returns:
+        str: Stringified version of the element's text
+    """
     ret = ""
     if element.tag == "quote":
         ret = '"'
@@ -62,8 +83,20 @@ def convert_to_text(element, inside_quote=False):
 ll = {"subsection": "ss", "paragraph": "p", "section": "s", "subparagraph": "sb"}
 
 
-def extract_actions(element, path):
-    # for checking what the order of the elements are
+def extract_actions(element: Element, path: str) -> List[dict]:
+    """
+    Looks at an element for textual clues to determine what actions it is implying
+    These actions will be extracted and passed to other functions to utilize.
+
+    This is a recursive function
+
+    Args:
+        element (Element): An XML element from a bill.
+        path (str): The path of this element in the document
+
+    Returns:
+        List[dict]: A flat list of the extracted actions of all the elements
+    """
 
     res = []
     try:
@@ -128,7 +161,7 @@ def extract_actions(element, path):
 
 
 def extract_single_action(
-    element: "lxml.Element", path: str, parent_action: dict
+    element: Element, path: str, parent_action: dict
 ) -> list:
     """
         Takes in an element and a path (relative within the bill)
@@ -204,7 +237,19 @@ SuchTitleRegex = re.compile(
 cite_contexts = {"last_title": None}
 
 
-def parse_action_for_cite(action_object):
+def parse_action_for_cite(action_object: dict) -> str:
+    """
+    Looks at a given action object to determine what citation it is trying to edit.
+    A citation represents a location in the USCode
+
+    # TODO: Split function apart
+
+    Args:
+        action_object (dict): An object represented an extract action
+
+    Returns:
+        str: A USCode citation str
+    """
     try:
         parent_cite = ""
         if action_object["text_element"] is not None:
@@ -638,7 +683,17 @@ filename_regex = re.compile(
 chamb = {"hr": "House", "s": "Senate"}
 
 
-def parse_archive(path):
+def parse_archive(path: str) -> List[dict]:
+    """
+    Opens a ZipFile that is the dump of all bills.
+    It will parse each one and return a list of the parsed out objects
+
+    Args:
+        path (str):Path to the zip file
+
+    Returns:
+        List[dict]: List of the parsed objects
+    """
     archive = ZipFile(path)
     names = []
     rec = []

@@ -31,7 +31,7 @@ const styles={
       marginBottom: '0px'
     },
     unchanged: {},
-  
+
     added: {
       backgroundColor: '#cdffd8'
     },
@@ -107,7 +107,7 @@ class BillViewportSection extends Component {
       }
       const bgStyle = bgStyles[this.getbg(item.ap)];
       return (
-        <div name={item.bill_content_id} style={ parent=== 'Legis' ? {...styles.font} : (styles[item.content_type] || styles.section) } ref={(elem)=> {this.elements.push(elem)}}>
+        <div key={item.bill_content_id} name={item.bill_content_id} style={ parent=== 'Legis' ? {...styles.font} : (styles[item.content_type] || styles.section) } ref={(elem)=> {this.elements.push(elem)}}>
           <span style={{...bgStyle, ...styles.font}}>
           <b style={styles.font} name={item.bill_content_id}>{item.display} {item.heading}</b>
                     {item.heading ? (<p style={ {...styles.continue, ...bgStyle, ...styles.font} }>{item.content}</p>) : <span>{item.content}</span>}
@@ -152,7 +152,7 @@ class BillViewportSection extends Component {
           <h1 style={{...styles.font, ...styles.centered}}>{chamberToShort[metadata.chamber]} {metadata.number}</h1>
           <h3 style={{...styles.font, ...styles.centered, fontStyle: 'italic'}}>{versionToFull[metadata.version]}</h3>
           </>: null}
-        
+
         {this.generate_divs(items)}
       </Scrollbars>
       );

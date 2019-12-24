@@ -5,7 +5,18 @@ import time
 cols = ["action", "file", "enum", "lxml_path", "parsed_cite", "text"]
 
 
-def compare_dfs(df_1, df_2):
+def compare_dfs(df_1: pd.DataFrame, df_2: pd.DataFrame) -> None:
+    """
+    This function was for when I was making iterative progress on updating the parsing/transforming rules
+    I wanted a simple way to compare successive outputs for changes.
+    It is an inspired function.
+
+    It does the comparisons, then writes the output to disk.
+
+    Args:
+        df_1 (pd.DataFrame): DF 1
+        df_2 (pd.DataFrame): DF 2
+    """
     df_1 = df_1[cols].copy()
     df_2 = df_2[cols].copy()
     for col in cols:

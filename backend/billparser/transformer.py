@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from billparser.db.handler import Session
 
-
+# TODO: I think this is all unused, superceded by the actions/ folder
 def recursive_content(
     session,
     chapter_id,
