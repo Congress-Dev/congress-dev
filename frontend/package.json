@@ -36,7 +36,7 @@
     "not op_mini all"
   ],
   "main": "index.js",
-  "repository": "git@github.com:mustyoshi/bill-viewer.git",
+  "repository": "git@github.com:mustyoshi/congress-dev.git",
   "author": "mustyoshi@gmail.com <mustyoshi@mustyoshi.com>",
   "license": "MIT"
 }

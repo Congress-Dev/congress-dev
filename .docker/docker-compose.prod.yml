@@ -1,0 +1,32 @@
+version: '3'
+services:
+  congress_parser_api:
+    environment:
+    - STAGE=prod
+    - db_host=10.0.0.248:5432
+  congress_viewer_app:
+    volumes:
+    - /var/www/congress:/usr/src/app/build
+    entrypoint:
+    - "yarn"
+    - "build"
+  congress_nginx:
+    container_name: congress_nginx
+    build:
+      context: ../
+      dockerfile: .docker/nginx.dockerfile
+    ports:
+      - 80:80
+      - 443:443
+    networks:
+      parser:
+    volumes:
+      - /etc/letsencrypt:/etc/letsencrypt
+      - ../frontend/.nginx/:/etc/nginx/sites-enabled/
+      - /var/www/congress:/var/www/congress
+  congress_postgres:
+    image: tianon/true 
+networks:
+  parser:
+    external:
+      name: docker_parser
