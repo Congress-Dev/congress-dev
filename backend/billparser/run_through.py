@@ -4,7 +4,8 @@ import sys
 import time
 import traceback
 from zipfile import ZipFile
-
+import hashlib
+import datetime
 import pandas
 from lxml import etree
 from unidecode import unidecode  # GPLV2
@@ -19,7 +20,13 @@ from billparser.actions.insert import (
 )
 from billparser.actions.redesignate import redesignate
 from billparser.actions.strike import strike_section, strike_text
-from billparser.db.models import Bill, BillContent, BillVersion, ContentDiff
+from billparser.db.models import (
+    Bill,
+    BillContent,
+    BillVersion,
+    ContentDiff,
+    BillIngestion,
+)
 from billparser.helpers import convert_to_usc_id
 from billparser.logger import log
 from billparser.transformer import (
@@ -40,9 +47,10 @@ from typing import List
 text_paths = ["legis-body/section/subsection/text", "legis-body/section/text"]
 
 BASE_VERSION = 1
-THREADS = 16
+THREADS = int(os.environ.get("PARSE_THREADS", 16))
 
 Element = etree.Element
+
 
 def strip_arr(arr: List[str]) -> List[str]:
     """
@@ -57,7 +65,7 @@ def strip_arr(arr: List[str]) -> List[str]:
     return [x.strip() for x in arr]
 
 
-def convert_to_text(element: Element, inside_quote: bool=False) -> str:
+def convert_to_text(element: Element, inside_quote: bool = False) -> str:
     """
     Converts an element to a string, if there is a quote tag it will add quotes.
 
@@ -160,9 +168,7 @@ def extract_actions(element: Element, path: str) -> List[dict]:
     return res
 
 
-def extract_single_action(
-    element: Element, path: str, parent_action: dict
-) -> list:
+def extract_single_action(element: Element, path: str, parent_action: dict) -> list:
     """
         Takes in an element and a path (relative within the bill)
         returns a list of extracted actions.
@@ -513,14 +519,43 @@ def recursive_bill_content(
     return res
 
 
-def parse_bill(f, path, bill_obj):
+def check_existing_ingestion(checksum: str, archive_obj: object, session) -> bool:
+    result = (
+        session.query(BillIngestion)
+        .filter(
+            BillIngestion.archive_name == archive_obj.get("archive"),
+            BillIngestion.archive_path == archive_obj.get("path"),
+            BillIngestion.checksum == checksum,
+            BillIngestion.completed_at != None
+        )
+        .all()
+    )
+    return result is None
+
+
+def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object):
     res = []
     try:
         session = Session()
+        m = hashlib.md5()
+        m.update(f.encode("utf-8"))
+        checksum = m.hexdigest()
+        found = check_existing_ingestion(checksum, archive_obj, session)
+        if found:
+            log.info(f"Skipping {archive_obj.get('path')}")
+            return []
+        ingestion_row = BillIngestion(
+            archive_name = archive_obj.get("archive"),
+            archive_path = archive_obj.get("path"),
+            checksum = checksum,
+        )
         root = etree.fromstring(f)
         title = root.xpath("//dublinCore")[0][0].text.split(":")[-1].strip()
         log.info(title)
         new_bill, new_bill_version = find_or_create_bill(bill_obj, title, session)
+        ingestion_row.bill_version_id = new_bill_version.bill_version_id
+        session.add(ingestion_row)
+        session.commit()
         clear_existing_content(new_bill_version, session)
         new_vers_id = create_version(
             new_bill_version,
@@ -543,6 +578,7 @@ def parse_bill(f, path, bill_obj):
             new_vers_id,
             session=session,
         )
+        ingestion_row.completed_at = datetime.datetime.now()
         session.commit()
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -715,6 +751,7 @@ def parse_archive(path: str) -> List[dict]:
         )
 
     names = sorted(names, key=lambda x: x["bill_number"])
+    names = names[30:35]
     # names = [x for x in names if (x.get('title') == '116 - hr4 - ih')]
     # names = [x for x in names if (x.get('bill_version') == 'enr')]
     frec = Parallel(n_jobs=THREADS, backend="multiprocessing", verbose=5)(
@@ -722,6 +759,7 @@ def parse_archive(path: str) -> List[dict]:
             archive.open(name["path"], "r").read().decode(),
             str(name["bill_number"]),
             name,
+            {"archive": path.split("/")[-1], "file": file.split("/")[-1]},
         )
         for name in names[:100]
     )
