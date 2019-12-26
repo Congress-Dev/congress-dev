@@ -524,7 +524,7 @@ def check_existing_ingestion(checksum: str, archive_obj: object, session) -> boo
         session.query(BillIngestion)
         .filter(
             BillIngestion.archive_name == archive_obj.get("archive"),
-            BillIngestion.archive_path == archive_obj.get("path"),
+            BillIngestion.archive_path == archive_obj.get("file"),
             BillIngestion.checksum == checksum,
             BillIngestion.completed_at != None
         )
@@ -546,7 +546,7 @@ def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object):
             return []
         ingestion_row = BillIngestion(
             archive_name = archive_obj.get("archive"),
-            archive_path = archive_obj.get("path"),
+            archive_path = archive_obj.get("file"),
             checksum = checksum,
         )
         root = etree.fromstring(f)
