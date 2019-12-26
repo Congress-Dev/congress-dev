@@ -7,6 +7,9 @@ def translate_paragraph(element):
     """
     Transforms an XML element from the USCode version into HTML
     """
+    if isinstance(element, str):
+        return element
+
     for elem in element.iter():
         if elem.tag == "enum":
             elem.tag = "num"
