@@ -759,7 +759,7 @@ def parse_archive(path: str) -> List[dict]:
             archive.open(name["path"], "r").read().decode(),
             str(name["bill_number"]),
             name,
-            {"archive": path.split("/")[-1], "file": file.split("/")[-1]},
+            {"archive": path.split("/")[-1], "file": name["path"].split("/")[-1]},
         )
         for name in names[:100]
     )
