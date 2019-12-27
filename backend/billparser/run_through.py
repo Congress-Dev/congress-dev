@@ -525,12 +525,11 @@ def check_existing_ingestion(checksum: str, archive_obj: object, session) -> boo
         .filter(
             BillIngestion.archive_name == archive_obj.get("archive"),
             BillIngestion.archive_path == archive_obj.get("file"),
-            BillIngestion.checksum == checksum,
-            BillIngestion.completed_at != None
+            BillIngestion.checksum == checksum
         )
         .all()
     )
-    return result is None
+    return len(result) > 0
 
 
 def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object):
@@ -542,7 +541,7 @@ def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object):
         checksum = m.hexdigest()
         found = check_existing_ingestion(checksum, archive_obj, session)
         if found:
-            log.info(f"Skipping {archive_obj.get('path')}")
+            print(f"Skipping {archive_obj.get('file')}")
             return []
         ingestion_row = BillIngestion(
             archive_name = archive_obj.get("archive"),
@@ -581,9 +580,8 @@ def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object):
         ingestion_row.completed_at = datetime.datetime.now()
         session.commit()
     except Exception as e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        traceback.print_exc()
+        log.error("Uncaught exception", exc_info=e)
+
     for r in res:
         if "text_element" in r:
             del r["text_element"]
