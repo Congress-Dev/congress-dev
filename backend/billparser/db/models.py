@@ -1,6 +1,7 @@
 import enum
 
-from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, String, DateTime
+from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import JSONB, ARRAY
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -302,3 +303,17 @@ class ContentDiff(CacheableMixin, Base):
             "version": self.version_id,
         }
         return {k: v for (k, v) in boi.items() if v is not None}
+
+
+class BillIngestion(Base):
+    __tablename__ = "bill_ingestion"
+    bill_ingestion_id = Column(Integer, primary_key=True)
+    archive_name = Column(String)
+    archive_path = Column(String)
+    checksum = Column(String)
+    created_at = Column(DateTime, server_default=func.now())
+    completed_at = Column(DateTime)
+    bill_version_id = Column(
+        Integer, ForeignKey("bill_version.bill_version_id"), index=True
+    )
+
