@@ -10,6 +10,8 @@ from billparser.__main__ import (
     revisions,
     version,
     latest_sections,
+    sections,
+    contents,
 )
 
 from billparser.db.models import (
@@ -469,7 +471,13 @@ class TestRoutes(TestCase):
         """
         mock_get_sections.return_value = [
             Section(
-                section_id=1
+                section_id=1,
+                usc_ident="/usc/01/s1",
+                number="1",
+                section_display="S 1.)",
+                heading="Test - Heading",
+                chapter_id=1,
+                version_id=1,
             )
         ]
 
@@ -477,7 +485,142 @@ class TestRoutes(TestCase):
             resp = latest_sections("1")
             self.assertEqual(
                 json.dumps(
-                    []
+                    [
+                        {
+                            "section_id": 1,
+                            "ident": "/usc/01/s1",
+                            "number": "1",
+                            "display": "S 1.)",
+                            "heading": "Test - Heading",
+                            "chapter_id": 1,
+                            "version": 1,
+                        }
+                    ]
+                ),
+                resp,
+                resp,
+            )
+
+    @mock.patch("billparser.__main__.get_latest_sections", return_value=[])
+    def test_latest_sections(self, mock_get_sections):
+        """
+            Should return the section objects
+        """
+        mock_get_sections.return_value = [
+            Section(
+                section_id=1,
+                usc_ident="/usc/01/s1",
+                number="1",
+                section_display="S 1.)",
+                heading="Test - Heading",
+                chapter_id=1,
+                version_id=1,
+            )
+        ]
+
+        with app.app.test_request_context():
+            resp = latest_sections("1")
+            self.assertEqual(
+                json.dumps(
+                    [
+                        {
+                            "section_id": 1,
+                            "ident": "/usc/01/s1",
+                            "number": "1",
+                            "display": "S 1.)",
+                            "heading": "Test - Heading",
+                            "chapter_id": 1,
+                            "version": 1,
+                        }
+                    ]
+                ),
+                resp,
+                resp,
+            )
+
+    @mock.patch(
+        "billparser.__main__.get_latest_base", return_value=Version(version_id=1)
+    )
+    @mock.patch("billparser.__main__.get_sections", return_value=[])
+    def test_sections(self, mock_get_sections, mock_get_latest_base):
+        """
+            Should return the section objects
+        """
+        mock_get_sections.return_value = [
+            Section(
+                section_id=1,
+                usc_ident="/usc/01/s1",
+                number="1",
+                section_display="S 1.)",
+                heading="Test - Heading",
+                chapter_id=1,
+                version_id=1,
+            )
+        ]
+
+        with app.app.test_request_context():
+            resp = sections("1")
+            self.assertEqual(
+                json.dumps(
+                    [
+                        {
+                            "section_id": 1,
+                            "ident": "/usc/01/s1",
+                            "number": "1",
+                            "display": "S 1.)",
+                            "heading": "Test - Heading",
+                            "chapter_id": 1,
+                            "version": 1,
+                        }
+                    ]
+                ),
+                resp,
+                resp,
+            )
+
+    @mock.patch(
+        "billparser.__main__.get_latest_base", return_value=Version(version_id=1)
+    )
+    @mock.patch("billparser.__main__.get_content", return_value=[])
+    def test_contents(self, mock_get_content, mock_get_latest_base):
+        """
+            Should return the content objects
+        """
+        mock_get_content.return_value = [
+            Content(
+                content_id=1,
+                section_id=1,
+                parent_id=None,
+                order_number=0,
+                usc_ident="/usc/01/s1",
+                usc_guid="1-2-3",
+                number="1",
+                section_display="S 1.)",
+                heading="Test - Heading",
+                content_str="Content - Str",
+                version_id=1,
+                content_type="legis-body",
+            )
+        ]
+
+        with app.app.test_request_context():
+            resp = contents("1")
+            self.assertEqual(
+                json.dumps(
+                    [
+                        {
+                            "content_id": 1,
+                            "content_type": "legis-body",
+                            "section_id": 1,
+                            "order": 0,
+                            "ident": "/usc/01/s1",
+                            "number": "1",
+                            "display": "S 1.)",
+                            "heading": "Test - Heading",
+                            "content": "Content - Str",
+                            "version": 1,
+                        }
+                    ]
                 ),
                 resp,
                 resp,

@@ -33,6 +33,7 @@ from billparser.db.queries import (
     get_versions,
     get_revisions,
     get_revision_diff,
+    get_latest_base
 )
 from billparser.db.models import (
     Chapter,
@@ -267,9 +268,8 @@ def sections(chapter_id: int) -> str:
     Returns:
         str: Stringifed array of the rows
     """
-    latest_base = (
-        current_session.query(Version).filter(Version.base_id == None).all()[0]
-    )
+    latest_base = get_latest_base()
+
     res = []
     for section in get_sections(str(chapter_id), latest_base.version_id):
         res.append(section.to_dict())
@@ -311,9 +311,7 @@ def contents(section_id: int) -> str:
     Returns:
         str: Stringified array of the content rows
     """
-    latest_base = (
-        current_session.query(Version).filter(Version.base_id == None).all()[0]
-    )
+    latest_base = get_latest_base()
     res = []
     for section in get_content(str(section_id), latest_base.version_id):
         res.append(section.to_dict())

@@ -319,3 +319,11 @@ def get_revision_diff(base_id: int, new_id: int):
         .filter(old_sections.heading != new_sections.heading)
     ).all()
     return results
+
+def get_latest_base() -> Version:
+    try:
+        return (
+            current_session.query(Version).filter(Version.base_id == None).all()[0]
+        )
+    except Exception:
+        return None
