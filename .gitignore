@@ -4,3 +4,4 @@ frontend/yarn-error.log
 .vscode
 .docker/docker-compose.local.yml
 backend/venv/
+venv/

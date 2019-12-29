@@ -1,6 +1,7 @@
 version: '3'
 services:
   congress_parser_api:
+    image: congress_parser_api:latest
     container_name: congress_parser_api
     tty: true
     stdin_open: true
@@ -27,6 +28,7 @@ services:
     - "-m"
     - "billparser"
   congress_viewer_app:
+    image: congress_viewer_app:latest
     container_name: congress_viewer_app
     tty: true
     stdin_open: true

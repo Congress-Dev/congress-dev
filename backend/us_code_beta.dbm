@@ -58,7 +58,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	</constraint>
 </table>
 
-<table name="legislation" layer="0" collapse-mode="2" max-obj-count="6">
+<table name="legislation" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="public"/>
 	<role name="postgres"/>
 	<position x="1200" y="420"/>
@@ -76,9 +76,22 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		<type name="integer" length="0"/>
 		<comment><![CDATA[The bill number; S. 1234]]></comment>
 	</column>
+	<column name="title">
+		<type name="character varying" length="0"/>
+		<comment><![CDATA[The title of the bill]]></comment>
+	</column>
 	<constraint name="legislation_pk" type="pk-constr" table="public.legislation">
 		<columns names="legislation_id" ref-type="src-columns"/>
 	</constraint>
+
+	<customidxs object-type="column">
+		<object name="congress_id" index="4"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="congress_fk" index="1"/>
+		<object name="legislation_uq" index="2"/>
+	</customidxs>
 </table>
 
 <usertype name="legislation_chamber" configuration="enumeration">
