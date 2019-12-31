@@ -84,7 +84,7 @@ class Version(Base):
     __tablename__ = "version"
 
     version_id = Column(Integer, primary_key=True)
-    base_id = Column(Integer, ForeignKey("version.version_id", ondelete="CASCADE"))
+    base_id = Column(Integer, ForeignKey("version.version_id", ondelete="CASCADE"), index=True)
 
     def to_dict(self):
         boi = {
@@ -183,6 +183,7 @@ class LegislationContent(Base):
     legislation_version_id = Column(
         Integer,
         ForeignKey("legislation_version.legislation_version_id", ondelete="CASCADE"),
+        index=True
     )
 
     # TODO: Fix these to use new names
@@ -251,7 +252,7 @@ class USCChapter(Base):
     usc_release_id = Column(
         Integer, ForeignKey("usc_release.usc_release_id", ondelete="CASCADE")
     )
-    version_id = Column(Integer, ForeignKey("version.version_id", ondelete="CASCADE"))
+    version_id = Column(Integer, ForeignKey("version.version_id", ondelete="CASCADE"), index=True)
 
     def to_dict(self):
         boi = {
@@ -281,9 +282,9 @@ class USCSection(Base):
     heading = Column(String)
 
     usc_chapter_id = Column(
-        Integer, ForeignKey("usc_chapter.usc_chapter_id", ondelete="CASCADE")
+        Integer, ForeignKey("usc_chapter.usc_chapter_id", ondelete="CASCADE"), index=True
     )
-    version_id = Column(Integer, ForeignKey("version.version_id", ondelete="CASCADE"))
+    version_id = Column(Integer, ForeignKey("version.version_id", ondelete="CASCADE"), index=True)
 
     def to_dict(self):
         boi = {
@@ -307,7 +308,7 @@ class USCContent(Base):
 
     usc_content_id = Column(Integer, primary_key=True)
 
-    parent_id = Column(Integer, ForeignKey("usc_content.usc_content_id"))
+    parent_id = Column(Integer, ForeignKey("usc_content.usc_content_id"), index=True)
 
     usc_ident = Column(String)
     usc_guid = Column(String)  # Might be a useless column
@@ -321,9 +322,9 @@ class USCContent(Base):
     content_type = Column(String)
 
     usc_section_id = Column(
-        Integer, ForeignKey("usc_section.usc_section_id", ondelete="CASCADE")
+        Integer, ForeignKey("usc_section.usc_section_id", ondelete="CASCADE"), index=True
     )
-    version_id = Column(Integer, ForeignKey("version.version_id", ondelete="CASCADE"))
+    version_id = Column(Integer, ForeignKey("version.version_id", ondelete="CASCADE"), index=True)
 
     def to_dict(self):
         boi = {
@@ -340,7 +341,10 @@ class USCContent(Base):
             "version": self.version_id,
         }
         return {k: v for (k, v) in boi.items() if v is not None}
-
+try:
+    Index("content_ident", USCContent.usc_ident, USCContent.version_id)
+except:
+    pass
 
 class USCContentDiff(Base):
     """
@@ -361,18 +365,18 @@ class USCContentDiff(Base):
     content_str = Column(String)
     content_type = Column(String)
 
-    usc_content_id = Column(Integer, ForeignKey("usc_content.usc_content_id"))
+    usc_content_id = Column(Integer, ForeignKey("usc_content.usc_content_id"), index=True)
 
     usc_section_id = Column(
-        Integer, ForeignKey("usc_section.usc_section_id", ondelete="CASCADE")
+        Integer, ForeignKey("usc_section.usc_section_id", ondelete="CASCADE"), index=True
     )
     usc_chapter_id = Column(
-        Integer, ForeignKey("usc_chapter.usc_chapter_id", ondelete="CASCADE")
+        Integer, ForeignKey("usc_chapter.usc_chapter_id", ondelete="CASCADE"), index=True
     )
     legislation_content_id = Column(
-        Integer, ForeignKey("legislation_content.legislation_content_id")
+        Integer, ForeignKey("legislation_content.legislation_content_id"), index=True
     )
-    version_id = Column(Integer, ForeignKey("version.version_id", ondelete="CASCADE"))
+    version_id = Column(Integer, ForeignKey("version.version_id", ondelete="CASCADE"), index=True)
 
     def to_dict(self):
 
