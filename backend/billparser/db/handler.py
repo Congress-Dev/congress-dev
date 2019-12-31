@@ -28,9 +28,9 @@ def unidecode_str(input_str: str) -> str:
     return unidecode(input_str or "").replace("--", "-")
 
 
-def open_usc(file):
+def open_usc(file_str):
     lookup = {}
-    usc_root = etree.fromstring(file.read())
+    usc_root = etree.fromstring(file_str)
     lookup["root"] = usc_root
     ids = usc_root.xpath("//*[@identifier]")
     for id in ids:
@@ -75,14 +75,14 @@ def get_number(ident: str) -> float:
         return 0
 
 
-def import_title(chapter_file, chapter_number, version_string, release: int):
+def import_title(chapter_file, chapter_number, version_string, release: USCRelease):
     """
         chapter_file: file pointer to an xml file
     """
     session = Session()
-    release_id = release.usc_release_id
+    release_id = release["usc_release_id"]
 
-    version_id = release.version_id
+    version_id = release["version_id"]
 
     def recursive_content(section_id, content_id, search_element, order):
         # if it has an id it is probably a thingy
@@ -178,7 +178,7 @@ def import_title(chapter_file, chapter_number, version_string, release: int):
     sections = sorted(sections, key=lambda x: get_number(x.split("/")[-1][1:]))
     section_order = 0
     for section in sections:
-        print(section)
+        # print(section)
         sect_elem = chapter_root[section]
         enum = sect_elem[0]
         sect_obj = USCSection(

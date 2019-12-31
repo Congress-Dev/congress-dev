@@ -222,7 +222,13 @@ class USCRelease(Base):
 
     created_at = Column(DateTime(timezone=False), server_default=func.now())
     version_id = Column(Integer, ForeignKey("version.version_id", ondelete="CASCADE"))
+    def to_dict(self):
 
+        boi = {
+            "usc_release_id": self.usc_release_id,
+            "version_id": self.version_id
+        }
+        return {k: v for (k, v) in boi.items() if v is not None and v != {}}
 
 class USCChapter(Base):
     """

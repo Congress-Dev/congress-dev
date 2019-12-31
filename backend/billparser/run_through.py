@@ -51,7 +51,7 @@ filename_regex = re.compile(
 )
 chamb = {"hr": "House", "s": "Senate"}
 BASE_VERSION = 1
-THREADS = int(os.environ.get("PARSE_THREADS", 16))
+THREADS = int(os.environ.get("PARSE_THREADS", -1))
 
 Element = etree.Element
 

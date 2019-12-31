@@ -6,6 +6,9 @@ import sys
 import json
 import zipfile
 from datetime import datetime
+from joblib import Parallel, delayed
+
+THREADS = int(os.environ.get("PARSE_THREADS", -1))
 
 
 def download_path(url: str):
@@ -53,11 +56,13 @@ if __name__ == "__main__":
             files = sorted(
                 files, key=lambda x: get_number(x.split(".")[0].replace("usc", ""))
             )
-            for file in files:
-                import_title(
-                    zip_file.open(file),
+            Parallel(n_jobs=THREADS, verbose=5, backend="multiprocessing")(
+                delayed(import_title)(
+                    zip_file.open(file).read(),
                     file.split(".")[0].replace("usc", ""),
                     rp.get("title"),
-                    release_point,
+                    release_point.to_dict(),
                 )
+                for file in files
+            )
 
