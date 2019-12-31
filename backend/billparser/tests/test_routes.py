@@ -15,15 +15,17 @@ from billparser.__main__ import (
 )
 
 from billparser.db.models import (
-    Chapter,
-    Section,
-    Content,
-    ContentDiff,
+    USCChapter,
+    USCSection,
+    USCContent,
+    USCContentDiff,
     Version,
-    Bill,
-    BillVersion,
-    BillContent,
-    BillTypes,
+    Legislation,
+    LegislationVersion,
+    LegislationContent,
+    LegislationVersionEnum,
+    LegislationChamber,
+    LegislationType,
 )
 
 # This is to ensure that the return values are the same
@@ -36,19 +38,19 @@ class TestRoutes(TestCase):
             Should be returning a dict where the key is the bill, and the value is the bill metadata
         """
         mock_get_bills.return_value = [
-            Bill(
-                bill_id=1,
-                chamber="House",
-                bill_type=BillTypes.Bill,
-                bill_number=1,
-                bill_title="Test House Bill",
+            Legislation(
+                legislation_id=1,
+                legislation_type=LegislationType.Bill,
+                chamber=LegislationChamber.House,
+                title="Test House Bill",
+                number=1
             ),
-            Bill(
-                bill_id=2,
-                chamber="Senate",
-                bill_type=BillTypes.Bill,
-                bill_number=5,
-                bill_title="Test Senate Bill",
+            Legislation(
+                legislation_id=2,
+                legislation_type=LegislationType.Bill,
+                chamber=LegislationChamber.Senate,
+                title="Test Senate Bill",
+                number=5
             ),
         ]
         with app.app.test_request_context():
@@ -83,34 +85,34 @@ class TestRoutes(TestCase):
             Should be returning a dict where the key is the bill, and the value is the bill metadata
             Should also include the given bill versions for the bill
         """
+
+
         mock_get_bills.return_value = [
-            Bill(
-                bill_id=1,
-                chamber="House",
-                bill_type=BillTypes.Bill,
-                bill_number=1,
-                bill_title="Test House Bill",
+            Legislation(
+                legislation_id=1,
+                legislation_type=LegislationType.Bill,
+                chamber=LegislationChamber.House,
+                title="Test House Bill",
+                number=1,
                 versions=[
-                    BillVersion(
-                        bill_version_id=1,
-                        bill_id=1,
-                        bill_version="ih",
-                        base_version_id=1,
+                    LegislationVersion(
+                        legislation_version_id=1,
+                        legislation_id=1,
+                        legislation_version=LegislationVersionEnum.IH,
                     )
                 ],
             ),
-            Bill(
-                bill_id=2,
-                chamber="Senate",
-                bill_type=BillTypes.Bill,
-                bill_number=5,
-                bill_title="Test Senate Bill",
+            Legislation(
+                legislation_id=2,
+                legislation_type=LegislationType.Bill,
+                chamber=LegislationChamber.Senate,
+                title="Test Senate Bill",
+                number=5,
                 versions=[
-                    BillVersion(
-                        bill_version_id=2,
-                        bill_id=2,
-                        bill_version="is",
-                        base_version_id=1,
+                    LegislationVersion(
+                        legislation_version_id=2,
+                        legislation_id=2,
+                        legislation_version=LegislationVersionEnum.IS,
                     )
                 ],
             ),
@@ -131,7 +133,7 @@ class TestRoutes(TestCase):
                                     "bill_version_id": "1",
                                     "bill_id": "1",
                                     "bill_version": "ih",
-                                    "base_version_id": "1",
+                                    # "base_version_id": "1", # This was removed in the translation
                                 }
                             ],
                         },
@@ -146,7 +148,7 @@ class TestRoutes(TestCase):
                                     "bill_version_id": "2",
                                     "bill_id": "2",
                                     "bill_version": "is",
-                                    "base_version_id": "1",
+                                    # "base_version_id": "1", # This was removed in the translation
                                 }
                             ],
                         },
@@ -162,18 +164,17 @@ class TestRoutes(TestCase):
             Should return the bill content objects
         """
         mock_get_bill_contents.return_value = [
-            BillContent(
-                bill_content_id=1,
+            LegislationContent(
+                legislation_content_id=1,
                 parent_id=None,
                 order_number=0,
-                number="1",
                 section_display="SS 1.)",
                 heading="Test heading",
                 content_str="Test content",
-                bill_version_id="1",
+                legislation_version_id=1,
                 content_type="section",
                 action_parse=[],
-            )
+            ),
         ]
         with app.app.test_request_context():
             resp = bill_content("1")
@@ -184,7 +185,7 @@ class TestRoutes(TestCase):
                             "bill_content_id": 1,
                             "content_type": "section",
                             "order": 0,
-                            "number": "1",
+                            # "number": "1", # Removed
                             "display": "SS 1.)",
                             "heading": "Test heading",
                             "content": "Test content",
@@ -201,28 +202,27 @@ class TestRoutes(TestCase):
         """
             Should return the bill content objects, multiple contents
         """
+        self.maxDiff = None
         mock_get_bill_contents.return_value = [
-            BillContent(
-                bill_content_id=1,
+            LegislationContent(
+                legislation_content_id=1,
                 parent_id=None,
                 order_number=0,
-                number="1",
                 section_display="SS 1.)",
                 heading="Test heading",
                 content_str="Test content",
-                bill_version_id="1",
+                legislation_version_id=1,
                 content_type="section",
                 action_parse=[],
             ),
-            BillContent(
-                bill_content_id=2,
+            LegislationContent(
+                legislation_content_id=2,
                 parent_id="1",
                 order_number=0,
-                number="a",
                 section_display="a.)",
                 heading="",
                 content_str="Test subcontent",
-                bill_version_id="1",
+                legislation_version_id=1,
                 content_type="legis-body",
                 action_parse=[],
             ),
@@ -236,7 +236,7 @@ class TestRoutes(TestCase):
                             "bill_content_id": 1,
                             "content_type": "section",
                             "order": 0,
-                            "number": "1",
+                            # "number": "1", # Removed
                             "display": "SS 1.)",
                             "heading": "Test heading",
                             "content": "Test content",
@@ -247,7 +247,7 @@ class TestRoutes(TestCase):
                             "content_type": "legis-body",
                             "order": 0,
                             "parent": "1",
-                            "number": "a",
+                            # "number": "a", # Removed
                             "display": "a.)",
                             "heading": "",
                             "content": "Test subcontent",
@@ -271,27 +271,25 @@ class TestRoutes(TestCase):
             "version": "1",
         }
         mock_get_bill_contents.return_value = [
-            BillContent(
-                bill_content_id=1,
+            LegislationContent(
+                legislation_content_id=1,
                 parent_id=None,
                 order_number=0,
-                number="1",
                 section_display="SS 1.)",
                 heading="Test heading",
                 content_str="Test content",
-                bill_version_id="1",
+                legislation_version_id=1,
                 content_type="section",
                 action_parse=[],
             ),
-            BillContent(
-                bill_content_id=2,
+            LegislationContent(
+                legislation_content_id=2,
                 parent_id=1,
                 order_number=0,
-                number="a",
                 section_display="a.)",
                 heading="",
                 content_str="Test subcontent",
-                bill_version_id="1",
+                legislation_version_id=1,
                 content_type="legis-body",
                 action_parse=[],
             ),
@@ -305,7 +303,7 @@ class TestRoutes(TestCase):
                             "bill_content_id": 1,
                             "content_type": "section",
                             "order": 0,
-                            "number": "1",
+                            #"number": "1", # Removed
                             "display": "SS 1.)",
                             "heading": "Test heading",
                             "content": "Test content",
@@ -316,7 +314,7 @@ class TestRoutes(TestCase):
                                     "content_type": "legis-body",
                                     "order": 0,
                                     "parent": 1,
-                                    "number": "a",
+                                    # "number": "a", # Removed
                                     "display": "a.)",
                                     "heading": "",
                                     "content": "Test subcontent",
@@ -342,11 +340,10 @@ class TestRoutes(TestCase):
             Should return the chapter objects
         """
         mock_get_chapters.return_value = [
-            Chapter(
-                chapter_id=1,
+            USCChapter(
+                usc_chapter_id=1,
                 usc_ident="/usc/1",
-                usc_guid="1-2-3",
-                number="01",
+                short_title="01",
                 document="usc",
                 version_id=1,
             )
@@ -367,12 +364,12 @@ class TestRoutes(TestCase):
             Should return the version objects
         """
         mock_get_versions.return_value = [
-            Version(version_id=1, title="Test - Title", base_id=1, bill_version_id=1)
+            Version(version_id=1, base_id=1)
         ]
         with app.app.test_request_context():
             resp = versions()
             self.assertEqual(
-                json.dumps([{"version_id": 1, "title": "Test - Title", "base_id": 1}]),
+                json.dumps([{"version_id": 1, "title": "Legacy Title", "base_id": 1}]),
                 resp,
                 resp,
             )
@@ -384,13 +381,13 @@ class TestRoutes(TestCase):
         """
         mock_get_versions.return_value = [
             Version(
-                version_id=1, title="Test - Title", base_id=None, bill_version_id=None
+                version_id=1, base_id=None
             )
         ]
         with app.app.test_request_context():
             resp = revisions()
             self.assertEqual(
-                json.dumps([{"version_id": 1, "title": "Test - Title"}]), resp, resp,
+                json.dumps([{"version_id": 1, "title": "Legacy Title"}]), resp, resp,
             )
 
     @mock.patch("billparser.__main__.get_content_versions", return_value=[])
@@ -400,9 +397,9 @@ class TestRoutes(TestCase):
             Should return the version objects without a base id
         """
         mock_get_content_versions.return_value = [
-            Content(
-                content_id=1,
-                section_id=1,
+            USCContent(
+                usc_content_id=1,
+                usc_section_id=1,
                 parent_id=None,
                 usc_ident="/usc/s1/1",
                 usc_guid="1-2-3",
@@ -414,11 +411,11 @@ class TestRoutes(TestCase):
             )
         ]
         mock_get_diffs.return_value = [
-            ContentDiff(
-                diff_id=1,
-                chapter_id=1,
-                section_id=1,
-                content_id=1,
+            USCContentDiff(
+                usc_content_diff_id=1,
+                usc_chapter_id=1,
+                usc_section_id=1,
+                usc_content_id=1,
                 order_number=0,
                 number="1",
                 section_display="test",
@@ -470,13 +467,13 @@ class TestRoutes(TestCase):
             Should return the section objects
         """
         mock_get_sections.return_value = [
-            Section(
-                section_id=1,
+            USCSection(
+                usc_section_id=1,
                 usc_ident="/usc/01/s1",
                 number="1",
                 section_display="S 1.)",
                 heading="Test - Heading",
-                chapter_id=1,
+                usc_chapter_id=1,
                 version_id=1,
             )
         ]
@@ -507,13 +504,13 @@ class TestRoutes(TestCase):
             Should return the section objects
         """
         mock_get_sections.return_value = [
-            Section(
-                section_id=1,
+            USCSection(
+                usc_section_id=1,
                 usc_ident="/usc/01/s1",
                 number="1",
                 section_display="S 1.)",
                 heading="Test - Heading",
-                chapter_id=1,
+                usc_chapter_id=1,
                 version_id=1,
             )
         ]
@@ -547,13 +544,13 @@ class TestRoutes(TestCase):
             Should return the section objects
         """
         mock_get_sections.return_value = [
-            Section(
-                section_id=1,
+            USCSection(
+                usc_section_id=1,
                 usc_ident="/usc/01/s1",
                 number="1",
                 section_display="S 1.)",
                 heading="Test - Heading",
-                chapter_id=1,
+                usc_chapter_id=1,
                 version_id=1,
             )
         ]
@@ -587,9 +584,9 @@ class TestRoutes(TestCase):
             Should return the content objects
         """
         mock_get_content.return_value = [
-            Content(
-                content_id=1,
-                section_id=1,
+            USCContent(
+                usc_content_id=1,
+                usc_section_id=1,
                 parent_id=None,
                 order_number=0,
                 usc_ident="/usc/01/s1",

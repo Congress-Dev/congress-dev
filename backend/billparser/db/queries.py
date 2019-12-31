@@ -9,14 +9,7 @@ from billparser.db.models import (
     LegislationContent,
     LegislationChamber,
     LegislationVersionEnum,
-    USCChapter as Chapter,
-    USCSection as Section,
-    USCContent as Content,
-    USCContentDiff as ContentDiff,
     Version,
-    Legislation as Bill,
-    LegislationVersion as BillVersion,
-    LegislationContent as BillContent,
 )
 from billparser.db.caching import FromCache
 from cachetools import cached, TTLCache

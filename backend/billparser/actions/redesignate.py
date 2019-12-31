@@ -1,4 +1,4 @@
-from billparser.transformer import Session
+from billparser.db.handler import Session
 from billparser.db.models import USCContentDiff, USCSection, USCContent
 from billparser.logger import log
 import re
