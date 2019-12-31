@@ -726,7 +726,7 @@ def parse_archive(path: str) -> List[dict]:
         )
 
     names = sorted(names, key=lambda x: x["bill_number"])
-    names = names[30:35]
+    # names = names[30:35]
     # names = [x for x in names if (x.get('title') == '116 - hr4 - ih')]
     # names = [x for x in names if (x.get('bill_version') == 'enr')]
     frec = Parallel(n_jobs=THREADS, backend="multiprocessing", verbose=5)(
@@ -736,7 +736,7 @@ def parse_archive(path: str) -> List[dict]:
             name,
             {"archive": path.split("/")[-1], "file": name["path"].split("/")[-1]},
         )
-        for name in names[:100]
+        for name in names
     )
     for r in frec:
         rec.extend(r)
