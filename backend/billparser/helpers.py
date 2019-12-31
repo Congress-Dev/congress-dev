@@ -2,7 +2,6 @@ from lxml import etree
 import pandas
 import re
 from billparser.translater import translate_paragraph
-from billparser.transformer import insert_after_element
 
 from unidecode import unidecode
 

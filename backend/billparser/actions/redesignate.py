@@ -1,5 +1,5 @@
 from billparser.transformer import Session
-from billparser.db.models import ContentDiff, Section, Content
+from billparser.db.models import USCContentDiff, USCSection, USCContent
 from billparser.logger import log
 import re
 from billparser.actions import ActionObject
@@ -19,6 +19,11 @@ def redesignate(action_obj: ActionObject, session: "Session") -> None:
     action = action_obj.action
     new_vers_id = action_obj.version_id
     cited_content = action_obj.cited_content
+    legislation_content = action_obj.legislation_content
+    if legislation_content is not None:
+        legislation_id = legislation_content.legislation_content_id
+    else:
+        legislation_id = None
     from_name = name_extract.search(action.get("target", ""))
     to_name = name_extract.search(action.get("redesignation", ""))
     if from_name is None or to_name is None:
@@ -29,19 +34,20 @@ def redesignate(action_obj: ActionObject, session: "Session") -> None:
         log.warn("Not found?")
         return
     chapter = (
-        session.query(Section)
-        .filter(Section.section_id == cited_content.section_id)
+        session.query(USCSection)
+        .filter(USCSection.usc_section_id == cited_content.usc_section_id)
         .limit(1)
         .all()
     )
     if len(chapter) > 0:
-        chapter_id = chapter[0].chapter_id
-        diff = ContentDiff(
-            content_id=cited_content.content_id,
-            section_id=cited_content.section_id,
-            chapter_id=chapter_id,
+        chapter_id = chapter[0].usc_chapter_id
+        diff = USCContentDiff(
+            usc_content_id=cited_content.usc_content_id,
+            usc_section_id=cited_content.usc_section_id,
+            usc_chapter_id=chapter_id,
             version_id=new_vers_id,
             section_display=cited_content.section_display.replace(from_name, to_name),
+            legislation_content_id=legislation_id,
         )
         session.add(diff)
         session.commit()
