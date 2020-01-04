@@ -3,8 +3,8 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.2-beta2" last-position="0,0" last-zoom="1" max-obj-count="15"
-	 default-schema="public" default-owner="postgres">
+<dbmodel pgmodeler-ver="0.9.2-beta2" last-position="0,0" last-zoom="1" max-obj-count="18"
+	 default-owner="postgres">
 <role name="parser"
       password="parser">
 </role>
@@ -47,7 +47,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		<comment><![CDATA[The date given as the release point's date]]></comment>
 	</column>
 	<column name="long_title">
-		<type name="smallint" length="0"/>
+		<type name="character varying" length="0"/>
 		<comment><![CDATA[The longer title of the release]]></comment>
 	</column>
 	<column name="created_at" default-value="now()">
@@ -57,6 +57,12 @@ CAUTION: Do not modify this file unless you know what you are doing.
 		<columns names="usc_release_id" ref-type="src-columns"/>
 	</constraint>
 </table>
+
+<usertype name="legislation_chamber" configuration="enumeration">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<enumeration values="House,Senate"/>
+</usertype>
 
 <table name="legislation" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="public"/>
@@ -83,22 +89,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	<constraint name="legislation_pk" type="pk-constr" table="public.legislation">
 		<columns names="legislation_id" ref-type="src-columns"/>
 	</constraint>
-
-	<customidxs object-type="column">
-		<object name="congress_id" index="4"/>
-	</customidxs>
-
-	<customidxs object-type="constraint">
-		<object name="congress_fk" index="1"/>
-		<object name="legislation_uq" index="2"/>
-	</customidxs>
 </table>
-
-<usertype name="legislation_chamber" configuration="enumeration">
-	<schema name="public"/>
-	<role name="postgres"/>
-	<enumeration values="House,Senate"/>
-</usertype>
 
 <table name="legislation_version" layer="0" collapse-mode="2" max-obj-count="7">
 	<schema name="public"/>
@@ -135,7 +126,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 <table name="congress" layer="0" collapse-mode="2" max-obj-count="4">
 	<schema name="public"/>
 	<role name="postgres"/>
-	<position x="1220" y="700"/>
+	<position x="1340" y="720"/>
 	<column name="congress_id" not-null="true">
 		<type name="integer" length="0"/>
 	</column>
@@ -174,6 +165,10 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 identity-type="ALWAYS">
 		<type name="integer" length="0"/>
 	</column>
+	<column name="base_id">
+		<type name="integer" length="0"/>
+		<comment><![CDATA[The version_id this is based off]]></comment>
+	</column>
 	<constraint name="version_pk" type="pk-constr" table="public.version">
 		<columns names="version_id" ref-type="src-columns"/>
 	</constraint>
@@ -188,7 +183,7 @@ CAUTION: Do not modify this file unless you know what you are doing.
 	 dst-table="public.usc_release"
 	 src-required="false" dst-required="false"/>
 
-<table name="usc_chapter" layer="0" collapse-mode="2" max-obj-count="8">
+<table name="usc_chapter" layer="0" collapse-mode="2" max-obj-count="9">
 	<schema name="public"/>
 	<role name="postgres"/>
 	<position x="100" y="400"/>
@@ -323,7 +318,7 @@ This is a debug column, safe to remove eventually]]></comment>
 	 dst-table="public.usc_section"
 	 src-required="false" dst-required="false"/>
 
-<table name="usc_content" layer="0" collapse-mode="2" max-obj-count="13">
+<table name="usc_content" layer="0" collapse-mode="2" max-obj-count="14">
 	<schema name="public"/>
 	<role name="postgres"/>
 	<comment><![CDATA[For holding the content of the USCode]]></comment>
@@ -362,9 +357,20 @@ This is a debug column, safe to remove eventually]]></comment>
 		<type name="character varying" length="0"/>
 		<comment><![CDATA[The XML tag around the content_str portion]]></comment>
 	</column>
+	<column name="number">
+		<type name="character varying" length="0"/>
+	</column>
 	<constraint name="legislation_content_pk_cp" type="pk-constr" table="public.usc_content">
 		<columns names="usc_content_id" ref-type="src-columns"/>
 	</constraint>
+
+	<customidxs object-type="column">
+		<object name="usc_section_id" index="9"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="usc_section_fk" index="1"/>
+	</customidxs>
 </table>
 
 <relationship name="usc_section_has_many_usc_content" type="rel1n" layer="0"
@@ -411,11 +417,11 @@ This is a debug column, safe to remove eventually]]></comment>
 	 dst-table="public.legislation_version"
 	 src-required="false" dst-required="false"/>
 
-<table name="usc_content_diff" layer="0" collapse-mode="2" max-obj-count="13">
+<table name="usc_content_diff" layer="0" collapse-mode="2" max-obj-count="15">
 	<schema name="public"/>
 	<role name="postgres"/>
 	<comment><![CDATA[For holding the content of the USCode]]></comment>
-	<position x="560" y="760"/>
+	<position x="740" y="780"/>
 	<column name="usc_content_diff_id" not-null="true"
 	 identity-type="ALWAYS">
 		<type name="integer" length="0"/>
@@ -425,10 +431,6 @@ This is a debug column, safe to remove eventually]]></comment>
 	</column>
 	<column name="usc_guid">
 		<type name="character varying" length="0"/>
-	</column>
-	<column name="parent_id">
-		<type name="integer" length="0"/>
-		<comment><![CDATA[Points to the parent legislation_content object]]></comment>
 	</column>
 	<column name="order_number" default-value="0">
 		<type name="integer" length="0"/>
@@ -450,12 +452,15 @@ This is a debug column, safe to remove eventually]]></comment>
 		<type name="character varying" length="0"/>
 		<comment><![CDATA[The XML tag around the content_str portion]]></comment>
 	</column>
+	<column name="number">
+		<type name="character varying" length="0"/>
+	</column>
 	<constraint name="legislation_content_pk_cp_cp" type="pk-constr" table="public.usc_content_diff">
 		<columns names="usc_content_diff_id" ref-type="src-columns"/>
 	</constraint>
 
 	<customidxs object-type="column">
-		<object name="version_id" index="9"/>
+		<object name="version_id" index="8"/>
 	</customidxs>
 
 	<customidxs object-type="constraint">
@@ -481,13 +486,39 @@ This is a debug column, safe to remove eventually]]></comment>
 	 dst-table="public.usc_content_diff"
 	 src-required="false" dst-required="false"/>
 
-<relationship name="usc_chapter_has_many_version" type="rel1n" layer="0"
+<relationship name="version_has_many_usc_chapter" type="rel1n" layer="0"
 	 src-col-pattern="{st}_id"
 	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
 	 src-fk-pattern="{st}_fk"
-	 custom-color="#5c8d97"
-	 src-table="public.usc_chapter"
-	 dst-table="public.version"
+	 custom-color="#87f6d6"
+	 src-table="public.version"
+	 dst-table="public.usc_chapter"
 	 src-required="false" dst-required="false"/>
+
+<relationship name="usc_content_has_many_usc_content_diff" type="rel1n" layer="0"
+	 src-col-pattern="{st}_id"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#054e09"
+	 src-table="public.usc_content"
+	 dst-table="public.usc_content_diff"
+	 src-required="false" dst-required="false">
+	<label ref-type="name-label">
+		<position x="0.979449" y="3.55832"/>
+	</label>
+</relationship>
+
+<relationship name="legislation_has_many_usc_content_diff" type="rel1n" layer="0"
+	 src-col-pattern="{st}_id"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#d1848f"
+	 src-table="public.legislation"
+	 dst-table="public.usc_content_diff"
+	 src-required="false" dst-required="false">
+	<label ref-type="name-label">
+		<position x="2.68229" y="1.69549"/>
+	</label>
+</relationship>
 
 </dbmodel>
