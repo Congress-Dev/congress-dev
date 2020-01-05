@@ -6,8 +6,7 @@ services:
     - STAGE=prod
     - db_host=10.0.0.248:5432
     - db_table=us_code_beta
-    ports:
-    - "9091:9090"
+    ports: ["9091:9090"]
   congress_viewer_app:
     container_name: beta_congress_viewer_app
     volumes:
@@ -16,8 +15,7 @@ services:
     - "yarn"
     command:
     - "build"
-    ports:
-    - "3000:3000"
+    ports: ["3001:3000"]
   congress_postgres:
     container_name: beta_congress_postgres
     image: tianon/true
