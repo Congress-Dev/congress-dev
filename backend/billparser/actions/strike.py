@@ -1,9 +1,8 @@
-from billparser.transformer import Session
-from billparser.db.models import ContentDiff, Section, Content
+from billparser.db.handler import Session
+from billparser.db.models import USCContentDiff, USCSection, USCContent
 from billparser.logger import log
 import re
 from billparser.actions import ActionObject
-
 
 
 def strike_section(action_obj: ActionObject, session: "Session") -> None:
@@ -16,32 +15,38 @@ def strike_section(action_obj: ActionObject, session: "Session") -> None:
         session (Session): Current database session
     """
     action = action_obj.action
+    legislation_content = action_obj.legislation_content
+    if legislation_content is not None:
+        legislation_id = legislation_content.legislation_content_id
+    else:
+        legislation_id = None
     new_vers_id = action_obj.version_id
     cited_content = action_obj.cited_content
     """Recursively looks for all contents and marks them as deleted"""
     chapter = (
-        session.query(Section)
-        .filter(Section.section_id == cited_content.section_id)
+        session.query(USCSection)
+        .filter(USCSection.usc_section_id == cited_content.usc_section_id)
         .limit(1)
         .all()
     )
     if len(chapter) > 0:
-        chapter_id = chapter[0].chapter_id
+        chapter_id = chapter[0].usc_chapter_id
         children = (
-            session.query(Content)
-            .filter(Content.usc_ident.like(cited_content.usc_ident + "%"))
+            session.query(USCContent)
+            .filter(USCContent.usc_ident.like(cited_content.usc_ident + "%"))
             .all()
         )
         log.debug("Found", len(children), "children")
         for child in children:
-            diff = ContentDiff(
-                content_id=child.content_id,
-                section_id=cited_content.section_id,
-                chapter_id=chapter_id,
+            diff = USCContentDiff(
+                usc_content_id=child.usc_content_id,
+                usc_section_id=cited_content.usc_section_id,
+                usc_chapter_id=chapter_id,
                 version_id=new_vers_id,
                 section_display="",
                 heading="",
                 content_str="",
+                legislation_content_id=legislation_id,
             )
             session.add(diff)
     session.commit()
@@ -89,27 +94,35 @@ def strike_text(action_obj: ActionObject, session: "Session") -> None:
     action = action_obj.action
     cited_content = action_obj.cited_content
     new_vers_id = action_obj.version_id
+    legislation_content = action_obj.legislation_content
+    if legislation_content is not None:
+        legislation_id = legislation_content.legislation_content_id
+    else:
+        legislation_id = None
     to_strike = action.get("to_remove_text", None)
     to_replace = action.get("to_replace", "")
     chapter = (
-        session.query(Section)
-        .filter(Section.section_id == cited_content.section_id)
+        session.query(USCSection)
+        .filter(USCSection.usc_section_id == cited_content.usc_section_id)
         .limit(1)
         .all()
     )
     diff = None
     if len(chapter) > 0:
-        chapter_id = chapter[0].chapter_id
+        chapter_id = chapter[0].usc_chapter_id
         if to_strike is not None:
             if cited_content.heading is not None and to_strike in cited_content.heading:
-                heading_diff = strike_emulation(to_strike, to_replace, cited_content.heading)
+                heading_diff = strike_emulation(
+                    to_strike, to_replace, cited_content.heading
+                )
                 if heading_diff != cited_content.heading:
-                    diff = ContentDiff(
-                        content_id=cited_content.content_id,
-                        section_id=cited_content.section_id,
-                        chapter_id=chapter_id,
+                    diff = USCContentDiff(
+                        usc_content_id=cited_content.usc_content_id,
+                        usc_section_id=cited_content.usc_section_id,
+                        usc_chapter_id=chapter_id,
                         version_id=new_vers_id,
                         heading=heading_diff,
+                        legislation_content_id=legislation_id,
                     )
             elif (
                 cited_content.content_str is not None
@@ -119,12 +132,13 @@ def strike_text(action_obj: ActionObject, session: "Session") -> None:
                     to_strike, to_replace, cited_content.content_str
                 )
                 if content_diff != cited_content.content_str:
-                    diff = ContentDiff(
-                        content_id=cited_content.content_id,
-                        section_id=cited_content.section_id,
-                        chapter_id=chapter_id,
+                    diff = USCContentDiff(
+                        usc_content_id=cited_content.usc_content_id,
+                        usc_section_id=cited_content.usc_section_id,
+                        usc_chapter_id=chapter_id,
                         version_id=new_vers_id,
                         content_str=content_diff,
+                        legislation_content_id=legislation_id,
                     )
     if diff is not None:
         session.add(diff)

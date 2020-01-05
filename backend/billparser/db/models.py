@@ -1,6 +1,16 @@
 import enum
 
-from sqlalchemy import Boolean, Column, Enum, ForeignKey, Integer, String, DateTime
+from sqlalchemy import (
+    Boolean,
+    Column,
+    Enum,
+    ForeignKey,
+    Integer,
+    String,
+    DateTime,
+    Date,
+    UniqueConstraint,
+)
 from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import JSONB, ARRAY
 from sqlalchemy.ext.declarative import declarative_base
@@ -18,181 +28,181 @@ class CastingArray(ARRAY):
         return sa.cast(bindvalue, self)
 
 
-class BillTypes(enum.Enum):
-    Bill = ""
-    ConRes = "Continuing Resolution"
+class LegislationType(enum.Enum):
+    Bill = "Bill"
+    CRes = "Continuing Resolution"
     Res = "Resolution"
     JRes = "Joint Resolution"
 
 
-# This will represent the basic information about each bill
-class Bill(CacheableMixin, Base):
-    cache_label = "default"
-    cache_regions = regions
-    cache_pk = "bill_id"  # for custom pk
-    query_class = query_callable(regions)
-    __tablename__ = "bill"
-    bill_id = Column(Integer, primary_key=True)
-
-    chamber = Column(String, index=True)
-
-    bill_type = Column(Enum(BillTypes))
-    bill_number = Column(Integer, index=True)
-    bill_title = Column(String)
-    versions = relationship("BillVersion")
+class LegislationChamber(enum.Enum):
+    House = "House"
+    Senate = "Senate"
 
 
-# Each version of the bill, content diffs will reference this.
-class BillVersion(CacheableMixin, Base):
-    cache_label = "default"
-    cache_regions = regions
-    cache_pk = "bill_version_id"  # for custom pk
-    query_class = query_callable(regions)
-    __tablename__ = "bill_version"
-    bill_version_id = Column(Integer, primary_key=True)
-    bill_id = Column(Integer, ForeignKey("bill.bill_id", ondelete="CASCADE"))
-    bill_version = Column(String)
-    base_version_id = Column(
-        Integer, ForeignKey("version.version_id", ondelete="CASCADE")
-    )
-    bill = relationship("Bill", back_populates="versions")
+# https://www.senate.gov/legislative/KeytoVersionsofPrintedLegislation.htm
+class LegislationVersionEnum(enum.Enum):
+    IS = "IS"  # Introduced in the Senate
+    IH = "IH"  # Introduced in the House
+    RAS = "RAS"  # Referred with Amendments Senate
+    RAH = "RAH"  # Referred with Amendments House
+    RFS = "RFS"  # Referred in Senate
+    RFH = "RFH"  # Referred in House
+    RDS = "RDS"  # Received in Senate
+    RHS = "RHS"  # Received in House
+    RCS = "RCS"  # Reference Change Senate
+    RCH = "RCH"  # Reference Change House
+    RS = "RS"  # Reported in the Senate
+    RH = "RH"  # Reported in the House
+    PCS = "PCS"  # Placed on Calendar Senate
+    PCH = "PCH"  # Placed on Calendar House
+    CPS = "CPS"  # Considered and Passed Senate
+    CPH = "CPH"  # Considered and Passed House
+    EAS = "EAS"  # Engrossed amendment Senate
+    EAH = "EAH"  # Engrossed amendment House
+    ES = "ES"  # Engrossed in the Senate
+    EH = "EH"  # Engrossed in the House
+    ENR = "ENR"  # Enrolled
 
 
-# Versions of the USCODE
-class Version(CacheableMixin, Base):
-    cache_label = "default"
-    cache_regions = regions
-    cache_pk = "version_id"  # for custom pk
-    query_class = query_callable(regions)
+class Congress(Base):
+    """
+        Holds the relationships for the Congress sessions
+    """
+
+    __tablename__ = "congress"
+
+    congress_id = Column(Integer, primary_key=True)
+    session_number = Column(Integer)
+
+    start_year = Column(Integer)
+    end_year = Column(Integer)
+
+
+class Version(Base):
+
     __tablename__ = "version"
+
     version_id = Column(Integer, primary_key=True)
-
-    title = Column(String)
-
-    base_id = Column(Integer, ForeignKey("version.version_id", ondelete="CASCADE"))
-
-    bill_version_id = Column(
-        Integer,
-        ForeignKey("bill_version.bill_version_id", ondelete="CASCADE"),
-        index=True,
+    base_id = Column(
+        Integer, ForeignKey("version.version_id", ondelete="CASCADE"), index=True
     )
 
     def to_dict(self):
         boi = {
             "version_id": self.version_id,
-            "title": self.title,
+            "title": "Legacy Title",
             "base_id": self.base_id,
         }
         return {k: v for (k, v) in boi.items() if v is not None}
 
 
-class Chapter(CacheableMixin, Base):
-    cache_label = "default"
-    cache_regions = regions
-    cache_pk = "chapter_id"  # for custom pk
-    query_class = query_callable(regions)
-    __tablename__ = "chapter"
+class Legislation(Base):
+    """
+    Represents a single piece of legislation, attached will be LegislationVersions
+    This will be the one that holds the references to the sponsers/cosponsers
+    """
 
-    # Each version of the chapter will be put into the database
-    chapter_id = Column(Integer, primary_key=True)
+    __tablename__ = "legislation"
+    __table_args__ = (
+        UniqueConstraint("chamber", "number", "legislation_type", name="unq_bill"),
+    )
+    legislation_id = Column(Integer, primary_key=True)
 
-    usc_ident = Column(String)
-    usc_guid = Column(String)
-    # T1-49
-    number = Column(String)
+    chamber = Column(Enum(LegislationChamber), index=True)
+    legislation_type = Column(Enum(LegislationType))
 
-    # The header for this title
-    name = Column(String)
+    number = Column(Integer)
+    title = Column(String)
 
-    # usc only right now
-    document = Column(String)
-
-    # Version String
+    congress_id = Column(
+        Integer, ForeignKey("congress.congress_id", ondelete="CASCADE")
+    )
     version_id = Column(Integer, ForeignKey("version.version_id", ondelete="CASCADE"))
+    versions = versions = relationship("LegislationVersion")
 
     def to_dict(self):
         boi = {
-            "chapter_id": self.chapter_id,
-            "ident": self.usc_ident,
-            "number": self.number,
-            "name": self.name,
-            "version": self.version_id,
+            "bill_id": str(self.legislation_id),
+            "chamber": self.chamber.value,
+            "bill_type": "BillTypes." + self.legislation_type.value,
+            "bill_number": str(self.number),
+            "bill_title": self.title,
         }
         return {k: v for (k, v) in boi.items() if v is not None}
 
 
-class Section(CacheableMixin, Base):
-    cache_label = "default"
-    cache_regions = regions
-    cache_pk = "section_id"  # for custom pk
-    query_class = query_callable(regions)
-    __tablename__ = "sections"
+class LegislationVersion(Base):
+    """
+    Represents a single version of legislation, as described at one of the 11 possible version types
+    """
 
-    section_id = Column(Integer, primary_key=True)
-    usc_ident = Column(String)
-    usc_guid = Column(String)
-    # value attrib of num element
-    number = Column(String)
-    # innertext of num element
-    section_display = Column(String)
+    __tablename__ = "legislation_version"
 
-    # inner text of heading tag
-    heading = Column(String)
-    chapter_id = Column(Integer, ForeignKey("chapter.chapter_id", ondelete="CASCADE"))
+    legislation_version_id = Column(Integer, primary_key=True)
 
-    # Version String
-    version_id = Column(Integer, ForeignKey("version.version_id", ondelete="CASCADE"))
+    legislation_version = Column(Enum(LegislationVersionEnum), index=True)
+
+    effective_date = Column(Date)
+
+    legislation_id = Column(
+        Integer,
+        ForeignKey("legislation.legislation_id", ondelete="CASCADE"),
+        index=True,
+    )
+    version_id = Column(
+        Integer, ForeignKey("version.version_id", ondelete="CASCADE"), index=True
+    )
+
+    created_at = Column(DateTime(timezone=False), server_default=func.now())
+    completed_at = Column(DateTime)
 
     def to_dict(self):
         boi = {
-            "section_id": self.section_id,
-            "ident": self.usc_ident,
-            "number": self.number,
-            "display": self.section_display,
-            "heading": self.heading,
-            "chapter_id": self.chapter_id,
-            "version": self.version_id,
+            "bill_version_id": str(self.legislation_version_id),
+            "bill_id": str(self.legislation_id),
+            "bill_version": self.legislation_version.value.lower(),
         }
         return {k: v for (k, v) in boi.items() if v is not None}
 
 
-class BillContent(CacheableMixin, Base):
-    cache_label = "default"
-    cache_regions = regions
-    cache_pk = "bill_content_id"  # for custom pk
-    query_class = query_callable(regions)
-    __tablename__ = "bill_content"
+try:
+    Index(
+        "legis_version",
+        LegislationVersion.legislation_version,
+        LegislationVersion.legislation_id,
+    )
+except:
+    pass
 
-    bill_content_id = Column(Integer, primary_key=True)
+
+class LegislationContent(Base):
+    __tablename__ = "legislation_content"
+
+    legislation_content_id = Column(Integer, primary_key=True)
+
     parent_id = Column(
-        Integer,
-        ForeignKey("bill_content.bill_content_id", ondelete="CASCADE"),
-        index=True,
+        Integer, ForeignKey("legislation_content.legislation_content_id")
     )
 
-    order_number = Column(Integer)
+    lc_ident = Column(String)  # Will be used to identify differences between versions
 
-    # value attrib of num element
-    number = Column(String)
-    # innertext of num element
+    order_number = Column(Integer, default=0)
+
     section_display = Column(String)
-
-    # inner text of heading tag
     heading = Column(String)
-
     content_str = Column(String)
-    # Version String
-    bill_version_id = Column(
-        Integer,
-        ForeignKey("bill_version.bill_version_id", ondelete="CASCADE"),
-        index=True,
-    )
-
     content_type = Column(String)
 
-    # parsed data
     action_parse = Column(CastingArray(JSONB))
 
+    legislation_version_id = Column(
+        Integer,
+        ForeignKey("legislation_version.legislation_version_id", ondelete="CASCADE"),
+        index=True,
+    )
+
+    # TODO: Fix these to use new names
     def to_dict(self):
         ap = {}
         for obj in self.action_parse:
@@ -200,56 +210,152 @@ class BillContent(CacheableMixin, Base):
             ap[keys[0]] = obj.get("changed", False)
 
         boi = {
-            "bill_content_id": self.bill_content_id,
+            "bill_content_id": self.legislation_content_id,
             "content_type": self.content_type,
             "order": self.order_number,
             "parent": self.parent_id,
-            "number": self.number,
+            # "number": self.number,
             "display": self.section_display,
             "heading": self.heading,
             "content": self.content_str,
-            "version": self.bill_version_id,
+            "version": str(self.legislation_version_id),
             "ap": ap,
         }
         return {k: v for (k, v) in boi.items() if v is not None and v != {}}
 
 
-class Content(CacheableMixin, Base):
-    cache_label = "default"
-    cache_regions = regions
-    cache_pk = "content_id"  # for custom pk
-    query_class = query_callable(regions)
-    __tablename__ = "content"
+class USCRelease(Base):
+    """
+    Represents a release point of the USCode, as described by the prior release points page
+    """
 
-    content_id = Column(Integer, primary_key=True, index=True)
-    section_id = Column(Integer, ForeignKey("sections.section_id", ondelete="CASCADE"))
-    parent_id = Column(Integer, ForeignKey("content.content_id", ondelete="CASCADE"))
+    __tablename__ = "usc_release"
 
-    order_number = Column(Integer)
+    usc_release_id = Column(Integer, primary_key=True)
+
+    short_title = Column(String)
+    effective_date = Column(Date)
+    long_title = Column(String)
+
+    created_at = Column(DateTime(timezone=False), server_default=func.now())
+    version_id = Column(Integer, ForeignKey("version.version_id", ondelete="CASCADE"))
+
+    def to_dict(self):
+
+        boi = {"usc_release_id": self.usc_release_id, "version_id": self.version_id}
+        return {k: v for (k, v) in boi.items() if v is not None and v != {}}
+
+
+class USCChapter(Base):
+    """
+    A single chapter in the USC for a given release point
+    """
+
+    __tablename__ = "usc_chapter"
+
+    usc_chapter_id = Column(Integer, primary_key=True)
+
+    short_title = Column(String)
+    long_title = Column(String)
+
+    document = Column(String)
+
     usc_ident = Column(String)
-    usc_guid = Column(String)
 
-    # value attrib of num element
-    number = Column(String)
-    # innertext of num element
-    section_display = Column(String)
+    created_at = Column(DateTime(timezone=False), server_default=func.now())
 
-    # inner text of heading tag
-    heading = Column(String)
-
-    content_str = Column(String)
-    # Version String
+    usc_release_id = Column(
+        Integer, ForeignKey("usc_release.usc_release_id", ondelete="CASCADE")
+    )
     version_id = Column(
         Integer, ForeignKey("version.version_id", ondelete="CASCADE"), index=True
     )
 
-    content_type = Column(String)
+    def to_dict(self):
+        boi = {
+            "chapter_id": self.usc_chapter_id,
+            "ident": self.usc_ident,
+            "number": self.short_title,
+            "name": self.long_title,
+            "version": self.version_id,
+        }
+        return {k: v for (k, v) in boi.items() if v is not None}
+
+
+class USCSection(Base):
+    """
+    A section of a chapter in the usc code
+    """
+
+    __tablename__ = "usc_section"
+
+    usc_section_id = Column(Integer, primary_key=True)
+
+    usc_ident = Column(String)
+    usc_guid = Column(String)  # Might be a useless column
+
+    number = Column(String)
+    section_display = Column(String)
+    heading = Column(String)
+
+    usc_chapter_id = Column(
+        Integer,
+        ForeignKey("usc_chapter.usc_chapter_id", ondelete="CASCADE"),
+        index=True,
+    )
+    version_id = Column(
+        Integer, ForeignKey("version.version_id", ondelete="CASCADE"), index=True
+    )
 
     def to_dict(self):
         boi = {
-            "content_id": self.content_id,
+            "section_id": self.usc_section_id,
+            "ident": self.usc_ident,
+            "number": self.number,
+            "display": self.section_display,
+            "heading": self.heading,
+            "chapter_id": self.usc_chapter_id,
+            "version": self.version_id,
+        }
+        return {k: v for (k, v) in boi.items() if v is not None}
+
+
+class USCContent(Base):
+    """
+    A content of a chapter in the usc code
+    """
+
+    __tablename__ = "usc_content"
+
+    usc_content_id = Column(Integer, primary_key=True)
+
+    parent_id = Column(Integer, ForeignKey("usc_content.usc_content_id"), index=True)
+
+    usc_ident = Column(String)
+    usc_guid = Column(String)  # Might be a useless column
+
+    order_number = Column(Integer, default=0)
+
+    number = Column(String)
+    section_display = Column(String)
+    heading = Column(String)
+    content_str = Column(String)
+    content_type = Column(String)
+
+    usc_section_id = Column(
+        Integer,
+        ForeignKey("usc_section.usc_section_id", ondelete="CASCADE"),
+        index=True,
+    )
+    version_id = Column(
+        Integer, ForeignKey("version.version_id", ondelete="CASCADE"), index=True
+    )
+
+    def to_dict(self):
+        boi = {
+            "content_id": self.usc_content_id,
             "content_type": self.content_type,
-            "section_id": self.section_id,
+            "section_id": self.usc_section_id,
             "order": self.order_number,
             "parent": self.parent_id,
             "ident": self.usc_ident,
@@ -262,28 +368,48 @@ class Content(CacheableMixin, Base):
         return {k: v for (k, v) in boi.items() if v is not None}
 
 
-# This only has data for the column that changes.
-class ContentDiff(CacheableMixin, Base):
-    cache_label = "default"
-    cache_regions = regions
-    cache_pk = "diff_id"  # for custom pk
-    query_class = query_callable(regions)
-    __tablename__ = "content_diff"
+try:
+    Index("content_ident", USCContent.usc_ident, USCContent.version_id)
+except:
+    pass
 
-    diff_id = Column(Integer, primary_key=True)
-    content_id = Column(Integer, ForeignKey("content.content_id", ondelete="CASCADE"))
-    section_id = Column(Integer, ForeignKey("sections.section_id", ondelete="CASCADE"))
-    chapter_id = Column(Integer, ForeignKey("chapter.chapter_id", ondelete="CASCADE"))
+
+class USCContentDiff(Base):
+    """
+    A contentdiff of a specific content
+    """
+
+    __tablename__ = "usc_content_diff"
+
+    usc_content_diff_id = Column(Integer, primary_key=True)
+
+    usc_ident = Column(String)
+    usc_guid = Column(String)  # Might be a useless column
+
     order_number = Column(Integer)
     number = Column(String)
-    # innertext of num element
     section_display = Column(String)
-
-    # inner text of heading tag
     heading = Column(String)
-
     content_str = Column(String)
-    # Version String
+    content_type = Column(String)
+
+    usc_content_id = Column(
+        Integer, ForeignKey("usc_content.usc_content_id"), index=True
+    )
+
+    usc_section_id = Column(
+        Integer,
+        ForeignKey("usc_section.usc_section_id", ondelete="CASCADE"),
+        index=True,
+    )
+    usc_chapter_id = Column(
+        Integer,
+        ForeignKey("usc_chapter.usc_chapter_id", ondelete="CASCADE"),
+        index=True,
+    )
+    legislation_content_id = Column(
+        Integer, ForeignKey("legislation_content.legislation_content_id"), index=True
+    )
     version_id = Column(
         Integer, ForeignKey("version.version_id", ondelete="CASCADE"), index=True
     )
@@ -291,10 +417,10 @@ class ContentDiff(CacheableMixin, Base):
     def to_dict(self):
 
         boi = {
-            "id": self.diff_id,
-            "content_id": self.content_id,
-            "section_id": self.section_id,
-            "chapter_id": self.chapter_id,
+            "id": self.usc_content_diff_id,
+            "content_id": self.usc_content_id,
+            "section_id": self.usc_section_id,
+            "chapter_id": self.usc_chapter_id,
             "order": self.order_number,
             "number": self.number,
             "display": self.section_display,
@@ -303,17 +429,3 @@ class ContentDiff(CacheableMixin, Base):
             "version": self.version_id,
         }
         return {k: v for (k, v) in boi.items() if v is not None}
-
-
-class BillIngestion(Base):
-    __tablename__ = "bill_ingestion"
-    bill_ingestion_id = Column(Integer, primary_key=True)
-    archive_name = Column(String)
-    archive_path = Column(String)
-    checksum = Column(String)
-    created_at = Column(DateTime, server_default=func.now())
-    completed_at = Column(DateTime)
-    bill_version_id = Column(
-        Integer, ForeignKey("bill_version.bill_version_id"), index=True
-    )
-

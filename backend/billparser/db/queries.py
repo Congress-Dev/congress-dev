@@ -1,13 +1,15 @@
 from flask_sqlalchemy_session import current_session
 from billparser.db.models import (
-    Chapter,
-    Section,
-    Content,
-    ContentDiff,
+    USCChapter,
+    USCSection,
+    USCContent,
+    USCContentDiff,
+    Legislation,
+    LegislationVersion,
+    LegislationContent,
+    LegislationChamber,
+    LegislationVersionEnum,
     Version,
-    Bill,
-    BillVersion,
-    BillContent,
 )
 from billparser.db.caching import FromCache
 from cachetools import cached, TTLCache
@@ -30,23 +32,24 @@ if windows:
 
 
 @cached(cache=TTLCache(maxsize=512, ttl=CACHE_TIME))
-def get_chapters(version_id=DEFAULT_VERSION_ID) -> List[Chapter]:
+def get_chapters(version_id=DEFAULT_VERSION_ID) -> List[USCChapter]:
     """
     Gets all the Chapters for the current version
 
     Returns:
-        List[Chapter]: A list of all the
+        List[USCChapter]: A list of all the
     """
+    latest_base = get_latest_base()
     results = (
-        current_session.query(Chapter)
-        .filter(Chapter.version_id == DEFAULT_VERSION_ID)
+        current_session.query(USCChapter)
+        .filter(USCChapter.version_id == latest_base.version_id)
         .all()
     )
     return results
 
 
 @cached(cache=TTLCache(maxsize=512, ttl=CACHE_TIME))
-def get_bills(house: int, senate: int, query: str, incl: str, decl: str) -> List[Bill]:
+def get_bills(house: int, senate: int, query: str, incl: str, decl: str) -> List[Legislation]:
     """
     Gets the Bill rows according to the filters.
 
@@ -58,32 +61,35 @@ def get_bills(house: int, senate: int, query: str, incl: str, decl: str) -> List
         decl (str): Versions to exclude
 
     Returns:
-        List[Bill]: Bill objects that pass the above filters
+        List[Legislation]: Bill objects that pass the above filters
     """
-    results = current_session.query(Bill).join(BillVersion)
+    results = current_session.query(Legislation).join(LegislationVersion)
     if house != 1:
-        results = results.filter(Bill.chamber != "House")
+        results = results.filter(Legislation.chamber != LegislationChamber.House)
     if senate != 1:
-        results = results.filter(Bill.chamber != "Senate")
+        results = results.filter(Legislation.chamber != LegislationChamber.Senate)
     if len(query) > 0:
         results = results.filter(
             or_(
-                Bill.bill_title.ilike(f"%{query}%"),
-                cast(Bill.bill_number, String).like(
-                    re.sub(r"[^0-9\s]", "", query).strip()
-                ),
+                Legislation.title.ilike(f"%{query}%"),
+                cast(Legislation.number, String).like(re.sub(r"[^0-9\s]", "", query).strip()),
             )
         )
     if incl != "":
-        results = results.filter(BillVersion.bill_version.in_(incl.split(",")))
+        incl_set = [
+            LegislationVersionEnum(x.upper())
+            for x in incl.split(",")
+            if x.upper() in LegislationVersionEnum.__members__
+        ]
+        results = results.filter(LegislationVersion.legislation_version.in_(incl_set))
     if decl != "":
-        results = results.filter(~BillVersion.bill_version.in_(decl.split(",")))
-    results = (
-        results.order_by(Bill.bill_number)
-        .limit(100)
-        .options(FromCache("default"))
-        .all()
-    )
+        decl_set = [
+            LegislationVersionEnum(x.upper())
+            for x in decl.split(",")
+            if x.upper() in LegislationVersionEnum.__members__
+        ]
+        results = results.filter(~LegislationVersion.legislation_version.in_(decl_set))
+    results = results.order_by(Legislation.number).limit(100).all()
     return results
 
 
@@ -112,7 +118,7 @@ def get_revisions() -> List[Version]:
 
 
 @cached(cache=TTLCache(maxsize=512, ttl=CACHE_TIME))
-def get_latest_sections(chapter_number: str) -> List[Section]:
+def get_latest_sections(chapter_number: str) -> List[USCSection]:
     """
     Gets the sections for the given Chapter, from the first USCode revision in the table
 
@@ -120,27 +126,27 @@ def get_latest_sections(chapter_number: str) -> List[Section]:
         chapter_number (str): Given Chapter.number to look for
 
     Returns:
-        List[Section]: List of Sections from the given Chapter
+        List[USCSection]: List of Sections from the given Chapter
     """
     latest_base = (
         current_session.query(Version).filter(Version.base_id == None).all()[0]
     )
     chapter = (
-        current_session.query(Chapter)
-        .filter(Chapter.version_id == latest_base.version_id)
-        .filter(Chapter.number == chapter_number)
+        current_session.query(USCChapter)
+        .filter(USCChapter.version_id == latest_base.version_id)
+        .filter(USCChapter.short_title == chapter_number)
         .first()
     )
     results = (
-        current_session.query(Section)
-        .filter(Section.chapter_id == chapter.chapter_id)
+        current_session.query(USCSection)
+        .filter(USCSection.usc_chapter_id == chapter.usc_chapter_id)
         .all()
     )
     return results
 
 
 @cached(cache=TTLCache(maxsize=512, ttl=CACHE_TIME))
-def get_sections(chapter_id: int, version_id: int) -> List[Section]:
+def get_sections(chapter_id: int, version_id: int) -> List[USCSection]:
     """
     Gets the sections from the chapter and version id
 
@@ -149,18 +155,18 @@ def get_sections(chapter_id: int, version_id: int) -> List[Section]:
         version_id (int): Version id to look at
 
     Returns:
-        List[Section]: List of sections that match the criteria
+        List[USCSection]: List of sections that match the criteria
     """
     results = (
-        current_session.query(Section)
-        .filter(Section.chapter_id == chapter_id, Section.version_id == version_id)
+        current_session.query(USCSection)
+        .filter(USCSection.usc_chapter_id == chapter_id, USCSection.version_id == version_id)
         .all()
     )
     return results
 
 
 @cached(cache=TTLCache(maxsize=512, ttl=CACHE_TIME))
-def get_latest_content(chapter_number: str, section_number: str) -> List[Content]:
+def get_latest_content(chapter_number: str, section_number: str) -> List[USCContent]:
     """
     Converts a chapter number and section number into chapter and version ids
     Then calls the get_content function with those arguments
@@ -170,29 +176,27 @@ def get_latest_content(chapter_number: str, section_number: str) -> List[Content
         section_number (str): The Section number to search for
 
     Returns:
-        List[Content]: List of Contents from the given section
+        List[USCContent]: List of Contents from the given section
     """
-    latest_base = (
-        current_session.query(Version).filter(Version.base_id == None).all()[0]
-    )
+    latest_base = get_latest_base()
     chapter = (
-        current_session.query(Chapter)
-        .filter(Chapter.version_id == latest_base.version_id)
-        .filter(Chapter.number == chapter_number)
+        current_session.query(USCChapter)
+        .filter(USCChapter.version_id == latest_base.version_id)
+        .filter(USCChapter.short_title == chapter_number)
         .first()
     )
     section = (
-        current_session.query(Section)
-        .filter(Section.version_id == latest_base.version_id)
-        .filter(Section.number == section_number)
-        .filter(Section.chapter_id == chapter.chapter_id)
+        current_session.query(USCSection)
+        .filter(USCSection.version_id == latest_base.version_id)
+        .filter(USCSection.number == section_number)
+        .filter(USCSection.usc_chapter_id == chapter.usc_chapter_id)
         .first()
     )
-    return get_content(section.section_id, latest_base.version_id)
+    return get_content(section.usc_section_id, latest_base.version_id)
 
 
 @cached(cache=TTLCache(maxsize=512, ttl=CACHE_TIME))
-def get_content(section_id: int, version_id: int) -> List[Content]:
+def get_content(section_id: int, version_id: int) -> List[USCContent]:
     """
     Gets the contents of a given Section in a given Version
 
@@ -203,19 +207,20 @@ def get_content(section_id: int, version_id: int) -> List[Content]:
         version_id (int): Version id to look at
 
     Returns:
-        List[Content]: Content that passes the above filter
+        List[USCContent]: Content that passes the above filter
     """
     results = (
-        current_session.query(Content)
-        .filter(Content.section_id == section_id, Content.version_id == version_id)
-        .order_by(Content.order_number.asc())
+        current_session.query(USCContent)
+        .filter(USCContent.usc_section_id == section_id, USCContent.version_id == version_id)
+        .order_by(USCContent.order_number.asc())
         .all()
     )
     return results
 
 
+# TODO: Need to fix
 @cached(cache=TTLCache(maxsize=512, ttl=CACHE_TIME))
-def get_content_versions(bill_version_id: int) -> List[Content]:
+def get_content_versions(bill_version_id: int) -> List[USCContent]:
     """
     Returns the content versions for a given bill version id
 
@@ -226,10 +231,9 @@ def get_content_versions(bill_version_id: int) -> List[Content]:
         List[Content]: List of Content that corresponds to a given Bill
     """
     results = (
-        current_session.query(Content)
+        current_session.query(USCContent)
         .filter(
-            Version.bill_version_id == bill_version_id,
-            Content.version_id == Version.version_id,
+            USCContent.version_id == bill_version_id,
         )
         .all()
     )
@@ -237,47 +241,41 @@ def get_content_versions(bill_version_id: int) -> List[Content]:
 
 
 @cached(cache=TTLCache(maxsize=512, ttl=CACHE_TIME))
-def get_diffs(bill_version_id: int) -> List[ContentDiff]:
+def get_diffs(bill_version_id: int) -> List[USCContentDiff]:
     """
-    Gets the ContentDiffs for a given bill_version_id
+    Gets the USCContentDiff for a given bill_version_id
 
     Args:
         bill_version_id (int): Target bill version id
 
     Returns:
-        List[ContentDiff]: List of ContentDiffs for the bill version
+        List[USCContentDiff]: List of USCContentDiff for the bill version
     """
-    version = (
-        current_session.query(Version)
-        .filter(Version.bill_version_id == bill_version_id)
-        .all()
-    )
-    if len(version) > 0:
-        version = version[0]
-    else:
+    legis_vers = current_session.query(LegislationVersion).filter(LegislationVersion.legislation_version_id == bill_version_id).all()
+    if len(legis_vers) == 0:
         return []
     results = (
-        current_session.query(ContentDiff)
-        .filter(ContentDiff.version_id == version.version_id)
+        current_session.query(USCContentDiff)
+        .filter(USCContentDiff.version_id == legis_vers[0].version_id)
         .all()
     )
     return results
 
 
 @cached(cache=TTLCache(maxsize=512, ttl=CACHE_TIME))
-def get_bill_contents(bill_version_id: int) -> List[BillContent]:
+def get_bill_contents(bill_version_id: int) -> List[LegislationContent]:
     """
-    Returns the BillContent for a given bill_version
+    Returns the LegislationContent for a given bill_version
 
     Args:
-        bill_version_id (int): BillVersion PK on the BillContent table
+        bill_version_id (int): LegislationContent PK on the LegislationContent table
 
     Returns:
-        List[BillContent]: Matching BillContent rows
+        List[LegislationContent]: Matching LegislationContent rows
     """
     results = (
-        current_session.query(BillContent)
-        .filter(BillContent.bill_version_id == bill_version_id)
+        current_session.query(LegislationContent)
+        .filter(LegislationContent.legislation_version_id == bill_version_id)
         .all()
     )
     return results
@@ -286,21 +284,21 @@ def get_bill_contents(bill_version_id: int) -> List[BillContent]:
 @cached(cache=TTLCache(maxsize=512, ttl=CACHE_TIME))
 def get_bill_metadata(bill_version_id: int) -> dict:
     bill_version = (
-        current_session.query(BillVersion)
-        .filter(BillVersion.bill_version_id == bill_version_id)
+        current_session.query(LegislationVersion)
+        .filter(LegislationVersion.legislation_version_id == bill_version_id)
         .all()
     )
     if len(bill_version) > 0:
         bill = (
-            current_session.query(Bill)
-            .filter(Bill.bill_id == bill_version[0].bill_id)
+            current_session.query(Legislation)
+            .filter(Legislation.legislation_id == bill_version[0].legislation_id)
             .all()
         )
         if len(bill) > 0:
             return {
-                "chamber": bill[0].chamber,
-                "number": bill[0].bill_number,
-                "version": bill_version[0].bill_version,
+                "chamber": bill[0].chamber.value,
+                "number": bill[0].number,
+                "version": bill_version[0].legislation_version.value.lower(),
             }
 
     return {}
@@ -312,10 +310,17 @@ def get_revision_diff(base_id: int, new_id: int):
     new_sections: Section = Section.alias("new")
     old_sections: Section = Section.alias("old")
     results = (
-        current_session.query(new_sections.section_id, old_sections.section_id)
+        current_session.query(new_sections.usc_section_id, old_sections.usc_section_id)
         .join(old_sections, old_sections.version_id == new_id)
         .filter(new_sections.version_id == base_id)
         .filter(old_sections.usc_ident == new_sections.usc_ident)
         .filter(old_sections.heading != new_sections.heading)
     ).all()
     return results
+
+
+def get_latest_base() -> Version:
+    try:
+        return current_session.query(Version).filter(Version.base_id == None).all()[0]
+    except Exception:
+        return None

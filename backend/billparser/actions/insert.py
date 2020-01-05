@@ -1,7 +1,7 @@
-from billparser.transformer import Session
+from billparser.db.handler import Session
 from billparser.translater import translate_paragraph
 
-from billparser.db.models import ContentDiff, Section, Content
+from billparser.db.models import USCContentDiff, USCSection, USCContent
 
 from billparser.actions import ActionObject
 
@@ -24,6 +24,7 @@ def recursive_content(
     version_id: int,
     last_ident: str,
     session: "Session",
+    legislation_id: int,
 ) -> None:
     """
     This is the function that "inserts" a new block of content from a bill.
@@ -67,10 +68,10 @@ def recursive_content(
                     " ".join(content_elem.itertext()).strip().replace("\n", " ")
                 )
         if "heading" in heading.tag:
-            content = Content(
+            content = USCContent(
                 content_type=search_element.tag,
                 usc_ident=ident,
-                section_id=section_id,
+                usc_section_id=section_id,
                 parent_id=content_id,
                 order_number=order,
                 version_id=version_id,
@@ -86,27 +87,28 @@ def recursive_content(
                 content_str = (
                     " ".join(content_elem.itertext()).strip().replace("\n", " ")
                 )
-            content = Content(
+            content = USCContent(
                 content_type=search_element.tag,
                 usc_ident=ident,
-                section_id=section_id,
+                usc_section_id=section_id,
                 parent_id=content_id,
                 order_number=order,
                 version_id=version_id,
             )
         session.add(content)
         session.flush()
-        diff = ContentDiff(
-            chapter_id=chapter_id,
+        diff = USCContentDiff(
+            usc_chapter_id=chapter_id,
             version_id=version_id,
-            content_id=content.content_id,
-            section_id=section_id,
+            usc_content_id=content.usc_content_id,
+            usc_section_id=section_id,
             number=enum.attrib.get("value", ""),
             section_display=enum.text,
             content_str=content_str,
             heading=heading.text
             if heading is not None and heading.text != content_str
             else None,
+            legislation_content_id=legislation_id,
         )
         session.add(diff)
         session.commit()
@@ -116,12 +118,13 @@ def recursive_content(
                 recursive_content(
                     chapter_id,
                     section_id,
-                    content.content_id,
+                    content.usc_content_id,
                     elem,
                     order,
                     version_id,
                     ident,
                     session,
+                    legislation_id,
                 )
                 order = order + 1
 
@@ -135,24 +138,30 @@ def insert_section_after(action_obj: ActionObject, session: "Session") -> None:
         session (Session): DB session to insert into
     """
     cited_content = action_obj.cited_content
+    legislation_content = action_obj.legislation_content
+    if legislation_content is not None:
+        legislation_id = legislation_content.legislation_content_id
+    else:
+        legislation_id = None
     new_vers_id = action_obj.version_id
     if action_obj.next is not None:
         chapter = (
-            session.query(Section)
-            .filter(Section.section_id == cited_content.section_id)
+            session.query(USCSection)
+            .filter(USCSection.usc_section_id == cited_content.usc_section_id)
             .all()
         )
         if len(chapter) > 0:
-            chapter_id = chapter[0].chapter_id
+            chapter_id = chapter[0].usc_chapter_id
             recursive_content(
                 chapter_id,
-                cited_content.section_id,
+                cited_content.usc_section_id,
                 cited_content.parent_id,
                 translate_paragraph(action_obj.next)[0],
                 cited_content.order_number + 1,
                 new_vers_id,
                 "/".join(cited_content.usc_ident.split("/")[:-1]),
                 session,
+                legislation_id,
             )
             session.commit()
 
@@ -169,9 +178,9 @@ def insert_end(action_obj: ActionObject, session: "Session") -> None:
     cited_content = action_obj.cited_content
     if action_obj.next is not None:
         last_content = (
-            session.query(Content)
-            .filter(Content.parent_id == cited_content.content_id)
-            .order_by(Content.order_number.desc())
+            session.query(USCContent)
+            .filter(USCContent.parent_id == cited_content.usc_content_id)
+            .order_by(USCContent.order_number.desc())
             .limit(1)
             .all()
         )
@@ -193,43 +202,50 @@ def insert_text_end(action_obj: ActionObject, session: "Session") -> None:
     """
     action = action_obj.action
     cited_content = action_obj.cited_content
-    log.debug(cited_content.content_id)
+    log.debug(cited_content.usc_content_id)
     new_vers_id = action_obj.version_id
     to_replace = action.get("to_replace", "")
     chapter = (
-        session.query(Section)
-        .filter(Section.section_id == cited_content.section_id)
+        session.query(USCSection)
+        .filter(USCSection.usc_section_id == cited_content.usc_section_id)
         .limit(1)
         .all()
     )
     diff = None
+    legislation_content = action_obj.legislation_content
+    if legislation_content is not None:
+        legislation_id = legislation_content.legislation_content_id
+    else:
+        legislation_id = None
     if len(chapter) > 0:
-        chapter_id = chapter[0].chapter_id
+        chapter_id = chapter[0].usc_chapter_id
         if cited_content.heading is not None:
             heading_diff = cited_content.heading + " " + to_replace
-            if heading_diff != cited_content.heading:
-                diff = ContentDiff(
-                    content_id=cited_content.content_id,
-                    section_id=cited_content.section_id,
-                    chapter_id=chapter_id,
+            if heading_diff != cited_content.heading and heading_diff != " ":
+                diff = USCContentDiff(
+                    usc_content_id=cited_content.usc_content_id,
+                    usc_section_id=cited_content.usc_section_id,
+                    usc_chapter_id=chapter_id,
                     version_id=new_vers_id,
                     heading=heading_diff,
+                    legislation_content_id=legislation_id,
                 )
         elif cited_content.content_str is not None:
             content_diff = cited_content.content_str + " " + to_replace
-            if content_diff != cited_content.content_str:
-                diff = ContentDiff(
-                    content_id=cited_content.content_id,
-                    section_id=cited_content.section_id,
-                    chapter_id=chapter_id,
+            if content_diff != cited_content.content_str and heading_diff != " ":
+                diff = USCContentDiff(
+                    usc_content_id=cited_content.usc_content_id,
+                    usc_section_id=cited_content.usc_section_id,
+                    usc_chapter_id=chapter_id,
                     version_id=new_vers_id,
                     content_str=content_diff,
+                    legislation_content_id=legislation_id,
                 )
     if diff is not None:
         log.debug("adding")
         session.add(diff)
         session.commit()
-        log.debug("Added diff", diff.diff_id)
+        log.debug("Added diff", diff.usd_content_diff_id)
 
 
 def insert_text_after(action_obj: ActionObject, session: "Session") -> None:

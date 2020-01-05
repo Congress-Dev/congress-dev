@@ -6,9 +6,14 @@ import traceback
 from zipfile import ZipFile
 import hashlib
 import datetime
+import dateutil.parser as parser
 import pandas
 from lxml import etree
 from unidecode import unidecode  # GPLV2
+
+import sqlalchemy
+
+from sqlalchemy import desc
 
 from billparser.actions import ActionObject
 from billparser.actions import determine_action as determine_action2
@@ -21,33 +26,33 @@ from billparser.actions.insert import (
 from billparser.actions.redesignate import redesignate
 from billparser.actions.strike import strike_section, strike_text
 from billparser.db.models import (
-    Bill,
-    BillContent,
-    BillVersion,
-    ContentDiff,
-    BillIngestion,
+    Legislation,
+    LegislationContent,
+    LegislationVersion,
+    LegislationVersionEnum,
+    LegislationChamber,
+    LegislationType,
+    USCContentDiff,
+    USCContent,
+    Version,
+    USCSection,
+    USCRelease,
 )
 from billparser.helpers import convert_to_usc_id
 from billparser.logger import log
-from billparser.transformer import (
-    Content,
-    Section,
-    Session,
-    Version,
-    append_to_end,
-    handle_text_insert,
-    handle_text_replace,
-    insert_after_element,
-)
+from billparser.db.handler import Session
 from billparser.translater import translate_paragraph
 
 from joblib import Parallel, delayed
 from typing import List
 
 text_paths = ["legis-body/section/subsection/text", "legis-body/section/text"]
-
+filename_regex = re.compile(
+    r"BILLS-(?P<session>\d\d\d)(?P<house>\D+)(?P<bill_number>\d+)(?P<bill_version>\D+)\.xml"
+)
+chamb = {"hr": "House", "s": "Senate"}
 BASE_VERSION = 1
-THREADS = int(os.environ.get("PARSE_THREADS", 16))
+THREADS = int(os.environ.get("PARSE_THREADS", -1))
 
 Element = etree.Element
 
@@ -216,9 +221,7 @@ def extract_single_action(element: Element, path: str, parent_action: dict) -> l
                     "next": next_elem,
                 }
     except Exception as e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        log.error("{} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
+        log.error("Uncaught exception", exc_info=e)
     if res != {}:
         res["parsed_cite"] = parse_action_for_cite(res).replace("//", "/")
         actions = determine_action2(res["text"])
@@ -316,96 +319,51 @@ def parse_action_for_cite(action_object: dict) -> str:
                     cite_contexts["last_title"] = cite_split[3][1:]
                 return cite
     except Exception as e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        traceback.print_exc()
+        log.error("Uncaught exception", exc_info=e)
 
     return parent_cite
 
 
 def find_or_create_bill(bill_obj: dict, title: str, session: "SQLAlchemy.session"):
-    base = session.query(Version).filter(Version.base_id == None).all()[0]
-    bill_row = (
-        session.query(Bill)
-        .filter(Bill.bill_number == bill_obj["bill_number"])
-        .filter(Bill.chamber == bill_obj["chamber"])
+    global BASE_VERSION
+    new_version = Version(base_id=BASE_VERSION)
+    session.add(new_version)
+    session.commit()
+    existing_bill = (
+        session.query(Legislation)
+        .filter(Legislation.number == bill_obj["bill_number"])
+        .filter(Legislation.chamber == LegislationChamber(bill_obj["chamber"]))
         .all()
     )
-    if len(bill_row) == 0:
-        new_bill = Bill(
-            bill_number=bill_obj["bill_number"],
-            bill_title=title,
-            chamber=bill_obj["chamber"],
-            bill_type="Bill",
+    if len(existing_bill) > 0:
+        new_bill = existing_bill[0]
+    else:
+        new_bill = Legislation(
+            number=bill_obj["bill_number"],
+            title=title,
+            chamber=LegislationChamber(bill_obj["chamber"]),
+            legislation_type=LegislationType.Bill,
+            version_id=new_version.version_id,
         )
         session.add(new_bill)
         session.commit()
-        new_bill_version = BillVersion(
-            bill_id=new_bill.bill_id,
-            bill_version=bill_obj["bill_version"],
-            base_version_id=base.version_id,
-        )
-        session.add(new_bill_version)
-    else:
-        new_bill = bill_row[0]
-        version_row = (
-            session.query(BillVersion)
-            .filter(BillVersion.bill_id == new_bill.bill_id)
-            .filter(BillVersion.bill_version == bill_obj["bill_version"])
-            .all()
-        )
-        if len(version_row) == 0:
-            new_bill_version = BillVersion(
-                bill_id=new_bill.bill_id,
-                bill_version=bill_obj["bill_version"],
-                base_version_id=base.version_id,
-            )
-            session.add(new_bill_version)
-        else:
-            new_bill_version = version_row[0]
 
+    new_bill_version = LegislationVersion(
+        legislation_id=new_bill.legislation_id,
+        legislation_version=LegislationVersionEnum(bill_obj["bill_version"].upper()),
+        version_id=new_version.version_id,
+        created_at=datetime.datetime.now(),
+    )
+    session.add(new_bill_version)
     session.commit()
     return (new_bill, new_bill_version)
-
-
-def clear_existing_content(bill_version, session):
-    vers = (
-        session.query(Version)
-        .filter(Version.bill_version_id == bill_version.bill_version_id)
-        .all()
-    )
-    if len(vers) > 0 and vers[0].version_id != BASE_VERSION:
-        log.info("Deleting the old stuff")
-        session.query(ContentDiff).filter(
-            ContentDiff.version_id == vers[0].version_id
-        ).delete()
-        session.query(Content).filter(Content.version_id == vers[0].version_id).delete()
-        session.query(BillContent).filter(
-            BillContent.bill_version_id == bill_version.bill_version_id
-        ).delete()
-        session.flush()
-        session.query(Version).filter(
-            Version.bill_version_id == bill_version.bill_version_id
-        ).delete()
-        session.commit()
-
-
-def create_version(new_bill_version, title, session):
-    new_vers = Version(
-        base_id=new_bill_version.base_version_id,
-        bill_version_id=new_bill_version.bill_version_id,
-        title=title,
-    )
-    session.add(new_vers)
-    session.commit()
-    return new_vers.version_id
 
 
 def recursive_bill_content(
     content_id,
     search_element,
     order,
-    version_id,
+    legis_version_id,
     parents: dict,
     path,
     vers_id: int,
@@ -416,6 +374,53 @@ def recursive_bill_content(
     # if it has an id it is probably a thingy
     extracted_action = []
     res = []
+    content = None
+    if (search_element.tag == "legis-body" or "id" in search_element.attrib) and len(
+        search_element
+    ) > 1:
+        enum = search_element[0]
+        heading = search_element[1]
+        content_str = None
+        if len(search_element) > 2:
+            content_elem = search_element[2]
+            if (
+                "content" in content_elem.tag
+                or "chapeau" in content_elem.tag
+                or "notes" in content_elem.tag
+                or "text" in content_elem.tag
+            ):
+                content_str = convert_to_text(content_elem)
+        if "head" in heading.tag:
+            content = LegislationContent(
+                content_type=search_element.tag,
+                parent_id=content_id,
+                order_number=order,
+                legislation_version_id=legis_version_id,
+                section_display=enum.text,
+                content_str=content_str,
+                heading=heading.text if heading is not None else None,
+            )
+        else:
+            content_elem = heading
+            if (
+                "content" in content_elem.tag
+                or "chapeau" in content_elem.tag
+                or "notes" in content_elem.tag
+                or "text" in content_elem.tag
+            ):
+                content_str = convert_to_text(content_elem)
+            content = LegislationContent(
+                content_type=search_element.tag,
+                parent_id=content_id,
+                order_number=order,
+                legislation_version_id=legis_version_id,
+                section_display=enum.text,
+                content_str=content_str,
+                # heading=heading.text if heading is not None else None,
+            )
+        # print(content.to_dict())
+        session.add(content)
+        session.flush()
     if True:
         root_path = search_element.getroottree().getpath(search_element)
         sections = root_path.split("/section")
@@ -431,6 +436,7 @@ def recursive_bill_content(
                 res.append(temp_actions[0])
                 path = temp_actions[0].get("enum", path)
                 for act in temp_actions:
+                    act["legislation_content"] = content
                     if act.get("parsed_cite") is not None:
                         parent_cite = act.get("parsed_cite")
                     chg, act = run_action2(act, None, vers_id, session)
@@ -453,61 +459,19 @@ def recursive_bill_content(
     if (search_element.tag == "legis-body" or "id" in search_element.attrib) and len(
         search_element
     ) > 1:
-        enum = search_element[0]
-        heading = search_element[1]
-        content_str = None
-        if len(search_element) > 2:
-            content_elem = search_element[2]
-            if (
-                "content" in content_elem.tag
-                or "chapeau" in content_elem.tag
-                or "notes" in content_elem.tag
-                or "text" in content_elem.tag
-            ):
-                content_str = convert_to_text(content_elem)
-        if "head" in heading.tag:
-            content = BillContent(
-                content_type=search_element.tag,
-                parent_id=content_id,
-                order_number=order,
-                bill_version_id=version_id,
-                section_display=enum.text,
-                content_str=content_str,
-                heading=heading.text if heading is not None else None,
-                action_parse=extracted_action,
-            )
-        else:
-            content_elem = heading
-            if (
-                "content" in content_elem.tag
-                or "chapeau" in content_elem.tag
-                or "notes" in content_elem.tag
-                or "text" in content_elem.tag
-            ):
-                content_str = convert_to_text(content_elem)
-            content = BillContent(
-                content_type=search_element.tag,
-                parent_id=content_id,
-                order_number=order,
-                bill_version_id=version_id,
-                section_display=enum.text,
-                content_str=content_str,
-                # heading=heading.text if heading is not None else None,
-                action_parse=extracted_action,
-            )
-        # print(content.to_dict())
-        session.add(content)
-        session.flush()
+        if content is not None:
+            content.action_parse = extracted_action
+            session.commit()
         order = 0
 
         for elem in search_element:
             if "id" in elem.attrib:
                 res.extend(
                     recursive_bill_content(
-                        content.bill_content_id,
+                        content.legislation_content_id,
                         elem,
                         order,
-                        version_id,
+                        legis_version_id,
                         parents,
                         path,
                         vers_id,
@@ -519,13 +483,25 @@ def recursive_bill_content(
     return res
 
 
-def check_existing_ingestion(checksum: str, archive_obj: object, session) -> bool:
-    result = (
-        session.query(BillIngestion)
+def check_for_existing_legislation_version(bill_obj: object, session) -> bool:
+    # Check to see if we've already ingested this bill
+    existing_legis = (
+        session.query(Legislation)
         .filter(
-            BillIngestion.archive_name == archive_obj.get("archive"),
-            BillIngestion.archive_path == archive_obj.get("file"),
-            BillIngestion.checksum == checksum
+            Legislation.number == bill_obj["bill_number"],
+            Legislation.chamber == LegislationChamber(bill_obj["chamber"]),
+        )
+        .all()
+    )
+    if len(existing_legis) == 0:
+        return False
+
+    result = (
+        session.query(LegislationVersion)
+        .filter(
+            LegislationVersion.legislation_version
+            == LegislationVersionEnum(bill_obj["bill_version"].upper()),
+            LegislationVersion.legislation_id == existing_legis[0].legislation_id,
         )
         .all()
     )
@@ -536,31 +512,37 @@ def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object):
     res = []
     try:
         session = Session()
-        m = hashlib.md5()
-        m.update(f.encode("utf-8"))
-        checksum = m.hexdigest()
-        found = check_existing_ingestion(checksum, archive_obj, session)
+        found = check_for_existing_legislation_version(bill_obj, session)
         if found:
             print(f"Skipping {archive_obj.get('file')}")
             return []
-        ingestion_row = BillIngestion(
-            archive_name = archive_obj.get("archive"),
-            archive_path = archive_obj.get("file"),
-            checksum = checksum,
-        )
+
         root = etree.fromstring(f)
         title = root.xpath("//dublinCore")[0][0].text.split(":")[-1].strip()
         log.info(title)
-        new_bill, new_bill_version = find_or_create_bill(bill_obj, title, session)
-        ingestion_row.bill_version_id = new_bill_version.bill_version_id
-        session.add(ingestion_row)
+        try:
+            new_bill, new_bill_version = find_or_create_bill(bill_obj, title, session)
+        except sqlalchemy.exc.IntegrityError as e:
+            log.error("Caught IntegrityError, retrying")
+            session.rollback()
+            time.sleep(1)
+            new_bill, new_bill_version = find_or_create_bill(bill_obj, title, session)
+
         session.commit()
-        clear_existing_content(new_bill_version, session)
-        new_vers_id = create_version(
-            new_bill_version,
-            f"{new_bill.chamber} - {new_bill.bill_number} - {new_bill_version.bill_version}",
-            session,
-        )
+
+        new_vers_id = new_bill_version.version_id
+
+        form_dates = root.xpath("//form/action/action-date")
+        if(len(form_dates) > 0):
+            last_date = form_dates[-1]
+            try:
+                new_bill_version.effective_date = parser.parse(last_date.get("date"))
+            except:
+                try:
+                    new_bill_version.effective_date = parser.parse(last_date.text)
+                except:
+                    log.error("Unable to parse date")
+
         legis = root.xpath("//legis-body")
         if len(legis) > 0:
             legis = legis[0]
@@ -571,13 +553,13 @@ def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object):
             None,
             legis,
             0,
-            new_bill_version.bill_version_id,
+            new_bill_version.legislation_version_id,
             {},
             path,
             new_vers_id,
             session=session,
         )
-        ingestion_row.completed_at = datetime.datetime.now()
+        new_bill_version.completed_at = datetime.datetime.now()
         session.commit()
     except Exception as e:
         log.error("Uncaught exception", exc_info=e)
@@ -640,8 +622,8 @@ def run_action2(ACTION, new_bill_version, new_vers_id, session):
     # print(actions.keys())
     made_something = False
     existing_diffs = (
-        session.query(ContentDiff.diff_id)
-        .filter(ContentDiff.version_id == new_vers_id)
+        session.query(USCContentDiff.usc_content_diff_id)
+        .filter(USCContentDiff.version_id == new_vers_id)
         .count()
     )
     action_objs = []
@@ -656,6 +638,7 @@ def run_action2(ACTION, new_bill_version, new_vers_id, session):
                 version_id=new_vers_id,
                 last_title=last_title,
                 next=ACTION.get("next", None),
+                legislation_content=ACTION.get("legislation_content", None)
             )
 
             action_object.set_action(action)
@@ -665,10 +648,10 @@ def run_action2(ACTION, new_bill_version, new_vers_id, session):
                 continue
 
             cited_content = (
-                session.query(Content)
+                session.query(USCContent)
                 .filter(
-                    Content.usc_ident == action_object.parsed_cite,
-                    Content.version_id == BASE_VERSION,
+                    USCContent.usc_ident == action_object.parsed_cite,
+                    USCContent.version_id == BASE_VERSION,
                 )
                 .all()
             )
@@ -701,20 +684,14 @@ def run_action2(ACTION, new_bill_version, new_vers_id, session):
                     BASE_VERSION,
                 )
     ending_diff = (
-        session.query(ContentDiff.diff_id)
-        .filter(ContentDiff.version_id == new_vers_id)
+        session.query(USCContentDiff.usc_content_diff_id)
+        .filter(USCContentDiff.version_id == new_vers_id)
         .count()
     )
     session.flush()
     session.commit()
     # print('=========')
     return (existing_diffs < ending_diff), action_objs
-
-
-filename_regex = re.compile(
-    r"BILLS-(?P<session>\d\d\d)(?P<house>\D+)(?P<bill_number>\d+)(?P<bill_version>\D+)\.xml"
-)
-chamb = {"hr": "House", "s": "Senate"}
 
 
 def parse_archive(path: str) -> List[dict]:
@@ -728,6 +705,18 @@ def parse_archive(path: str) -> List[dict]:
     Returns:
         List[dict]: List of the parsed objects
     """
+    global BASE_VERSION
+    session = Session()
+    # Get latest release version for the base
+    # TODO: Move these around to select the correct release point given the bill
+    release_point = (
+        session.query(USCRelease)
+        .order_by(desc(USCRelease.effective_date))
+        .limit(1)
+        .all()
+    )
+    BASE_VERSION = release_point[0].version_id
+    print("Base version is", BASE_VERSION)
     archive = ZipFile(path)
     names = []
     rec = []
@@ -749,8 +738,8 @@ def parse_archive(path: str) -> List[dict]:
         )
 
     names = sorted(names, key=lambda x: x["bill_number"])
-    names = names[30:35]
-    # names = [x for x in names if (x.get('title') == '116 - hr4 - ih')]
+    # names = names[50:55]
+    # names = [x for x in names if (x.get('bill_number') == 34)]
     # names = [x for x in names if (x.get('bill_version') == 'enr')]
     frec = Parallel(n_jobs=THREADS, backend="multiprocessing", verbose=5)(
         delayed(parse_bill)(
@@ -759,7 +748,7 @@ def parse_archive(path: str) -> List[dict]:
             name,
             {"archive": path.split("/")[-1], "file": name["path"].split("/")[-1]},
         )
-        for name in names[:100]
+        for name in names
     )
     for r in frec:
         rec.extend(r)
@@ -770,8 +759,15 @@ def parse_archive(path: str) -> List[dict]:
 def run_archives():
     global BASE_VERSION
     session = Session()
-    res = session.query(Version).filter(Version.title == "Q1-2019").limit(1).all()
-    BASE_VERSION = res[0].version_id
+    # Get latest release version for the base
+    # TODO: Move these around to select the correct release point given the bill
+    release_point = (
+        session.query(USCRelease)
+        .order_by(desc(USCRelease.effective_date))
+        .limit(1)
+        .all()
+    )
+    BASE_VERSION = release_point[0].version_id
     print("Base version is", BASE_VERSION)
     rec = parse_archive("bills/116/hr_1.zip")
     rec = rec + parse_archive("bills/116/s_1.zip")

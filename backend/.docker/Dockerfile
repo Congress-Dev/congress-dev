@@ -9,7 +9,4 @@ RUN pip3 install -r requirements.txt
 COPY . /usr/src/app
 WORKDIR /usr/src/app
 
-EXPOSE 9090
-EXPOSE 80
-
 ENTRYPOINT ["python3", "-m", "billparser"]

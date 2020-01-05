@@ -1,5 +1,5 @@
 from billparser.db.models import Bill, BillVersion, Version, ContentDiff
-from billparser.transformer import Session
+from billparser.db.handler import Session
 
 
 def run_prune():

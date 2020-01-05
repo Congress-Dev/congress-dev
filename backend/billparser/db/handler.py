@@ -28,9 +28,9 @@ def unidecode_str(input_str: str) -> str:
     return unidecode(input_str or "").replace("--", "-")
 
 
-def open_usc(file):
+def open_usc(file_str):
     lookup = {}
-    usc_root = etree.fromstring(file.read())
+    usc_root = etree.fromstring(file_str)
     lookup["root"] = usc_root
     ids = usc_root.xpath("//*[@identifier]")
     for id in ids:
@@ -75,19 +75,14 @@ def get_number(ident: str) -> float:
         return 0
 
 
-def import_title(chapter_file, chapter_number, version_string):
+def import_title(chapter_file, chapter_number, version_string, release: USCRelease):
     """
         chapter_file: file pointer to an xml file
     """
     session = Session()
+    release_id = release["usc_release_id"]
 
-    versions = session.query(Version).filter(Version.title == version_string).first()
-    if versions:
-        version = versions
-    else:
-        version = Version(title=version_string)
-        session.add(version)
-        session.flush()
+    version_id = release["version_id"]
 
     def recursive_content(section_id, content_id, search_element, order):
         # if it has an id it is probably a thingy
@@ -106,18 +101,18 @@ def import_title(chapter_file, chapter_number, version_string):
                         " ".join(content_elem.itertext()).strip().replace("\n", " ")
                     )
             if "heading" in heading.tag:
-                content = Content(
+                content = USCContent(
                     content_type=search_element.tag,
                     usc_guid=search_element.attrib["id"],
                     usc_ident=unidecode_str(search_element.attrib["identifier"]),
                     number=unidecode_str(enum.attrib["value"]),
                     section_display=enum.text,
-                    section_id=section_id,
+                    usc_section_id=section_id,
                     parent_id=content_id,
                     content_str=unidecode_str(content_str),
                     order_number=order,
                     heading=unidecode_str(heading.text),
-                    version_id=version.version_id,
+                    version_id=version_id,
                 )
             else:
                 content_elem = heading
@@ -129,25 +124,25 @@ def import_title(chapter_file, chapter_number, version_string):
                     content_str = (
                         " ".join(content_elem.itertext()).strip().replace("\n", " ")
                     )
-                content = Content(
+                content = USCContent(
                     content_type=search_element.tag,
                     usc_guid=search_element.attrib["id"],
                     usc_ident=unidecode_str(search_element.attrib["identifier"]),
                     number=enum.attrib["value"],
                     section_display=enum.text,
-                    section_id=section_id,
+                    usc_section_id=section_id,
                     parent_id=content_id,
                     content_str=unidecode_str(content_str),
                     order_number=order,
                     heading=None,
-                    version_id=version.version_id,
+                    version_id=version_id,
                 )
             session.add(content)
             session.flush()
             order = 0
             for elem in search_element:
                 if "id" in elem.attrib:
-                    recursive_content(section_id, content.content_id, elem, order)
+                    recursive_content(section_id, content.usc_content_id, elem, order)
                     order = order + 1
 
     chapter_root = open_usc(chapter_file)
@@ -157,16 +152,20 @@ def import_title(chapter_file, chapter_number, version_string):
             break
     print(title)
     existing = (
-        session.query(Chapter)
-        .filter(Chapter.version_id == version.version_id)
-        .filter(Chapter.number == chapter_number)
+        session.query(USCChapter)
+        .filter(USCChapter.version_id == version_id)
+        .filter(USCChapter.short_title == chapter_number)
         .first()
     )
     if existing:
-        print(f"Chapter {chapter_number} alread imported for {version.version_id}")
+        print(f"Chapter {chapter_number} alread imported for {version_id}")
         return None
-    chap = Chapter(
-        number=chapter_number, name=title, document="usc", version_id=version.version_id
+    chap = USCChapter(
+        short_title=chapter_number,
+        long_title=title,
+        document="usc",
+        version_id=version_id,
+        usc_release_id=release_id,
     )
     session.add(chap)
     session.flush()
@@ -179,20 +178,20 @@ def import_title(chapter_file, chapter_number, version_string):
     sections = sorted(sections, key=lambda x: get_number(x.split("/")[-1][1:]))
     section_order = 0
     for section in sections:
-        print(section)
+        # print(section)
         sect_elem = chapter_root[section]
         enum = sect_elem[0]
-        sect_obj = Section(
+        sect_obj = USCSection(
             usc_guid=sect_elem.attrib["id"],
             usc_ident=section,
             number=unidecode_str(enum.attrib["value"]),
             section_display=unidecode_str(enum.text),
             heading=unidecode_str(sect_elem[1].text),
-            version_id=version.version_id,
-            chapter_id=chap.chapter_id,
+            version_id=version_id,
+            usc_chapter_id=chap.usc_chapter_id,
         )
         session.add(sect_obj)
         session.flush()
-        recursive_content(sect_obj.section_id, None, sect_elem, 0)
+        recursive_content(sect_obj.usc_section_id, None, sect_elem, 0)
         session.commit()
     session.commit()

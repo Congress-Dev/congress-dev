@@ -1,4 +1,5 @@
-export const host = window.location.hostname.indexOf('localhost') == 0 ? 'http://localhost:9090' : 'https://api.congress.dev';
+const beta = window.location.hostname.indexOf('beta') == 0 ? "beta.": "";
+export const host = window.location.hostname.indexOf('localhost') == 0 ? 'http://localhost:9090' : `https://${beta}api.congress.dev`;
 function shallowEqual(objA: mixed, objB: mixed): boolean {
   if (objA === objB) {
     return true;

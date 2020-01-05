@@ -33,16 +33,17 @@ from billparser.db.queries import (
     get_versions,
     get_revisions,
     get_revision_diff,
+    get_latest_base
 )
 from billparser.db.models import (
-    Chapter,
-    Section,
-    Content,
-    ContentDiff,
+    USCChapter,
+    USCSection,
+    USCContent,
+    USCContentDiff,
     Version,
-    Bill,
-    BillVersion,
-    BillContent,
+    Legislation,
+    LegislationVersion,
+    LegislationContent,
 )
 from billparser.helpers import treeify
 
@@ -112,18 +113,19 @@ def bills() -> str:
     start = time.time()
     bill_by_number = defaultdict(lambda: {})
     for bill in get_bills(house, senate, query, incl, decl):
-        title = "{}-{}".format(bill.chamber[0], bill.bill_number)
-        obj = row2dict(bill)
+        title = "{}-{}".format(bill.chamber.value[0], bill.number)
+        #obj = row2dict(bill)
+        obj = bill.to_dict()
         obj["versions"] = [
-            row2dict(x)
+            x.to_dict()
             for x in bill.versions
             if (
                 True
                 or (  # Filter based on only the included versions?
                     incl == "" and decl == ""
                 )
-                or (incl != "" and x.bill_version in incl.split(","))
-                or (decl != "" and x.bill_version in decl.split(","))
+                or (incl != "" and x.legislation_version in incl.split(","))
+                or (decl != "" and x.legislation_version in decl.split(","))
             )
         ]
         bill_by_number[title] = obj
@@ -267,9 +269,8 @@ def sections(chapter_id: int) -> str:
     Returns:
         str: Stringifed array of the rows
     """
-    latest_base = (
-        current_session.query(Version).filter(Version.base_id == None).all()[0]
-    )
+    latest_base = get_latest_base()
+
     res = []
     for section in get_sections(str(chapter_id), latest_base.version_id):
         res.append(section.to_dict())
@@ -311,9 +312,7 @@ def contents(section_id: int) -> str:
     Returns:
         str: Stringified array of the content rows
     """
-    latest_base = (
-        current_session.query(Version).filter(Version.base_id == None).all()[0]
-    )
+    latest_base = get_latest_base()
     res = []
     for section in get_content(str(section_id), latest_base.version_id):
         res.append(section.to_dict())

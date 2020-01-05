@@ -83,7 +83,10 @@ regex_holder = {
     "INSERT-CHAPTER-AT-END": [
         r"Title (?P<title>\d\d?A?), (?P<document_title>.+), is amended by adding at the end the following new chapter:?"
     ],
-    "TERM-DEFINITION": [r"The term \"(?P<term>.+?)\" means (?P<term_def>.+?)."],
+    "TERM-DEFINITION": [
+        r"The term \"(?P<term>.+?)\" means (?P<term_def>.+?).",
+        r"The term (?P<term>.+?) means (?P<term_def>.+?).",
+    ],
 }
 
 SuchCodeRegex = re.compile(r"(Section|paragraph) (?P<section>\d*)\(", re.IGNORECASE)
@@ -155,6 +158,7 @@ class ActionObject(object):
         self.cited_content = kwargs.get("cited_content", None)
         self.last_title = kwargs.get("last_title", "")
         self.next = kwargs.get("next", None)
+        self.legislation_content = kwargs.get("legislation_content", None)
         # print(kwargs)
 
     def set_action(self, action):

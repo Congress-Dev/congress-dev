@@ -1,0 +1,524 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+CAUTION: Do not modify this file unless you know what you are doing.
+         Unexpected results may occur if the code is changed deliberately.
+-->
+<dbmodel pgmodeler-ver="0.9.2-beta2" last-position="0,0" last-zoom="1" max-obj-count="18"
+	 default-owner="postgres">
+<role name="parser"
+      password="parser">
+</role>
+
+<database name="us_code_beta" encoding="UTF8" is-template="false" allow-conns="true">
+	<role name="parser"/>
+</database>
+
+<schema name="public" layer="0" fill-color="#e1e1e1" sql-disabled="true">
+</schema>
+
+<usertype name="legislation_type" configuration="enumeration">
+	<schema name="public"/>
+	<role name="parser"/>
+	<enumeration values="Bill,Simple Resolution,Joint Resolution,Concurrent Resolution"/>
+</usertype>
+
+<usertype name="legislation_version" configuration="enumeration">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<comment><![CDATA[https://www.senate.gov/legislative/KeytoVersionsofPrintedLegislation.htm]]></comment>
+	<enumeration values="IS,IH,RAS,RAH,RFS,RFH,RDS,RHS,RCS,RCH,RS,RH,PCS,PCH,CPS,CPH,EAS,EAH,ES,EH,ENR"/>
+</usertype>
+
+<table name="usc_release" layer="0" collapse-mode="2" max-obj-count="7">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<comment><![CDATA[https://uscode.house.gov/download/priorreleasepoints.htm]]></comment>
+	<position x="100" y="40"/>
+	<column name="usc_release_id" not-null="true"
+	 identity-type="ALWAYS">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="short_title">
+		<type name="character varying" length="0"/>
+		<comment><![CDATA[The short title of the release point]]></comment>
+	</column>
+	<column name="effective_date">
+		<type name="date" length="0"/>
+		<comment><![CDATA[The date given as the release point's date]]></comment>
+	</column>
+	<column name="long_title">
+		<type name="character varying" length="0"/>
+		<comment><![CDATA[The longer title of the release]]></comment>
+	</column>
+	<column name="created_at" default-value="now()">
+		<type name="timestamp" length="0"/>
+	</column>
+	<constraint name="usc_release_pk" type="pk-constr" table="public.usc_release">
+		<columns names="usc_release_id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<usertype name="legislation_chamber" configuration="enumeration">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<enumeration values="House,Senate"/>
+</usertype>
+
+<table name="legislation" layer="0" collapse-mode="2" max-obj-count="7">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="1200" y="420"/>
+	<column name="legislation_id" not-null="true"
+	 identity-type="ALWAYS">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="chamber" not-null="true">
+		<type name="public.legislation_chamber" length="0"/>
+	</column>
+	<column name="legislation_type" not-null="true">
+		<type name="public.legislation_type" length="0"/>
+	</column>
+	<column name="number" not-null="true">
+		<type name="integer" length="0"/>
+		<comment><![CDATA[The bill number; S. 1234]]></comment>
+	</column>
+	<column name="title">
+		<type name="character varying" length="0"/>
+		<comment><![CDATA[The title of the bill]]></comment>
+	</column>
+	<constraint name="legislation_pk" type="pk-constr" table="public.legislation">
+		<columns names="legislation_id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<table name="legislation_version" layer="0" collapse-mode="2" max-obj-count="7">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="1180" y="60"/>
+	<column name="legislation_version_id" not-null="true"
+	 identity-type="ALWAYS">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="legislation_version">
+		<type name="public.legislation_version" length="0"/>
+	</column>
+	<column name="effective_date">
+		<type name="date" length="0"/>
+		<comment><![CDATA[The date provided in the legislation xml]]></comment>
+	</column>
+	<column name="created_at" default-value="now()">
+		<type name="timestamp" length="0"/>
+	</column>
+	<constraint name="legislation_version_pk" type="pk-constr" table="public.legislation_version">
+		<columns names="legislation_version_id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<relationship name="legislation_has_many_legislation_version" type="rel1n" layer="0"
+	 src-col-pattern="{st}_id"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#ef2929"
+	 src-table="public.legislation"
+	 dst-table="public.legislation_version"
+	 src-required="false" dst-required="false"/>
+
+<table name="congress" layer="0" collapse-mode="2" max-obj-count="4">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="1340" y="720"/>
+	<column name="congress_id" not-null="true">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="session_number">
+		<type name="smallint" length="0"/>
+	</column>
+	<column name="start_year">
+		<type name="smallint" length="0"/>
+	</column>
+	<column name="end_year">
+		<type name="smallint" length="0"/>
+	</column>
+	<constraint name="congress_pk" type="pk-constr" table="public.congress">
+		<columns names="congress_id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<relationship name="legislation_has_one_congress" type="rel11" layer="0"
+	 src-col-pattern="{st}_id"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#fcaf3e"
+	 src-table="public.congress"
+	 dst-table="public.legislation"
+	 src-required="false" dst-required="false">
+	<label ref-type="name-label">
+		<position x="-0.0296206" y="-28.6857"/>
+	</label>
+</relationship>
+
+<table name="version" layer="0" collapse-mode="2" max-obj-count="2">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="660" y="100"/>
+	<column name="version_id" not-null="true"
+	 identity-type="ALWAYS">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="base_id">
+		<type name="integer" length="0"/>
+		<comment><![CDATA[The version_id this is based off]]></comment>
+	</column>
+	<constraint name="version_pk" type="pk-constr" table="public.version">
+		<columns names="version_id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<relationship name="usc_release_has_one_version" type="rel11" layer="0"
+	 src-col-pattern="{st}_id"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#8ae234"
+	 src-table="public.version"
+	 dst-table="public.usc_release"
+	 src-required="false" dst-required="false"/>
+
+<table name="usc_chapter" layer="0" collapse-mode="2" max-obj-count="9">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="100" y="400"/>
+	<column name="usc_chapter_id" not-null="true"
+	 identity-type="ALWAYS">
+		<type name="smallint" length="0"/>
+	</column>
+	<column name="short_title">
+		<type name="character varying" length="0"/>
+		<comment><![CDATA[The number part of the title number]]></comment>
+	</column>
+	<column name="long_title">
+		<type name="character varying" length="0"/>
+		<comment><![CDATA[The longer name of the chapter]]></comment>
+	</column>
+	<column name="created_at" default-value="now()">
+		<type name="timestamp" length="0"/>
+	</column>
+	<column name="document">
+		<type name="character varying" length="0"/>
+	</column>
+	<column name="usc_ident">
+		<type name="character varying" length="0"/>
+	</column>
+	<constraint name="usc_chapter_pk" type="pk-constr" table="public.usc_chapter">
+		<columns names="usc_chapter_id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<relationship name="usc_chapter_has_one_usc_release" type="rel11" layer="0"
+	 src-col-pattern="{st}_id"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#ef2929"
+	 src-table="public.usc_release"
+	 dst-table="public.usc_chapter"
+	 src-required="false" dst-required="false"/>
+
+<table name="legislation_content" layer="0" collapse-mode="2" max-obj-count="10">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<comment><![CDATA[For holding the content of the bill]]></comment>
+	<position x="1640" y="360"/>
+	<column name="legislation_content_id" not-null="true"
+	 identity-type="ALWAYS">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="parent_id">
+		<type name="integer" length="0"/>
+		<comment><![CDATA[Points to the parent legislation_content object]]></comment>
+	</column>
+	<column name="order_number" default-value="0">
+		<type name="integer" length="0"/>
+		<comment><![CDATA[The order in which this falls compared to it's siblings]]></comment>
+	</column>
+	<column name="section_display">
+		<type name="character varying" length="0"/>
+		<comment><![CDATA[The section numbering.]]></comment>
+	</column>
+	<column name="heading">
+		<type name="character varying" length="0"/>
+		<comment><![CDATA[The text immediately following the section display, typically bolded when displayed.]]></comment>
+	</column>
+	<column name="content_str">
+		<type name="character varying" length="0"/>
+		<comment><![CDATA[The content of this particular section]]></comment>
+	</column>
+	<column name="content_type">
+		<type name="character varying" length="0"/>
+		<comment><![CDATA[The XML tag around the content_str portion]]></comment>
+	</column>
+	<column name="action_parse">
+		<type name="jsonb" length="0"/>
+		<comment><![CDATA[The parsed portions of the content.
+This is a debug column, safe to remove eventually]]></comment>
+	</column>
+	<constraint name="legislation_content_pk" type="pk-constr" table="public.legislation_content">
+		<columns names="legislation_content_id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<relationship name="legislation_version_has_many_legislation_content" type="rel1n" layer="0"
+	 src-col-pattern="{st}_id"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#7b0404"
+	 src-table="public.legislation_version"
+	 dst-table="public.legislation_content"
+	 src-required="false" dst-required="false">
+	<label ref-type="name-label">
+		<position x="-2.12879" y="-8.48566"/>
+	</label>
+</relationship>
+
+<table name="usc_section" layer="0" collapse-mode="2" max-obj-count="9">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<position x="860" y="380"/>
+	<column name="usc_section_id" not-null="true"
+	 identity-type="ALWAYS">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="usc_ident">
+		<type name="character varying" length="0"/>
+	</column>
+	<column name="usc_guid">
+		<type name="character varying" length="0"/>
+	</column>
+	<column name="number">
+		<type name="character varying" length="0"/>
+		<comment><![CDATA[The number portion of the section display.]]></comment>
+	</column>
+	<column name="section_display">
+		<type name="character varying" length="0"/>
+		<comment><![CDATA[The section display]]></comment>
+	</column>
+	<column name="heading">
+		<type name="character varying" length="0"/>
+		<comment><![CDATA[The heading portion of the section]]></comment>
+	</column>
+	<constraint name="usc_section_pk" type="pk-constr" table="public.usc_section">
+		<columns names="usc_section_id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<relationship name="usc_chapter_has_many_usc_section" type="rel1n" layer="0"
+	 src-col-pattern="{st}_id"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#fce94f"
+	 src-table="public.usc_chapter"
+	 dst-table="public.usc_section"
+	 src-required="false" dst-required="false"/>
+
+<table name="usc_content" layer="0" collapse-mode="2" max-obj-count="14">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<comment><![CDATA[For holding the content of the USCode]]></comment>
+	<position x="140" y="700"/>
+	<column name="usc_content_id" not-null="true"
+	 identity-type="ALWAYS">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="usc_ident">
+		<type name="character varying" length="0"/>
+	</column>
+	<column name="usc_guid">
+		<type name="character varying" length="0"/>
+	</column>
+	<column name="parent_id">
+		<type name="integer" length="0"/>
+		<comment><![CDATA[Points to the parent legislation_content object]]></comment>
+	</column>
+	<column name="order_number" default-value="0">
+		<type name="integer" length="0"/>
+		<comment><![CDATA[The order in which this falls compared to it's siblings]]></comment>
+	</column>
+	<column name="section_display">
+		<type name="character varying" length="0"/>
+		<comment><![CDATA[The section numbering.]]></comment>
+	</column>
+	<column name="heading">
+		<type name="character varying" length="0"/>
+		<comment><![CDATA[The text immediately following the section display, typically bolded when displayed.]]></comment>
+	</column>
+	<column name="content_str">
+		<type name="character varying" length="0"/>
+		<comment><![CDATA[The content of this particular section]]></comment>
+	</column>
+	<column name="content_type">
+		<type name="character varying" length="0"/>
+		<comment><![CDATA[The XML tag around the content_str portion]]></comment>
+	</column>
+	<column name="number">
+		<type name="character varying" length="0"/>
+	</column>
+	<constraint name="legislation_content_pk_cp" type="pk-constr" table="public.usc_content">
+		<columns names="usc_content_id" ref-type="src-columns"/>
+	</constraint>
+
+	<customidxs object-type="column">
+		<object name="usc_section_id" index="9"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="usc_section_fk" index="1"/>
+	</customidxs>
+</table>
+
+<relationship name="usc_section_has_many_usc_content" type="rel1n" layer="0"
+	 src-col-pattern="{st}_id"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#cbd1a1"
+	 src-table="public.usc_section"
+	 dst-table="public.usc_content"
+	 src-required="false" dst-required="false">
+	<label ref-type="name-label">
+		<position x="-7.37103" y="-6.78566"/>
+	</label>
+</relationship>
+
+<relationship name="version_has_many_usc_section" type="rel1n" layer="0"
+	 src-col-pattern="{st}_id"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#ec42f5"
+	 src-table="public.version"
+	 dst-table="public.usc_section"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="version_has_many_usc_content" type="rel1n" layer="0"
+	 src-col-pattern="{st}_id"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#098016"
+	 src-table="public.version"
+	 dst-table="public.usc_content"
+	 src-required="false" dst-required="false">
+	<label ref-type="name-label">
+		<position x="-1.50432" y="-3.78566"/>
+	</label>
+</relationship>
+
+<relationship name="version_has_many_legislation_version" type="rel1n" layer="0"
+	 src-col-pattern="{st}_id"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#bdde80"
+	 src-table="public.version"
+	 dst-table="public.legislation_version"
+	 src-required="false" dst-required="false"/>
+
+<table name="usc_content_diff" layer="0" collapse-mode="2" max-obj-count="15">
+	<schema name="public"/>
+	<role name="postgres"/>
+	<comment><![CDATA[For holding the content of the USCode]]></comment>
+	<position x="740" y="780"/>
+	<column name="usc_content_diff_id" not-null="true"
+	 identity-type="ALWAYS">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="usc_ident">
+		<type name="character varying" length="0"/>
+	</column>
+	<column name="usc_guid">
+		<type name="character varying" length="0"/>
+	</column>
+	<column name="order_number" default-value="0">
+		<type name="integer" length="0"/>
+		<comment><![CDATA[The order in which this falls compared to it's siblings]]></comment>
+	</column>
+	<column name="section_display">
+		<type name="character varying" length="0"/>
+		<comment><![CDATA[The section numbering.]]></comment>
+	</column>
+	<column name="heading">
+		<type name="character varying" length="0"/>
+		<comment><![CDATA[The text immediately following the section display, typically bolded when displayed.]]></comment>
+	</column>
+	<column name="content_str">
+		<type name="character varying" length="0"/>
+		<comment><![CDATA[The content of this particular section]]></comment>
+	</column>
+	<column name="content_type">
+		<type name="character varying" length="0"/>
+		<comment><![CDATA[The XML tag around the content_str portion]]></comment>
+	</column>
+	<column name="number">
+		<type name="character varying" length="0"/>
+	</column>
+	<constraint name="legislation_content_pk_cp_cp" type="pk-constr" table="public.usc_content_diff">
+		<columns names="usc_content_diff_id" ref-type="src-columns"/>
+	</constraint>
+
+	<customidxs object-type="column">
+		<object name="version_id" index="8"/>
+	</customidxs>
+
+	<customidxs object-type="constraint">
+		<object name="version_fk" index="1"/>
+	</customidxs>
+</table>
+
+<relationship name="version_has_many_usc_content_diff" type="rel1n" layer="0"
+	 src-col-pattern="{st}_id"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#4e6037"
+	 src-table="public.version"
+	 dst-table="public.usc_content_diff"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="usc_section_has_many_usc_content_diff" type="rel1n" layer="0"
+	 src-col-pattern="{st}_id"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#80ac87"
+	 src-table="public.usc_section"
+	 dst-table="public.usc_content_diff"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="version_has_many_usc_chapter" type="rel1n" layer="0"
+	 src-col-pattern="{st}_id"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#87f6d6"
+	 src-table="public.version"
+	 dst-table="public.usc_chapter"
+	 src-required="false" dst-required="false"/>
+
+<relationship name="usc_content_has_many_usc_content_diff" type="rel1n" layer="0"
+	 src-col-pattern="{st}_id"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#054e09"
+	 src-table="public.usc_content"
+	 dst-table="public.usc_content_diff"
+	 src-required="false" dst-required="false">
+	<label ref-type="name-label">
+		<position x="0.979449" y="3.55832"/>
+	</label>
+</relationship>
+
+<relationship name="legislation_has_many_usc_content_diff" type="rel1n" layer="0"
+	 src-col-pattern="{st}_id"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#d1848f"
+	 src-table="public.legislation"
+	 dst-table="public.usc_content_diff"
+	 src-required="false" dst-required="false">
+	<label ref-type="name-label">
+		<position x="2.68229" y="1.69549"/>
+	</label>
+</relationship>
+
+</dbmodel>

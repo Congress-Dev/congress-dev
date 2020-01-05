@@ -14,3 +14,4 @@ pandas==0.25.0
 gevent==1.4.0
 joblib==0.13.2
 Unidecode==1.1.1
+green
