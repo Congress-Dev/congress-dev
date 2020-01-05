@@ -6,6 +6,7 @@ import traceback
 from zipfile import ZipFile
 import hashlib
 import datetime
+import dateutil.parser as parser
 import pandas
 from lxml import etree
 from unidecode import unidecode  # GPLV2
@@ -532,8 +533,15 @@ def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object):
         new_vers_id = new_bill_version.version_id
 
         form_dates = root.xpath("//form/action/action-date")
-        last_date = form_dates[-1]
-        new_bill_version.effective_date = datetime.datetime.strptime(last_date.get("date"), r"%Y%m%d")
+        if(len(form_dates) > 0):
+            last_date = form_dates[-1]
+            try:
+                new_bill_version.effective_date = parser.parse(last_date.get("date"))
+            except:
+                try:
+                    new_bill_version.effective_date = parser.parse(last_date.text)
+                except:
+                    log.error("Unable to parse date")
 
         legis = root.xpath("//legis-body")
         if len(legis) > 0:
@@ -730,8 +738,8 @@ def parse_archive(path: str) -> List[dict]:
         )
 
     names = sorted(names, key=lambda x: x["bill_number"])
-    # names = names[30:35]
-    # names = [x for x in names if (x.get('title') == '116 - hr4 - ih')]
+    # names = names[50:55]
+    # names = [x for x in names if (x.get('bill_number') == 34)]
     # names = [x for x in names if (x.get('bill_version') == 'enr')]
     frec = Parallel(n_jobs=THREADS, backend="multiprocessing", verbose=5)(
         delayed(parse_bill)(
