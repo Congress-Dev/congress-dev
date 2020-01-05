@@ -531,6 +531,10 @@ def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object):
 
         new_vers_id = new_bill_version.version_id
 
+        form_dates = root.xpath("//form/action/action-date")
+        last_date = form_dates[-1]
+        new_bill_version.effective_date = datetime.datetime.strptime(last_date.get("date"), r"%Y%m%d")
+
         legis = root.xpath("//legis-body")
         if len(legis) > 0:
             legis = legis[0]

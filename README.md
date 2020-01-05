@@ -8,14 +8,13 @@ docker-compose .docker/docker-compose.yml up -d
 ```
 
 ## Loading the database
-From the backend folder, you will need to tell it to parse some files before you can view them. importers.releases will load 3 release points from the US Code website. ~10MB compressed and put it into the database ~500MB in the db.
-run_through will load the first 100 bills from the senate and the first 100 bills from the house (limited to 100 for speed), you can change it on line 671.
-A semi up to date postgres dump is available for [download](https://congress.dev/congress.backup)
+From the backend folder, you will need to tell it to parse some files before you can view them. importers.releases will load 1 release point from the US Code website. ~10MB compressed and put it into the database ~500MB in the db.
+A semi up to date postgres dump is available for [download](https://filescongress.dev/congress.backup.lzma)
 
 ```bash
 docker exec -it docker_parser_api bash
 
 python3 -m billparser.importers.releases rp.json
-python3 -m billparser.run_through
+python3 -m billparser.importers.bills bills.json
 
 ```

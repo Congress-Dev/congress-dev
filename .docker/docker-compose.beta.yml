@@ -4,9 +4,12 @@ services:
     environment:
     - STAGE=prod
     - db_host=10.0.0.248:5432
+    - db_table=us_code_beta
+    ports:
+    - "9091:9090"
   congress_viewer_app:
     volumes:
-    - /var/www/congress:/usr/src/app/build
+    - /var/www/congress-beta:/usr/src/app/build
     entrypoint:
     - "yarn"
     command:
