@@ -16,6 +16,8 @@ services:
     - "yarn"
     command:
     - "build"
+    ports:
+    - "3000:3000"
   congress_postgres:
     container_name: beta_congress_postgres
     image: tianon/true
