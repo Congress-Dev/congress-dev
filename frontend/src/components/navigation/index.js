@@ -18,7 +18,7 @@ class Navigation extends Component {
         <div id="navigation">
             <div class="brand">
                 <h1>Congress.dev{versionTitle}</h1>
-                <span>0.0.5</span>
+                <span>0.0.7</span>
             </div>
             <div class="links">
                 <a eventKey={1} href="/">Titles</a>

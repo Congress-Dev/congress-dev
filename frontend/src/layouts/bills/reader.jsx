@@ -95,8 +95,8 @@ class BillReader extends Component {
       if(bill_version_id && !chapter){
         getBillContent(bill_version_id)
         .then((result)=>{
-        //const {childLookup = {}, parentLookup = {}} = mergeContents(result);
-          //this.setState({childLookup, parentLookup, contents: result || null});
+          const {childLookup = {}, parentLookup = {}} = mergeContents(result);
+          this.setState({childLookup, parentLookup, contents: result || null});
         });
         getBillContent2(bill_version_id)
         .then((result)=>{
