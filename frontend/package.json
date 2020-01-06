@@ -18,7 +18,7 @@
     "react-scrollbar": "^0.5.4",
     "react-spinners": "^0.6.1",
     "react-update-url-on-scroll": "^3.5.0",
-    "yarn": "^1.13.0"
+    "yarn": "^1.17.3"
   },
   "scripts": {
     "start": "react-scripts start",
