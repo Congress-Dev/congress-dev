@@ -7,6 +7,7 @@ from flask_sqlalchemy_session import current_session
 from sqlalchemy import String, or_
 from sqlalchemy.orm import load_only
 from sqlalchemy.sql.functions import func
+from sqlalchemy.sql.expression import cast
 
 from billparser.db.models import (
     Congress,
