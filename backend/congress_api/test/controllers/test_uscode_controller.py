@@ -4,7 +4,7 @@ from __future__ import absolute_import
 
 import unittest
 
-from congress_api.test import BaseTestCase
+from congress_api.test.controllers import BaseTestCase
 
 
 class TestUscodeController(BaseTestCase):

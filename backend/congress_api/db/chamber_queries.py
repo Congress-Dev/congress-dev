@@ -27,11 +27,25 @@ CACHE_SIZE = int(os.environ.get("CACHE_SIZE", 512))
 
 @cached(TTLCache(CACHE_SIZE, CACHE_TIME))
 def get_chamber_summary_obj(session_number: int, chamber: str) -> ChamberMetadata:
+    """
+    Queries for the Chamber summary for a given session of congress
+
+    Args:
+        session_number (int): The requested session
+        chamber (str): The requested Chamber (House or Senate)
+
+    Raises:
+        TypeError: Raised when the session isn't a number
+
+    Returns:
+        ChamberMetadata: The number of bills loaded
+    """
     if not isinstance(session_number, int):
         raise TypeError
 
     chamber = chamber.lower()
     chamber = chamber[0].upper() + chamber[1:]
+
     query = (
         current_session.query(
             Legislation.congress_id, func.count(Legislation.legislation_id)
@@ -59,7 +73,6 @@ def get_chamber_bills_list(
     page = page - 1
     chamber = chamber.lower()
     chamber = chamber[0].upper() + chamber[1:]
-    results = []
 
     bills = (
         current_session.query(Legislation)
@@ -152,7 +165,7 @@ def search_legislation(
     )
 
     bills_results: List[Legislation] = query.all()
-    print(query.statement.compile(compile_kwargs={"literal_binds": True}))
+
     if len(bills_results) == 0:
         return None
 
