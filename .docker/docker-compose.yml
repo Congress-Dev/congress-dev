@@ -26,7 +26,7 @@ services:
     entrypoint: "python3"
     command:
     - "-m"
-    - "billparser"
+    - "congress_api"
   congress_viewer_app:
     image: congress_viewer_app:latest
     container_name: congress_viewer_app
