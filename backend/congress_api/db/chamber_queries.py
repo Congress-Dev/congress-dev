@@ -66,7 +66,7 @@ def get_chamber_summary_obj(session_number: int, chamber: str) -> ChamberMetadat
 
 @cached(TTLCache(CACHE_SIZE, CACHE_TIME))
 def get_chamber_bills_list(
-    session_number: int, chamber: int, page_size: int, page: int
+    session_number: int, chamber: str, page_size: int, page: int
 ) -> List[BillSlimMetadata]:
     if not isinstance(session_number, int):
         raise TypeError
@@ -102,9 +102,10 @@ def get_chamber_bills_list(
             legislation_id=bill.legislation_id,
             title=bill.title,
             number=bill.number,
-            congress_id=bill.congress_id,
+            congress=session_number,
             legislation_type=bill.legislation_type.value,
             legislation_versions=[],
+            chamber=chamber,
         )
 
     legis_versions = (
@@ -130,22 +131,47 @@ def get_chamber_bills_list(
 def search_legislation(
     congress: str, chamber: str, versions: str, text: str, page: int, page_size: int
 ):
-    query = current_session.query(Legislation)
-    chambers = chamber.replace(" ", "").lower().split(",")
-    sessions = congress.replace(" ", "").split(",")
-    version_strs = versions.replace(" ", "").split(",")
+
+    if chamber not in ["None", "", None]:
+        chambers = chamber.replace(" ", "").lower().split(",")
+    else:
+        chambers = []
+
+    if congress in [None, "", "None"]:
+        sessions = []
+    else:
+        sessions = congress.replace(" ", "").split(",")
+    if versions not in ["", "None", None]:
+        version_strs = versions.replace(" ", "").split(",")
+    else:
+        version_strs = []
     chamber_srch = []
     version_srch = []
     if "house" in chambers:
         chamber_srch.append(LegislationChamber.House)
     if "senate" in chambers:
         chamber_srch.append(LegislationChamber.Senate)
-
     for vers in version_strs:
         if vers.upper() in LegislationVersionEnum._member_names_:
             version_srch.append(LegislationVersionEnum(vers.upper()))
-
-    query = query.filter(Legislation.chamber.in_(chamber_srch))
+    if sessions != []:
+        cong_query = (
+            current_session.query(Congress)
+            .filter(Congress.session_number.in_([int(x) for x in sessions]))
+            .options(load_only(Congress.congress_id, Congress.session_number))
+            .all()
+        )
+    else:
+        cong_query = (
+            current_session.query(Congress)
+            .options(load_only(Congress.congress_id, Congress.session_number))
+            .all()
+        )
+    congresses = {cong.congress_id: cong.session_number for cong in cong_query}
+    query = current_session.query(Legislation)
+    query = query.filter(Legislation.congress_id.in_(list(congresses.keys())))
+    if chambers != []:
+        query = query.filter(Legislation.chamber.in_(chamber_srch))
     query = query.filter(
         or_(
             Legislation.title.ilike(f"%{text}%"),
@@ -154,6 +180,9 @@ def search_legislation(
             ),
         )
     )
+    query = query.join(LegislationVersion)
+    query = query.filter(LegislationVersion.legislation_version.in_(version_srch))
+    query = query.order_by(Legislation.number)
     query = query.limit(int(page_size)).offset(int((page - 1) * page_size))
     query = query.options(
         load_only(
@@ -162,18 +191,20 @@ def search_legislation(
             Legislation.number,
             Legislation.congress_id,
             Legislation.legislation_type,
+            Legislation.chamber,
         )
     )
 
     bills_results: List[Legislation] = query.all()
 
     if len(bills_results) == 0:
-        return None
+        return BillSearchList(params=None, legislation=[])
 
     bill_ids = [x.legislation_id for x in bills_results]
 
     legis_versions = (
         current_session.query(LegislationVersion)
+        .filter(LegislationVersion.legislation_version.in_(version_srch))
         .filter(LegislationVersion.legislation_id.in_(bill_ids))
         .options(
             load_only(
@@ -192,11 +223,12 @@ def search_legislation(
     for bill in bills_results:
         result = BillMetadata(
             legislation_type=bill.legislation_type,
-            congress_id=bill.congress_id,
+            congress=congresses[bill.congress_id],
             number=bill.number,
             title=bill.title,
             legislation_id=bill.legislation_id,
             legislation_versions=[],
+            chamber=bill.chamber,
         )
         for vers in legis_versions:
             if vers.legislation_id != bill.legislation_id:
@@ -210,5 +242,6 @@ def search_legislation(
                     legislation_version=vers.legislation_version,
                 )
             )
-        bill_metadatas.append(result)
+        if(len(result.legislation_versions) > 0):
+            bill_metadatas.append(result)
     return BillSearchList(params=None, legislation=bill_metadatas)

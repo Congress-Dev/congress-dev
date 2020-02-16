@@ -218,12 +218,13 @@ def get_congress_search(
 
     :rtype: BillSearchList
     """
+    print("Got req")
     try:
         resp = search_legislation(congress, chamber, versions, text, page, page_size)
+        print("returning", resp)
         return resp
     except Exception as e:
-        print(e)
-        pass
+        return ErrorResponse(message=str(e)), 500
     return ErrorResponse(message="Not Implemented"), 501
 
 

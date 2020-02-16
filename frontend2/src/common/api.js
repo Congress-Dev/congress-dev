@@ -26,8 +26,8 @@ export const getBillVersionText = (congress, chamber, billNumber, billVersion) =
         ({ legislation_content_id, order_number }) =>
           `${legislation_content_id}.${order_number.toString().padStart(3, "0")}`
       );
-      if(sorted.length == 0){
-          return {};
+      if (sorted.length === 0) {
+        return {};
       }
       lodash.forEach(sorted, obj => {
         let copyObj = { ...obj, children: [] };
@@ -38,4 +38,66 @@ export const getBillVersionText = (congress, chamber, billNumber, billVersion) =
       });
       return looped[sorted[0].legislation_content_id];
     });
+};
+
+export const getUSCRevisions = () => {
+  // Grab the list of USCode revision points from the server
+  return fetch(`${endpoint}/usc/releases`)
+    .then(res => res.json())
+    .then(obj => obj.releases);
+};
+
+export const getUSCTitleList = uscReleaseId => {
+  return fetch(`${endpoint}/usc/${uscReleaseId}/titles`)
+    .then(res => res.json())
+    .then(({ titles }) => lodash.sortBy(titles, "short_title"));
+};
+
+export const getUSCSectionList = (uscReleaseId, shortTitle) => {
+  return fetch(`${endpoint}/usc/${uscReleaseId}/${shortTitle}/sections`)
+    .then(res => res.json())
+    .then(({ sections }) => lodash.sortBy(sections, "number"));
+};
+
+export const getUSCSectionContent = (uscReleaseId, shortTitle, sectionNumber) => {
+  return fetch(`${endpoint}/usc/${uscReleaseId}/${shortTitle}/${sectionNumber}/text`)
+    .then(res => res.json())
+    .then(flatJson => {
+      let looped = {};
+      const sorted = lodash.sortBy(
+        flatJson.content,
+        ({ usc_content_id, order_number }) =>
+          `${usc_content_id}.${order_number.toString().padStart(3, "0")}`
+      );
+      if (sorted.length === 0) {
+        return {};
+      }
+      lodash.forEach(sorted, obj => {
+        let copyObj = { ...obj, children: [] };
+        looped[copyObj.usc_content_id] = copyObj;
+        if (copyObj.parent_id) {
+          looped[copyObj.parent_id].children.push(copyObj);
+        }
+      });
+      return { children: [looped[sorted[0].usc_content_id]] };
+    });
+};
+
+export const getCongressSearch = (
+  congress,
+  chamber,
+  versions,
+  text,
+  page,
+  pageSize
+) => {
+  return fetch(
+    `${endpoint}/congress/search?congress=${congress || "None"}&chamber=${chamber || "None"}&versions=${versions || "None"}&text=${text}&page=${page}&pageSize=${pageSize}`
+  )
+    .then(res => {
+      console.log(res);
+      return res;
+    })
+    .then(res => res.json())
+    .then(obj => obj.legislation);
 };

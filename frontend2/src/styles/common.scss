@@ -1,3 +1,30 @@
 @import "~normalize.css";
 @import "~@blueprintjs/core/lib/css/blueprint.css";
 @import "~@blueprintjs/icons/lib/css/blueprint-icons.css";
+
+
+.usc-release-box {
+  width: 400px;
+  border-radius: 10px;
+}
+
+.sidebar {
+  width: 20%;
+  display: inline-block;
+  vertical-align: top;
+}
+
+.content {
+  display: inline-block;
+  vertical-align: top;
+  width: 80%;
+}
+
+.main-navbar {
+  margin-bottom: 10px;
+}
+
+.search-content {
+  width:80%;
+  margin-left: 10%;
+}

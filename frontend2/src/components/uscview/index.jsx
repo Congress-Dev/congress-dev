@@ -1,13 +1,9 @@
-// Will have to handle fetching the bill text, and formatting it correctly.
-
 import React, { useEffect, useState } from "react";
 import lodash from "lodash";
 
+import { getUSCSectionContent } from "common/api";
 import SyncLoader from "react-spinners/SyncLoader";
 
-import { getBillVersionText } from "common/api.js";
-
-// TODO: move this somewhere in scss?
 const styles = {
   section: {
     marginLeft: "20px",
@@ -46,17 +42,16 @@ const styles = {
   },
   sidebar: {},
 };
-function BillDisplay(props) {
-  // TODO: Add minimap scrollbar
-  // *TODO*: Start using the action list to render a list of parsed actions
-  // TODO: Add permalink feature
-  // TODO: Add highlight feature to permalink in the url ?link=a/1/ii&highlight=a/1/ii,a/1/v
-  const [textTree, setTextTree] = useState({});
+function USCView(props) {
+  const [contentTree, setContentTree] = useState({});
+  const { release, title, section } = props;
+
   useEffect(() => {
-    const { congress, chamber, billNumber, billVersion } = props;
-    setTextTree({ loading: true });
-    getBillVersionText(congress, chamber, billNumber, billVersion).then(setTextTree);
-  }, [props.billVersion]);
+    if (section) {
+      setContentTree({ loading: true });
+      getUSCSectionContent(release, title, section).then(setContentTree);
+    }
+  }, [section]);
   function renderRecursive(node) {
     return (
       <>
@@ -64,7 +59,7 @@ function BillDisplay(props) {
           node.children || [],
           (
             {
-              legislation_content_id,
+              usc_content_id,
               content_str,
               content_type,
               section_display,
@@ -76,7 +71,7 @@ function BillDisplay(props) {
             if (heading !== undefined) {
               return (
                 <div
-                  name={legislation_content_id}
+                  name={usc_content_id}
                   key={ind}
                   style={
                     content_type === "legis-body"
@@ -96,7 +91,7 @@ function BillDisplay(props) {
             } else {
               return (
                 <div
-                  name={legislation_content_id}
+                  name={usc_content_id}
                   key={ind}
                   style={
                     content_type === "legis-body"
@@ -117,10 +112,11 @@ function BillDisplay(props) {
       </>
     );
   }
-  if (textTree.loading) {
+  if (contentTree.loading) {
     return <SyncLoader loading={true} />;
   }
-  return <>{renderRecursive(textTree)}</>;
+  console.log(contentTree);
+  return <>{renderRecursive(contentTree)}</>;
 }
 
-export default BillDisplay;
+export default USCView;

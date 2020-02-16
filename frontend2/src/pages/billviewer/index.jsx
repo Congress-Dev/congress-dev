@@ -14,6 +14,8 @@ const defaultVers = {
 };
 
 function BillViewer(props) {
+  // TODO: Add sidebar for viewing the differences that a bill will generate
+  // TODO: Option for comparing two versions of the same bill and highlighting differences
   const [bill, setBill] = useState({});
   const [billVers, setBillVers] = useState("");
   useEffect(() => {
@@ -21,10 +23,8 @@ function BillViewer(props) {
     const { congress, chamber, billNumber, billVersion } = props.match.params;
     // If we didn't get a bill version, default to the introduced one.
     if (billVersion === undefined) {
-      console.log("Setting default");
       setBillVers(defaultVers[chamber.toLowerCase()]);
     } else {
-      console.log("Setting", billVersion);
       setBillVers(billVersion);
     }
     getBillSummary(congress, chamber, billNumber).then(setBill);
@@ -36,9 +36,7 @@ function BillViewer(props) {
     if (billVers !== undefined) {
       props.history.push(`/bill/${congress}/${chamber}/${billNumber}/${billVers}`);
     }
-    console.log("Changed bill vers");
   }, [billVers]);
-  console.log("Rendering", billVers);
   const { congress, chamber, billNumber, billVersion } = props.match.params;
   return (
     <>

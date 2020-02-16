@@ -22,7 +22,7 @@ CACHE_SIZE = int(os.environ.get("CACHE_SIZE", 512))
 
 @cached(TTLCache(CACHE_SIZE, CACHE_TIME))
 def get_legislation_details(
-    session_number: int, chamber, bill_number: int
+    session_number: int, chamber: str, bill_number: int
 ) -> BillMetadata:
     chamber = chamber.lower()
     chamber = chamber[0].upper() + chamber[1:]
@@ -66,11 +66,12 @@ def get_legislation_details(
     )
     result = BillMetadata(
         legislation_type=bill.legislation_type,
-        congress_id=bill.congress_id,
+        congress=session_number,
         number=bill.number,
         title=bill.title,
         legislation_id=bill.legislation_id,
         legislation_versions=[],
+        chamber=chamber,
     )
     for vers in legis_versions:
         result.legislation_versions.append(

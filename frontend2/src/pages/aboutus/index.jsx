@@ -7,14 +7,14 @@ function AboutUs() {
       <p>The source for our data is from official government websites</p>
       <ul>
         <li>
-          <a href="https://www.govinfo.gov/bulkdata" target="_blank">
+          <a href="https://www.govinfo.gov/bulkdata" target="_blank" rel="noopener noreferrer">
             Bill Text/Statuses
           </a>
         </li>
         <li>
           <a
             href="https://uscode.house.gov/download/priorreleasepoints.htm"
-            target="_blank"
+            target="_blank" rel="noopener noreferrer"
           >
             USCode Text
           </a>
