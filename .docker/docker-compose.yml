@@ -37,7 +37,7 @@ services:
     - CHOKIDAR_USEPOLLING=true
     - API_URL=http://localhost:9090/
     build:
-      context: ../frontend
+      context: ../frontend2
       dockerfile: .docker/Dockerfile
     volumes:
     - ../frontend2/public:/usr/src/app/public

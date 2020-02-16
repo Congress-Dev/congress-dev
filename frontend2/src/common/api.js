@@ -4,7 +4,7 @@ function capFirstLetter(str) {
   return str.charAt(0).toUpperCase() + str.substring(1);
 }
 
-export const endpoint = "http://localhost:9090";
+export const endpoint = "https://api2.congress.dev";
 
 export const getBillSummary = (congress, chamber, billNumber) => {
   return fetch(
@@ -92,12 +92,9 @@ export const getCongressSearch = (
   pageSize
 ) => {
   return fetch(
-    `${endpoint}/congress/search?congress=${congress || "None"}&chamber=${chamber || "None"}&versions=${versions || "None"}&text=${text}&page=${page}&pageSize=${pageSize}`
+    `${endpoint}/congress/search?congress=${congress || "None"}&chamber=${chamber ||
+      "None"}&versions=${versions || ""}&text=${text}&page=${page}&pageSize=${pageSize}`
   )
-    .then(res => {
-      console.log(res);
-      return res;
-    })
     .then(res => res.json())
     .then(obj => obj.legislation);
 };
