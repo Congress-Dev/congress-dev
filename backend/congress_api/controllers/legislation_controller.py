@@ -9,6 +9,7 @@ from congress_api.db.legislation_queries import (
     get_legislation_details,
     get_legislation_version_details,
     get_legislation_version_text,
+    get_legislation_version_diffs
 )
 from congress_api.db.session_queries import get_congress_session, get_congress_sessions
 from congress_api.models.bill_metadata import BillMetadata  # noqa: E501
@@ -65,6 +66,7 @@ def get_bill_version_amdts(
 
     :rtype: object
     """
+
     return ErrorResponse(message="Not Implemented"), 501
 
 
@@ -86,6 +88,11 @@ def get_bill_version_diffs(
 
     :rtype: object
     """
+    try:
+        res = get_legislation_version_diffs(session, chamber, bill, version)
+        return res
+    except Exception as e:
+        return ErrorResponse(message=str(e)), 500
     return ErrorResponse(message="Not Implemented"), 501
 
 

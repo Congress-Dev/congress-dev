@@ -214,3 +214,9 @@ def get_legislation_version_text(
             for t in text
         ],
     )
+
+@cached(TTLCache(CACHE_SIZE, CACHE_TIME))
+def get_legislation_version_diffs(
+session, chamber, bill, version
+):
+    pass

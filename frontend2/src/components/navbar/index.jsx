@@ -48,7 +48,7 @@ function NavBar() {
           icon="th-filtered"
           text="Enrolled Bills"
           onClick={() => {
-            history.push("/bills?query=enrolled");
+            history.push("/bills?versions=enr&text=");
           }}
         />
         <Button
