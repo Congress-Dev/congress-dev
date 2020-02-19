@@ -7,6 +7,8 @@ services:
     - STAGE=prod
     - db_host=10.0.0.248:5432
     - db_table=us_code_beta
+    - CACHE_HEADER_TIME=432000
+    - CACHE_TIME=432000
     ports: ["9091:9090"]
   congress_viewer_app:
     image: beta_congress_viewer_app:latest

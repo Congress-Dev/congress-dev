@@ -67,6 +67,7 @@ function BillViewer(props) {
         chamber={chamber}
         billNumber={billNumber}
         billVersion={billVers || billVersion}
+        showTooltips={true}
       />
     </>
   );

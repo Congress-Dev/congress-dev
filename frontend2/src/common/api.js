@@ -16,7 +16,7 @@ export const getBillVersionText = (congress, chamber, billNumber, billVersion) =
   // Grab the bill text, and then put it into the nested format
   // TODO: Move this treeification to the server?
   return fetch(
-    `${endpoint}/congress/${congress}/${chamber.toLowerCase()}-bill/${billNumber}/${billVersion}/text`
+    `${endpoint}/congress/${congress}/${chamber.toLowerCase()}-bill/${billNumber}/${billVersion}/text?include_parsed=true`
   )
     .then(res => res.json())
     .then(flatJson => {

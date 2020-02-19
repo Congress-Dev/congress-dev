@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import lodash from "lodash";
 
 import SyncLoader from "react-spinners/SyncLoader";
+import { Tooltip } from "@blueprintjs/core";
 
 import { getBillVersionText } from "common/api.js";
 
@@ -69,10 +70,12 @@ function BillDisplay(props) {
               content_type,
               section_display,
               heading,
+              action,
               children = [],
             },
             ind
           ) => {
+            let actionStr = lodash.chain(action).map(lodash.keys).flatten().remove(x=>x!=="changed"&&x!=="parsed_cite").value().join(", ");
             if (heading !== undefined) {
               return (
                 <div
@@ -84,12 +87,14 @@ function BillDisplay(props) {
                       : styles[content_type] || styles.section
                   }
                 >
-                  <span>
-                    <b>
-                      {section_display} {heading}
-                    </b>
-                    <p style={styles.continue}>{content_str}</p>
-                  </span>
+                  <Tooltip content={actionStr} disabled={actionStr === "" || props.showTooltips !== true}>
+                    <span>
+                      <b>
+                        {section_display} {heading}
+                      </b>
+                      <p style={styles.continue}>{content_str}</p>
+                    </span>
+                  </Tooltip>
                   {renderRecursive({ children })}
                 </div>
               );
@@ -104,10 +109,12 @@ function BillDisplay(props) {
                       : styles[content_type] || styles.section
                   }
                 >
-                  <span>
-                    <span style={{ fontWeight: "bolder" }}>{section_display}</span>{" "}
-                    <span>{content_str}</span>
-                  </span>
+                  <Tooltip content={actionStr} disabled={actionStr === "" || props.showTooltips !== true}>
+                    <span>
+                      <span style={{ fontWeight: "bolder" }}>{section_display}</span>{" "}
+                      <span>{content_str}</span>
+                    </span>
+                  </Tooltip>
                   {renderRecursive({ children })}
                 </div>
               );
