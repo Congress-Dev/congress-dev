@@ -19,18 +19,19 @@ class BillMetadata(Model):
     def __init__(
         self,
         legislation_type=None,
-        congress_id=None,
+        congress=None,
         number=None,
         title=None,
         legislation_id=None,
         legislation_versions=None,
+        chamber=None,
     ):  # noqa: E501
         """BillMetadata - a model defined in OpenAPI
 
         :param legislation_type: The legislation_type of this BillMetadata.  # noqa: E501
         :type legislation_type: str
-        :param congress_id: The congress_id of this BillMetadata.  # noqa: E501
-        :type congress_id: int
+        :param congress: The congress session of this BillMetadata.  # noqa: E501
+        :type congress: int
         :param number: The number of this BillMetadata.  # noqa: E501
         :type number: int
         :param title: The title of this BillMetadata.  # noqa: E501
@@ -42,28 +43,31 @@ class BillMetadata(Model):
         """
         self.openapi_types = {
             "legislation_type": str,
-            "congress_id": int,
+            "congress": int,
             "number": int,
             "title": str,
             "legislation_id": int,
             "legislation_versions": List[BillVersionMetadata],
+            "chamber": str,
         }
 
         self.attribute_map = {
             "legislation_type": "legislation_type",
-            "congress_id": "congress_id",
+            "congress": "congress",
             "number": "number",
             "title": "title",
             "legislation_id": "legislation_id",
             "legislation_versions": "legislation_versions",
+            "chamber": "chamber"
         }
 
         self._legislation_type = legislation_type
-        self._congress_id = congress_id
+        self._congress = congress
         self._number = number
         self._title = title
         self._legislation_id = legislation_id
         self._legislation_versions = legislation_versions
+        self._chamber = chamber
 
     @classmethod
     def from_dict(cls, dikt) -> "BillMetadata":
@@ -98,25 +102,25 @@ class BillMetadata(Model):
         self._legislation_type = legislation_type
 
     @property
-    def congress_id(self):
-        """Gets the congress_id of this BillMetadata.
+    def congress(self):
+        """Gets the congress of this BillMetadata.
 
 
-        :return: The congress_id of this BillMetadata.
+        :return: The congress of this BillMetadata.
         :rtype: int
         """
-        return self._congress_id
+        return self._congress
 
-    @congress_id.setter
-    def congress_id(self, congress_id):
-        """Sets the congress_id of this BillMetadata.
+    @congress.setter
+    def congress(self, congress):
+        """Sets the congress of this BillMetadata.
 
 
-        :param congress_id: The congress_id of this BillMetadata.
-        :type congress_id: int
+        :param congress: The congress of this BillMetadata.
+        :type congress: int
         """
 
-        self._congress_id = congress_id
+        self._congress = congress
 
     @property
     def number(self):
@@ -201,3 +205,11 @@ class BillMetadata(Model):
         """
 
         self._legislation_versions = legislation_versions
+
+    @property
+    def chamber(self):
+        return self._chamber
+
+    @chamber.setter
+    def chamber(self, chamber):
+        self._chamber = chamber
