@@ -465,13 +465,16 @@ paths:
           schema:
             type: string
           style: simple
-      operationId: get_bill_version_diffs
+      operationId: get_bill_version_diff_metadata
       responses:
         '200':
           description: Metadata about the particular bill
           content:
             application/json:
-              schema: {}
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BillDiffList'
         '400':
           description: Response for an invalid request
           content:
@@ -496,7 +499,7 @@ paths:
       description: Search for the different bills
       parameters:
         - description: Comma separated list of sessions to filter by
-          explode: false
+          explode: true
           in: query
           name: congress
           required: false
@@ -504,7 +507,7 @@ paths:
             type: string
           style: form
         - description: Comma separated list of chambers to filter by
-          explode: false
+          explode: true
           in: query
           name: chamber
           required: false
@@ -512,7 +515,7 @@ paths:
             type: string
           style: form
         - description: Comma separated list of bill versions to include
-          explode: false
+          explode: true
           in: query
           name: versions
           required: false
@@ -520,7 +523,7 @@ paths:
             type: string
           style: form
         - description: Text to search for
-          explode: false
+          explode: true
           in: query
           name: text
           required: false
@@ -528,7 +531,7 @@ paths:
             type: string
           style: form
         - description: The page of results
-          explode: false
+          explode: true
           in: query
           name: page
           required: false
@@ -538,7 +541,7 @@ paths:
             type: integer
           style: form
         - description: Page size
-          explode: false
+          explode: true
           in: query
           name: pageSize
           required: false
@@ -655,6 +658,76 @@ paths:
           schema:
             type: string
           style: simple
+  '/congress/{session}/{chamber}-bill/{bill}/{version}/diffs/{short_title}/{section_number}':
+    get:
+      description: Get information about a specific bill
+      parameters:
+        - description: Congress session
+          explode: false
+          in: path
+          name: session
+          required: true
+          schema:
+            default: '116'
+            type: string
+          style: simple
+        - description: The chamber of Congress to query
+          explode: false
+          in: path
+          name: chamber
+          required: true
+          schema:
+            enum:
+              - house
+              - senate
+            type: string
+          style: simple
+        - description: "The bill's number"
+          explode: false
+          in: path
+          name: bill
+          required: true
+          schema:
+            type: string
+          style: simple
+        - description: The bill version to request
+          explode: false
+          in: path
+          name: version
+          required: true
+          schema:
+            type: string
+          style: simple
+        - explode: false
+          in: path
+          name: short_title
+          required: true
+          schema:
+            type: string
+          style: simple
+        - explode: false
+          in: path
+          name: section_number
+          required: true
+          schema:
+            type: string
+          style: simple
+      operationId: get_bill_version_diffs
+      responses:
+        '200':
+          description: Metadata about the particular bill
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillContentDiffList'
+        '400':
+          description: Response for an invalid request
+          content:
+            application/json:
+              schema: {}
+      x-openapi-router-controller: congress_api.controllers.legislation_controller
+      tags:
+        - legislation
 servers:
   - description: Main API endpoint
     url: 'https://api.congress.dev/'
@@ -1169,6 +1242,70 @@ components:
             order_number: 5
             content_str: content_str
             usc_ident: usc_ident
+    BillDiffList:
+      title: BillDiffMetadata
+      type: object
+      properties:
+        legislation_version_id:
+          type: integer
+        sections:
+          type: array
+          items:
+            $ref: '#/components/schemas/BillDiffMetadataItem'
+        short_title:
+          type: string
+        long_title:
+          type: string
+    BillDiffMetadataItem:
+      title: BillDiffMetadataItem
+      type: object
+      properties:
+        long_title:
+          type: string
+        section_number:
+          type: string
+        heading:
+          type: string
+        display:
+          type: string
+        short_title:
+          type: string
+    BillContentDiffList:
+      title: BillContentDiffList
+      type: object
+      properties:
+        legislation_version_id:
+          type: string
+        diffs:
+          type: array
+          items:
+            $ref: '#/components/schemas/BillContentDiff'
+    BillContentDiff:
+      title: BillContentDiff
+      type: object
+      properties:
+        number:
+          type: string
+        content_type:
+          type: string
+        content_str:
+          type: string
+        heading:
+          type: string
+        section_display:
+          type: string
+        order_number:
+          type: integer
+        usc_guid:
+          type: string
+        usc_ident:
+          type: string
+        usc_content_id:
+          type: integer
+        usc_section_id:
+          type: integer
+        usc_content_diff_id:
+          type: integer
   securitySchemes: {}
 tags:
   - description: Endpoints for retrieving data about bills

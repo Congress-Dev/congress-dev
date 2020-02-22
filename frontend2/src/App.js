@@ -20,7 +20,8 @@ function App() {
       <NavBar />
       <Switch>
         <Route
-          path="/bill/:congress/:chamber/:billNumber/:billVersion"
+        exact
+          path="/bill/:congress/:chamber/:billNumber/:billVersion?/diffs/:uscTitle/:uscSection"
           component={BillViewer}
         />
         <Route
@@ -28,6 +29,7 @@ function App() {
           path="/bill/:congress/:chamber/:billNumber/:billVersion?"
           component={BillViewer}
         />
+
         <Route exact path="/bills" component={BillSearch} />
         <Route exact path="/about" component={AboutUs} />
         <Route exact path="/contact" component={ContactUs} />

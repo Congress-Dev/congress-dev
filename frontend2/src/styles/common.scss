@@ -28,3 +28,15 @@
   width:80%;
   margin-left: 10%;
 }
+
+.section-tree div {
+  height: auto;
+}
+.section-tree div span{
+  white-space: normal;
+  cursor: pointer;
+}
+
+.link>div:first-child>span:nth-child(3){
+  cursor: pointer;
+}

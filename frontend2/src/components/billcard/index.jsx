@@ -29,6 +29,7 @@ function BillCard(props) {
           const anchorObj = (
             <a
               href={`/bill/${bill.congress}/${bill.chamber}/${bill.number}/${vers.legislation_version}`}
+              key={`item-${ind}`}
             >
               {versionToFull[vers.legislation_version.toLowerCase()]}
             </a>

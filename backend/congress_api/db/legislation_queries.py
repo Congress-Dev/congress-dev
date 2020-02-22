@@ -2,19 +2,28 @@ import os
 from typing import List
 
 from cachetools import TTLCache, cached
+from collections import defaultdict
 from flask_sqlalchemy_session import current_session
 from sqlalchemy.orm import load_only
+from sqlalchemy import distinct
 
 from billparser.db.models import (
     Congress,
     Legislation,
     LegislationContent,
     LegislationVersion,
+    USCContentDiff,
+    USCChapter,
+    USCSection,
 )
 from congress_api.models.bill_metadata import BillMetadata  # noqa: E501
 from congress_api.models.bill_text_content import BillTextContent  # noqa: E501
 from congress_api.models.bill_text_response import BillTextResponse  # noqa: E501
 from congress_api.models.bill_version_metadata import BillVersionMetadata  # noqa: E501
+from congress_api.models.usc_section_content import USCSectionContent
+from congress_api.models.bill_diff_list import BillDiffList, BillDiffMetadataItem
+from congress_api.models.bill_content_diff import BillContentDiff  # noqa: E501
+from congress_api.models.bill_content_diff_list import BillContentDiffList  # noqa: E501
 
 CACHE_TIME = int(os.environ.get("CACHE_TIME", 0))
 CACHE_SIZE = int(os.environ.get("CACHE_SIZE", 512))
@@ -215,8 +224,146 @@ def get_legislation_version_text(
         ],
     )
 
-@cached(TTLCache(CACHE_SIZE, CACHE_TIME))
+
 def get_legislation_version_diffs(
-session, chamber, bill, version
-):
-    pass
+    session_number, chamber, bill_number, version, short_title, section_number
+) -> BillContentDiffList:
+    chamber = chamber.lower()
+    chamber = chamber[0].upper() + chamber[1:]
+
+    version = version.upper()
+    bills = (
+        current_session.query(Legislation)
+        .filter(Congress.congress_id == Legislation.congress_id)
+        .filter(Congress.session_number == session_number)
+        .filter(Legislation.chamber == chamber)
+        .filter(Legislation.number == bill_number)
+        .order_by(Legislation.number)
+        .options(load_only(Legislation.legislation_id,))
+        .limit(1)
+    )
+
+    bills_results: List[Legislation] = bills.all()
+    if len(bills_results) == 0:
+        return None
+
+    bill = bills_results[0]
+    legis_versions = (
+        current_session.query(LegislationVersion)
+        .filter(LegislationVersion.legislation_id == bill.legislation_id)
+        .filter(LegislationVersion.legislation_version == version)
+        .options(
+            load_only(
+                LegislationVersion.version_id, LegislationVersion.legislation_version_id
+            )
+        )
+        .limit(1)
+        .all()
+    )
+
+    if len(legis_versions) == 0:
+        return None
+
+    diffs = (
+        current_session.query(USCContentDiff)
+        .join(USCSection, USCSection.number == section_number)
+        .join(USCChapter, USCChapter.short_title == short_title)
+        .filter(USCChapter.usc_chapter_id == USCSection.usc_chapter_id)
+        .filter(USCContentDiff.version_id == legis_versions[0].version_id)
+        .filter(USCContentDiff.usc_section_id == USCSection.usc_section_id)
+        .all()
+    )
+    return BillContentDiffList(
+        legislation_version_id=legis_versions[0].legislation_version_id,
+        diffs=[
+            BillContentDiff(
+                number=x.number,
+                content_type=x.content_type,
+                content_str=x.content_str,
+                heading=x.heading,
+                section_display=x.section_display,
+                order_number=x.order_number,
+                usc_guid=x.usc_guid,
+                usc_ident=x.usc_ident,
+                usc_content_id=x.usc_content_id,
+                usc_section_id=x.usc_section_id,
+                usc_content_diff_id=x.usc_content_diff_id,
+            )
+            for x in diffs
+        ],
+    )
+
+
+@cached(TTLCache(CACHE_SIZE, CACHE_TIME))
+def get_legislation_version_diff_metadata(
+    session_number, chamber, bill_number, version
+) -> BillMetadata:
+    chamber = chamber.lower()
+    chamber = chamber[0].upper() + chamber[1:]
+
+    version = version.upper()
+    bills = (
+        current_session.query(Legislation)
+        .filter(Congress.congress_id == Legislation.congress_id)
+        .filter(Congress.session_number == session_number)
+        .filter(Legislation.chamber == chamber)
+        .filter(Legislation.number == bill_number)
+        .order_by(Legislation.number)
+        .options(load_only(Legislation.legislation_id,))
+        .limit(1)
+    )
+
+    bills_results: List[Legislation] = bills.all()
+    if len(bills_results) == 0:
+        return None
+
+    bill = bills_results[0]
+    legis_versions = (
+        current_session.query(LegislationVersion)
+        .filter(LegislationVersion.legislation_id == bill.legislation_id)
+        .filter(LegislationVersion.legislation_version == version)
+        .options(
+            load_only(
+                LegislationVersion.version_id, LegislationVersion.legislation_version_id
+            )
+        )
+        .limit(1)
+        .all()
+    )
+
+    if len(legis_versions) == 0:
+        return None
+
+    diff_sections = list(
+        current_session.execute(
+            f"""
+SELECT DISTINCT usc_chapter.short_title, usc_chapter.long_title, usc_section.number, usc_section.heading, usc_section.section_display
+  FROM public.usc_content_diff
+  JOIN usc_chapter ON usc_chapter.usc_chapter_id = usc_content_diff.usc_chapter_id
+  JOIN usc_section ON usc_content_diff.usc_section_id = usc_section.usc_section_id
+  WHERE usc_content_diff.version_id = {legis_versions[0].version_id} ORDER BY usc_chapter.short_title, usc_section.number;
+;
+"""
+        )
+    )
+    res = defaultdict(list)
+    for row in diff_sections:
+        res[row[0]].append(
+            BillDiffMetadataItem(
+                long_title=row[1],
+                section_number=row[2],
+                heading=row[3],
+                display=row[4],
+            )
+        )
+    ret = []
+    for (key, value) in res.items():
+        ret.append(
+            BillDiffList(
+                legislation_version_id=legis_versions[0].legislation_version_id,
+                short_title=key,
+                long_title=value[0].long_title,
+                sections=value,
+            )
+        )
+    return sorted(ret, key=lambda x: x.short_title)

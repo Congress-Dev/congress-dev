@@ -1,10 +1,14 @@
 import lodash from "lodash";
 
-function capFirstLetter(str) {
+export const capFirstLetter = function(str) {
   return str.charAt(0).toUpperCase() + str.substring(1);
 }
 
-export const endpoint = "https://api2.congress.dev";
+let endP = "http://localhost:9090";
+if(window.location.href.includes("congress.dev")){
+  endP = "https://api.congress.dev"
+}
+export const endpoint = endP;
 
 export const getBillSummary = (congress, chamber, billNumber) => {
   return fetch(
@@ -98,3 +102,24 @@ export const getCongressSearch = (
     .then(res => res.json())
     .then(obj => obj.legislation);
 };
+
+export const getBillVersionDiffSummary = (session, chamber, bill, version) => {
+  return fetch(
+    `${endpoint}/congress/${session}/${chamber.toLowerCase()}-bill/${bill}/${version}/diffs`
+  )
+    .then(res => res.json())
+}
+
+export const getBillVersionDiffForSection = (session, chamber, bill, version, uscTitle, uscSection) => {
+  return fetch(
+    `${endpoint}/congress/${session}/${chamber.toLowerCase()}-bill/${bill}/${version}/diffs/${uscTitle}/${uscSection}`
+  )
+    .then(res => res.json())
+    .then(res => {
+      let ret = {}
+      lodash.forEach(res.diffs, obj => {
+        ret[`${obj.usc_content_id}`] = obj;
+      } );
+      return ret;
+    })
+}

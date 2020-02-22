@@ -9,6 +9,7 @@ from congress_api.db.legislation_queries import (
     get_legislation_details,
     get_legislation_version_details,
     get_legislation_version_text,
+    get_legislation_version_diff_metadata,
     get_legislation_version_diffs
 )
 from congress_api.db.session_queries import get_congress_session, get_congress_sessions
@@ -70,8 +71,34 @@ def get_bill_version_amdts(
     return ErrorResponse(message="Not Implemented"), 501
 
 
-def get_bill_version_diffs(
+def get_bill_version_diff_metadata(
     session, chamber, bill, version
+) -> ErrorResponse:  # noqa: E501
+    """get_bill_version_diff_metadata
+
+    Get information about a specific bill # noqa: E501
+
+    :param session: Congress session
+    :type session: str
+    :param chamber: The chamber of Congress to query
+    :type chamber: str
+    :param bill: The bill&#39;s number
+    :type bill: str
+    :param version: The bill version to request
+    :type version: str
+
+    :rtype: object
+    """
+    try:
+        res = get_legislation_version_diff_metadata(session, chamber, bill, version)
+        return res
+    except Exception as e:
+        return ErrorResponse(message=str(e)), 500
+    return ErrorResponse(message="Not Implemented"), 501
+
+
+def get_bill_version_diffs(
+    session, chamber, bill, version, short_title, section_number
 ) -> ErrorResponse:  # noqa: E501
     """get_bill_version_diffs
 
@@ -89,7 +116,7 @@ def get_bill_version_diffs(
     :rtype: object
     """
     try:
-        res = get_legislation_version_diffs(session, chamber, bill, version)
+        res = get_legislation_version_diffs(session, chamber, bill, version, short_title, section_number)
         return res
     except Exception as e:
         return ErrorResponse(message=str(e)), 500

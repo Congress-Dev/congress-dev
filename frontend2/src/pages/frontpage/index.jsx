@@ -1,9 +1,9 @@
 import React from "react";
-
+import { Redirect } from "react-router-dom";
 function FrontPage() {
   return (
     <>
-      Visit us on <a href="https://github.com/mustyoshi/congress-dev">Github</a>
+      <Redirect to={"/bill/116/Senate/47/ENR/diffs/54/200306"} />
     </>
   );
 }
