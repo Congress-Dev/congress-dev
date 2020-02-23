@@ -15,6 +15,8 @@ from billparser.db.models import (
     USCContentDiff,
     USCChapter,
     USCSection,
+    Version,
+    USCRelease,
 )
 from congress_api.models.bill_metadata import BillMetadata  # noqa: E501
 from congress_api.models.bill_text_content import BillTextContent  # noqa: E501
@@ -73,6 +75,18 @@ def get_legislation_details(
         .order_by(LegislationVersion.effective_date)
         .all()
     )
+    release_id = (
+        current_session.query(USCRelease)
+        .join(
+            LegislationVersion,
+            LegislationVersion.legislation_version_id
+            == legis_versions[0].legislation_version_id,
+        )
+        .join(Version, USCRelease.version_id == Version.base_id)
+        .filter(LegislationVersion.version_id == Version.version_id)
+        .limit(1)
+        .all()
+    )
     result = BillMetadata(
         legislation_type=bill.legislation_type,
         congress=session_number,
@@ -81,6 +95,7 @@ def get_legislation_details(
         legislation_id=bill.legislation_id,
         legislation_versions=[],
         chamber=chamber,
+        usc_release_id=release_id[0].usc_release_id
     )
     for vers in legis_versions:
         result.legislation_versions.append(

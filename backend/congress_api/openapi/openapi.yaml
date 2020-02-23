@@ -731,6 +731,8 @@ paths:
 servers:
   - description: Main API endpoint
     url: 'https://api.congress.dev/'
+  - url: 'https://api2.congress.dev/'
+    description: Beta Endpoint
 components:
   links: {}
   callbacks: {}
@@ -873,6 +875,8 @@ components:
           type: integer
         chamber:
           type: string
+        usc_release_id:
+          type: integer
     ChamberBillList:
       title: ChamberBillList
       type: object

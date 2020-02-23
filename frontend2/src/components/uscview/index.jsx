@@ -47,13 +47,12 @@ const styles = {
 function USCView(props) {
   const [contentTree, setContentTree] = useState({});
   const { release, title, section, diffs = {} } = props;
-  console.log("View", props);
   useEffect(() => {
     if (section) {
       setContentTree({ loading: true });
       getUSCSectionContent(release, title, section).then(setContentTree);
     }
-  }, [section]);
+  }, [release, title, section]);
   function diffStyle(diffList) {
     return diffList.map((part, ind) => {
       let style = "unchanged";
@@ -79,14 +78,18 @@ function USCView(props) {
           newItem[key] = diffStyle(diffWords(item[key] || "", itemDiff[key] || ""));
           // TODO: Fix this ordering issue on the backend maybe?
           // Should create diffs to reorder things?
-          newItem["order_number"] -= .01;
+          newItem["order_number"] -= 0.01;
         }
       });
     }
     return newItem;
   }
   function renderRecursive(node) {
-    const newChildren = lodash.chain(node.children || []).map(computeDiff).sortBy("order_number").value();
+    const newChildren = lodash
+      .chain(node.children || [])
+      .map(computeDiff)
+      .sortBy("order_number")
+      .value();
     return (
       <>
         {lodash.map(newChildren, (item, ind) => {

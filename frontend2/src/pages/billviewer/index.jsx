@@ -96,7 +96,7 @@ function BillViewer(props) {
       <div className="content">
         {diffMode === true ? (
           <USCView
-            release={"latest"}
+            release={bill.usc_release_id || "latest"}
             section={uscSection}
             title={uscTitle}
             diffs={diffs}

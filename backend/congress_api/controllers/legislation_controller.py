@@ -43,6 +43,7 @@ def get_bill_summary(session, chamber, bill) -> BillMetadata:  # noqa: E501
             return ErrorResponse(message="No legislation found"), 404
         return res
     except Exception as e:
+        print(e)
         return ErrorResponse(message=str(e)), 500
     return ErrorResponse(message="Hmm"), 404
 
