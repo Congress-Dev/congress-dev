@@ -20,6 +20,8 @@ app = connexion.App(__name__, specification_dir="./openapi/")
 def add_header(response):
     if CACHE_HEADER_TIME > 0:
         response.cache_control.max_age = CACHE_HEADER_TIME
+        response.cache_control.immutable = True
+        response.cache_control.public = True
     return response
 
 
@@ -35,7 +37,7 @@ def main():
     Compress(app.app)
     session_factory = sessionmaker(bind=db.engine)
     session = flask_scoped_session(session_factory, app.app)
-    app.run(port=9090, debug=True)
+    app.run(port=9090, debug=os.environ.get("STAGE", "prod").lower() != "prod")
 
 
 if __name__ == "__main__":

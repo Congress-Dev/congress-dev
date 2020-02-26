@@ -20,7 +20,7 @@ function BillViewer(props) {
   // TODO: Option for comparing two versions of the same bill and highlighting differences
   const [bill, setBill] = useState({});
   const [diffs, setDiffs] = useState({});
-  const [billVers, setBillVers] = useState("");
+
   const [diffMode, setDiffMode] = useState(false);
   const {
     congress,
@@ -30,6 +30,8 @@ function BillViewer(props) {
     uscTitle,
     uscSection,
   } = props.match.params;
+
+  const [billVers, setBillVers] = useState(defaultVers[chamber.toLowerCase()]);
   useEffect(() => {
     // Grab the info from the rest API
 
