@@ -107,7 +107,12 @@ export const getBillVersionDiffSummary = (session, chamber, bill, version) => {
   return fetch(
     `${endpoint}/congress/${session}/${chamber.toLowerCase()}-bill/${bill}/${version}/diffs`
   )
-    .then(res => res.json())
+    .then(res => {
+      if(res.status !== 200){
+        return {};
+      }
+      return res.json();
+    })
 }
 
 export const getBillVersionDiffForSection = (session, chamber, bill, version, uscTitle, uscSection) => {
