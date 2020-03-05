@@ -1,5 +1,5 @@
-![alt text](https://github.com/mustyoshi/congress-dev/raw/master/.github/banner.png "Congress.dev")
-[![forthebadge](https://forthebadge.com/images/badges/made-with-python.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/uses-js.svg)] [![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)](https://forthebadge.com)(https://forthebadge.com)
+![congress dot dev](https://github.com/mustyoshi/congress-dev/raw/master/.github/banner.png "Congress.dev")
+[![forthebadge](https://forthebadge.com/images/badges/made-with-python.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/uses-js.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)](https://forthebadge.com)
 
 ## Setup
 
