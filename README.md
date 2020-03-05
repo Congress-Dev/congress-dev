@@ -20,8 +20,8 @@ https://docs.docker.com/compose/install/
 ## Usage
 
 ```bash
-docker-compose .docker/docker-compose.yml build
-docker-compose .docker/docker-compose.yml up -d
+chmod +x ./start_local.sh
+sh ./start_local.sh
 ```
 
 ### Loading the database
@@ -39,5 +39,4 @@ python3 -m billparser.importers.bills bills.json
 --- 
 
 ## Contributing
-
 Please note we have a code of conduct, please follow it in all your interactions with the project.
