@@ -1,6 +1,8 @@
 ![congress dot dev](https://github.com/mustyoshi/congress-dev/raw/master/.github/banner.png "Congress.dev")
 [![forthebadge](https://forthebadge.com/images/badges/made-with-python.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/uses-js.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)](https://forthebadge.com)
 
+---
+
 ## Setup
 
 ### Required Software
@@ -13,6 +15,7 @@ https://docs.docker.com/install/
 Compose is a tool for defining and running multi-container Docker applications. With Compose, you use a YAML file to configure your application's services.
 https://docs.docker.com/compose/install/
 
+---
 
 ## Usage
 
