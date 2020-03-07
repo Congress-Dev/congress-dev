@@ -1,50 +1,44 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
-import NavBarClass from './components/nav/nav.jsx';
-import ViewContainer from './components/view/view.jsx';
-import VersionView from './components/versions/list_view.jsx';
-import RevisionView from './components/releases/revision_view.jsx';
-import BillView from './components/bills/list_view.jsx';
-import BillReader from './components/bills/reader.jsx';
-import { BrowserRouter as Router, Route, Link, Switch } from "react-router-dom";
+import React from "react";
+import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
+import NavBar from "./components/navbar";
+// Pages
+import FrontPage from "./pages/frontpage";
+import AboutUs from "./pages/aboutus";
+import ContactUs from "./pages/contactus";
+import BillViewer from "./pages/billviewer";
+import USCodeRevisionList from "./pages/uscodemain";
+import USCodeViewer from "./pages/uscodeviewer";
+import BillSearch from "./pages/billsearch";
 
-class App extends Component {
-  render() {
-    return (
-      <Router>
-        <Switch>
-          <Route
-            path="/revisions" component={RevisionView}
-          />
-          <Route
-            path="/bills" component={BillView}
-          />
-          <Route path="/bill/:bill_version_id/chapter/:chapter/s:section" component={BillReader} />
-          <Route path="/bill/:bill_version_id" component={BillReader} />
+import "styles/common.scss";
+import "./App.css";
 
-          <Route path="/compare/:base_version/:new_version/" component={ViewContainer} />
-          <Route path="/compare/:base_version/:new_version/:chapter/s:section" component={ViewContainer} />
-          <Route path="/compare/:base_version/:new_version/:chapter" component={ViewContainer} />
+function App() {
+  return (
+    <Router>
+      <NavBar />
+      <Switch>
+        <Route
+        exact
+          path="/bill/:congress/:chamber/:billNumber/:billVersion?/diffs/:uscTitle/:uscSection"
+          component={BillViewer}
+        />
+        <Route
+        exact
+          path="/bill/:congress/:chamber/:billNumber/:billVersion?"
+          component={BillViewer}
+        />
 
-          <Route path="/:version_1/:version_2/chapter/:chapter/s:section" component={ViewContainer} />
-          <Route path="/:version_1/:version_2/chapter/:chapter" component={ViewContainer} />
-          <Route path="/:version_1/:version_2/" component={ViewContainer} />
-
-          <Route path="/:version_1/chapter/:chapter/s:section" component={ViewContainer} />
-          <Route path="/:version_1/chapter/:chapter" component={ViewContainer} />
-          <Route path="/:version_1/" component={ViewContainer} />
-
-          <Route path="/chapter/:chapter/s:section" component={ViewContainer} />
-          <Route path="/chapter/:chapter" component={ViewContainer} />
-          <Route path="/" component={ViewContainer} />
-
-
-        </Switch>
-      </Router>
-    );
-  }
+        <Route exact path="/bills" component={BillSearch} />
+        <Route exact path="/about" component={AboutUs} />
+        <Route exact path="/contact" component={ContactUs} />
+        <Route exact path="/uscode" component={USCodeRevisionList} />
+        <Route path="/uscode/:uscReleaseId/:uscTitle?/:uscSection?" component={USCodeViewer} />
+        <Route path={["/", "/home"]} component={FrontPage} />
+      </Switch>
+    </Router>
+  );
 }
 
 export default App;
