@@ -1,0 +1,9 @@
+version: '3'
+services:
+  congress_parser_api:
+    image: tianon/true
+  congress_postgres:
+    image: tianon/true
+  congress_viewer_app:
+    environment:
+    - REACT_APP_API_URL=https://api.congress.dev
