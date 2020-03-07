@@ -32,7 +32,6 @@ sh ./start_local.sh
 
 ### Loading the database
 From the backend folder, you will need to tell it to parse some files before you can view them. importers.releases will load 1 release point from the US Code website. ~10MB compressed and put it into the database ~500MB in the db.
-A semi up to date postgres dump is available for [download](https://files.congress.dev/congress_beta.backup)
 
 ```bash
 docker exec -it docker_parser_api bash
@@ -40,6 +39,13 @@ docker exec -it docker_parser_api bash
 python3 -m billparser.importers.releases rp.json
 python3 -m billparser.importers.bills bills.json
 
+```
+
+A semi up to date postgres dump is available for [download](https://files.congress.dev/congress_beta.backup).
+
+Assuming you're running the normal docker-compose and an empty database named us_code, you can run this to restore from the backup.
+```bash
+pg_restore -h localhost -U parser -d us_code -F C us_code_beta.backup
 ```
 
 ---
