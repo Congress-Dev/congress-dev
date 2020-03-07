@@ -4,7 +4,7 @@ export const capFirstLetter = function(str) {
   return str.charAt(0).toUpperCase() + str.substring(1);
 }
 
-let endP = "http://localhost:9090";
+let endP = process.env.REACT_APP_API_URL || "http://localhost:9090";
 if(window.location.href.includes("congress.dev")){
   endP = "https://api.congress.dev"
 }
