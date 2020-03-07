@@ -7,3 +7,4 @@ backend/venv/
 venv/
 
 .resources/
+*.backup
