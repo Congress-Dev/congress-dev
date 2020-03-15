@@ -2,7 +2,6 @@
 @import "~@blueprintjs/core/lib/css/blueprint.css";
 @import "~@blueprintjs/icons/lib/css/blueprint-icons.css";
 
-
 .usc-release-box {
   width: 400px;
   border-radius: 10px;
@@ -25,18 +24,26 @@
 }
 
 .search-content {
-  width:80%;
+  width: 80%;
   margin-left: 10%;
 }
 
 .section-tree div {
   height: auto;
 }
-.section-tree div span{
+.section-tree div span {
   white-space: normal;
   cursor: pointer;
 }
 
-.link>div:first-child>span:nth-child(3){
+.link > div:first-child > span:nth-child(3) {
   cursor: pointer;
+}
+
+.search-pager > span:not(.current-page) {
+  color: blue;
+  cursor: pointer;
+}
+.search-pager > span.page-button:not(:last-child)::after {
+  content: ", ";
 }

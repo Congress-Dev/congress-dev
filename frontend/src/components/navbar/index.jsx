@@ -56,8 +56,7 @@ function NavBar() {
           icon="shop"
           text="Swag Store"
           onClick={() => {
-            //history.push("https://github.com/mustyoshi/congress-dev");
-            window.location = "https://github.com/mustyoshi/congress-dev";
+            window.location = "https://github.com/Congress-Dev/congress-dev";
           }}
         />
         <Button
