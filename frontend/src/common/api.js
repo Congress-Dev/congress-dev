@@ -99,8 +99,7 @@ export const getCongressSearch = (
     `${endpoint}/congress/search?congress=${congress || "None"}&chamber=${chamber ||
       "None"}&versions=${versions || ""}&text=${text}&page=${page}&pageSize=${pageSize}`
   )
-    .then(res => res.json())
-    .then(obj => obj.legislation);
+    .then(res => res.json());
 };
 
 export const getBillVersionDiffSummary = (session, chamber, bill, version) => {

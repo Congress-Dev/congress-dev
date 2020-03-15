@@ -7,7 +7,7 @@ import BillCard from "components/billcard";
 import { getCongressSearch } from "common/api";
 
 function BillSearchContent(props) {
-  const [billList, setBillList] = useState([]);
+  const [billList, setBillList] = useState({ legislation: [], total_results: 0 });
   const e = useRef();
 
   useEffect(() => {
@@ -27,10 +27,13 @@ function BillSearchContent(props) {
     props.page,
     props.pageSize,
   ]);
+  useEffect(() => {
+    props.setResults(billList.total_results);
+  }, [billList.total_results]);
   function renderCardList(billItem, ind) {
     return <BillCard bill={billItem} key={`bill-search-list-${ind}`} />;
   }
-  return <>{lodash.map(billList, renderCardList)}</>;
+  return <>{lodash.map(billList.legislation, renderCardList)}</>;
 }
 
 export default BillSearchContent;

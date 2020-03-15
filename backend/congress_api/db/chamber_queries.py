@@ -168,7 +168,11 @@ def search_legislation(
             .all()
         )
     congresses = {cong.congress_id: cong.session_number for cong in cong_query}
-    query = current_session.query(Legislation)
+    # We need to know the total results so we can do the pagination
+    # TODO: Is there a cleaner way to do this?
+    query = current_session.query(
+        Legislation, "count(legislation.legislation_id) OVER() as total_results"
+    )
     query = query.filter(Legislation.congress_id.in_(list(congresses.keys())))
     if chambers != []:
         query = query.filter(Legislation.chamber.in_(chamber_srch))
@@ -198,9 +202,11 @@ def search_legislation(
     bills_results: List[Legislation] = query.all()
 
     if len(bills_results) == 0:
-        return BillSearchList(params=None, legislation=[])
+        return BillSearchList(params=None, legislation=[], total_results=0)
 
-    bill_ids = [x.legislation_id for x in bills_results]
+    # Pull out the bill object, and the total results column we created
+    # TODO: Cleaner way to do this?
+    bill_ids = [x.legislation_id for (x, _) in bills_results]
 
     legis_versions = (
         current_session.query(LegislationVersion)
@@ -220,7 +226,7 @@ def search_legislation(
     )
 
     bill_metadatas = []
-    for bill in bills_results:
+    for (bill, total_results) in bills_results:
         result = BillMetadata(
             legislation_type=bill.legislation_type,
             congress=congresses[bill.congress_id],
@@ -242,6 +248,6 @@ def search_legislation(
                     legislation_version=vers.legislation_version,
                 )
             )
-        if(len(result.legislation_versions) > 0):
+        if len(result.legislation_versions) > 0:
             bill_metadatas.append(result)
-    return BillSearchList(params=None, legislation=bill_metadatas)
+    return BillSearchList(params=None, legislation=bill_metadatas, total_results=total_results)
