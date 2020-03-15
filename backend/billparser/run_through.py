@@ -518,7 +518,14 @@ def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object):
             return []
 
         root = etree.fromstring(f)
-        title = root.xpath("//dublinCore")[0][0].text.split(":")[-1].strip()
+        try:
+            title = root.xpath("//dublinCore")[0][0].text
+            if ":" in title:
+                title = title.split(":")[-1].strip()
+        except:
+            log.error("Couldn't parse title")
+            title = "Could not find"
+
         log.info(title)
         try:
             new_bill, new_bill_version = find_or_create_bill(bill_obj, title, session)
