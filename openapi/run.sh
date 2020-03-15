@@ -1,0 +1,1 @@
+docker run --rm -v ${PWD}:/local openapitools/openapi-generator-cli generate     -i /local/congress.yaml     -g python-flask     -o /local/server -c /local/config.json

@@ -1,16 +1,14 @@
 # coding: utf-8
 
 from __future__ import absolute_import
-
 from datetime import date, datetime  # noqa: F401
-from typing import Dict, List  # noqa: F401
 
-from congress_api import util
+from typing import List, Dict  # noqa: F401
+
 from congress_api.models.base_model_ import Model
-from congress_api.models.bill_metadata import BillMetadata  # noqa: E501
-from congress_api.models.bill_search_list_params import (
-    BillSearchListParams,
-)  # noqa: E501
+from congress_api.models.bill_metadata import BillMetadata
+from congress_api.models.bill_search_list_params import BillSearchListParams
+from congress_api import util
 
 
 class BillSearchList(Model):
@@ -19,23 +17,31 @@ class BillSearchList(Model):
     Do not edit the class manually.
     """
 
-    def __init__(self, params=None, legislation=None):  # noqa: E501
+    def __init__(self, params=None, legislation=None, total_results=None):  # noqa: E501
         """BillSearchList - a model defined in OpenAPI
 
         :param params: The params of this BillSearchList.  # noqa: E501
         :type params: BillSearchListParams
         :param legislation: The legislation of this BillSearchList.  # noqa: E501
         :type legislation: List[BillMetadata]
+        :param total_results: The total_results of this BillSearchList.  # noqa: E501
+        :type total_results: int
         """
         self.openapi_types = {
             "params": BillSearchListParams,
             "legislation": List[BillMetadata],
+            "total_results": int,
         }
 
-        self.attribute_map = {"params": "params", "legislation": "legislation"}
+        self.attribute_map = {
+            "params": "params",
+            "legislation": "legislation",
+            "total_results": "total_results",
+        }
 
         self._params = params
         self._legislation = legislation
+        self._total_results = total_results
 
     @classmethod
     def from_dict(cls, dikt) -> "BillSearchList":
@@ -89,3 +95,24 @@ class BillSearchList(Model):
         """
 
         self._legislation = legislation
+
+    @property
+    def total_results(self):
+        """Gets the total_results of this BillSearchList.
+
+
+        :return: The total_results of this BillSearchList.
+        :rtype: int
+        """
+        return self._total_results
+
+    @total_results.setter
+    def total_results(self, total_results):
+        """Sets the total_results of this BillSearchList.
+
+
+        :param total_results: The total_results of this BillSearchList.
+        :type total_results: int
+        """
+
+        self._total_results = total_results
