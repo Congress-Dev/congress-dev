@@ -1,748 +1,768 @@
 openapi: 3.0.0
 info:
+  contact:
+    email: bradley@congress.dev
+    name: Bradley Goodyear
+  description: API for accessing the data within the database. Will support the default
+    frontend.
   title: Congress.Dev API
   version: 0.1.1
-  contact:
-    name: Bradley Goodyear
-    email: bradley@congress.dev
-  description: API for accessing the data within the database. Will support the default frontend.
+servers:
+- description: Main API endpoint
+  url: https://api.congress.dev/
+- description: Beta Endpoint
+  url: https://api2.congress.dev/
+tags:
+- description: Endpoints for retrieving data about bills
+  name: legislation
+- description: Endpoints for retrieving data about the USCode
+  name: uscode
 paths:
   /congress:
     get:
-      summary: Congress Sessions
       description: Returns a list of available congress sessions
-      parameters: []
       operationId: get_sessions_summary
+      parameters: []
       responses:
-        '200':
-          description: List of session numbers that are available
+        "200":
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CongressSessionList'
-      x-openapi-router-controller: congress_api.controllers.legislation_controller
+          description: List of session numbers that are available
+      summary: Congress Sessions
       tags:
-        - legislation
-  '/congress/{session}':
-    get:
-      summary: Specific Session
-      description: Information about a specific session
-      parameters:
-        - description: Congress session
-          explode: false
-          in: path
-          name: session
-          required: true
-          schema:
-            default: '116'
-            type: string
-          style: simple
-      operationId: get_session_summary
-      responses:
-        '200':
-          description: Metadata about the particular session of congress
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SessionMetadata'
-        '400':
-          description: Incorrect formatted request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Non existent Session
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotFound'
+      - legislation
       x-openapi-router-controller: congress_api.controllers.legislation_controller
-      tags:
-        - legislation
-  '/congress/{session}/{chamber}':
-    get:
-      summary: Specific chamber
-      description: Information about a specific chamber for the given session
-      parameters:
-        - description: Congress session
-          explode: false
-          in: path
-          name: session
-          required: true
-          schema:
-            default: '116'
-            type: string
-          style: simple
-        - description: The chamber of Congress to query
-          explode: false
-          in: path
-          name: chamber
-          required: true
-          schema:
-            enum:
-              - house
-              - senate
-            type: string
-          style: simple
-      operationId: get_chamber_summary
-      responses:
-        '200':
-          description: Metadata about the particular chamber
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ChamberMetadata'
-        '400':
-          description: Response if given an invalid chamber
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotFound'
-      x-openapi-router-controller: congress_api.controllers.legislation_controller
-      tags:
-        - legislation
-  '/congress/{session}/{chamber}-bills':
-    get:
-      description: Retrieving a list of bills
-      parameters:
-        - description: Congress session
-          explode: false
-          in: path
-          name: session
-          required: true
-          schema:
-            default: '116'
-            type: string
-          style: simple
-        - description: The chamber of Congress to query
-          explode: false
-          in: path
-          name: chamber
-          required: true
-          schema:
-            enum:
-              - house
-              - senate
-            type: string
-          style: simple
-        - description: Page size
-          explode: true
-          in: query
-          name: page_size
-          required: false
-          schema:
-            default: 25
-            maximum: 25
-            minimum: 1
-            type: integer
-          style: form
-        - description: What page
-          explode: true
-          in: query
-          name: page
-          required: false
-          schema:
-            default: 1
-            minimum: 1
-            type: integer
-          style: form
-      operationId: get_chamber_bills
-      responses:
-        '200':
-          description: List of bills for the given chamber
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ChamberBillList'
-        '400':
-          description: Response if given an invalid chamber
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotFound'
-      x-openapi-router-controller: congress_api.controllers.legislation_controller
-      tags:
-        - legislation
-  '/congress/{session}/{chamber}-bill/{bill}':
-    get:
-      description: Get information about a specific bill
-      parameters:
-        - description: Congress session
-          explode: false
-          in: path
-          name: session
-          required: true
-          schema:
-            default: '116'
-            type: string
-          style: simple
-        - description: The chamber of Congress to query
-          explode: false
-          in: path
-          name: chamber
-          required: true
-          schema:
-            enum:
-              - House
-              - Senate
-            type: string
-          style: simple
-        - description: "The bill's number"
-          explode: false
-          in: path
-          name: bill
-          required: true
-          schema:
-            type: string
-          style: simple
-      operationId: get_bill_summary
-      responses:
-        '200':
-          description: Metadata about the particular bill
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BillMetadata'
-        '400':
-          description: Response for an invalid request
-          content:
-            text/plain:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotFound'
-      x-openapi-router-controller: congress_api.controllers.legislation_controller
-      tags:
-        - legislation
-  '/congress/{session}/{chamber}-bill/{bill}/{version}/summary':
-    get:
-      description: Get information about a specific bill version
-      parameters:
-        - description: Congress session
-          explode: false
-          in: path
-          name: session
-          required: true
-          schema:
-            default: '116'
-            type: string
-          style: simple
-        - description: The chamber of Congress to query
-          explode: false
-          in: path
-          name: chamber
-          required: true
-          schema:
-            enum:
-              - house
-              - senate
-            type: string
-          style: simple
-        - description: "The bill's number"
-          explode: false
-          in: path
-          name: bill
-          required: true
-          schema:
-            type: string
-          style: simple
-        - description: The bill version to request
-          explode: false
-          in: path
-          name: version
-          required: true
-          schema:
-            type: string
-          style: simple
-      operationId: get_bill_version_summary
-      responses:
-        '200':
-          description: Metadata about the particular bill
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BillVersionMetadata'
-        '400':
-          description: Response for an invalid request
-          content:
-            text/plain:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Not Found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/NotFound'
-      x-openapi-router-controller: congress_api.controllers.legislation_controller
-      tags:
-        - legislation
-  '/congress/{session}/{chamber}-bill/{bill}/{base_version}/amendments/{new_version}':
-    get:
-      description: Gets the amendments made between the base version and the new version
-      parameters:
-        - description: Congress session
-          explode: false
-          in: path
-          name: session
-          required: true
-          schema:
-            default: '116'
-            type: string
-          style: simple
-        - description: The chamber of Congress to query
-          explode: false
-          in: path
-          name: chamber
-          required: true
-          schema:
-            enum:
-              - house
-              - senate
-            type: string
-          style: simple
-        - description: "The bill's number"
-          explode: false
-          in: path
-          name: bill
-          required: true
-          schema:
-            type: string
-          style: simple
-        - description: The base version to compare against
-          explode: false
-          in: path
-          name: base_version
-          required: true
-          schema:
-            type: string
-          style: simple
-        - description: The new version to compare with
-          explode: false
-          in: path
-          name: new_version
-          required: true
-          schema:
-            type: string
-          style: simple
-      operationId: get_bill_version_amdts
-      responses:
-        '200':
-          description: Metadata about the particular bill
-          content:
-            application/json:
-              schema: {}
-        '400':
-          description: Response for an invalid request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-      deprecated: true
-      x-openapi-router-controller: congress_api.controllers.legislation_controller
-      tags:
-        - legislation
-  '/congress/{session}/{chamber}-bill/{bill}/{version}/text':
-    get:
-      description: Get information about a specific bill
-      parameters:
-        - description: Congress session
-          explode: false
-          in: path
-          name: session
-          required: true
-          schema:
-            default: '116'
-            type: string
-          style: simple
-        - description: The chamber of Congress to query
-          explode: false
-          in: path
-          name: chamber
-          required: true
-          schema:
-            enum:
-              - house
-              - senate
-            type: string
-          style: simple
-        - description: "The bill's number"
-          explode: false
-          in: path
-          name: bill
-          required: true
-          schema:
-            type: string
-          style: simple
-        - description: The bill version to request
-          explode: false
-          in: path
-          name: version
-          required: true
-          schema:
-            type: string
-          style: simple
-        - description: 'Flag to include the parsed actions for each bit of text, defaults to false.'
-          explode: true
-          in: query
-          name: include_parsed
-          required: false
-          schema:
-            default: false
-            type: boolean
-          style: form
-      operationId: get_bill_version_text
-      responses:
-        '200':
-          description: Metadata about the particular bill
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BillTextResponse'
-        '400':
-          description: Response for an invalid request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-      x-openapi-router-controller: congress_api.controllers.legislation_controller
-      tags:
-        - legislation
-  '/congress/{session}/{chamber}-bill/{bill}/{version}/diffs':
-    get:
-      description: Get information about a specific bill
-      parameters:
-        - description: Congress session
-          explode: false
-          in: path
-          name: session
-          required: true
-          schema:
-            default: '116'
-            type: string
-          style: simple
-        - description: The chamber of Congress to query
-          explode: false
-          in: path
-          name: chamber
-          required: true
-          schema:
-            enum:
-              - house
-              - senate
-            type: string
-          style: simple
-        - description: "The bill's number"
-          explode: false
-          in: path
-          name: bill
-          required: true
-          schema:
-            type: string
-          style: simple
-        - description: The bill version to request
-          explode: false
-          in: path
-          name: version
-          required: true
-          schema:
-            type: string
-          style: simple
-      operationId: get_bill_version_diff_metadata
-      responses:
-        '200':
-          description: Metadata about the particular bill
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/BillDiffList'
-        '400':
-          description: Response for an invalid request
-          content:
-            application/json:
-              schema: {}
-      x-openapi-router-controller: congress_api.controllers.legislation_controller
-      tags:
-        - legislation
   /congress/search:
     get:
-      summary: Your GET endpoint
-      tags:
-        - legislation
+      description: Search for the different bills
+      operationId: get_congress_search
+      parameters:
+      - description: Comma separated list of sessions to filter by
+        explode: true
+        in: query
+        name: congress
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Comma separated list of chambers to filter by
+        explode: true
+        in: query
+        name: chamber
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Comma separated list of bill versions to include
+        explode: true
+        in: query
+        name: versions
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Text to search for
+        explode: true
+        in: query
+        name: text
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: The page of results
+        explode: true
+        in: query
+        name: page
+        required: false
+        schema:
+          default: 1
+          minimum: 1
+          type: integer
+        style: form
+      - description: Page size
+        explode: true
+        in: query
+        name: pageSize
+        required: false
+        schema:
+          default: 25
+          maximum: 25
+          minimum: 1
+          type: integer
+        style: form
       responses:
-        '200':
-          description: OK
+        "200":
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/BillSearchList'
-      operationId: get_congress_search
-      description: Search for the different bills
-      parameters:
-        - description: Comma separated list of sessions to filter by
-          explode: true
-          in: query
-          name: congress
-          required: false
-          schema:
-            type: string
-          style: form
-        - description: Comma separated list of chambers to filter by
-          explode: true
-          in: query
-          name: chamber
-          required: false
-          schema:
-            type: string
-          style: form
-        - description: Comma separated list of bill versions to include
-          explode: true
-          in: query
-          name: versions
-          required: false
-          schema:
-            type: string
-          style: form
-        - description: Text to search for
-          explode: true
-          in: query
-          name: text
-          required: false
-          schema:
-            type: string
-          style: form
-        - description: The page of results
-          explode: true
-          in: query
-          name: page
-          required: false
-          schema:
-            default: 1
-            minimum: 1
-            type: integer
-          style: form
-        - description: Page size
-          explode: true
-          in: query
-          name: pageSize
-          required: false
-          schema:
-            default: 25
-            maximum: 25
-            minimum: 1
-            type: integer
-          style: form
+          description: OK
+      summary: Bill search endpoint
+      tags:
+      - legislation
       x-openapi-router-controller: congress_api.controllers.legislation_controller
-  /usc/releases:
+  /congress/{session}:
     get:
-      summary: Your GET endpoint
-      tags:
-        - uscode
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ReleasePointList'
-      operationId: get_usc_releases
-      description: Retrieve the list of available release points
-      x-openapi-router-controller: congress_api.controllers.uscode_controller
-  '/usc/{release_vers}/titles':
-    get:
-      summary: Your GET endpoint
-      tags:
-        - uscode
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/USCTitleList'
-      operationId: get_usc_release_titles
+      description: Information about a specific session
+      operationId: get_session_summary
       parameters:
-        - description: 'The given release point id, or latest'
-          explode: false
-          in: path
-          name: release_vers
-          required: true
-          schema:
-            type: string
-          style: simple
-      description: Retrieve the list of titles loaded for a given release point.
-      x-openapi-router-controller: congress_api.controllers.uscode_controller
-  '/usc/{release_vers}/{short_title}/sections':
-    get:
-      summary: Your GET endpoint
-      tags:
-        - uscode
+      - description: Congress session
+        explode: false
+        in: path
+        name: session
+        required: true
+        schema:
+          default: "116"
+          type: string
+        style: simple
       responses:
-        '200':
-          description: OK
+        "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/USCSectionList'
-      operationId: get_usc_release_sections
-      description: Get a list of the sections in this given title
-      parameters:
-        - explode: false
-          in: path
-          name: release_vers
-          required: true
-          schema:
-            type: string
-          style: simple
-        - explode: false
-          in: path
-          name: short_title
-          required: true
-          schema:
-            type: string
-          style: simple
-      x-openapi-router-controller: congress_api.controllers.uscode_controller
-  '/usc/{release_vers}/{short_title}/{section_number}/text':
-    get:
-      summary: Your GET endpoint
-      tags:
-        - uscode
-      responses:
-        '200':
-          description: OK
+                $ref: '#/components/schemas/SessionMetadata'
+          description: Metadata about the particular session of congress
+        "400":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/USCSectionContentList'
-      operationId: get_usc_release_text
-      description: Get the text for a specific section
-      x-openapi-router-controller: congress_api.controllers.uscode_controller
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Incorrect formatted request
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+          description: Non existent Session
+      summary: Specific Session
+      tags:
+      - legislation
+      x-openapi-router-controller: congress_api.controllers.legislation_controller
+  /congress/{session}/{chamber}:
+    get:
+      description: Information about a specific chamber for the given session
+      operationId: get_chamber_summary
       parameters:
-        - explode: false
-          in: path
-          name: release_vers
-          required: true
-          schema:
-            type: string
-          style: simple
-        - explode: false
-          in: path
-          name: short_title
-          required: true
-          schema:
-            type: string
-          style: simple
-        - explode: false
-          in: path
-          name: section_number
-          required: true
-          schema:
-            type: string
-          style: simple
-  '/congress/{session}/{chamber}-bill/{bill}/{version}/diffs/{short_title}/{section_number}':
+      - description: Congress session
+        explode: false
+        in: path
+        name: session
+        required: true
+        schema:
+          default: "116"
+          type: string
+        style: simple
+      - description: The chamber of Congress to query
+        explode: false
+        in: path
+        name: chamber
+        required: true
+        schema:
+          enum:
+          - house
+          - senate
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChamberMetadata'
+          description: Metadata about the particular chamber
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Response if given an invalid chamber
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+          description: Not Found
+      summary: Specific chamber
+      tags:
+      - legislation
+      x-openapi-router-controller: congress_api.controllers.legislation_controller
+  /congress/{session}/{chamber}-bill/{bill}:
     get:
       description: Get information about a specific bill
+      operationId: get_bill_summary
       parameters:
-        - description: Congress session
-          explode: false
-          in: path
-          name: session
-          required: true
-          schema:
-            default: '116'
-            type: string
-          style: simple
-        - description: The chamber of Congress to query
-          explode: false
-          in: path
-          name: chamber
-          required: true
-          schema:
-            enum:
-              - house
-              - senate
-            type: string
-          style: simple
-        - description: "The bill's number"
-          explode: false
-          in: path
-          name: bill
-          required: true
-          schema:
-            type: string
-          style: simple
-        - description: The bill version to request
-          explode: false
-          in: path
-          name: version
-          required: true
-          schema:
-            type: string
-          style: simple
-        - explode: false
-          in: path
-          name: short_title
-          required: true
-          schema:
-            type: string
-          style: simple
-        - explode: false
-          in: path
-          name: section_number
-          required: true
-          schema:
-            type: string
-          style: simple
-      operationId: get_bill_version_diffs
+      - description: Congress session
+        explode: false
+        in: path
+        name: session
+        required: true
+        schema:
+          default: "116"
+          type: string
+        style: simple
+      - description: The chamber of Congress to query
+        explode: false
+        in: path
+        name: chamber
+        required: true
+        schema:
+          enum:
+          - House
+          - Senate
+          type: string
+        style: simple
+      - description: The bill's number
+        explode: false
+        in: path
+        name: bill
+        required: true
+        schema:
+          type: string
+        style: simple
       responses:
-        '200':
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillMetadata'
           description: Metadata about the particular bill
+        "400":
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Response for an invalid request
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+          description: Not Found
+      summary: Information about a single bill
+      tags:
+      - legislation
+      x-openapi-router-controller: congress_api.controllers.legislation_controller
+  /congress/{session}/{chamber}-bill/{bill}/{base_version}/amendments/{new_version}:
+    get:
+      deprecated: true
+      description: Gets the amendments made between the base version and the new version
+      operationId: get_bill_version_amdts
+      parameters:
+      - description: Congress session
+        explode: false
+        in: path
+        name: session
+        required: true
+        schema:
+          default: "116"
+          type: string
+        style: simple
+      - description: The chamber of Congress to query
+        explode: false
+        in: path
+        name: chamber
+        required: true
+        schema:
+          enum:
+          - house
+          - senate
+          type: string
+        style: simple
+      - description: The bill's number
+        explode: false
+        in: path
+        name: bill
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The base version to compare against
+        explode: false
+        in: path
+        name: base_version
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The new version to compare with
+        explode: false
+        in: path
+        name: new_version
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: {}
+          description: Metadata about the particular bill
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Response for an invalid request
+      summary: Bill version amendments
+      tags:
+      - legislation
+      x-openapi-router-controller: congress_api.controllers.legislation_controller
+  /congress/{session}/{chamber}-bill/{bill}/{version}/diffs:
+    get:
+      description: Get the diffs generated for a specific bill version
+      operationId: get_bill_version_diff_metadata
+      parameters:
+      - description: Congress session
+        explode: false
+        in: path
+        name: session
+        required: true
+        schema:
+          default: "116"
+          type: string
+        style: simple
+      - description: The chamber of Congress to query
+        explode: false
+        in: path
+        name: chamber
+        required: true
+        schema:
+          enum:
+          - house
+          - senate
+          type: string
+        style: simple
+      - description: The bill's number
+        explode: false
+        in: path
+        name: bill
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The bill version to request
+        explode: false
+        in: path
+        name: version
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/BillDiffList'
+                type: array
+          description: Metadata about the particular bill
+        "400":
+          content:
+            application/json:
+              schema: {}
+          description: Response for an invalid request
+      summary: Bill version diffs
+      tags:
+      - legislation
+      x-openapi-router-controller: congress_api.controllers.legislation_controller
+  /congress/{session}/{chamber}-bill/{bill}/{version}/diffs/{short_title}/{section_number}:
+    get:
+      description: Get the diffs for a given title and section
+      operationId: get_bill_version_diffs
+      parameters:
+      - description: Congress session
+        explode: false
+        in: path
+        name: session
+        required: true
+        schema:
+          default: "116"
+          type: string
+        style: simple
+      - description: The chamber of Congress to query
+        explode: false
+        in: path
+        name: chamber
+        required: true
+        schema:
+          enum:
+          - house
+          - senate
+          type: string
+        style: simple
+      - description: The bill's number
+        explode: false
+        in: path
+        name: bill
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The bill version to request
+        explode: false
+        in: path
+        name: version
+        required: true
+        schema:
+          type: string
+        style: simple
+      - explode: false
+        in: path
+        name: short_title
+        required: true
+        schema:
+          type: string
+        style: simple
+      - explode: false
+        in: path
+        name: section_number
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/BillContentDiffList'
-        '400':
-          description: Response for an invalid request
+          description: Metadata about the particular bill
+        "400":
           content:
             application/json:
               schema: {}
-      x-openapi-router-controller: congress_api.controllers.legislation_controller
+          description: Response for an invalid request
+      summary: Diffs by chapter and section
       tags:
-        - legislation
-servers:
-  - description: Main API endpoint
-    url: 'https://api.congress.dev/'
-  - url: 'https://api2.congress.dev/'
-    description: Beta Endpoint
+      - legislation
+      x-openapi-router-controller: congress_api.controllers.legislation_controller
+  /congress/{session}/{chamber}-bill/{bill}/{version}/summary:
+    get:
+      description: Get information about a specific bill version
+      operationId: get_bill_version_summary
+      parameters:
+      - description: Congress session
+        explode: false
+        in: path
+        name: session
+        required: true
+        schema:
+          default: "116"
+          type: string
+        style: simple
+      - description: The chamber of Congress to query
+        explode: false
+        in: path
+        name: chamber
+        required: true
+        schema:
+          enum:
+          - house
+          - senate
+          type: string
+        style: simple
+      - description: The bill's number
+        explode: false
+        in: path
+        name: bill
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The bill version to request
+        explode: false
+        in: path
+        name: version
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillVersionMetadata'
+          description: Metadata about the particular bill
+        "400":
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Response for an invalid request
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+          description: Not Found
+      summary: Bill version summary
+      tags:
+      - legislation
+      x-openapi-router-controller: congress_api.controllers.legislation_controller
+  /congress/{session}/{chamber}-bill/{bill}/{version}/text:
+    get:
+      description: Get the text for a specific bill version
+      operationId: get_bill_version_text
+      parameters:
+      - description: Congress session
+        explode: false
+        in: path
+        name: session
+        required: true
+        schema:
+          default: "116"
+          type: string
+        style: simple
+      - description: The chamber of Congress to query
+        explode: false
+        in: path
+        name: chamber
+        required: true
+        schema:
+          enum:
+          - house
+          - senate
+          type: string
+        style: simple
+      - description: The bill's number
+        explode: false
+        in: path
+        name: bill
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: The bill version to request
+        explode: false
+        in: path
+        name: version
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Flag to include the parsed actions for each bit of text, defaults
+          to false.
+        explode: true
+        in: query
+        name: include_parsed
+        required: false
+        schema:
+          default: false
+          type: boolean
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BillTextResponse'
+          description: Metadata about the particular bill
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Response for an invalid request
+      summary: Bill version text
+      tags:
+      - legislation
+      x-openapi-router-controller: congress_api.controllers.legislation_controller
+  /congress/{session}/{chamber}-bills:
+    get:
+      description: Retrieving a list of bills
+      operationId: get_chamber_bills
+      parameters:
+      - description: Congress session
+        explode: false
+        in: path
+        name: session
+        required: true
+        schema:
+          default: "116"
+          type: string
+        style: simple
+      - description: The chamber of Congress to query
+        explode: false
+        in: path
+        name: chamber
+        required: true
+        schema:
+          enum:
+          - house
+          - senate
+          type: string
+        style: simple
+      - description: Page size
+        explode: true
+        in: query
+        name: page_size
+        required: false
+        schema:
+          default: 25
+          maximum: 25
+          minimum: 1
+          type: integer
+        style: form
+      - description: What page
+        explode: true
+        in: query
+        name: page
+        required: false
+        schema:
+          default: 1
+          minimum: 1
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChamberBillList'
+          description: List of bills for the given chamber
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Response if given an invalid chamber
+        "404":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFound'
+          description: Not Found
+      summary: List of bills for a chamber
+      tags:
+      - legislation
+      x-openapi-router-controller: congress_api.controllers.legislation_controller
+  /usc/releases:
+    get:
+      description: Retrieve the list of available release points
+      operationId: get_usc_releases
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReleasePointList'
+          description: OK
+      summary: USCode releases available
+      tags:
+      - uscode
+      x-openapi-router-controller: congress_api.controllers.uscode_controller
+  /usc/{release_vers}/titles:
+    get:
+      description: Retrieve the list of titles loaded for a given release point.
+      operationId: get_usc_release_titles
+      parameters:
+      - description: The given release point id, or latest
+        explode: false
+        in: path
+        name: release_vers
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/USCTitleList'
+          description: OK
+      summary: USCode titles
+      tags:
+      - uscode
+      x-openapi-router-controller: congress_api.controllers.uscode_controller
+  /usc/{release_vers}/{short_title}/sections:
+    get:
+      description: Get a list of the sections in this given title
+      operationId: get_usc_release_sections
+      parameters:
+      - explode: false
+        in: path
+        name: release_vers
+        required: true
+        schema:
+          type: string
+        style: simple
+      - explode: false
+        in: path
+        name: short_title
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/USCSectionList'
+          description: OK
+      summary: USCode sections for a given title
+      tags:
+      - uscode
+      x-openapi-router-controller: congress_api.controllers.uscode_controller
+  /usc/{release_vers}/{short_title}/{section_number}/text:
+    get:
+      description: Get the text for a specific section
+      operationId: get_usc_release_text
+      parameters:
+      - explode: false
+        in: path
+        name: release_vers
+        required: true
+        schema:
+          type: string
+        style: simple
+      - explode: false
+        in: path
+        name: short_title
+        required: true
+        schema:
+          type: string
+        style: simple
+      - explode: false
+        in: path
+        name: section_number
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/USCSectionContentList'
+          description: OK
+      summary: USCode section text
+      tags:
+      - uscode
+      x-openapi-router-controller: congress_api.controllers.uscode_controller
 components:
-  links: {}
   callbacks: {}
+  links: {}
   schemas:
     CongressSessionList:
-      type: array
       items:
         $ref: '#/components/schemas/SessionMetadata'
+      type: array
+      x-tags:
+      - legislation
     SessionMetadata:
-      type: object
+      example:
+        session_number: 6
+        congress_id: 0
+        start_year: 1
+        end_year: 5
       properties:
         congress_id:
           type: integer
@@ -752,14 +772,14 @@ components:
           type: integer
         end_year:
           type: integer
-      example:
-        session_number: 6
-        congress_id: 0
-        start_year: 1
-        end_year: 5
-    ChamberMetadata:
-      title: ChamberMetadata
       type: object
+      x-tags:
+      - uscode
+    ChamberMetadata:
+      example:
+        chamber: chamber
+        bill_count: 0
+        congress_id: 6
       properties:
         bill_count:
           type: integer
@@ -767,13 +787,20 @@ components:
           type: integer
         chamber:
           type: string
-      example:
-        chamber: chamber
-        bill_count: 0
-        congress_id: 6
-    BillSlimMetadata:
-      title: BillSlimMetadata
+      title: ChamberMetadata
       type: object
+      x-tags:
+      - legislation
+    BillSlimMetadata:
+      example:
+        legislation_type: legislation_type
+        number: 1
+        congress_id: 5
+        title: title
+        legislation_versions:
+        - legislation_versions
+        - legislation_versions
+        legislation_id: 6
       properties:
         legislation_id:
           type: integer
@@ -786,43 +813,42 @@ components:
         legislation_type:
           type: string
         legislation_versions:
-          type: array
           items:
             type: string
-      example:
-        legislation_type: legislation_type
-        number: 1
-        congress_id: 5
-        title: title
-        legislation_versions:
-          - legislation_versions
-          - legislation_versions
-        legislation_id: 6
-    NotFound:
-      title: NotFound
+          type: array
+      title: BillSlimMetadata
       type: object
+      x-tags:
+      - legislation
+    NotFound:
       description: Not found response
       properties:
         request_url:
           type: string
         message:
           type: string
-    ErrorResponse:
-      title: ErrorResponse
+      title: NotFound
       type: object
+    ErrorResponse:
+      description: Error message for a given URL
       properties:
         request_url:
           type: string
         message:
           type: string
-      description: Error message for a given URL
-    BillVersionMetadata:
-      title: BillVersionMetadata
+      title: ErrorResponse
       type: object
+    BillVersionMetadata:
+      example:
+        effective_date: 9
+        created_at: 3
+        legislation_version: legislation_version
+        legislation_version_id: 7
+        legislation_id: 2
       properties:
         legislation_id:
-          type: integer
           description: Primary Key in the legislation table
+          type: integer
         legislation_version_id:
           type: integer
         effective_date:
@@ -831,33 +857,28 @@ components:
           type: string
         legislation_version:
           type: string
-      example:
-        effective_date: 9
-        created_at: 3
-        legislation_version: legislation_version
-        legislation_version_id: 7
-        legislation_id: 2
-    BillMetadata:
-      title: BillMetadata
+      title: BillVersionMetadata
       type: object
+      x-tags:
+      - legislation
+    BillMetadata:
       example:
         legislation_type: legislation_type
         number: 5
         congress_id: 1
         title: title
         legislation_versions:
-          - effective_date: 9
-            created_at: 3
-            legislation_version: legislation_version
-            legislation_version_id: 7
-            legislation_id: 2
-          - effective_date: 9
-            created_at: 3
-            legislation_version: legislation_version
-            legislation_version_id: 7
-            legislation_id: 2
+        - effective_date: 9
+          created_at: 3
+          legislation_version: legislation_version
+          legislation_version_id: 7
+          legislation_id: 2
+        - effective_date: 9
+          created_at: 3
+          legislation_version: legislation_version
+          legislation_version_id: 7
+          legislation_id: 2
         legislation_id: 5
-      description: ''
       properties:
         legislation_type:
           type: string
@@ -868,57 +889,71 @@ components:
         legislation_id:
           type: integer
         legislation_versions:
-          type: array
           items:
             $ref: '#/components/schemas/BillVersionMetadata'
+          type: array
         congress:
           type: integer
         chamber:
           type: string
         usc_release_id:
           type: integer
-    ChamberBillList:
-      title: ChamberBillList
+      title: BillMetadata
       type: object
+      x-tags:
+      - legislation
+    ChamberBillList:
+      example:
+        chamber: chamber
+        bill_end: 2
+        conress_id: 0
+        legislation:
+        - legislation_type: legislation_type
+          number: 1
+          congress_id: 5
+          title: title
+          legislation_versions:
+          - legislation_versions
+          - legislation_versions
+          legislation_id: 6
+        - legislation_type: legislation_type
+          number: 1
+          congress_id: 5
+          title: title
+          legislation_versions:
+          - legislation_versions
+          - legislation_versions
+          legislation_id: 6
+        bill_start: 5
       properties:
         chamber:
           type: string
         conress_id:
           type: integer
         legislation:
-          type: array
           items:
             $ref: '#/components/schemas/BillSlimMetadata'
+          type: array
         bill_start:
           type: integer
         bill_end:
           type: integer
-      example:
-        chamber: chamber
-        bill_end: 2
-        conress_id: 0
-        legislation:
-          - legislation_type: legislation_type
-            number: 1
-            congress_id: 5
-            title: title
-            legislation_versions:
-              - legislation_versions
-              - legislation_versions
-            legislation_id: 6
-          - legislation_type: legislation_type
-            number: 1
-            congress_id: 5
-            title: title
-            legislation_versions:
-              - legislation_versions
-              - legislation_versions
-            legislation_id: 6
-        bill_start: 5
-    BillTextContent:
-      title: BillTextContent
+      title: ChamberBillList
       type: object
-      description: A single bit of text from a piece of legislation. These are hiearchical based on the parent_id
+      x-tags:
+      - legislation
+    BillTextContent:
+      description: A single bit of text from a piece of legislation. These are hiearchical
+        based on the parent_id
+      example:
+        content_type: content_type
+        section_display: section_display
+        heading: heading
+        parent_id: 5
+        order_number: 5
+        content_str: content_str
+        legislation_content_id: 1
+        action: '{}'
       properties:
         legislation_content_id:
           type: integer
@@ -936,60 +971,48 @@ components:
           type: string
         action:
           type: object
-      example:
-        content_type: content_type
-        section_display: section_display
-        heading: heading
-        parent_id: 5
-        order_number: 5
-        content_str: content_str
-        legislation_content_id: 1
-        action: '{}'
-    BillTextResponse:
-      title: BillTextResponse
+      title: BillTextContent
       type: object
+      x-tags:
+      - legislation
+    BillTextResponse:
+      example:
+        legislation_version: legislation_version
+        legislation_version_id: 6
+        legislation_id: 0
+        content:
+        - content_type: content_type
+          section_display: section_display
+          heading: heading
+          parent_id: 5
+          order_number: 5
+          content_str: content_str
+          legislation_content_id: 1
+          action: '{}'
+        - content_type: content_type
+          section_display: section_display
+          heading: heading
+          parent_id: 5
+          order_number: 5
+          content_str: content_str
+          legislation_content_id: 1
+          action: '{}'
       properties:
         legislation_id:
           type: integer
         legislation_version_id:
           type: integer
         content:
-          type: array
           items:
             $ref: '#/components/schemas/BillTextContent'
+          type: array
         legislation_version:
           type: string
-      example:
-        legislation_version: legislation_version
-        legislation_version_id: 6
-        legislation_id: 0
-        content:
-          - content_type: content_type
-            section_display: section_display
-            heading: heading
-            parent_id: 5
-            order_number: 5
-            content_str: content_str
-            legislation_content_id: 1
-            action: '{}'
-          - content_type: content_type
-            section_display: section_display
-            heading: heading
-            parent_id: 5
-            order_number: 5
-            content_str: content_str
-            legislation_content_id: 1
-            action: '{}'
-    BillSearchList:
-      title: BillSearchList
+      title: BillTextResponse
       type: object
-      properties:
-        params:
-          $ref: '#/components/schemas/BillSearchList_params'
-        legislation:
-          type: array
-          items:
-            $ref: '#/components/schemas/BillMetadata'
+      x-tags:
+      - legislation
+    BillSearchList:
       example:
         params:
           chamber: chamber
@@ -997,38 +1020,51 @@ components:
           page: 6.027456183070403
           results: 0.8008281904610115
         legislation:
-          - legislation_type: legislation_type
-            number: 5
-            congress_id: 1
-            title: title
-            legislation_versions:
-              - effective_date: 9
-                created_at: 3
-                legislation_version: legislation_version
-                legislation_version_id: 7
-                legislation_id: 2
-              - effective_date: 9
-                created_at: 3
-                legislation_version: legislation_version
-                legislation_version_id: 7
-                legislation_id: 2
-            legislation_id: 5
-          - legislation_type: legislation_type
-            number: 5
-            congress_id: 1
-            title: title
-            legislation_versions:
-              - effective_date: 9
-                created_at: 3
-                legislation_version: legislation_version
-                legislation_version_id: 7
-                legislation_id: 2
-              - effective_date: 9
-                created_at: 3
-                legislation_version: legislation_version
-                legislation_version_id: 7
-                legislation_id: 2
-            legislation_id: 5
+        - legislation_type: legislation_type
+          number: 5
+          congress_id: 1
+          title: title
+          legislation_versions:
+          - effective_date: 9
+            created_at: 3
+            legislation_version: legislation_version
+            legislation_version_id: 7
+            legislation_id: 2
+          - effective_date: 9
+            created_at: 3
+            legislation_version: legislation_version
+            legislation_version_id: 7
+            legislation_id: 2
+          legislation_id: 5
+        - legislation_type: legislation_type
+          number: 5
+          congress_id: 1
+          title: title
+          legislation_versions:
+          - effective_date: 9
+            created_at: 3
+            legislation_version: legislation_version
+            legislation_version_id: 7
+            legislation_id: 2
+          - effective_date: 9
+            created_at: 3
+            legislation_version: legislation_version
+            legislation_version_id: 7
+            legislation_id: 2
+          legislation_id: 5
+      properties:
+        params:
+          $ref: '#/components/schemas/BillSearchList_params'
+        legislation:
+          items:
+            $ref: '#/components/schemas/BillMetadata'
+          type: array
+        total_results:
+          type: integer
+      title: BillSearchList
+      type: object
+      x-tags:
+      - legislation
     BillSearchList_params:
       example:
         chamber: chamber
@@ -1041,17 +1077,22 @@ components:
         versions:
           type: string
         page:
-          type: integer
           default: 1
           minimum: 0
-        pageSize:
           type: integer
+        pageSize:
           default: 25
-          minimum: 0
           maximum: 25
+          minimum: 0
+          type: integer
+      x-tags:
+      - legislation
     ReleasePointMetadata:
-      title: ReleasePointMetadata
-      type: object
+      example:
+        usc_release_id: 0
+        short_title: short_title
+        effective_date: effective_date
+        long_title: long_title
       properties:
         usc_release_id:
           type: integer
@@ -1061,32 +1102,37 @@ components:
           type: string
         long_title:
           type: string
-      example:
-        usc_release_id: 0
-        short_title: short_title
-        effective_date: effective_date
-        long_title: long_title
-    ReleasePointList:
-      title: ReleasePointList
+      title: ReleasePointMetadata
       type: object
+      x-tags:
+      - uscode
+    ReleasePointList:
+      example:
+        releases:
+        - usc_release_id: 0
+          short_title: short_title
+          effective_date: effective_date
+          long_title: long_title
+        - usc_release_id: 0
+          short_title: short_title
+          effective_date: effective_date
+          long_title: long_title
       properties:
         releases:
-          type: array
           items:
             $ref: '#/components/schemas/ReleasePointMetadata'
-      example:
-        releases:
-          - usc_release_id: 0
-            short_title: short_title
-            effective_date: effective_date
-            long_title: long_title
-          - usc_release_id: 0
-            short_title: short_title
-            effective_date: effective_date
-            long_title: long_title
-    USCTitleMetadata:
-      title: USCTitleMetadata
+          type: array
+      title: ReleasePointList
       type: object
+      x-tags:
+      - uscode
+    USCTitleMetadata:
+      description: Information about a particular Title
+      example:
+        usc_release_id: 6
+        short_title: short_title
+        usc_chapter_id: 0
+        long_title: long_title
       properties:
         usc_chapter_id:
           type: integer
@@ -1096,32 +1142,41 @@ components:
           type: string
         usc_release_id:
           type: integer
-      example:
-        usc_release_id: 6
-        short_title: short_title
-        usc_chapter_id: 0
-        long_title: long_title
-    USCTitleList:
-      title: USCTitleList
+      title: USCTitleMetadata
       type: object
+      x-tags:
+      - uscode
+    USCTitleList:
+      description: A list of the USCode Titles available for a requested release point
+      example:
+        titles:
+        - usc_release_id: 6
+          short_title: short_title
+          usc_chapter_id: 0
+          long_title: long_title
+        - usc_release_id: 6
+          short_title: short_title
+          usc_chapter_id: 0
+          long_title: long_title
       properties:
         titles:
-          type: array
           items:
             $ref: '#/components/schemas/USCTitleMetadata'
-      example:
-        titles:
-          - usc_release_id: 6
-            short_title: short_title
-            usc_chapter_id: 0
-            long_title: long_title
-          - usc_release_id: 6
-            short_title: short_title
-            usc_chapter_id: 0
-            long_title: long_title
-    USCSectionMetadata:
-      title: USCSectionMetadata
+          type: array
+      title: USCTitleList
       type: object
+      x-tags:
+      - uscode
+    USCSectionMetadata:
+      description: Information about a particular Section
+      example:
+        number: number
+        usc_guid: usc_guid
+        section_display: section_display
+        heading: heading
+        usc_chapter_id: 5
+        usc_section_id: 5
+        usc_ident: usc_ident
       properties:
         usc_section_id:
           type: integer
@@ -1137,45 +1192,55 @@ components:
           type: string
         usc_chapter_id:
           type: integer
-      example:
-        number: number
-        usc_guid: usc_guid
-        section_display: section_display
-        heading: heading
-        usc_chapter_id: 5
-        usc_section_id: 5
-        usc_ident: usc_ident
-    USCSectionList:
-      title: USCSectionList
+      title: USCSectionMetadata
       type: object
-      properties:
-        usc_chapter_id:
-          type: integer
-        sections:
-          type: array
-          items:
-            $ref: '#/components/schemas/USCSectionMetadata'
+      x-tags:
+      - uscode
+    USCSectionList:
+      description: A list of available USCode Sections for a given Title
       example:
         total: 1
         usc_chapter_id: 0
         sections:
-          - number: number
-            usc_guid: usc_guid
-            section_display: section_display
-            heading: heading
-            usc_chapter_id: 5
-            usc_sectionn_id: 5
-            usc_ident: usc_ident
-          - number: number
-            usc_guid: usc_guid
-            section_display: section_display
-            heading: heading
-            usc_chapter_id: 5
-            usc_sectionn_id: 5
-            usc_ident: usc_ident
-    USCSectionContent:
-      title: USCSectionContent
+        - number: number
+          usc_guid: usc_guid
+          section_display: section_display
+          heading: heading
+          usc_chapter_id: 5
+          usc_sectionn_id: 5
+          usc_ident: usc_ident
+        - number: number
+          usc_guid: usc_guid
+          section_display: section_display
+          heading: heading
+          usc_chapter_id: 5
+          usc_sectionn_id: 5
+          usc_ident: usc_ident
+      properties:
+        usc_chapter_id:
+          type: integer
+        sections:
+          items:
+            $ref: '#/components/schemas/USCSectionMetadata'
+          type: array
+      title: USCSectionList
       type: object
+      x-tags:
+      - uscode
+    USCSectionContent:
+      description: A single chunk of content from the USCode
+      example:
+        number: number
+        usc_guid: usc_guid
+        usc_content_id: 6
+        content_type: content_type
+        usc_section_id: 5
+        section_display: section_display
+        heading: heading
+        parent_id: 1
+        order_number: 5
+        content_str: content_str
+        usc_ident: usc_ident
       properties:
         usc_content_id:
           type: integer
@@ -1199,70 +1264,86 @@ components:
           type: string
         usc_section_id:
           type: integer
-      example:
-        number: number
-        usc_guid: usc_guid
-        usc_content_id: 6
-        content_type: content_type
-        usc_section_id: 5
-        section_display: section_display
-        heading: heading
-        parent_id: 1
-        order_number: 5
-        content_str: content_str
-        usc_ident: usc_ident
-    USCSectionContentList:
-      title: USCSectionContentList
+      title: USCSectionContent
       type: object
+      x-tags:
+      - uscode
+    USCSectionContentList:
+      description: A list of available Content items for a particular Section
+      example:
+        usc_section_id: 0
+        content:
+        - number: number
+          usc_guid: usc_guid
+          usc_content_id: 6
+          content_type: content_type
+          usc_section_id: 5
+          section_display: section_display
+          heading: heading
+          parent_id: 1
+          order_number: 5
+          content_str: content_str
+          usc_ident: usc_ident
+        - number: number
+          usc_guid: usc_guid
+          usc_content_id: 6
+          content_type: content_type
+          usc_section_id: 5
+          section_display: section_display
+          heading: heading
+          parent_id: 1
+          order_number: 5
+          content_str: content_str
+          usc_ident: usc_ident
       properties:
         usc_section_id:
           type: integer
         content:
-          type: array
           items:
             $ref: '#/components/schemas/USCSectionContent'
-      example:
-        usc_section_id: 0
-        content:
-          - number: number
-            usc_guid: usc_guid
-            usc_content_id: 6
-            content_type: content_type
-            usc_section_id: 5
-            section_display: section_display
-            heading: heading
-            parent_id: 1
-            order_number: 5
-            content_str: content_str
-            usc_ident: usc_ident
-          - number: number
-            usc_guid: usc_guid
-            usc_content_id: 6
-            content_type: content_type
-            usc_section_id: 5
-            section_display: section_display
-            heading: heading
-            parent_id: 1
-            order_number: 5
-            content_str: content_str
-            usc_ident: usc_ident
-    BillDiffList:
-      title: BillDiffMetadata
+          type: array
+      title: USCSectionContentList
       type: object
+      x-tags:
+      - uscode
+    BillDiffList:
+      example:
+        short_title: short_title
+        legislation_version_id: 0
+        sections:
+        - short_title: short_title
+          heading: heading
+          display: display
+          long_title: long_title
+          section_number: section_number
+        - short_title: short_title
+          heading: heading
+          display: display
+          long_title: long_title
+          section_number: section_number
+        long_title: long_title
       properties:
         legislation_version_id:
           type: integer
         sections:
-          type: array
           items:
             $ref: '#/components/schemas/BillDiffMetadataItem'
+          type: array
         short_title:
           type: string
         long_title:
           type: string
-    BillDiffMetadataItem:
-      title: BillDiffMetadataItem
+      title: BillDiffMetadata
       type: object
+      x-tags:
+      - legislation
+    BillDiffMetadataItem:
+      example:
+        short_title: short_title
+        heading: heading
+        display: display
+        long_title: long_title
+        section_number: section_number
       properties:
         long_title:
           type: string
@@ -1274,19 +1355,62 @@ components:
           type: string
         short_title:
           type: string
-    BillContentDiffList:
-      title: BillContentDiffList
+      title: BillDiffMetadataItem
       type: object
+      x-tags:
+      - legislation
+    BillContentDiffList:
+      description: A list of the diffs generated for the requested bill version/section
+      example:
+        legislation_version_id: legislation_version_id
+        diffs:
+        - number: number
+          usc_guid: usc_guid
+          content_type: content_type
+          usc_content_id: 6
+          usc_section_id: 1
+          heading: heading
+          section_display: section_display
+          order_number: 0
+          content_str: content_str
+          usc_content_diff_id: 5
+          usc_ident: usc_ident
+        - number: number
+          usc_guid: usc_guid
+          content_type: content_type
+          usc_content_id: 6
+          usc_section_id: 1
+          heading: heading
+          section_display: section_display
+          order_number: 0
+          content_str: content_str
+          usc_content_diff_id: 5
+          usc_ident: usc_ident
       properties:
         legislation_version_id:
           type: string
         diffs:
-          type: array
           items:
             $ref: '#/components/schemas/BillContentDiff'
-    BillContentDiff:
-      title: BillContentDiff
+          type: array
+      title: BillContentDiffList
       type: object
+      x-tags:
+      - legislation
+    BillContentDiff:
+      description: A single diff
+      example:
+        number: number
+        usc_guid: usc_guid
+        content_type: content_type
+        usc_content_id: 6
+        usc_section_id: 1
+        heading: heading
+        section_display: section_display
+        order_number: 0
+        content_str: content_str
+        usc_content_diff_id: 5
+        usc_ident: usc_ident
       properties:
         number:
           type: string
@@ -1310,9 +1434,8 @@ components:
           type: integer
         usc_content_diff_id:
           type: integer
+      title: BillContentDiff
+      type: object
+      x-tags:
+      - legislation
   securitySchemes: {}
-tags:
-  - description: Endpoints for retrieving data about bills
-    name: Bills
-  - description: Endpoints for retrieving data about the USCode
-    name: USCode
