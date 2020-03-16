@@ -187,6 +187,7 @@ def search_legislation(
     query = query.join(LegislationVersion)
     query = query.filter(LegislationVersion.legislation_version.in_(version_srch))
     query = query.order_by(Legislation.number)
+    query = query.group_by(Legislation.legislation_id)
     query = query.limit(int(page_size)).offset(int((page - 1) * page_size))
     query = query.options(
         load_only(
