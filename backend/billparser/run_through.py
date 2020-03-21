@@ -9,6 +9,7 @@ import datetime
 import dateutil.parser as parser
 import pandas
 from lxml import etree
+from lxml.etree import Element
 from unidecode import unidecode  # GPLV2
 
 import sqlalchemy
@@ -37,6 +38,7 @@ from billparser.db.models import (
     Version,
     USCSection,
     USCRelease,
+    Congress,
 )
 from billparser.helpers import convert_to_usc_id
 from billparser.logger import log
@@ -52,9 +54,9 @@ filename_regex = re.compile(
 )
 chamb = {"hr": "House", "s": "Senate"}
 BASE_VERSION = 1
+EXISTING_CONGRESS = {}
+CURRENT_CONGRESS = None
 THREADS = int(os.environ.get("PARSE_THREADS", -1))
-
-Element = etree.Element
 
 
 def strip_arr(arr: List[str]) -> List[str]:
@@ -325,7 +327,7 @@ def parse_action_for_cite(action_object: dict) -> str:
 
 
 def find_or_create_bill(bill_obj: dict, title: str, session: "SQLAlchemy.session"):
-    global BASE_VERSION
+    global BASE_VERSION, CURRENT_CONGRESS
     new_version = Version(base_id=BASE_VERSION)
     session.add(new_version)
     session.commit()
@@ -344,6 +346,7 @@ def find_or_create_bill(bill_obj: dict, title: str, session: "SQLAlchemy.session
             chamber=LegislationChamber(bill_obj["chamber"]),
             legislation_type=LegislationType.Bill,
             version_id=new_version.version_id,
+            congress_id=CURRENT_CONGRESS,  # CURRENT_CONGRESS is set by the ensure_congress function
         )
         session.add(new_bill)
         session.commit()
@@ -540,7 +543,7 @@ def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object):
         new_vers_id = new_bill_version.version_id
 
         form_dates = root.xpath("//form/action/action-date")
-        if(len(form_dates) > 0):
+        if len(form_dates) > 0:
             last_date = form_dates[-1]
             try:
                 new_bill_version.effective_date = parser.parse(last_date.get("date"))
@@ -645,7 +648,7 @@ def run_action2(ACTION, new_bill_version, new_vers_id, session):
                 version_id=new_vers_id,
                 last_title=last_title,
                 next=ACTION.get("next", None),
-                legislation_content=ACTION.get("legislation_content", None)
+                legislation_content=ACTION.get("legislation_content", None),
             )
 
             action_object.set_action(action)
@@ -701,6 +704,44 @@ def run_action2(ACTION, new_bill_version, new_vers_id, session):
     return (existing_diffs < ending_diff), action_objs
 
 
+def ensure_congress(congress_number: int) -> None:
+    """
+    Ensures that a congress for the given session exists.
+
+    If we ever want to differentiate between which session of a particular
+    congress a bill is in, we'll need to update this schema.
+
+    https://www.senate.gov/legislative/DatesofSessionsofCongress.htm
+
+    Args:
+        congress_number (int): [description]
+    """
+    global EXISTING_CONGRESS, CURRENT_CONGRESS
+
+    # First time it is called, there won't be anything, so we need to ask the DB
+    # for the current set of congress sessions we've loaded previously
+    if EXISTING_CONGRESS == {}:
+        session = Session()
+        existings = session.query(Congress).all()
+        EXISTING_CONGRESS = {x.session_number: x.congress_id for x in existings}
+        session.close()
+
+    if congress_number not in EXISTING_CONGRESS:
+        session = Session()
+        offset = congress_number - 116
+        start_year = 2019 + (offset * 2)
+        end_year = start_year + 2
+        new_congress = Congress(
+            session_number=congress_number, start_year=start_year, end_year=end_year
+        )
+        session.add(new_congress)
+        session.flush()
+        session.commit()
+        EXISTING_CONGRESS[congress_number] = new_congress.congress_id
+
+    CURRENT_CONGRESS = EXISTING_CONGRESS[congress_number]
+
+
 def parse_archive(path: str) -> List[dict]:
     """
     Opens a ZipFile that is the dump of all bills.
@@ -746,7 +787,6 @@ def parse_archive(path: str) -> List[dict]:
 
     names = sorted(names, key=lambda x: x["bill_number"])
     # names = names[50:55]
-    # names = [x for x in names if (x.get('bill_number') == 34)]
     # names = [x for x in names if (x.get('bill_version') == 'enr')]
     frec = Parallel(n_jobs=THREADS, backend="multiprocessing", verbose=5)(
         delayed(parse_bill)(

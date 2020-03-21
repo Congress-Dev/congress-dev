@@ -2,7 +2,7 @@ import os
 import sys
 import json
 import zipfile
-from billparser.run_through import parse_archive
+from billparser.run_through import parse_archive, ensure_congress
 
 
 def download_path(url: str):
@@ -25,4 +25,5 @@ if __name__ == "__main__":
         print("=" * 5)
         print(rp.get("title"))
         zip_file_path = "bills/" + download_path(rp.get("url"))
+        ensure_congress(rp.get("congress", 116))
         parse_archive(zip_file_path)
