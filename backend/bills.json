@@ -1,18 +1,22 @@
 [
-    {
-        "title": "House: 116th 1st Session",
-        "url": "https://www.govinfo.gov/bulkdata/BILLS/116/1/hr/BILLS-116-1-hr.zip"
-    },
-    {
-        "title": "Senate: 116th 1st Session",
-        "url": "https://www.govinfo.gov/bulkdata/BILLS/116/1/s/BILLS-116-1-s.zip"
-    },
-    {
-        "title": "House: 116th 2nd Session",
-        "url": "https://www.govinfo.gov/bulkdata/BILLS/116/2/hr/BILLS-116-2-hr.zip"
-    },
-    {
-        "title": "Senate: 116th 2nd Session",
-        "url": "https://www.govinfo.gov/bulkdata/BILLS/116/2/s/BILLS-116-2-s.zip"
-    }
+  {
+    "title": "House: 116th 1st Session",
+    "congress": 116,
+    "url": "https://www.govinfo.gov/bulkdata/BILLS/116/1/hr/BILLS-116-1-hr.zip"
+  },
+  {
+    "title": "Senate: 116th 1st Session",
+    "congress": 116,
+    "url": "https://www.govinfo.gov/bulkdata/BILLS/116/1/s/BILLS-116-1-s.zip"
+  },
+  {
+    "title": "House: 116th 2nd Session",
+    "congress": 116,
+    "url": "https://www.govinfo.gov/bulkdata/BILLS/116/2/hr/BILLS-116-2-hr.zip"
+  },
+  {
+    "title": "Senate: 116th 2nd Session",
+    "congress": 116,
+    "url": "https://www.govinfo.gov/bulkdata/BILLS/116/2/s/BILLS-116-2-s.zip"
+  }
 ]
