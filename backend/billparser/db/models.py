@@ -408,7 +408,9 @@ class USCContentDiff(Base):
         index=True,
     )
     legislation_content_id = Column(
-        Integer, ForeignKey("legislation_content.legislation_content_id"), index=True
+        Integer,
+        ForeignKey("legislation_content.legislation_content_id", ondelete="CASCADE"),
+        index=True,
     )
     version_id = Column(
         Integer, ForeignKey("version.version_id", ondelete="CASCADE"), index=True

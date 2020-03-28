@@ -27,7 +27,7 @@ regex_holder = {
     ],
     "STRIKE-TEXT": [
         r"(?:(?P<target>.+?) of (?P<within>.+?) is amended )?by striking \"(?P<to_remove_text>.+?)\" and inserting \"(?P<to_replace>.+?)\"\.",
-        r"(?:in (?P<target>.*),)?by striking \"(?P<to_remove_text>.+?)\" and inserting \"(?P<to_replace>.+?)\"(?:\.|;)",
+        r"(?:in (?P<target>.*),)?\s?by striking \"(?P<to_remove_text>.+?)\" and inserting \"(?P<to_replace>.+?)\"(?:\.|;)",
         r"(?:(?P<target>.+?) of (?P<within>.+?) is amended )?by striking \"(?P<to_remove_text>.+?)\"\.",
         r"in (?P<target>.+?), by striking \"(?P<to_remove_text>.+?)\" at the end;",
         r"in (?P<target>.+?), by striking \"(?P<to_remove_text>.+?)\";(?: and)?",
@@ -42,7 +42,7 @@ regex_holder = {
         r"by striking \"(?P<to_remove_section>.+?)\" and inserting the following:"
     ],
     "INSERT-SECTION-AFTER": [
-        r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended by inserting after (?P<target_section>(?:sub)?(?:section|paragraph) .+?) the following(?: new paragraphs?)?:",
+        r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended by inserting after (?P<target_section>(?:sub)?(?:section|paragraph) .+?) the following(?: new (paragraph|section)s?)?:",
         r"by inserting after (?P<target>(?:sub)?(?:section|paragraph) .+?) the following(?: new paragraphs?)?:",
     ],
     "INSERT-END": [
@@ -54,6 +54,7 @@ regex_holder = {
     "INSERT-TEXT-AFTER": [
         r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended.? by inserting \"(?P<to_insert_text>.+?)\" after \"(?P<to_remove_text>.+?)\"(?:; and|\.)",
         r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended.? by inserting after \"(?P<to_remove_text>.+?)\" the following: \"(?P<to_insert_text>.+?)\"(?:; and|\.)",
+        r"^in (?P<target>.+?), by inserting \"(?P<to_insert_text>.+?)\" after \"(?P<to_remove_text>.+?)\";?",
     ],
     "INSERT-TEXT": [
         r"(?:(?P<target>.+?) of (?P<within>.+?) is amended )?by inserting \"(?P<to_insert_text>.+?)\" before \"(?P<target_text>.+?)\".?"
