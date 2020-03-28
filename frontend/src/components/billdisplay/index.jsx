@@ -7,6 +7,7 @@ import SyncLoader from "react-spinners/SyncLoader";
 import { Tooltip } from "@blueprintjs/core";
 
 import { getBillVersionText } from "common/api.js";
+import "styles/actions.scss";
 
 // TODO: move this somewhere in scss?
 const styles = {
@@ -58,6 +59,72 @@ function BillDisplay(props) {
     setTextTree({ loading: true });
     getBillVersionText(congress, chamber, billNumber, billVersion).then(setTextTree);
   }, [props.billVersion]);
+  function generateActionStr(action) {
+    let actionStr = [];
+    if (props.showTooltips === false) {
+      return "";
+    }
+    lodash.forEach(action, actionP => {
+      const keys = lodash
+        .chain(actionP)
+        .keys()
+        .filter(e => {
+          return !["changed", "parsed_cite"].includes(e);
+        })
+        .value();
+      if (keys.length > 0) {
+        actionStr.push(<span>{keys[0]}</span>);
+        actionStr.push(<br />);
+        lodash.forEach(actionP[keys[0]], (value, key) => {
+          if (key !== "REGEX") {
+            actionStr.push(
+              <span style={{ marginLeft: "5px" }}>
+                {" - "}
+                {key} = |{value}|
+              </span>
+            );
+            actionStr.push(<br />);
+          }
+        });
+        // actionStr += items;
+      }
+      console.log(keys);
+    });
+    if (actionStr.length > 0) {
+      return <>{actionStr}</>;
+    }
+    return "";
+  }
+  function generateActionHighlighting(contentStr, action) {
+    if (props.showTooltips === false) {
+      return contentStr;
+    }
+    const strings = lodash
+      .chain(action)
+      .map(lodash.toPairs)
+      .flatten()
+      .filter(x => !["changed", "parsed_cite"].includes(x[0]))
+      .map(x => x[1])
+      .map(lodash.toPairs)
+      .flatten()
+      .map(x => {
+        return { [x[0]]: x[1] };
+      })
+      .reduce((s, x) => Object.assign(x, s), {})
+      .value();
+    let tempStr = contentStr;
+    lodash.forEach(strings, (value, key) => {
+      tempStr = tempStr.replace(value, `<span class="action-${key}">${value}</span>`);
+    });
+    console.log(tempStr);
+    return (
+      <span
+        dangerouslySetInnerHTML={{
+          __html: tempStr,
+        }}
+      />
+    );
+  }
   function renderRecursive(node) {
     return (
       <>
@@ -75,7 +142,8 @@ function BillDisplay(props) {
             },
             ind
           ) => {
-            let actionStr = lodash.chain(action).map(lodash.keys).flatten().remove(x=>x!=="changed"&&x!=="parsed_cite").value().join(", ");
+            let actionStr = generateActionStr(action);
+            content_str = generateActionHighlighting(content_str, action);
             if (heading !== undefined) {
               return (
                 <div
@@ -87,7 +155,10 @@ function BillDisplay(props) {
                       : styles[content_type] || styles.section
                   }
                 >
-                  <Tooltip content={actionStr} disabled={actionStr === "" || props.showTooltips !== true}>
+                  <Tooltip
+                    content={actionStr}
+                    disabled={actionStr === "" || props.showTooltips !== true}
+                  >
                     <span>
                       <b>
                         {section_display} {heading}
@@ -109,7 +180,10 @@ function BillDisplay(props) {
                       : styles[content_type] || styles.section
                   }
                 >
-                  <Tooltip content={actionStr} disabled={actionStr === "" || props.showTooltips !== true}>
+                  <Tooltip
+                    content={actionStr}
+                    disabled={actionStr === "" || props.showTooltips !== true}
+                  >
                     <span>
                       <span style={{ fontWeight: "bolder" }}>{section_display}</span>{" "}
                       <span>{content_str}</span>
