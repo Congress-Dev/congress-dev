@@ -20,6 +20,7 @@ function BillViewer(props) {
   // TODO: Option for comparing two versions of the same bill and highlighting differences
   const [bill, setBill] = useState({});
   const [diffs, setDiffs] = useState({});
+  const [actionParse, setActionParse] = useState(false);
 
   const [diffMode, setDiffMode] = useState(false);
   const {
@@ -85,8 +86,11 @@ function BillViewer(props) {
         setBillVers(defaultVers[chamber.toLowerCase()]);
       }
     } else {
-      const validVersions = lodash.map(bill.legislation_versions, "legislation_version");
-      if(!validVersions.includes(billVersion)){
+      const validVersions = lodash.map(
+        bill.legislation_versions,
+        "legislation_version"
+      );
+      if (!validVersions.includes(billVersion)) {
         setBillVers(validVersions[0]);
       } else {
         setBillVers(billVersion);
@@ -115,7 +119,11 @@ function BillViewer(props) {
         )}
       </select>
       <br />
-      {false ? <Checkbox label="Show Estimated Changes" /> : null}
+      <Checkbox
+        label="Show action parsing details"
+        value={actionParse}
+        onClick={() => setActionParse(!actionParse)}
+      />
       <hr />
       <div className="sidebar">
         <BillDiffSidebar
@@ -139,7 +147,7 @@ function BillViewer(props) {
             chamber={chamber}
             billNumber={billNumber}
             billVersion={billVersion}
-            showTooltips={true}
+            showTooltips={actionParse}
           />
         )}
       </div>
