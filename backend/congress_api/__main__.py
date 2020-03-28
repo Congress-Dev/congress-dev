@@ -18,10 +18,12 @@ app = connexion.App(__name__, specification_dir="./openapi/")
 
 @app.app.after_request
 def add_header(response):
-    if CACHE_HEADER_TIME > 0:
+    if CACHE_HEADER_TIME > 0 and response.status_code == 200:
         response.cache_control.max_age = CACHE_HEADER_TIME
         response.cache_control.immutable = True
         response.cache_control.public = True
+    elif response.status_code != 200:
+        response.cache_control.max_age = 0
     return response
 
 
