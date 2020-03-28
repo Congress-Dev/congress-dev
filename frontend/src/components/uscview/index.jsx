@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import lodash from "lodash";
 
 import { getUSCSectionContent } from "common/api";
+import { md5 } from "common/other";
+
 import SyncLoader from "react-spinners/SyncLoader";
 import { diffWords } from "diff";
 
@@ -95,6 +97,7 @@ function USCView(props) {
         {lodash.map(newChildren, (item, ind) => {
           const {
             usc_content_id,
+            usc_ident,
             content_str,
             content_type,
             section_display,
@@ -103,6 +106,7 @@ function USCView(props) {
           } = item;
           return (
             <div
+              id={md5(usc_ident.toLowerCase())}
               name={usc_content_id}
               key={ind}
               style={
