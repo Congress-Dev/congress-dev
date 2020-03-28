@@ -20,6 +20,11 @@ function BillCard(props) {
       </>
     );
   }
+  function getFirstEffectiveDate() {
+    const { legislation_versions = [] } = bill;
+    const dateStr = legislation_versions[0].effective_date;
+    return `${dateStr}`;
+  }
   function renderVersions() {
     const { legislation_versions = [] } = bill;
     const len = legislation_versions.length;
@@ -52,6 +57,11 @@ function BillCard(props) {
     <Card>
       <h2>{genTitle()}</h2>
       <span style={{ fontStyle: "italic" }}>{bill.title}</span>
+      <br />
+      <span className="bill-card-introduced-date">
+        <span style={{ fontWeight: "bold" }}>First Introduced:</span>{" "}
+        {getFirstEffectiveDate()}
+      </span>
       <br />
       {renderVersions()}
     </Card>
