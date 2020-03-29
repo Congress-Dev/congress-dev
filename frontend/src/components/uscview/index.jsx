@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { useHistory } from "react-router-dom";
+
 import lodash from "lodash";
 
 import { getUSCSectionContent } from "common/api";
@@ -7,47 +9,14 @@ import { md5 } from "common/other";
 import SyncLoader from "react-spinners/SyncLoader";
 import { diffWords } from "diff";
 
-const styles = {
-  section: {
-    marginLeft: "20px",
-    marginBottom: "0px",
-  },
-  "quoted-block": {
-    borderWidth: "1px",
-    borderStyle: "solid",
-    borderColor: "gray",
-    backgroundColor: "lightgray",
-  },
-  continue: {
-    marginLeft: "20px",
-    marginBottom: "0px",
-    display: "block",
-  },
-  unchanged: {},
+import "styles/usc-view.scss";
 
-  added: {
-    backgroundColor: "#cdffd8",
-  },
-  removed: {
-    backgroundColor: "#ffdce0",
-    textDecoration: "line-through",
-    textDecorationColor: "#FF576B",
-  },
-  centered: {
-    textAlign: "center",
-  },
-  col_a: {
-    height: "90vh",
-    overflowX: "wrap",
-  },
-  col: {
-    height: "90vh",
-    overflowX: "wrap",
-  },
-  sidebar: {},
-};
 function USCView(props) {
+  const history = useHistory();
+
   const [contentTree, setContentTree] = useState({});
+  const [activeHash, setActiveHash] = useState(history.location.hash.slice(1));
+
   const { release, title, section, diffs = {} } = props;
   useEffect(() => {
     if (section) {
@@ -64,7 +33,7 @@ function USCView(props) {
         style = "added";
       }
       return (
-        <span className={style} style={styles[style]} key={ind}>
+        <span className={`usc-content-${style}`} key={ind}>
           {" "}
           {part.value}
         </span>
@@ -86,6 +55,18 @@ function USCView(props) {
     }
     return newItem;
   }
+  function goUpParentChain(element) {
+    if (element.className.indexOf("usc-content-section") > -1 && element.id !== "") {
+      setActiveHash(element.id);
+      return element.id;
+    }
+    return goUpParentChain(element.parentElement);
+  }
+  function changeUrl(event) {
+    history.replace({ hash: `#${goUpParentChain(event.target)}` });
+    event.preventDefault();
+    event.stopPropagation();
+  }
   function renderRecursive(node) {
     const newChildren = lodash
       .chain(node.children || [])
@@ -104,16 +85,15 @@ function USCView(props) {
             heading,
             children = [],
           } = item;
+          const correctedType = content_type.slice(content_type.indexOf("}") + 1);
+          const itemHash = md5(usc_ident.toLowerCase());
           return (
             <div
-              id={md5(usc_ident.toLowerCase())}
+              id={itemHash}
               name={usc_content_id}
+              className={`usc-content-${correctedType} usc-content-section ${activeHash === itemHash ? "usc-content-hash" : ""}`}
               key={ind}
-              style={
-                content_type === "legis-body"
-                  ? {}
-                  : styles[content_type] || styles.section
-              }
+              onClick={changeUrl}
             >
               <span>
                 {heading !== undefined ? (
@@ -121,9 +101,11 @@ function USCView(props) {
                     {section_display} {heading}
                   </b>
                 ) : (
-                  <span style={{ fontWeight: "bolder" }}>{section_display} </span>
+                  <span className={"usc-content-section-display"}>
+                    {section_display}{" "}
+                  </span>
                 )}
-                <span style={heading !== undefined ? styles.continue : {}}>
+                <span className={heading !== undefined ? "usc-content-continue" : ""}>
                   {content_str}
                 </span>
               </span>
