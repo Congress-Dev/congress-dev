@@ -1,12 +1,12 @@
 # coding: utf-8
 
 from __future__ import absolute_import
-
 from datetime import date, datetime  # noqa: F401
-from typing import Dict, List  # noqa: F401
 
-from congress_api import util
+from typing import List, Dict  # noqa: F401
+
 from congress_api.models.base_model_ import Model
+from congress_api import util
 
 
 class BillTextContent(Model):
@@ -25,6 +25,7 @@ class BillTextContent(Model):
         content_str=None,
         content_type=None,
         action=None,
+        lc_ident=None,
     ):  # noqa: E501
         """BillTextContent - a model defined in OpenAPI
 
@@ -44,6 +45,8 @@ class BillTextContent(Model):
         :type content_type: str
         :param action: The action of this BillTextContent.  # noqa: E501
         :type action: object
+        :param lc_ident: The lc_ident of this BillTextContent.  # noqa: E501
+        :type lc_ident: str
         """
         self.openapi_types = {
             "legislation_content_id": int,
@@ -54,6 +57,7 @@ class BillTextContent(Model):
             "content_str": str,
             "content_type": str,
             "action": object,
+            "lc_ident": str,
         }
 
         self.attribute_map = {
@@ -65,6 +69,7 @@ class BillTextContent(Model):
             "content_str": "content_str",
             "content_type": "content_type",
             "action": "action",
+            "lc_ident": "lc_ident",
         }
 
         self._legislation_content_id = legislation_content_id
@@ -75,6 +80,7 @@ class BillTextContent(Model):
         self._content_str = content_str
         self._content_type = content_type
         self._action = action
+        self._lc_ident = lc_ident
 
     @classmethod
     def from_dict(cls, dikt) -> "BillTextContent":
@@ -254,3 +260,24 @@ class BillTextContent(Model):
         """
 
         self._action = action
+
+    @property
+    def lc_ident(self):
+        """Gets the lc_ident of this BillTextContent.
+
+
+        :return: The lc_ident of this BillTextContent.
+        :rtype: str
+        """
+        return self._lc_ident
+
+    @lc_ident.setter
+    def lc_ident(self, lc_ident):
+        """Sets the lc_ident of this BillTextContent.
+
+
+        :param lc_ident: The lc_ident of this BillTextContent.
+        :type lc_ident: str
+        """
+
+        self._lc_ident = lc_ident

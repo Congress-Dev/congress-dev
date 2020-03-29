@@ -234,6 +234,7 @@ def get_legislation_version_text(
                 content_str=t.content_str,
                 content_type=t.content_type,
                 action=t.action_parse if include_parsed else [],
+                lc_ident=t.lc_ident
             )
             for t in text
         ],

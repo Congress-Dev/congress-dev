@@ -6,7 +6,7 @@ info:
   description: API for accessing the data within the database. Will support the default
     frontend.
   title: Congress.Dev API
-  version: 0.1.1
+  version: 0.1.2
 servers:
 - description: Main API endpoint
   url: https://api.congress.dev/
@@ -971,6 +971,8 @@ components:
           type: string
         action:
           type: object
+        lc_ident:
+          type: string
       title: BillTextContent
       type: object
       x-tags:

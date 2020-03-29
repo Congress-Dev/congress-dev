@@ -402,6 +402,7 @@ def recursive_bill_content(
                 section_display=enum.text,
                 content_str=content_str,
                 heading=heading.text if heading is not None else None,
+                lc_ident=search_element.attrib.get("id", None),
             )
         else:
             content_elem = heading
