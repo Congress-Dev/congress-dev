@@ -1,6 +1,8 @@
 // Will have to handle fetching the bill text, and formatting it correctly.
 
 import React, { useEffect, useState } from "react";
+import { useHistory } from "react-router-dom";
+
 import lodash from "lodash";
 
 import SyncLoader from "react-spinners/SyncLoader";
@@ -15,12 +17,28 @@ function BillDisplay(props) {
   // *TODO*: Start using the action list to render a list of parsed actions
   // TODO: Add permalink feature
   // TODO: Add highlight feature to permalink in the url ?link=a/1/ii&highlight=a/1/ii,a/1/v
+  const history = useHistory();
+
   const [textTree, setTextTree] = useState({});
+  const [activeHash, setActiveHash] = useState(history.location.hash.slice(1));
+
   useEffect(() => {
     const { congress, chamber, billNumber, billVersion } = props;
     setTextTree({ loading: true });
     getBillVersionText(congress, chamber, billNumber, billVersion).then(setTextTree);
   }, [props.billVersion]);
+  function goUpParentChain(element) {
+    if (element.className.indexOf("bill-content-section") > -1 && element.id !== "") {
+      setActiveHash(element.id);
+      return element.id;
+    }
+    return goUpParentChain(element.parentElement);
+  }
+  function changeUrl(event) {
+    history.replace({ hash: `#${goUpParentChain(event.target)}` });
+    event.preventDefault();
+    event.stopPropagation();
+  }
   function generateActionStr(action) {
     let actionStr = [];
     if (props.showTooltips === false) {
@@ -95,6 +113,7 @@ function BillDisplay(props) {
           (
             {
               legislation_content_id,
+              lc_ident,
               content_str,
               content_type,
               section_display,
@@ -106,12 +125,19 @@ function BillDisplay(props) {
           ) => {
             let actionStr = generateActionStr(action);
             content_str = generateActionHighlighting(content_str, action);
+            const itemHash = (lc_ident || "").toLowerCase();
+            const outerClass = `bill-content-${content_type} bill-content-section ${
+              activeHash === itemHash ? "usc-content-hash" : ""
+            }`;
+            // TODO: Get rid of this if statement, with better CSS
             if (heading !== undefined) {
               return (
                 <div
+                  id={itemHash}
                   name={legislation_content_id}
                   key={ind}
-                  className={`bill-content-${content_type} bill-content-section`}
+                  className={outerClass}
+                  onClick={changeUrl}
                 >
                   <Tooltip
                     content={actionStr}
@@ -130,9 +156,11 @@ function BillDisplay(props) {
             } else {
               return (
                 <div
+                  id={itemHash}
                   name={legislation_content_id}
                   key={ind}
-                  className={`bill-content-${content_type} bill-content-section`}
+                  className={outerClass}
+                  onClick={changeUrl}
                 >
                   <Tooltip
                     content={actionStr}
