@@ -8,46 +8,8 @@ import { Tooltip } from "@blueprintjs/core";
 
 import { getBillVersionText } from "common/api.js";
 import "styles/actions.scss";
+import "styles/bill-view.scss";
 
-// TODO: move this somewhere in scss?
-const styles = {
-  section: {
-    marginLeft: "20px",
-    marginBottom: "0px",
-  },
-  "quoted-block": {
-    borderWidth: "1px",
-    borderStyle: "solid",
-    borderColor: "gray",
-    backgroundColor: "lightgray",
-  },
-  continue: {
-    marginLeft: "20px",
-    marginBottom: "0px",
-  },
-  unchanged: {},
-
-  added: {
-    backgroundColor: "#cdffd8",
-  },
-  removed: {
-    backgroundColor: "#ffdce0",
-    textDecoration: "line-through",
-    textDecorationColor: "#FF576B",
-  },
-  centered: {
-    textAlign: "center",
-  },
-  col_a: {
-    height: "90vh",
-    overflowX: "wrap",
-  },
-  col: {
-    height: "90vh",
-    overflowX: "wrap",
-  },
-  sidebar: {},
-};
 function BillDisplay(props) {
   // TODO: Add minimap scrollbar
   // *TODO*: Start using the action list to render a list of parsed actions
@@ -149,11 +111,7 @@ function BillDisplay(props) {
                 <div
                   name={legislation_content_id}
                   key={ind}
-                  style={
-                    content_type === "legis-body"
-                      ? {}
-                      : styles[content_type] || styles.section
-                  }
+                  className={`bill-content-${content_type} bill-content-section`}
                 >
                   <Tooltip
                     content={actionStr}
@@ -163,7 +121,7 @@ function BillDisplay(props) {
                       <b>
                         {section_display} {heading}
                       </b>
-                      <p style={styles.continue}>{content_str}</p>
+                      <p className={"bill-content-continue"}>{content_str}</p>
                     </span>
                   </Tooltip>
                   {renderRecursive({ children })}
@@ -174,18 +132,16 @@ function BillDisplay(props) {
                 <div
                   name={legislation_content_id}
                   key={ind}
-                  style={
-                    content_type === "legis-body"
-                      ? {}
-                      : styles[content_type] || styles.section
-                  }
+                  className={`bill-content-${content_type} bill-content-section`}
                 >
                   <Tooltip
                     content={actionStr}
                     disabled={actionStr === "" || props.showTooltips !== true}
                   >
                     <span>
-                      <span style={{ fontWeight: "bolder" }}>{section_display}</span>{" "}
+                      <span className={"bill-content-section-display"}>
+                        {section_display}
+                      </span>{" "}
                       <span>{content_str}</span>
                     </span>
                   </Tooltip>
