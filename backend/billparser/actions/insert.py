@@ -97,18 +97,20 @@ def recursive_content(
             )
         session.add(content)
         session.flush()
+        disp_numb = enum.attrib.get("value", "")
         diff = USCContentDiff(
             usc_chapter_id=chapter_id,
             version_id=version_id,
             usc_content_id=content.usc_content_id,
             usc_section_id=section_id,
-            number=enum.attrib.get("value", ""),
+            number=disp_numb,
             section_display=enum.text,
             content_str=content_str,
             heading=heading.text
             if heading is not None and heading.text != content_str
             else None,
             legislation_content_id=legislation_id,
+            usc_ident=f"{content.usc_ident}/{disp_numb}" if disp_numb != "" else None,
         )
         session.add(diff)
         session.commit()

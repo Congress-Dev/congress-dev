@@ -7,7 +7,7 @@ from billparser.actions import ActionObject
 
 name_extract = re.compile(r"\((?P<name>.+?)")
 
-
+# TODO: Fix redesignation to fix usc_ident
 def redesignate(action_obj: ActionObject, session: "Session") -> None:
     """
     Handles changing the display letter to something new for a section

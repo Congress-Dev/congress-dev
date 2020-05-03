@@ -6,7 +6,8 @@ services:
     - db_host=10.0.0.248:5432
     - CACHE_HEADER_TIME=432000
     - CACHE_TIME=900
-    - db_table=us_code_beta
+    - db_table=us_code
+    restart: unless-stopped
   congress_viewer_app:
     volumes:
     - /var/www/congress:/usr/src/app/build

@@ -160,7 +160,11 @@ class ActionObject(object):
         self.last_title = kwargs.get("last_title", "")
         self.next = kwargs.get("next", None)
         self.legislation_content = kwargs.get("legislation_content", None)
+        self.diff_id = None
         # print(kwargs)
+
+    def set_diff_id(self, diff_id):
+        self.diff_id = diff_id
 
     def set_action(self, action):
         # print(action)
@@ -200,4 +204,4 @@ class ActionObject(object):
         self.parsed_cite = self.parsed_cite.replace("//", "/")
 
     def to_dict(self):
-        return {self.action_key: self.action, "parsed_cite": self.parsed_cite}
+        return {self.action_key: self.action, "parsed_cite": self.parsed_cite, "diff_id": self.diff_id}
