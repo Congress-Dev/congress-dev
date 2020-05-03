@@ -20,12 +20,17 @@ function App() {
       <NavBar />
       <Switch>
         <Route
-        exact
+          exact
           path="/bill/:congress/:chamber/:billNumber/:billVersion?/diffs/:uscTitle/:uscSection"
           component={BillViewer}
         />
         <Route
-        exact
+          exact
+          path="/bill/:congress/:chamber/:billNumber/:billVersion?/diffs/:uscTitle/:uscSection#:hasher"
+          component={BillViewer}
+        />
+        <Route
+          exact
           path="/bill/:congress/:chamber/:billNumber/:billVersion?"
           component={BillViewer}
         />
@@ -34,7 +39,10 @@ function App() {
         <Route exact path="/about" component={AboutUs} />
         <Route exact path="/contact" component={ContactUs} />
         <Route exact path="/uscode" component={USCodeRevisionList} />
-        <Route path="/uscode/:uscReleaseId/:uscTitle?/:uscSection?" component={USCodeViewer} />
+        <Route
+          path="/uscode/:uscReleaseId/:uscTitle?/:uscSection?"
+          component={USCodeViewer}
+        />
         <Route path={["/", "/home"]} component={FrontPage} />
       </Switch>
     </Router>

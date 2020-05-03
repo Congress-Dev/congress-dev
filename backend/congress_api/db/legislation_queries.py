@@ -6,6 +6,7 @@ from collections import defaultdict
 from flask_sqlalchemy_session import current_session
 from sqlalchemy.orm import load_only
 from sqlalchemy import distinct
+from sqlalchemy.sql.functions import func
 
 from billparser.db.models import (
     Congress,
@@ -17,6 +18,7 @@ from billparser.db.models import (
     USCSection,
     Version,
     USCRelease,
+    USCContent,
 )
 from congress_api.models.bill_metadata import BillMetadata  # noqa: E501
 from congress_api.models.bill_text_content import BillTextContent  # noqa: E501
@@ -95,7 +97,7 @@ def get_legislation_details(
         legislation_id=bill.legislation_id,
         legislation_versions=[],
         chamber=chamber,
-        usc_release_id=release_id[0].usc_release_id
+        usc_release_id=release_id[0].usc_release_id,
     )
     for vers in legis_versions:
         result.legislation_versions.append(
@@ -220,6 +222,31 @@ def get_legislation_version_text(
         .all()
     )
 
+    diffs = (
+        current_session.query(
+            USCContentDiff.legislation_content_id,
+            USCContentDiff.usc_ident,
+            USCContent.usc_ident,
+        )
+        .join(USCContent, USCContentDiff.usc_content_id == USCContent.usc_content_id)
+        .filter(
+            USCContentDiff.legislation_content_id.in_(
+                [x.legislation_content_id for x in text]
+            )
+        )
+        .all()
+    )
+
+    def get_shortest(str1, str2):
+        if str1 == "":
+            return str2
+        if len(str1) < len(str2):
+            return str1
+        return str2
+
+    diff_lookup = {}
+    for (lci, u1, u2) in diffs:
+        diff_lookup[lci] = get_shortest(diff_lookup.get(lci, ""), u1 or u2 or "")
     return BillTextResponse(
         legislation_id=bill.legislation_id,
         legislation_version_id=vers.legislation_version_id,
@@ -233,10 +260,15 @@ def get_legislation_version_text(
                 heading=t.heading,
                 content_str=t.content_str,
                 content_type=t.content_type,
-                action=t.action_parse if include_parsed else [],
-                lc_ident=t.lc_ident
+                action=[
+                    {**x, "cite_link": diff_lookup.get(t.legislation_content_id)}
+                    for x in t.action_parse
+                ]
+                if include_parsed
+                else [],
+                lc_ident=t.lc_ident,
             )
-            for t in text
+            for (t) in text
         ],
     )
 

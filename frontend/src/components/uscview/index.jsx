@@ -15,9 +15,19 @@ function USCView(props) {
   const history = useHistory();
 
   const [contentTree, setContentTree] = useState({});
-  const [activeHash, setActiveHash] = useState(history.location.hash.slice(1));
+  const [activeHash, setActiveHash] = useState(
+    history.location.hash.slice(history.location.hash.lastIndexOf("#") + 1)
+  );
 
+  const [renderedTarget, setRenderedTarget] = useState(false);
   const { release, title, section, diffs = {} } = props;
+
+  useEffect(() => {
+    if (renderedTarget) {
+      document.getElementById(activeHash).scrollIntoView();
+    }
+  }, [renderedTarget]);
+
   useEffect(() => {
     if (section) {
       setContentTree({ loading: true });
@@ -44,7 +54,7 @@ function USCView(props) {
     let newItem = Object.assign({}, item);
     const itemDiff = diffs[`${item.usc_content_id}`];
     if (itemDiff) {
-      ["heading", "section_display", "content_str"].forEach(key => {
+      ["heading", "section_display", "content_str"].forEach((key) => {
         if (itemDiff[key] !== undefined && itemDiff[key] !== item[key]) {
           newItem[key] = diffStyle(diffWords(item[key] || "", itemDiff[key] || ""));
           // TODO: Fix this ordering issue on the backend maybe?
@@ -87,11 +97,17 @@ function USCView(props) {
           } = item;
           const correctedType = content_type.slice(content_type.indexOf("}") + 1);
           const itemHash = md5(usc_ident.toLowerCase());
+          if (!renderedTarget && itemHash && activeHash && itemHash === activeHash) {
+            console.log("Set target");
+            setRenderedTarget(true);
+          }
           return (
             <div
               id={itemHash}
               name={usc_content_id}
-              className={`usc-content-${correctedType} usc-content-section ${activeHash === itemHash ? "usc-content-hash" : ""}`}
+              className={`usc-content-${correctedType} usc-content-section ${
+                activeHash === itemHash ? "usc-content-hash" : ""
+              }`}
               key={ind}
               onClick={changeUrl}
             >
