@@ -431,3 +431,65 @@ class USCContentDiff(Base):
             "version": self.version_id,
         }
         return {k: v for (k, v) in boi.items() if v is not None}
+
+
+class USCPopularName(Base):
+    """
+        A single popular name of a codified act.
+        Note: Acts can have multiple popular names
+    """
+
+    __tablename__ = "usc_popular_name"
+
+    usc_popular_name_id = Column(Integer, primary_key=True)
+
+    name = Column(String)
+    public_law_number = Column(String)
+    act_date = Column(Date)
+
+    act_congress = Column(Integer)
+
+    usc_release_id = Column(
+        Integer, ForeignKey("usc_release.usc_release_id"), index=True
+    )
+
+    def to_dict(self):
+
+        boi = {
+            "id": self.usc_popular_name_id,
+            "name": self.name,
+            "public_law_number": self.public_law_number,
+            "act_date": self.act_date,
+            "act_congress": self.act_congress,
+            "usc_release_id": self.usc_release_id,
+        }
+        return {k: v for (k, v) in boi.items() if v is not None}
+
+
+class USCActSection(Base):
+    """
+        A single act section to translate it to a USC section
+    """
+
+    __tablename__ = "usc_act_section"
+
+    usc_act_section_id = Column(Integer, primary_key=True)
+
+    act_section = Column(String)
+    usc_title = Column(String)  # TODO: Link these directly to the tables?
+    usc_section = Column(String)
+
+    usc_popular_name_id = Column(
+        Integer, ForeignKey("usc_popular_name.usc_popular_name_id"), index=True
+    )
+
+    def to_dict(self):
+
+        boi = {
+            "id": self.usc_act_section_id,
+            "act_section": self.act_section,
+            "usc_title": self.usc_title,
+            "usc_section": self.usc_section,
+            "usc_popular_name_id": self.usc_popular_name_id,
+        }
+        return {k: v for (k, v) in boi.items() if v is not None}

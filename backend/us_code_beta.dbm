@@ -3,7 +3,7 @@
 CAUTION: Do not modify this file unless you know what you are doing.
          Unexpected results may occur if the code is changed deliberately.
 -->
-<dbmodel pgmodeler-ver="0.9.2-beta2" last-position="0,0" last-zoom="1" max-obj-count="18"
+<dbmodel pgmodeler-ver="0.9.2" last-position="0,966" last-zoom="1" max-obj-count="20"
 	 default-owner="postgres">
 <role name="parser"
       password="parser">
@@ -520,5 +520,70 @@ This is a debug column, safe to remove eventually]]></comment>
 		<position x="2.68229" y="1.69549"/>
 	</label>
 </relationship>
+
+<table name="usc_popular_name" layer="0" collapse-mode="2" max-obj-count="7">
+	<schema name="public"/>
+	<role name="parser"/>
+	<position x="240" y="1300"/>
+	<column name="usc_popular_name_id" not-null="true"
+	 identity-type="ALWAYS">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="name">
+		<type name="character varying" length="0"/>
+	</column>
+	<column name="public_law_number">
+		<type name="character varying" length="0"/>
+	</column>
+	<column name="act_date">
+		<type name="date" length="0"/>
+	</column>
+	<column name="act_congress">
+		<type name="integer" length="0"/>
+	</column>
+	<constraint name="usc_popular_name_pk" type="pk-constr" table="public.usc_popular_name">
+		<columns names="usc_popular_name_id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<relationship name="usc_release_has_many_usc_popular_name" type="rel1n" layer="0"
+	 src-col-pattern="{st}_id"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#40190d"
+	 src-table="public.usc_release"
+	 dst-table="public.usc_popular_name"
+	 src-required="false" dst-required="false"/>
+
+<table name="usc_act_section" layer="0" collapse-mode="2" max-obj-count="6">
+	<schema name="public"/>
+	<role name="parser"/>
+	<position x="820" y="1320"/>
+	<column name="usc_act_section_id" not-null="true"
+	 identity-type="ALWAYS">
+		<type name="integer" length="0"/>
+	</column>
+	<column name="act_section">
+		<type name="character varying" length="0"/>
+	</column>
+	<column name="usc_title">
+		<type name="character varying" length="0"/>
+	</column>
+	<column name="usc_section">
+		<type name="character varying" length="0"/>
+	</column>
+	<constraint name="usc_act_section_pk" type="pk-constr" table="public.usc_act_section">
+		<columns names="usc_act_section_id" ref-type="src-columns"/>
+	</constraint>
+</table>
+
+<relationship name="usc_popular_name_has_many_usc_act_section" type="rel1n" layer="0"
+	 src-col-pattern="{st}_id"
+	 pk-pattern="{dt}_pk" uq-pattern="{dt}_uq"
+	 src-fk-pattern="{st}_fk"
+	 custom-color="#579893"
+	 src-table="public.usc_popular_name"
+	 dst-table="public.usc_act_section"
+	 src-required="false" dst-required="false"/>
 
 </dbmodel>
