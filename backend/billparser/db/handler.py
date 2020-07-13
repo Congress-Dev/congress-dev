@@ -9,6 +9,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
 
 from billparser.db.caching import query_callable, regions
+from billparser.db.models import USCSection
 from billparser.db.models import *
 
 username = os.environ.get("db_user", "bills")
@@ -29,13 +30,16 @@ def unidecode_str(input_str: str) -> str:
 
 
 def open_usc(file_str):
+    """
+        Pulls out all elements that have an identifier attribute
+    """
     lookup = {}
     usc_root = etree.fromstring(file_str)
     lookup["root"] = usc_root
     ids = usc_root.xpath("//*[@identifier]")
     for id in ids:
         lookup[id.attrib["identifier"]] = id
-    return lookup
+    return lookup, ids
 
 
 def get_number(ident: str) -> float:
@@ -145,7 +149,7 @@ def import_title(chapter_file, chapter_number, version_string, release: USCRelea
                     recursive_content(section_id, content.usc_content_id, elem, order)
                     order = order + 1
 
-    chapter_root = open_usc(chapter_file)
+    chapter_root, elements = open_usc(chapter_file)
     for boi in chapter_root["root"].iter():
         if "heading" in boi.tag:
             title = boi.text
@@ -170,28 +174,69 @@ def import_title(chapter_file, chapter_number, version_string, release: USCRelea
     session.add(chap)
     session.flush()
     sections = []
-    for key in chapter_root:
-        chunks = key.split("/")
-        if len(chunks) == 5:
-            if chunks[-1][0] == "s" and chunks[-1][1] != "t":
-                sections.append(key)
-    sections = sorted(sections, key=lambda x: get_number(x.split("/")[-1][1:]))
-    section_order = 0
-    for section in sections:
-        # print(section)
-        sect_elem = chapter_root[section]
-        enum = sect_elem[0]
-        sect_obj = USCSection(
-            usc_guid=sect_elem.attrib["id"],
-            usc_ident=section,
-            number=unidecode_str(enum.attrib["value"]),
-            section_display=unidecode_str(enum.text),
-            heading=unidecode_str(sect_elem[1].text),
-            version_id=version_id,
-            usc_chapter_id=chap.usc_chapter_id,
-        )
-        session.add(sect_obj)
-        session.flush()
-        recursive_content(sect_obj.usc_section_id, None, sect_elem, 0)
-        session.commit()
+    parents = {}
+    is_handled = {None: True}
+    current_parent = None
+    current_depth = 0
+    for elem in elements:
+        # Iterate over all the elements
+        split_tag = elem.tag.split("}")[-1]
+        if split_tag in ["uscDoc", "title"]:
+            # We do not want to handle these two
+            continue
+        identifier = elem.attrib.get("identifier")
+        parent_identifier = elem.getparent().attrib.get("identifier")
+        if parent_identifier in is_handled:
+            is_handled[identifier] = True
+            continue
+
+        # According to the USLM guide, these are the levels we'll want to track
+        if split_tag in ["chapter", "subchapter", "part", "subpart", "division", "subdivision", "article", "subarticle"]:
+            if parent_identifier in parents:
+                current_depth = parents.get(parent_identifier).get("depth", 0) + 1
+            else:
+                current_depth = 0
+            enum = elem[0]
+            par_obj = USCSection(
+                usc_guid=elem.attrib["id"],
+                usc_ident=identifier,
+                number=unidecode_str(enum.attrib["value"]),
+                section_display=unidecode_str(enum.text),
+                heading=unidecode_str(elem[1].text),
+                version_id=version_id,
+                usc_chapter_id=chap.usc_chapter_id,
+                content_type=split_tag
+            )
+            if parents.get(parent_identifier) is not None:
+                par_obj.parent_id = parents.get(parent_identifier)["section"].usc_section_id
+
+            parents[identifier] = {
+                "elem": elem,
+                "depth": current_depth,
+                "section": par_obj,
+            }
+            session.add(par_obj)
+            session.flush()
+            current_parent = identifier
+            current_depth += 1
+        else:
+            chunks = identifier.split("/")
+            if len(chunks) == 5:
+                if chunks[-1][0] == "s" and chunks[-1][1] != "t":
+                    is_handled[identifier] = True
+                    enum = elem[0]
+                    sect_obj = USCSection(
+                        usc_guid=elem.attrib["id"],
+                        usc_ident=identifier,
+                        number=unidecode_str(enum.attrib["value"]),
+                        section_display=unidecode_str(enum.text),
+                        heading=unidecode_str(elem[1].text),
+                        version_id=version_id,
+                        usc_chapter_id=chap.usc_chapter_id,
+                        parent_id=parents.get(current_parent)["section"].usc_section_id,
+                        content_type=split_tag
+                    )
+                    session.add(sect_obj)
+                    session.flush()
+                    recursive_content(sect_obj.usc_section_id, None, elem, 0)
     session.commit()

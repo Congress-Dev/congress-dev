@@ -3,6 +3,7 @@ from congress_api.db.uscode_queries import (
     get_available_titles,
     get_section_text,
     get_title_sections,
+    get_section_levels,
 )
 from congress_api.models.error_response import ErrorResponse  # noqa: E501
 from congress_api.models.release_point_list import ReleasePointList  # noqa: E501
@@ -94,3 +95,46 @@ def get_usc_releases() -> ReleasePointList:  # noqa: E501
         return get_available_releases()
     except Exception as e:
         return ErrorResponse(message=str(e))
+
+# TODO: It might make more sense to allow for passing the usc identifier
+def get_usc_levels(release_vers, short_title, usc_section_id):  # noqa: E501
+    """Your GET endpoint
+
+    Gets the levels that are children of a given usc_section_id # noqa: E501
+
+    :param release_vers: 
+    :type release_vers: str
+    :param short_title: 
+    :type short_title: str
+    :param usc_section_id: 
+    :type usc_section_id: str
+
+    :rtype: USCSectionList
+    """
+    try:
+        resp = get_section_levels(release_vers, short_title, usc_section_id)
+        if resp is None:
+            return ErrorResponse(message="No levels found for this title and section"), 404
+        return resp
+    except Exception as e:
+        return ErrorResponse(message=str(e)), 500
+
+def get_usc_levels_base(release_vers, short_title):  # noqa: E501
+    """Your GET endpoint
+
+    Gets the levels that are children of a given usc_section_id # noqa: E501
+
+    :param release_vers: 
+    :type release_vers: str
+    :param short_title: 
+    :type short_title: str
+
+    :rtype: USCSectionList
+    """
+    try:
+        resp = get_section_levels(release_vers, short_title, None)
+        if resp is None:
+            return ErrorResponse(message="No levels found for this title and section"), 404
+        return resp
+    except Exception as e:
+        return ErrorResponse(message=str(e)), 500

@@ -294,15 +294,24 @@ class USCSection(Base):
     usc_ident = Column(String)
     usc_guid = Column(String)  # Might be a useless column
 
+    parent_id = Column(
+        Integer,
+        ForeignKey("usc_section.usc_section_id", ondelete="CASCADE"),
+        index=True,
+    )
+    
     number = Column(String)
     section_display = Column(String)
     heading = Column(String)
+
+    content_type = Column(String)  # Holds the tag name
 
     usc_chapter_id = Column(
         Integer,
         ForeignKey("usc_chapter.usc_chapter_id", ondelete="CASCADE"),
         index=True,
     )
+
     version_id = Column(
         Integer, ForeignKey("version.version_id", ondelete="CASCADE"), index=True
     )

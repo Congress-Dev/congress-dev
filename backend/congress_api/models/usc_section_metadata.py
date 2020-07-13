@@ -1,12 +1,12 @@
 # coding: utf-8
 
 from __future__ import absolute_import
-
 from datetime import date, datetime  # noqa: F401
-from typing import Dict, List  # noqa: F401
 
-from congress_api import util
+from typing import List, Dict  # noqa: F401
+
 from congress_api.models.base_model_ import Model
+from congress_api import util
 
 
 class USCSectionMetadata(Model):
@@ -24,10 +24,12 @@ class USCSectionMetadata(Model):
         section_display=None,
         heading=None,
         usc_chapter_id=None,
+        parent_id=None,
+        content_type=None,
     ):  # noqa: E501
         """USCSectionMetadata - a model defined in OpenAPI
 
-        :param usc_sectionn_id: The usc_section_id of this USCSectionMetadata.  # noqa: E501
+        :param usc_section_id: The usc_section_id of this USCSectionMetadata.  # noqa: E501
         :type usc_section_id: int
         :param usc_ident: The usc_ident of this USCSectionMetadata.  # noqa: E501
         :type usc_ident: str
@@ -41,6 +43,10 @@ class USCSectionMetadata(Model):
         :type heading: str
         :param usc_chapter_id: The usc_chapter_id of this USCSectionMetadata.  # noqa: E501
         :type usc_chapter_id: int
+        :param parent_id: The parent_id of this USCSectionMetadata.  # noqa: E501
+        :type parent_id: int
+        :param content_type: The content_type of this USCSectionMetadata.  # noqa: E501
+        :type content_type: str
         """
         self.openapi_types = {
             "usc_section_id": int,
@@ -50,6 +56,8 @@ class USCSectionMetadata(Model):
             "section_display": str,
             "heading": str,
             "usc_chapter_id": int,
+            "parent_id": int,
+            "content_type": str,
         }
 
         self.attribute_map = {
@@ -60,6 +68,8 @@ class USCSectionMetadata(Model):
             "section_display": "section_display",
             "heading": "heading",
             "usc_chapter_id": "usc_chapter_id",
+            "parent_id": "parent_id",
+            "content_type": "content_type",
         }
 
         self._usc_section_id = usc_section_id
@@ -69,6 +79,8 @@ class USCSectionMetadata(Model):
         self._section_display = section_display
         self._heading = heading
         self._usc_chapter_id = usc_chapter_id
+        self._parent_id = parent_id
+        self._content_type = content_type
 
     @classmethod
     def from_dict(cls, dikt) -> "USCSectionMetadata":
@@ -227,3 +239,45 @@ class USCSectionMetadata(Model):
         """
 
         self._usc_chapter_id = usc_chapter_id
+
+    @property
+    def parent_id(self):
+        """Gets the parent_id of this USCSectionMetadata.
+
+
+        :return: The parent_id of this USCSectionMetadata.
+        :rtype: int
+        """
+        return self._parent_id
+
+    @parent_id.setter
+    def parent_id(self, parent_id):
+        """Sets the parent_id of this USCSectionMetadata.
+
+
+        :param parent_id: The parent_id of this USCSectionMetadata.
+        :type parent_id: int
+        """
+
+        self._parent_id = parent_id
+
+    @property
+    def content_type(self):
+        """Gets the content_type of this USCSectionMetadata.
+
+
+        :return: The content_type of this USCSectionMetadata.
+        :rtype: str
+        """
+        return self._content_type
+
+    @content_type.setter
+    def content_type(self, content_type):
+        """Sets the content_type of this USCSectionMetadata.
+
+
+        :param content_type: The content_type of this USCSectionMetadata.
+        :type content_type: str
+        """
+
+        self._content_type = content_type
