@@ -735,6 +735,63 @@ paths:
       tags:
         - legislation
       summary: Diffs by chapter and section
+  /usc/{release_vers}/{short_title}/levels/{usc_section_id}:
+    get:
+      summary: Your GET endpoint
+      tags:
+        - uscode
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/USCSectionList'
+      operationId: get_usc_levels
+      description: Gets the levels that are children of a given usc_section_id
+      x-openapi-router-controller: congress_api.controllers.uscode_controller
+    parameters:
+      - schema:
+          type: string
+        name: release_vers
+        in: path
+        required: true
+      - schema:
+          type: string
+        name: short_title
+        in: path
+        required: true
+      - schema:
+          type: string
+        name: usc_section_id
+        in: path
+        required: true
+  /usc/{release_vers}/{short_title}/levels:
+    get:
+      summary: Your GET endpoint
+      tags:
+        - uscode
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/USCSectionList'
+      operationId: get_usc_levels_base
+      description: Gets the levels that are children of a given usc_section_id
+      x-openapi-router-controller: congress_api.controllers.uscode_controller
+    parameters:
+      - schema:
+          type: string
+        name: release_vers
+        in: path
+        required: true
+      - schema:
+          type: string
+        name: short_title
+        in: path
+        required: true
 servers:
   - description: Main API endpoint
     url: 'https://api.congress.dev/'
@@ -1180,6 +1237,10 @@ components:
           type: string
         usc_chapter_id:
           type: integer
+        parent_id:
+          type: integer
+        content_type:
+          type: string
       example:
         number: number
         usc_guid: usc_guid
