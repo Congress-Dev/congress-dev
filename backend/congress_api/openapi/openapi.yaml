@@ -6,7 +6,7 @@ info:
   description: API for accessing the data within the database. Will support the default
     frontend.
   title: Congress.Dev API
-  version: 0.1.2
+  version: 0.1.1
 servers:
 - description: Main API endpoint
   url: https://api.congress.dev/
@@ -680,6 +680,73 @@ paths:
       tags:
       - uscode
       x-openapi-router-controller: congress_api.controllers.uscode_controller
+  /usc/{release_vers}/{short_title}/levels:
+    get:
+      description: Gets the levels that are children of a given usc_section_id
+      operationId: get_usc_levels_base
+      parameters:
+      - explode: false
+        in: path
+        name: release_vers
+        required: true
+        schema:
+          type: string
+        style: simple
+      - explode: false
+        in: path
+        name: short_title
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/USCSectionList'
+          description: OK
+      summary: Your GET endpoint
+      tags:
+      - uscode
+      x-openapi-router-controller: congress_api.controllers.uscode_controller
+  /usc/{release_vers}/{short_title}/levels/{usc_section_id}:
+    get:
+      description: Gets the levels that are children of a given usc_section_id
+      operationId: get_usc_levels
+      parameters:
+      - explode: false
+        in: path
+        name: release_vers
+        required: true
+        schema:
+          type: string
+        style: simple
+      - explode: false
+        in: path
+        name: short_title
+        required: true
+        schema:
+          type: string
+        style: simple
+      - explode: false
+        in: path
+        name: usc_section_id
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/USCSectionList'
+          description: OK
+      summary: Your GET endpoint
+      tags:
+      - uscode
+      x-openapi-router-controller: congress_api.controllers.uscode_controller
   /usc/{release_vers}/{short_title}/sections:
     get:
       description: Get a list of the sections in this given title
@@ -1194,6 +1261,10 @@ components:
           type: string
         usc_chapter_id:
           type: integer
+        parent_id:
+          type: integer
+        content_type:
+          type: string
       title: USCSectionMetadata
       type: object
       x-tags:

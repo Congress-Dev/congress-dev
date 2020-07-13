@@ -50,6 +50,7 @@ def _get_sect_obj(chapter_id: int, section_number: str) -> USCSection:
         current_session.query(USCSection)
         .filter(USCSection.usc_chapter_id == chapter_id)
         .filter(USCSection.number == section_number)
+        .filter(USCSection.content_type == 'section')
         .all()
     )
     if len(sect) > 0:
@@ -115,6 +116,8 @@ def get_title_sections(release_vers: str, short_title: str) -> USCSectionList:
 
     sections: List[USCSection] = current_session.query(USCSection).filter(
         USCSection.usc_chapter_id == title_obj.usc_chapter_id
+    ).filter(
+        USCSection.content_type == "section"
     ).all()
     sect_list = []
     for sect in sections:
@@ -126,6 +129,8 @@ def get_title_sections(release_vers: str, short_title: str) -> USCSectionList:
                 section_display=sect.section_display,
                 heading=sect.heading,
                 usc_chapter_id=title_obj.usc_chapter_id,
+                parent_id=sect.parent_id,
+                content_type=sect.content_type,
             )
         )
     return USCSectionList(usc_chapter_id=title_obj.usc_chapter_id, sections=sect_list)
@@ -174,3 +179,42 @@ def get_section_text(
     return USCSectionContentList(
         usc_section_id=sect_obj.usc_section_id, content=cont_list
     )
+
+@cached(TTLCache(CACHE_SIZE, CACHE_TIME))
+def get_section_levels(release_vers: str, short_title: str, section_id: int = None) -> USCSectionList:
+    print(release_vers, short_title, section_id)
+    if release_vers.lower() == "latest":
+        latest_rp = _get_latest_rp()
+        if latest_rp is None:
+            return None
+        target_rp_id = latest_rp.usc_release_id
+    else:
+        target_rp_id = int(release_vers)
+
+    title_obj = _get_title_obj(target_rp_id, short_title)
+    if title_obj is None:
+        return None
+    sections: List[USCSection] = current_session.query(USCSection).filter(
+        USCSection.usc_chapter_id == title_obj.usc_chapter_id
+    )
+    if section_id not in [None, ' ', '']:
+        sections = sections.filter(USCSection.parent_id == int(section_id))
+    else:
+        sections = sections.filter(USCSection.parent_id == None)
+    sections = sections.all()
+
+    sect_list = []
+    for sect in sections:
+        sect_list.append(
+            USCSectionMetadata(
+                usc_section_id=sect.usc_section_id,
+                usc_ident=sect.usc_ident,
+                number=sect.number,
+                section_display=sect.section_display,
+                heading=sect.heading,
+                usc_chapter_id=title_obj.usc_chapter_id,
+                parent_id=sect.parent_id,
+                content_type=sect.content_type,
+            )
+        )
+    return USCSectionList(usc_chapter_id=title_obj.usc_chapter_id, sections=sect_list)
