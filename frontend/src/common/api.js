@@ -32,23 +32,27 @@ export const getBillVersionText = (congress, chamber, billNumber, billVersion) =
   )
     .then(handleStatus)
     .then(flatJson => {
-      let looped = {};
-      const sorted = lodash.sortBy(
-        flatJson.content,
-        ({ legislation_content_id, order_number }) =>
-          `${legislation_content_id}.${order_number.toString().padStart(3, "0")}`
-      );
-      if (sorted.length === 0) {
+      if(flatJson){
+        let looped = {};
+        const sorted = lodash.sortBy(
+          flatJson.content,
+          ({ legislation_content_id, order_number }) =>
+            `${legislation_content_id}.${order_number.toString().padStart(3, "0")}`
+        );
+        if (sorted.length === 0) {
+          return {};
+        }
+        lodash.forEach(sorted, obj => {
+          let copyObj = { ...obj, children: [] };
+          looped[copyObj.legislation_content_id] = copyObj;
+          if (copyObj.parent_id) {
+            looped[copyObj.parent_id].children.push(copyObj);
+          }
+        });
+        return looped[sorted[0].legislation_content_id];
+      } else {
         return {};
       }
-      lodash.forEach(sorted, obj => {
-        let copyObj = { ...obj, children: [] };
-        looped[copyObj.legislation_content_id] = copyObj;
-        if (copyObj.parent_id) {
-          looped[copyObj.parent_id].children.push(copyObj);
-        }
-      });
-      return looped[sorted[0].legislation_content_id];
     });
 };
 
@@ -71,27 +75,41 @@ export const getUSCSectionList = (uscReleaseId, shortTitle) => {
     .then(({ sections }) => lodash.sortBy(sections, "number"));
 };
 
+export const getUSCLevelSections = (uscReleaseId, shortTitle, uscSectionId = null) => {
+  let url = `${endpoint}/usc/${uscReleaseId}/${shortTitle}/levels`;
+  if(uscSectionId){
+    url = `${endpoint}/usc/${uscReleaseId}/${shortTitle}/levels/${uscSectionId}`
+  }
+  return fetch(url)
+    .then(handleStatus)
+    .then(({ sections }) => lodash.sortBy(sections, "usc_section_id"));
+};
+
 export const getUSCSectionContent = (uscReleaseId, shortTitle, sectionNumber) => {
   return fetch(`${endpoint}/usc/${uscReleaseId}/${shortTitle}/${sectionNumber}/text`)
     .then(handleStatus)
     .then(flatJson => {
-      let looped = {};
-      const sorted = lodash.sortBy(
-        flatJson.content,
-        ({ usc_content_id, order_number }) =>
-          `${usc_content_id}.${order_number.toString().padStart(3, "0")}`
-      );
-      if (sorted.length === 0) {
+      if(flatJson){
+        let looped = {};
+        const sorted = lodash.sortBy(
+          flatJson.content,
+          ({ usc_content_id, order_number }) =>
+            `${usc_content_id}.${order_number.toString().padStart(3, "0")}`
+        );
+        if (sorted.length === 0) {
+          return {};
+        }
+        lodash.forEach(sorted, obj => {
+          let copyObj = { ...obj, children: [] };
+          looped[copyObj.usc_content_id] = copyObj;
+          if (copyObj.parent_id) {
+            looped[copyObj.parent_id].children.push(copyObj);
+          }
+        });
+        return { children: [looped[sorted[0].usc_content_id]] };
+      } else {
         return {};
       }
-      lodash.forEach(sorted, obj => {
-        let copyObj = { ...obj, children: [] };
-        looped[copyObj.usc_content_id] = copyObj;
-        if (copyObj.parent_id) {
-          looped[copyObj.parent_id].children.push(copyObj);
-        }
-      });
-      return { children: [looped[sorted[0].usc_content_id]] };
     });
 };
 
@@ -128,10 +146,14 @@ export const getBillVersionDiffForSection = (
   )
     .then(handleStatus)
     .then(res => {
-      let ret = {};
-      lodash.forEach(res.diffs, obj => {
-        ret[`${obj.usc_content_id}`] = obj;
-      });
-      return ret;
+      if(res){
+        let ret = {};
+        lodash.forEach(res.diffs, obj => {
+          ret[`${obj.usc_content_id}`] = obj;
+        });
+        return ret;
+      } else {
+        return {};
+      }
     });
 };
