@@ -85,6 +85,12 @@ export const getUSCLevelSections = (uscReleaseId, shortTitle, uscSectionId = nul
     .then(({ sections }) => lodash.sortBy(sections, "usc_section_id"));
 };
 
+export const getUSCSectionLineage = (uscReleaseId, shortTitle, uscSectionId) => {
+  return fetch(`${endpoint}/usc/${uscReleaseId}/${shortTitle}/lineage/${uscSectionId}`)
+    .then(handleStatus)
+    .then(({ sections }) => lodash.sortBy(sections, "usc_section_id"));
+};
+
 export const getUSCSectionContent = (uscReleaseId, shortTitle, sectionNumber) => {
   return fetch(`${endpoint}/usc/${uscReleaseId}/${shortTitle}/${sectionNumber}/text`)
     .then(handleStatus)

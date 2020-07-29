@@ -4,6 +4,7 @@ from congress_api.db.uscode_queries import (
     get_section_text,
     get_title_sections,
     get_section_levels,
+    get_section_lineage
 )
 from congress_api.models.error_response import ErrorResponse  # noqa: E501
 from congress_api.models.release_point_list import ReleasePointList  # noqa: E501
@@ -135,6 +136,28 @@ def get_usc_levels_base(release_vers, short_title):  # noqa: E501
         resp = get_section_levels(release_vers, short_title, None)
         if resp is None:
             return ErrorResponse(message="No levels found for this title and section"), 404
+        return resp
+    except Exception as e:
+        return ErrorResponse(message=str(e)), 500
+
+def get_usc_section_lineage(release_vers, short_title, usc_section_number):  # noqa: E501
+    """get_section_lineage
+
+    Returns the lineage of a particular usc_section_id # noqa: E501
+
+    :param release_vers: 
+    :type release_vers: str
+    :param short_title: 
+    :type short_title: str
+    :param usc_section_number: 
+    :type usc_section_number: str
+
+    :rtype: USCSectionList
+    """
+    try:
+        resp = get_section_lineage(release_vers, short_title, usc_section_number)
+        if resp is None:
+            return ErrorResponse(message="No lineage found for this title and section"), 404
         return resp
     except Exception as e:
         return ErrorResponse(message=str(e)), 500
