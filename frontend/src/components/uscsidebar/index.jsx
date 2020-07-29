@@ -6,7 +6,7 @@ import { Breadcrumbs, Boundary } from "@blueprintjs/core";
 
 import { Tree } from "@blueprintjs/core";
 
-import { getUSCTitleList, getUSCSectionList, getUSCLevelSections } from "common/api";
+import { getUSCTitleList, getUSCSectionList, getUSCLevelSections, getUSCSectionLineage } from "common/api";
 
 function USCSidebar(props) {
   const [tree, setTree] = useState([]);
@@ -22,7 +22,7 @@ function USCSidebar(props) {
         setTitleList(res);
         let n = 0;
         let intUpdates = {}
-        let childNodes = lodash.map(res, ({short_title, long_title, usc_chapter_id}) => {
+        let childNodes = lodash.map(res, ({ short_title, long_title, usc_chapter_id }) => {
           const nodeObj = {
             id: `${usc_chapter_id}`,
             icon: "book",
@@ -47,13 +47,83 @@ function USCSidebar(props) {
         setTree([
           rootNode
         ]);
-        setInternalTree({...internalTree, ...intUpdates, [0] : childNodes});
+        setInternalTree({ ...internalTree, ...intUpdates, [0]: childNodes });
       });
     } else {
       // TODO: When a user lands on the section url, we need to drill down and expand for them
-      getUSCSectionList(props.release, props.title).then(setSectionList);
+      // getUSCSectionList(props.release, props.title).then(setSectionList);
+      getUSCTitleList(props.release).then((res) => {
+        setTitleList(res);
+        let n = 0;
+        let intUpdates = {}
+        let childNodes = lodash.map(res, ({ short_title, long_title, usc_chapter_id }) => {
+          // if(short_title == props.title) {
+          //   setTreeExpansion({...treeExpansion, [usc_chapter_id]: true});
+          // }
+          const nodeObj = {
+            id: `${usc_chapter_id}`,
+            icon: "book",
+            isExpanded: (short_title === props.title) || treeExpansion[`${usc_chapter_id}`] === true,
+            label: `${short_title} - ${long_title}`,
+            short_title,
+            usc_chapter_id,
+            childNodes: []
+          };
+          intUpdates[nodeObj.id] = [];
+          return nodeObj;
+        });
+        const rootNode = {
+          id: 0,
+          hasCaret: true,
+          icon: "th-list",
+          isExpanded: treeExpansion[0] === true,
+          label: `Hmmst`,
+          childNodes,
+          className: "link",
+        }
+        setTree([
+          rootNode
+        ]);
+        setInternalTree({ ...internalTree, ...intUpdates, [0]: childNodes });
+        getUSCSectionLineage(props.release, props.title, props.section).then(res => {
+          const innerIntUpdates = {};
+          const expansionUpd = {};
+          let chapId = null;
+          let firstNode = [];
+          lodash.forEach(res, ({ parent_id, number, heading, section_display, usc_section_id, content_type, usc_chapter_id }) => {
+
+            const nodeObj = {
+              id: `${usc_chapter_id}.${usc_section_id}`,
+              hasCaret: content_type !== 'section',
+              icon: (content_type !== 'section' ? 'book' : 'dot'),
+              label: `${section_display} ${heading}`,
+              className: "section-tree",
+              short_title: props.title,
+              usc_section_id,
+              number,
+              childNodes: []
+            };
+            if(content_type === 'chapter'){
+              innerIntUpdates[`${usc_chapter_id}`] = [nodeObj];
+              expansionUpd[`${usc_chapter_id}`] = true;
+            } else {
+              innerIntUpdates[`${usc_chapter_id}.${parent_id}`] = [nodeObj];
+              expansionUpd[`${usc_chapter_id}.${parent_id}`] = true;
+            }
+            if (!chapId) {
+              chapId = `${usc_chapter_id}`;
+              firstNode = [nodeObj];
+            }
+          });
+          intUpdates[chapId] = firstNode;
+          console.log("Updating", intUpdates, internalTree);
+          setInternalTree({ ...internalTree, ...intUpdates, ...innerIntUpdates, [0]: childNodes});
+          setTreeExpansion({ ...treeExpansion, ...expansionUpd });
+        });
+      });
+
     }
-  }, [props.release, props.title]);
+  }, []);
 
   function drillExpansion(node) {
     let childNodes = [];
@@ -87,10 +157,10 @@ function USCSidebar(props) {
     }
   }
   function onExpand(node) {
-    if(node.childNodes.length === 0){
+    if (node.childNodes.length === 0) {
       getUSCLevelSections(props.release, node.short_title, node.usc_section_id).then((res) => {
         const intUpdates = {};
-        const childNodes = lodash.map(res, ({number, heading, section_display, usc_section_id, content_type}) => {
+        const childNodes = lodash.map(res, ({ number, heading, section_display, usc_section_id, content_type }) => {
           const nodeObj = {
             id: `${node.usc_chapter_id}.${usc_section_id}`,
             hasCaret: content_type !== 'section',
@@ -106,7 +176,7 @@ function USCSidebar(props) {
           return nodeObj;
         });
         intUpdates[node.id] = childNodes;
-        setInternalTree({...internalTree, ...intUpdates});
+        setInternalTree({ ...internalTree, ...intUpdates });
       });
     }
     setTreeExpansion({ ...treeExpansion, [node.id]: true });

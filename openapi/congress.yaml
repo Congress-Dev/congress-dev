@@ -735,7 +735,7 @@ paths:
       tags:
         - legislation
       summary: Diffs by chapter and section
-  /usc/{release_vers}/{short_title}/levels/{usc_section_id}:
+  '/usc/{release_vers}/{short_title}/levels/{usc_section_id}':
     get:
       summary: Your GET endpoint
       tags:
@@ -749,7 +749,6 @@ paths:
                 $ref: '#/components/schemas/USCSectionList'
       operationId: get_usc_levels
       description: Gets the levels that are children of a given usc_section_id
-      x-openapi-router-controller: congress_api.controllers.uscode_controller
     parameters:
       - schema:
           type: string
@@ -766,7 +765,7 @@ paths:
         name: usc_section_id
         in: path
         required: true
-  /usc/{release_vers}/{short_title}/levels:
+  '/usc/{release_vers}/{short_title}/levels':
     get:
       summary: Your GET endpoint
       tags:
@@ -780,7 +779,6 @@ paths:
                 $ref: '#/components/schemas/USCSectionList'
       operationId: get_usc_levels_base
       description: Gets the levels that are children of a given usc_section_id
-      x-openapi-router-controller: congress_api.controllers.uscode_controller
     parameters:
       - schema:
           type: string
@@ -792,6 +790,38 @@ paths:
         name: short_title
         in: path
         required: true
+  '/usc/{release_vers}/{short_title}/lineage/{usc_section_number}':
+    parameters:
+      - schema:
+          type: string
+        name: release_vers
+        in: path
+        required: true
+      - schema:
+          type: string
+        name: short_title
+        in: path
+        required: true
+      - schema:
+          type: string
+        name: usc_section_number
+        in: path
+        required: true
+    get:
+      summary: get_section_lineage
+      tags:
+        - uscode
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/USCSectionList'
+              examples:
+                example-1: {}
+      operationId: get-usc-section-lineage
+      description: Returns the lineage of a particular usc_section_id
 servers:
   - description: Main API endpoint
     url: 'https://api.congress.dev/'
@@ -1222,6 +1252,17 @@ components:
     USCSectionMetadata:
       title: USCSectionMetadata
       type: object
+      example:
+        number: number
+        usc_guid: usc_guid
+        section_display: section_display
+        heading: heading
+        usc_chapter_id: 5
+        usc_section_id: 5
+        usc_ident: usc_ident
+      x-tags:
+        - uscode
+      description: Information about a particular Section
       properties:
         usc_section_id:
           type: integer
@@ -1241,17 +1282,6 @@ components:
           type: integer
         content_type:
           type: string
-      example:
-        number: number
-        usc_guid: usc_guid
-        section_display: section_display
-        heading: heading
-        usc_chapter_id: 5
-        usc_section_id: 5
-        usc_ident: usc_ident
-      x-tags:
-        - uscode
-      description: Information about a particular Section
     USCSectionList:
       title: USCSectionList
       type: object

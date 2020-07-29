@@ -12,7 +12,7 @@ function USCodeViewer(props) {
   return (
     <>
       <div className="sidebar">
-        <USCSidebar release={uscReleaseId} title={(uscTitle || "").replace("#", "")} />
+        <USCSidebar release={uscReleaseId} title={(uscTitle || "").replace("#", "")} section={uscSection} />
       </div>
       <div className="content">
         <USCView release={uscReleaseId} section={uscSection} title={uscTitle} />

@@ -50,7 +50,7 @@ def _get_sect_obj(chapter_id: int, section_number: str) -> USCSection:
         current_session.query(USCSection)
         .filter(USCSection.usc_chapter_id == chapter_id)
         .filter(USCSection.number == section_number)
-        .filter(USCSection.content_type == 'section')
+        .filter(USCSection.content_type == "section")
         .all()
     )
     if len(sect) > 0:
@@ -116,9 +116,7 @@ def get_title_sections(release_vers: str, short_title: str) -> USCSectionList:
 
     sections: List[USCSection] = current_session.query(USCSection).filter(
         USCSection.usc_chapter_id == title_obj.usc_chapter_id
-    ).filter(
-        USCSection.content_type == "section"
-    ).all()
+    ).filter(USCSection.content_type == "section").all()
     sect_list = []
     for sect in sections:
         sect_list.append(
@@ -180,8 +178,11 @@ def get_section_text(
         usc_section_id=sect_obj.usc_section_id, content=cont_list
     )
 
+
 @cached(TTLCache(CACHE_SIZE, CACHE_TIME))
-def get_section_levels(release_vers: str, short_title: str, section_id: int = None) -> USCSectionList:
+def get_section_levels(
+    release_vers: str, short_title: str, section_id: int = None
+) -> USCSectionList:
     print(release_vers, short_title, section_id)
     if release_vers.lower() == "latest":
         latest_rp = _get_latest_rp()
@@ -197,7 +198,7 @@ def get_section_levels(release_vers: str, short_title: str, section_id: int = No
     sections: List[USCSection] = current_session.query(USCSection).filter(
         USCSection.usc_chapter_id == title_obj.usc_chapter_id
     )
-    if section_id not in [None, ' ', '']:
+    if section_id not in [None, " ", ""]:
         sections = sections.filter(USCSection.parent_id == int(section_id))
     else:
         sections = sections.filter(USCSection.parent_id == None)
@@ -218,3 +219,59 @@ def get_section_levels(release_vers: str, short_title: str, section_id: int = No
             )
         )
     return USCSectionList(usc_chapter_id=title_obj.usc_chapter_id, sections=sect_list)
+
+
+@cached(TTLCache(CACHE_SIZE, CACHE_TIME))
+def get_section_lineage(
+    release_vers: str, short_title: str, usc_section_number: str = None
+) -> USCSectionList:
+    if release_vers.lower() == "latest":
+        latest_rp = _get_latest_rp()
+        if latest_rp is None:
+            return None
+        target_rp_id = latest_rp.usc_release_id
+    else:
+        target_rp_id = int(release_vers)
+
+    title_obj = _get_title_obj(target_rp_id, short_title)
+    if title_obj is None:
+        return None
+    max_depth = 20
+    current_section = (
+        current_session.query(USCSection)
+        .filter(USCSection.number == usc_section_number)
+        .filter(USCSection.usc_chapter_id == title_obj.usc_chapter_id)
+        .first()
+    )
+    sect_list = []
+    if current_section is not None:
+        sect_list = [current_section]
+        while current_section is not None and max_depth > 0:
+            max_depth -= 1
+            current_section = (
+                current_session.query(USCSection)
+                .filter(USCSection.usc_section_id == sect_list[-1].parent_id)
+                .filter(USCSection.usc_chapter_id == title_obj.usc_chapter_id)
+                .first()
+            )
+            if current_section is not None:
+                sect_list.append(current_section)
+                if current_section.parent_id is None:
+                    break
+    return USCSectionList(
+        usc_chapter_id=title_obj.usc_chapter_id,
+        sections=[
+            USCSectionMetadata(
+                usc_section_id=sect.usc_section_id,
+                usc_ident=sect.usc_ident,
+                number=sect.number,
+                section_display=sect.section_display,
+                heading=sect.heading,
+                usc_chapter_id=title_obj.usc_chapter_id,
+                parent_id=sect.parent_id,
+                content_type=sect.content_type,
+            )
+            for sect in sect_list
+        ],
+    )
+

@@ -747,6 +747,45 @@ paths:
       tags:
       - uscode
       x-openapi-router-controller: congress_api.controllers.uscode_controller
+  /usc/{release_vers}/{short_title}/lineage/{usc_section_number}:
+    get:
+      description: Returns the lineage of a particular usc_section_id
+      operationId: get_usc_section_lineage
+      parameters:
+      - explode: false
+        in: path
+        name: release_vers
+        required: true
+        schema:
+          type: string
+        style: simple
+      - explode: false
+        in: path
+        name: short_title
+        required: true
+        schema:
+          type: string
+        style: simple
+      - explode: false
+        in: path
+        name: usc_section_number
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              examples:
+                example-1: {}
+              schema:
+                $ref: '#/components/schemas/USCSectionList'
+          description: OK
+      summary: get_section_lineage
+      tags:
+      - uscode
+      x-openapi-router-controller: congress_api.controllers.uscode_controller
   /usc/{release_vers}/{short_title}/sections:
     get:
       description: Get a list of the sections in this given title
