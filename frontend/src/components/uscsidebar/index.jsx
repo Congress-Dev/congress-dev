@@ -84,14 +84,16 @@ function USCSidebar(props) {
         setTree([
           rootNode
         ]);
-        setInternalTree({ ...internalTree, ...intUpdates, [0]: childNodes });
+        setInternalTree({ ...internalTree, ...intUpdates, [0]: rootNode.childNodes });
         getUSCSectionLineage(props.release, props.title, props.section).then(res => {
           const innerIntUpdates = {};
           const expansionUpd = {};
           let chapId = null;
           let firstNode = [];
           lodash.forEach(res, ({ parent_id, number, heading, section_display, usc_section_id, content_type, usc_chapter_id }) => {
-
+            if (!usc_chapter_id) {
+              return;
+            }
             const nodeObj = {
               id: `${usc_chapter_id}.${usc_section_id}`,
               hasCaret: content_type !== 'section',
@@ -104,10 +106,12 @@ function USCSidebar(props) {
               childNodes: []
             };
             if(content_type === 'chapter'){
-              innerIntUpdates[`${usc_chapter_id}`] = [nodeObj];
+              const existingChildren = internalTree[`${usc_chapter_id}`] || [];
+              innerIntUpdates[`${usc_chapter_id}`] = lodash.uniqBy([...existingChildren, nodeObj], 'id');
               expansionUpd[`${usc_chapter_id}`] = true;
             } else {
-              innerIntUpdates[`${usc_chapter_id}.${parent_id}`] = [nodeObj];
+              const existingChildren = internalTree[`${usc_chapter_id}.${parent_id}`] || [];
+              innerIntUpdates[`${usc_chapter_id}.${parent_id}`] = lodash.uniqBy([...existingChildren, nodeObj], 'id');
               expansionUpd[`${usc_chapter_id}.${parent_id}`] = true;
             }
             if (!chapId) {
@@ -117,13 +121,13 @@ function USCSidebar(props) {
           });
           intUpdates[chapId] = firstNode;
           console.log("Updating", intUpdates, internalTree);
-          setInternalTree({ ...internalTree, ...intUpdates, ...innerIntUpdates, [0]: childNodes});
+          setInternalTree({ ...internalTree, ...intUpdates, ...innerIntUpdates, [0]: rootNode.childNodes});
           setTreeExpansion({ ...treeExpansion, ...expansionUpd });
         });
       });
 
     }
-  }, []);
+  }, [props.section]);
 
   function drillExpansion(node) {
     let childNodes = [];
@@ -133,7 +137,7 @@ function USCSidebar(props) {
     return {
       ...node,
       isExpanded: treeExpansion[node.id] === true,
-      childNodes,
+      childNodes: lodash.uniqBy(childNodes, 'id')
     }
   }
   useEffect(() => {
@@ -160,9 +164,9 @@ function USCSidebar(props) {
     if (node.childNodes.length === 0) {
       getUSCLevelSections(props.release, node.short_title, node.usc_section_id).then((res) => {
         const intUpdates = {};
-        const childNodes = lodash.map(res, ({ number, heading, section_display, usc_section_id, content_type }) => {
+        const childNodes = lodash.map(res, ({ number, heading, section_display, usc_section_id, content_type, usc_chapter_id }) => {
           const nodeObj = {
-            id: `${node.usc_chapter_id}.${usc_section_id}`,
+            id: `${usc_chapter_id}.${usc_section_id}`,
             hasCaret: content_type !== 'section',
             icon: (content_type !== 'section' ? 'book' : 'dot'),
             label: `${section_display} ${heading}`,

@@ -3,6 +3,7 @@ from billparser.db.models import USCContentDiff, USCSection, USCContent
 from billparser.logger import log
 import re
 from billparser.actions import ActionObject
+from billparser.utils.citation import remove_citations
 
 
 def strike_section(action_obj: ActionObject, session: "Session") -> None:
@@ -67,6 +68,7 @@ def strike_emulation(to_strike: str, to_replace: str, target: str) -> str:
     start_boi = r"(\s|\b)"
     if re.match(r"[^\w]", to_strike):
         start_boi = ""
+    target = remove_citations(target)
     if "$" not in to_strike:
         return re.sub(
             r"{}({})(?:\s|\b)".format(start_boi, re.escape(to_strike)),

@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import lodash from "lodash";
 
-import { Checkbox } from "@blueprintjs/core";
+import { Checkbox, Tabs, Tab } from "@blueprintjs/core";
 
-import { getBillSummary, getBillVersionDiffForSection } from "common/api.js";
+import { getBillSummary, getBillVersionDiffForSection, getBillVersionText } from "common/api.js";
 
 import BillDisplay from "components/billdisplay";
 import BillDiffSidebar from "components/billdiffsidebar";
+import BillViewAnchorList from "components/billviewanchorlistcomp";
 import USCView from "components/uscview";
 
 // Default bill versions to choose
@@ -20,7 +21,11 @@ function BillViewer(props) {
   // TODO: Option for comparing two versions of the same bill and highlighting differences
   const [bill, setBill] = useState({});
   const [diffs, setDiffs] = useState({});
+  const [textTree, setTextTree] = useState({});
   const [actionParse, setActionParse] = useState(false);
+  const [selectedTab, setSelectedTab] = useState("ud");
+  const [dateAnchors, setDateAnchors] = useState([]);
+  const [dollarAnchors, setDollarAnchors] = useState([]);
 
   const [diffMode, setDiffMode] = useState(false);
   const {
@@ -74,11 +79,12 @@ function BillViewer(props) {
       // Make sure to push the search and hash onto the url
       props.history.push(
         `/bill/${congress}/${chamber}/${billNumber}/${
-          billVers || billVersion
+        billVers || billVersion
         }${diffStr}` +
-          props.location.search +
-          props.location.hash
+        props.location.search +
+        props.location.hash
       );
+      getBillVersionText(congress, chamber, billNumber, billVersion).then(setTextTree);
     }
   }, [billVers]);
   useEffect(() => {
@@ -101,6 +107,42 @@ function BillViewer(props) {
       }
     }
   }, [bill.legislation_versions]);
+
+  const extractDatesAndDollars = function (_textTree) {
+    const dateRegex = /(?:(?<month>(?:Jan|Febr)uary|March|April|May|Ju(?:ne|ly)|August|(?:Septem|Octo|Novem|Decem)ber) (?<day>\d\d?)\, (?<year>\d\d\d\d))/gmi;
+    const dollarRegex = /(?<dollar>\$\s?(\,?\d{1,3})(\,?\d{3})*(\.\d\d)?)/gmi;
+    let _dates = [];
+    let _dollars = [];
+    lodash.forEach(_textTree.children, (node) => {
+      const { dates, dollars } = extractDatesAndDollars(node);
+      _dates = [..._dates, ...dates];
+      _dollars = [..._dollars, ...dollars];
+    });
+    const itemHash = `${ _textTree.lc_ident || _textTree.legislation_content_id}`.toLowerCase();
+    let m;
+    while ((m = dateRegex.exec(_textTree.content_str)) !== null) {
+      // This is necessary to avoid infinite loops with zero-width matches
+      if (m.index === dateRegex.lastIndex) {
+        dateRegex.lastIndex++;
+      }
+      _dates.push([m[0], itemHash]);
+    }
+    while ((m = dollarRegex.exec(_textTree.content_str)) !== null) {
+      // This is necessary to avoid infinite loops with zero-width matches
+      if (m.index === dollarRegex.lastIndex) {
+        dollarRegex.lastIndex++;
+      }
+      _dollars.push([m[0], itemHash]);
+    }
+
+    return { dates: _dates, dollars: _dollars };
+  }
+  useEffect(() => {
+    const { dates, dollars } = extractDatesAndDollars(textTree);
+    setDateAnchors(dates);
+    setDollarAnchors(dollars);
+  }, [textTree]);
+  console.log(dollarAnchors);
   return (
     <>
       <h3>{bill.title}</h3>Selected Version:{" "}
@@ -129,14 +171,39 @@ function BillViewer(props) {
         onClick={() => setActionParse(!actionParse)}
       />
       <hr />
-      <div className="sidebar">
-        <BillDiffSidebar
-          congress={congress}
-          chamber={chamber}
-          billNumber={billNumber}
-          billVersion={billVers || billVersion}
+      <Tabs className="sidebar" id="sidebar-tabs" selectedTabId={selectedTab} onChange={setSelectedTab}>
+        <Tab
+          id="ud"
+          title="USCode Diffs"
+          panel={<BillDiffSidebar
+            congress={congress}
+            chamber={chamber}
+            billNumber={billNumber}
+            billVersion={billVers || billVersion}
+          />}
         />
-      </div>
+        <Tab
+          id="datelist"
+          title="Dates"
+          panel={<BillViewAnchorList
+            anchors={dateAnchors}
+            congress={congress}
+            chamber={chamber}
+            billNumber={billNumber}
+            billVersion={billVersion}
+          />}
+        />
+        <Tab
+          id="dollarlist"
+          title="Dollars"
+          panel={<BillViewAnchorList
+            anchors={dollarAnchors}
+            congress={congress}
+            chamber={chamber}
+            billNumber={billNumber}
+            billVersion={billVersion} />}
+        />
+      </Tabs>
       <div className="content">
         {diffMode === true ? (
           <USCView
@@ -146,14 +213,15 @@ function BillViewer(props) {
             diffs={diffs}
           />
         ) : (
-          <BillDisplay
-            congress={congress}
-            chamber={chamber}
-            billNumber={billNumber}
-            billVersion={billVersion}
-            showTooltips={actionParse}
-          />
-        )}
+            <BillDisplay
+              congress={congress}
+              chamber={chamber}
+              billNumber={billNumber}
+              billVersion={billVersion}
+              textTree={textTree}
+              showTooltips={actionParse}
+            />
+          )}
       </div>
     </>
   );

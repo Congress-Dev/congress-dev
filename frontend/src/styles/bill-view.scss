@@ -1,6 +1,7 @@
 .bill-content-section {
   margin-left: 20px;
   margin-bottom: 0px;
+  line-height: 20px;
 }
 
 .bill-content-continue {
@@ -35,4 +36,13 @@
   border-style: solid;
   border-color: gray;
   background-color: lightgray;
+}
+
+.anchor-list-bad {
+  text-decoration: line-through;
+  color: lightgray;
+}
+
+.anchor-list-link {
+  cursor: pointer;
 }

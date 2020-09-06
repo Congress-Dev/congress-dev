@@ -8,6 +8,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import NullPool
 
+from billparser.utils.citation import resolve_citations
 from billparser.db.caching import query_callable, regions
 from billparser.db.models import USCSection
 from billparser.db.models import *
@@ -101,8 +102,9 @@ def import_title(chapter_file, chapter_number, version_string, release: USCRelea
                     or "chapeau" in content_elem.tag
                     or "notes" in content_elem.tag
                 ):
-                    content_str = (
-                        " ".join(content_elem.itertext()).strip().replace("\n", " ")
+                    content_str = resolve_citations(
+                        " ".join(content_elem.itertext()).strip().replace("\n", " "),
+                        chapter_number,
                     )
             if "heading" in heading.tag:
                 content = USCContent(
@@ -125,8 +127,9 @@ def import_title(chapter_file, chapter_number, version_string, release: USCRelea
                     or "chapeau" in content_elem.tag
                     or "notes" in content_elem.tag
                 ):
-                    content_str = (
-                        " ".join(content_elem.itertext()).strip().replace("\n", " ")
+                    content_str = resolve_citations(
+                        " ".join(content_elem.itertext()).strip().replace("\n", " "),
+                        chapter_number,
                     )
                 content = USCContent(
                     content_type=search_element.tag,
@@ -191,7 +194,16 @@ def import_title(chapter_file, chapter_number, version_string, release: USCRelea
             continue
 
         # According to the USLM guide, these are the levels we'll want to track
-        if split_tag in ["chapter", "subchapter", "part", "subpart", "division", "subdivision", "article", "subarticle"]:
+        if split_tag in [
+            "chapter",
+            "subchapter",
+            "part",
+            "subpart",
+            "division",
+            "subdivision",
+            "article",
+            "subarticle",
+        ]:
             if parent_identifier in parents:
                 current_depth = parents.get(parent_identifier).get("depth", 0) + 1
             else:
@@ -205,10 +217,12 @@ def import_title(chapter_file, chapter_number, version_string, release: USCRelea
                 heading=unidecode_str(elem[1].text),
                 version_id=version_id,
                 usc_chapter_id=chap.usc_chapter_id,
-                content_type=split_tag
+                content_type=split_tag,
             )
             if parents.get(parent_identifier) is not None:
-                par_obj.parent_id = parents.get(parent_identifier)["section"].usc_section_id
+                par_obj.parent_id = parents.get(parent_identifier)[
+                    "section"
+                ].usc_section_id
 
             parents[identifier] = {
                 "elem": elem,
@@ -234,7 +248,7 @@ def import_title(chapter_file, chapter_number, version_string, release: USCRelea
                         version_id=version_id,
                         usc_chapter_id=chap.usc_chapter_id,
                         parent_id=parents.get(current_parent)["section"].usc_section_id,
-                        content_type=split_tag
+                        content_type=split_tag,
                     )
                     session.add(sect_obj)
                     session.flush()
