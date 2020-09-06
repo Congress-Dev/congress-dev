@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useHistory, Link } from "react-router-dom";
 
 import lodash from "lodash";
 
@@ -8,6 +8,7 @@ import { md5 } from "common/other";
 
 import SyncLoader from "react-spinners/SyncLoader";
 import { diffWords } from "diff";
+import xmldoc from 'xmldoc';
 
 import "styles/usc-view.scss";
 
@@ -50,18 +51,44 @@ function USCView(props) {
       );
     });
   }
+  function removeCitations(str) {
+    return str.replace(/\<usccite src.*?\"\>/g, '').replace(/\<\/usccite\>/g, '')
+  }
+  function resolveCitations(str) {
+    if (!str) {
+      return str
+    }
+    if (str.includes("<") && str.includes(">")) {
+      const parsed = new xmldoc.XmlDocument(`<str>${str}</str>`);
+      return lodash.reduce(parsed.children, (prev, cur) => {
+        if (cur.text) {
+          return [...prev, cur.text];
+        } else if (cur.name === "usccite") {
+          return [...prev, <Link to={`/uscode/${release}/${cur.attr.src.replace('/usc/', '')}`}>{cur.val}</Link>];
+        }
+        else {
+          return [...prev, '[REMOVED]'];
+        }
+
+      }, []);
+    }
+    return str;
+  }
   function computeDiff(item) {
     let newItem = Object.assign({}, item);
     const itemDiff = diffs[`${item.usc_content_id}`];
     if (itemDiff) {
       ["heading", "section_display", "content_str"].forEach((key) => {
         if (itemDiff[key] !== undefined && itemDiff[key] !== item[key]) {
-          newItem[key] = diffStyle(diffWords(item[key] || "", itemDiff[key] || ""));
+
+          newItem[key] = diffStyle(diffWords(removeCitations(item[key] || ""), removeCitations(itemDiff[key] || "")));
           // TODO: Fix this ordering issue on the backend maybe?
           // Should create diffs to reorder things?
           newItem["order_number"] -= 0.01;
         }
       });
+    } else {
+      newItem.content_str = resolveCitations(newItem.content_str);
     }
     return newItem;
   }
@@ -73,9 +100,11 @@ function USCView(props) {
     return goUpParentChain(element.parentElement);
   }
   function changeUrl(event) {
-    history.replace({ hash: `#${goUpParentChain(event.target)}` });
-    event.preventDefault();
-    event.stopPropagation();
+    if (event.target.tagName.toLowerCase() !== "a") {
+      history.replace({ hash: `#${goUpParentChain(event.target)}` });
+      event.preventDefault();
+      event.stopPropagation();
+    }
   }
   function renderRecursive(node) {
     const newChildren = lodash
@@ -98,7 +127,6 @@ function USCView(props) {
           const correctedType = content_type.slice(content_type.indexOf("}") + 1);
           const itemHash = md5(usc_ident.toLowerCase());
           if (!renderedTarget && itemHash && activeHash && itemHash === activeHash) {
-            console.log("Set target");
             setRenderedTarget(true);
           }
           return (
@@ -107,7 +135,7 @@ function USCView(props) {
               name={usc_content_id}
               className={`usc-content-${correctedType} usc-content-section ${
                 activeHash === itemHash ? "usc-content-hash" : ""
-              }`}
+                }`}
               key={ind}
               onClick={changeUrl}
             >
@@ -117,10 +145,10 @@ function USCView(props) {
                     {section_display} {heading}
                   </b>
                 ) : (
-                  <span className={"usc-content-section-display"}>
-                    {section_display}{" "}
-                  </span>
-                )}
+                    <span className={"usc-content-section-display"}>
+                      {section_display}{" "}
+                    </span>
+                  )}
                 <span className={heading !== undefined ? "usc-content-continue" : ""}>
                   {content_str}
                 </span>

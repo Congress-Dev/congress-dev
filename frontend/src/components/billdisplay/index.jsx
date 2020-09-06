@@ -20,15 +20,14 @@ function BillDisplay(props) {
   // TODO: Add permalink feature
   // TODO: Add highlight feature to permalink in the url ?link=a/1/ii&highlight=a/1/ii,a/1/v
   const history = useHistory();
-
-  const [textTree, setTextTree] = useState({});
+  const textTree = props.textTree;
+  // const [textTree, setTextTree] = useState({});
   const [activeHash, setActiveHash] = useState(
     (history.location.hash || "#").slice(1) || ""
   );
 
   const [renderedTarget, setRenderedTarget] = useState(false);
 
-  console.log(activeHash);
   useEffect(() => {
     // If we render the hash target, go ahead and zip it into view
     if (renderedTarget) {
@@ -37,9 +36,13 @@ function BillDisplay(props) {
   }, [renderedTarget]);
 
   useEffect(() => {
+    setActiveHash((history.location.hash || "#").slice(1) || "");
+  }, [history.location.hash])
+
+  useEffect(() => {
     const { congress, chamber, billNumber, billVersion } = props;
-    setTextTree({ loading: true });
-    getBillVersionText(congress, chamber, billNumber, billVersion).then(setTextTree);
+    // setTextTree({ loading: true });
+    // getBillVersionText(congress, chamber, billNumber, billVersion).then(setTextTree);
   }, [props.billVersion]);
 
   function goUpParentChain(element) {
@@ -179,10 +182,10 @@ function BillDisplay(props) {
           ) => {
             let actionStr = generateActionStr(action);
             content_str = generateActionHighlighting(content_str, action);
-            const itemHash = (lc_ident || "").toLowerCase();
+            const itemHash = (`${lc_ident || legislation_content_id}`).toLowerCase();
             const outerClass = `bill-content-${content_type} bill-content-section ${
               activeHash !== "" && activeHash === itemHash ? "usc-content-hash" : ""
-            }`;
+              }`;
             if (!renderedTarget && itemHash && activeHash && itemHash === activeHash) {
               setRenderedTarget(true);
             }
@@ -241,10 +244,12 @@ function BillDisplay(props) {
       </>
     );
   }
-  if (textTree.loading) {
+  if (textTree.loading || textTree.content_type !== "legis-body") {
     return <SyncLoader loading={true} />;
   }
-  return <>{renderRecursive(textTree)}</>;
+
+  // TODO: Convert this to recursive components to speed up rerenders
+  return <>{renderRecursive(props.textTree)}</>;
 }
 
 export default BillDisplay;

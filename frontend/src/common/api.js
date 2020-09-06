@@ -37,7 +37,7 @@ export const getBillVersionText = (congress, chamber, billNumber, billVersion) =
         const sorted = lodash.sortBy(
           flatJson.content,
           ({ legislation_content_id, order_number }) =>
-            `${legislation_content_id}.${order_number.toString().padStart(3, "0")}`
+            `${legislation_content_id.toString().padStart(10, "0")}.${order_number.toString().padStart(3, "0")}`
         );
         if (sorted.length === 0) {
           return {};

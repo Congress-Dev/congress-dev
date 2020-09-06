@@ -194,7 +194,9 @@ def extract_single_action(element: Element, path: str, parent_action: dict) -> l
                 path, ll[element.tag], element[0].text.replace(".", "")
             )
             lxml_path = element.getroottree().getpath(element)
-            if element[1].tag == "header" and element[2].tag == "text":
+            if element[1].tag == "header" and (
+                len(element) > 2 and element[2].tag == "text"
+            ):
                 text = convert_to_text(element[2])
                 next_elem = ""
                 if len(element) == 4:
@@ -628,7 +630,13 @@ def run_action2(ACTION, new_bill_version, new_vers_id, session):
     parent_cite = ""
     if "usc" not in parsed_cite:
         parent_cite = recursive_get_context(ACTION.get("enum", ""))
-    actions = ACTION.get("actions", {})
+
+    # Filter out the financial/date ones for now
+    actions = {
+        k: v
+        for k, v in ACTION.get("actions", {}).items()
+        if k not in ["FINANCIAL", "DATE"]
+    }
     # print(action)
     # print(actions.keys())
     made_something = False
@@ -759,10 +767,7 @@ def parse_archive(path: str) -> List[dict]:
     # Get latest release version for the base
     # TODO: Move these around to select the correct release point given the bill
     release_point = (
-        session.query(USCRelease)
-        .order_by(desc(USCRelease.effective_date))
-        .limit(1)
-        .all()
+        session.query(USCRelease).order_by(desc(USCRelease.created_at)).limit(1).all()
     )
     BASE_VERSION = release_point[0].version_id
     print("Base version is", BASE_VERSION)

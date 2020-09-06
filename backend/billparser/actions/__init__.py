@@ -88,6 +88,12 @@ regex_holder = {
         r"The term \"(?P<term>.+?)\" means (?P<term_def>.+?).",
         r"The term (?P<term>.+?) means (?P<term_def>.+?).",
     ],
+    "DATE": [
+        r"(?:(?P<month>(?:Jan|Febr)uary|March|April|May|Ju(?:ne|ly)|August|(?:Septem|Octo|Novem|Decem)ber) (?P<day>\d\d?)\, (?P<year>\d\d\d\d))"
+    ],
+    "FINANCIAL": [
+        r"(?P<dollar>\$\s?(\d{1,3}\,?)(\d{3}\,?)*(\.\d\d)?)"
+    ]
 }
 
 SuchCodeRegex = re.compile(r"(Section|paragraph) (?P<section>\d*)\(", re.IGNORECASE)
