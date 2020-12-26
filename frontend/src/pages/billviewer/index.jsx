@@ -78,13 +78,12 @@ function BillViewer(props) {
     if (billVers !== undefined) {
       // Make sure to push the search and hash onto the url
       props.history.push(
-        `/bill/${congress}/${chamber}/${billNumber}/${
-        billVers || billVersion
+        `/bill/${congress}/${chamber}/${billNumber}/${billVers || billVersion
         }${diffStr}` +
         props.location.search +
         props.location.hash
       );
-      getBillVersionText(congress, chamber, billNumber, billVersion).then(setTextTree);
+      getBillVersionText(congress, chamber, billNumber, billVers).then(setTextTree);
     }
   }, [billVers]);
   useEffect(() => {
@@ -118,7 +117,7 @@ function BillViewer(props) {
       _dates = [..._dates, ...dates];
       _dollars = [..._dollars, ...dollars];
     });
-    const itemHash = `${ _textTree.lc_ident || _textTree.legislation_content_id}`.toLowerCase();
+    const itemHash = `${_textTree.lc_ident || _textTree.legislation_content_id}`.toLowerCase();
     let m;
     while ((m = dateRegex.exec(_textTree.content_str)) !== null) {
       // This is necessary to avoid infinite loops with zero-width matches
