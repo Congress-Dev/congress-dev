@@ -55,7 +55,7 @@ function BillCard(props) {
   }
   return (
     <Card>
-      <h2>{genTitle()}</h2>
+      <h2 style={{marginTop: "0px"}}>{genTitle()}</h2>
       <span style={{ fontStyle: "italic" }}>{bill.title}</span>
       <br />
       <span className="bill-card-introduced-date">
