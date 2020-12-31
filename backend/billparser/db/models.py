@@ -67,7 +67,7 @@ class LegislationVersionEnum(enum.Enum):
 
 class Congress(Base):
     """
-        Holds the relationships for the Congress sessions
+    Holds the relationships for the Congress sessions
     """
 
     __tablename__ = "congress"
@@ -121,6 +121,9 @@ class Legislation(Base):
     version_id = Column(Integer, ForeignKey("version.version_id", ondelete="CASCADE"))
     versions = versions = relationship("LegislationVersion")
 
+    policy_areas = Column(ARRAY(String), index=True)
+    legislative_subjects = Column(ARRAY(String), index=True)
+
     def to_dict(self):
         boi = {
             "bill_id": str(self.legislation_id),
@@ -128,6 +131,8 @@ class Legislation(Base):
             "bill_type": "BillTypes." + self.legislation_type.value,
             "bill_number": str(self.number),
             "bill_title": self.title,
+            "policy_areas": self.policy_areas,
+            "legislative_subjects": self.legislative_subjects,
         }
         return {k: v for (k, v) in boi.items() if v is not None}
 
@@ -299,7 +304,7 @@ class USCSection(Base):
         ForeignKey("usc_section.usc_section_id", ondelete="CASCADE"),
         index=True,
     )
-    
+
     number = Column(String)
     section_display = Column(String)
     heading = Column(String)
@@ -444,8 +449,8 @@ class USCContentDiff(Base):
 
 class USCPopularName(Base):
     """
-        A single popular name of a codified act.
-        Note: Acts can have multiple popular names
+    A single popular name of a codified act.
+    Note: Acts can have multiple popular names
     """
 
     __tablename__ = "usc_popular_name"
@@ -477,7 +482,7 @@ class USCPopularName(Base):
 
 class USCActSection(Base):
     """
-        A single act section to translate it to a USC section
+    A single act section to translate it to a USC section
     """
 
     __tablename__ = "usc_act_section"
@@ -502,3 +507,98 @@ class USCActSection(Base):
             "usc_popular_name_id": self.usc_popular_name_id,
         }
         return {k: v for (k, v) in boi.items() if v is not None}
+
+
+class LegislationCommittee(Base):
+    """
+    A Congressional Committee, for our purposes, a bill may be related to various committees
+    """
+
+    __tablename__ = "legislation_committee"
+
+    legislation_committee_id = Column(Integer, primary_key=True)
+
+    system_code = Column(String)  # Correspond to the systemCode tag in the statuses xml
+    chamber = Column(Enum(LegislationChamber))
+    name = Column(String)
+
+    committee_type = Column(String)  # Dunno what this is yet
+    subcommittee = Column(
+        Integer,
+        ForeignKey(
+            "legislation_committee.legislation_committee_id", ondelete="CASCADE"
+        ),
+        index=True,
+    )
+
+
+class LegislationCommitteeAssociation(Base):
+    """
+    Link a bill to a committee, exists only as a joining table
+    """
+
+    __tablename__ = "legislation_committee_association"
+
+    committee_association_id = Column(Integer, primary_key=True)
+
+    legislation_committee_id = Column(
+        Integer,
+        ForeignKey("legislation_committee.legislation_committee_id"),
+        index=True,
+    )
+
+    referred_date = Column(DateTime)
+    discharge_date = Column(DateTime)
+    
+    legsilation_id = Column(
+        Integer, ForeignKey("legislation.legislation_id"), index=True
+    )
+
+    congress_id = Column(
+        Integer, ForeignKey("congress.congress_id", ondelete="CASCADE"), index=True
+    )
+
+
+class Legislator(Base):
+    """
+    Represents an individual Legislator, may be filled out via multiple ways
+    """
+
+    __tablename__ = "legislator"
+
+    legislator_id = Column(Integer, primary_key=True)
+
+    bioguide_id = Column(String, index=True)  # https://bioguideretro.congress.gov/
+
+    first_name = Column(String)
+    middle_name = Column(String)
+    last_name = Column(String)
+
+    party = Column(String, index=True)
+    state = Column(String, index=True)
+    district = Column(Integer, index=True)
+
+
+class LegislationSponsorship(Base):
+    """
+    Represents when a legislator sponsors a bill
+    """
+
+    __tablename__ = "legislation_sponsorship"
+
+    legislation_sponsorship_id = Column(Integer, primary_key=True)
+
+    legsilator_id = Column(
+        Integer, ForeignKey("legislator.legislator_id", ondelete="CASCADE"), index=True
+    )
+
+    legislation_id = Column(
+        Integer,
+        ForeignKey("legislation.legislation_id", ondelete="CASCADE"),
+        index=True,
+    )
+    cosponsor = Column(Boolean, index=True)
+    original = Column(Boolean, index=True)
+
+    sponsorship_date = Column(Date)
+    sponsorship_withdrawn_date = Column(Date, index=True, nullable=True)
