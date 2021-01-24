@@ -64,6 +64,6 @@ if __name__ == "__main__":
                     rp.get("title"),
                     release_point.to_dict(),
                 )
-                for file in files
+                for file in files  # if "09" in file
             )
 
