@@ -550,6 +550,9 @@ class LegislationCommitteeAssociation(Base):
     referred_date = Column(DateTime)
     discharge_date = Column(DateTime)
     
+    legislation_id = Column(
+        Integer, ForeignKey("legislation.legislation_id"), index=True
+    )
     legsilation_id = Column(
         Integer, ForeignKey("legislation.legislation_id"), index=True
     )
