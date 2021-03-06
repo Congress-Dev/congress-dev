@@ -34,7 +34,7 @@ if __name__ == "__main__":
     result = list(engine.execute(query))
     print(len(result), "bills created no rows")
     send_message(
-        f"Removing {len(result)} bills for no content.\nExamples: {', '.join([f'{x[1]}-{x[2]}' for x in result])}"
+        f"Removing {len(result)} bills for no content.\nExamples: {', '.join([f'{x[1]}-{x[2]}-{x[3]}' for x in result[:5]])}"
     )
     for row in result:
         legislation_id = row[0]
