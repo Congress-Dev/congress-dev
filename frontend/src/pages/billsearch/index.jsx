@@ -13,7 +13,7 @@ function BillSearch(props) {
   const [textBox, setTextBox] = useState("Test");
   const [totalResults, setTotalResults] = useState(0);
   const [currentSearch, setCurrentSearch] = useState({
-    congress: "116",
+    congress: "117",
     chamber: "House,Senate",
     versions: Object.keys(versionToFull).join(","),
     text: "",
@@ -104,7 +104,7 @@ function BillSearch(props) {
   }, [currentSearch]);
   useEffect(() => {
     setCurrentSearch({
-      congress: "116",
+      congress: "117",
       chamber: "House,Senate",
       versions: Object.keys(versionToFull).join(","),
       text: "",

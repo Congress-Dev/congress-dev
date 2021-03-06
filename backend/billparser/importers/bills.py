@@ -25,5 +25,5 @@ if __name__ == "__main__":
         print("=" * 5)
         print(rp.get("title"))
         zip_file_path = "bills/" + download_path(rp.get("url"))
-        ensure_congress(rp.get("congress", 116))
+        ensure_congress(rp.get("congress", 117))
         parse_archive(zip_file_path)
