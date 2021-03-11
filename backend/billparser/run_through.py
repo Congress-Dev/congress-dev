@@ -375,12 +375,21 @@ def recursive_bill_content(
     parent_cite: str = "",
     session: "SQLAlchemy.session" = None,
 ) -> list:
-    # print(' '.join(search_element.itertext()).strip().replace('\n', ' '))
+    # log.debug(' '.join(search_element.itertext()).strip().replace('\n', ' '))
     # if it has an id it is probably a thingy
     extracted_action = []
     res = []
     content = None
-    if (search_element.tag == "legis-body" or "id" in search_element.attrib) and len(
+    if search_element.tag == "legis-body":
+        content = LegislationContent(
+            content_type=search_element.tag,
+            parent_id=content_id,
+            order_number=order,
+            legislation_version_id=legis_version_id,
+            section_display=None,
+            content_str=None
+        )
+    elif ("id" in search_element.attrib) and len(
         search_element
     ) > 1:
         enum = search_element[0]
@@ -424,13 +433,15 @@ def recursive_bill_content(
                 content_str=content_str,
                 # heading=heading.text if heading is not None else None,
             )
-        # print(content.to_dict())
+        print(content.to_dict())
         session.add(content)
         session.flush()
+    else:
+        log.debug(f"Items look like: {search_element.tag} and {len(search_element)}")
     if True:
         root_path = search_element.getroottree().getpath(search_element)
         sections = root_path.split("/section")
-        if len(sections) > 2:
+        if len(sections) > 2 and search_element.tag != "legis-body":
             pass
         elif "quote" in root_path:
             # print("Within quote")
@@ -464,12 +475,13 @@ def recursive_bill_content(
                 pass
     if (search_element.tag == "legis-body" or "id" in search_element.attrib) and len(
         search_element
-    ) > 1:
+    ) > 0:
         if content is not None:
             content.action_parse = extracted_action
             session.commit()
         order = 0
 
+        
         for elem in search_element:
             if "id" in elem.attrib:
                 res.extend(
@@ -544,7 +556,7 @@ def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object):
         session.commit()
 
         new_vers_id = new_bill_version.version_id
-
+        log.debug(f"New bill has id {new_vers_id}")
         form_dates = root.xpath("//form/action/action-date")
         if len(form_dates) > 0:
             last_date = form_dates[-1]
@@ -560,6 +572,7 @@ def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object):
         if len(legis) > 0:
             legis = legis[0]
         else:
+            log.warning(f"Bill has {len(legis)} legis-bodies")
             return
         session.commit()
         res = recursive_bill_content(
@@ -751,7 +764,12 @@ def ensure_congress(congress_number: int) -> None:
     CURRENT_CONGRESS = EXISTING_CONGRESS[congress_number]
 
 
-def parse_archive(path: str) -> List[dict]:
+def parse_archive(
+    path: str,
+    chamber_filter: str = None,
+    version_filter: str = None,
+    number_filter: str = None,
+) -> List[dict]:
     """
     Opens a ZipFile that is the dump of all bills.
     It will parse each one and return a list of the parsed out objects
@@ -794,6 +812,20 @@ def parse_archive(path: str) -> List[dict]:
     names = sorted(names, key=lambda x: x["bill_number"])
     # names = names[50:55]
     # names = [x for x in names if (x.get('bill_version') == 'enr')]
+
+    def filter_logic(x):
+        if chamber_filter is not None and x["chamber"] != chamber_filter:
+            return False
+
+        if version_filter is not None and x["bill_version"] != version_filter:
+            return False
+
+        if number_filter is not None and str(x["bill_number"]) != str(number_filter):
+            return False
+
+        return True
+
+    names = [x for x in names if filter_logic(x)]
     frec = Parallel(n_jobs=THREADS, backend="multiprocessing", verbose=5)(
         delayed(parse_bill)(
             archive.open(name["path"], "r").read().decode(),

@@ -210,7 +210,7 @@ class LegislationContent(Base):
     # TODO: Fix these to use new names
     def to_dict(self):
         ap = {}
-        for obj in self.action_parse:
+        for obj in self.action_parse or []:
             keys = [x for x in obj.keys() if x not in ["changed", "parsed_cite"]]
             ap[keys[0]] = obj.get("changed", False)
 

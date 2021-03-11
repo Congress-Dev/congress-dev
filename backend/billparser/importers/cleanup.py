@@ -38,6 +38,6 @@ if __name__ == "__main__":
     )
     for row in result:
         legislation_id = row[0]
-        # engine.execute(
-        #     f"DELETE FROM legislation WHERE legislation_id = {legislation_id}"
-        # )
+        engine.execute(
+            f"DELETE FROM legislation WHERE legislation_id = {legislation_id}"
+        )
