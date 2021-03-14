@@ -14,6 +14,21 @@ import { getBillVersionText } from "common/api.js";
 import "styles/actions.scss";
 import "styles/bill-view.scss";
 
+window.lodash = lodash;
+
+// Source: backend/billparser/actions/__init__.py
+const VALID_ACTIONS = [
+  "SHORT-TITLE", "PURPOSE", "CONGRESS-FINDS", "REPLACE-SECTION",
+  "IN-CONTEXT", "AMEND-MULTIPLE", "STRIKE-TEXT", "STRIKE-TEXT-MULTIPLE",
+  "STRIKE-INSERT-SECTION", "INSERT-SECTION-AFTER", "INSERT-END",
+  "INSERT-TEXT-AFTER", "INSERT-TEXT", "INSERT-TEXT-END",
+  "STRIKE-SECTION-INSERT", "STRIKE-SUBSECTION", "STRIKE-PARAGRAPHS-MULTIPLE",
+  "REDESIGNATE", "REPEAL", "EFFECTIVE-DATE", "TABLE-OF-CONTENTS",
+  "TABLE-OF-CHAPTERS", "INSERT-CHAPTER-AT-END", "TERM-DEFINITION",
+  "DATE", "FINANCIAL"
+];
+
+
 function BillDisplay(props) {
   // TODO: Add minimap scrollbar
   // *TODO*: Start using the action list to render a list of parsed actions
@@ -137,14 +152,32 @@ function BillDisplay(props) {
     if (props.showTooltips === false) {
       return contentStr;
     }
+    // We are looking at the action objects for items within it that represent the captured regex
+    /*
+    {
+      "AMEND-MULTIPLE": {
+        "REGEX": 1,
+        "target": "Section 303(b)(1)(A)",
+        "within": "the Help America Vote Act of 2002 (52 U.S.C. 21083(b)(1)(A))"
+      },
+      "changed": true,
+      "cite_link": "/us/usc/t52/s21083/b/1/A",
+      "diff_id": null,
+      "parsed_cite": "/us/usc/t52/s21083/b/1/A"
+    }
+    */
+   // Within each one we are using the VALID_ACTIONS list to pull out the action key "AMEND-MULTIPLE" in this case
+   // And then these correspond to the regex groups we identify, except for the REGEX key, which we ignore
+   // Using those substrings, we then highlight the next
     const strings = lodash
       .chain(action)
       .map(lodash.toPairs)
       .flatten()
-      .filter((x) => !["changed", "parsed_cite"].includes(x[0]))
+      .filter((x) => VALID_ACTIONS.includes(x[0]))
       .map((x) => x[1])
       .map(lodash.toPairs)
       .flatten()
+      .filter((x) => x[0] !== "REGEX")
       .map((x) => {
         return { [x[0]]: x[1] };
       })
