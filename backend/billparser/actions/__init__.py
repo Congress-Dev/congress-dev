@@ -85,8 +85,8 @@ regex_holder = {
         r"Title (?P<title>\d\d?A?), (?P<document_title>.+), is amended by adding at the end the following new chapter:?"
     ],
     "TERM-DEFINITION": [
-        r"The term \"(?P<term>.+?)\" means (?P<term_def>.+?).",
-        r"The term (?P<term>.+?) means (?P<term_def>.+?).",
+        r"The term \"(?P<term>.+?)\" means (?P<term_def>.+)\.?",
+        r"The term (?P<term>.+?) means (?P<term_def>.+)\.?",
     ],
     "DATE": [
         r"(?:(?P<month>(?:Jan|Febr)uary|March|April|May|Ju(?:ne|ly)|August|(?:Septem|Octo|Novem|Decem)ber) (?P<day>\d\d?)\, (?P<year>\d\d\d\d))"
