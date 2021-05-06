@@ -1,5 +1,5 @@
 Flask==1.0.2
-Flask-Cors==3.0.7
+Flask-Cors==3.0.9
 Flask-Compress==1.4.0
 Flask-SQLAlchemy==2.3.2
 Flask-SQLAlchemy-Session==1.1
