@@ -216,8 +216,7 @@ function BillDisplay(props) {
             let actionStr = generateActionStr(action);
             content_str = generateActionHighlighting(content_str, action);
             const itemHash = (`${lc_ident || legislation_content_id}`).toLowerCase();
-            const outerClass = `bill-content-${content_type} bill-content-section ${
-              activeHash !== "" && activeHash === itemHash ? "usc-content-hash" : ""
+            const outerClass = `bill-content-${content_type} bill-content-section ${activeHash !== "" && activeHash === itemHash ? "usc-content-hash" : ""
               }`;
             if (!renderedTarget && itemHash && activeHash && itemHash === activeHash) {
               setRenderedTarget(true);
@@ -231,11 +230,13 @@ function BillDisplay(props) {
                   key={ind}
                   className={outerClass}
                   onClick={changeUrl}
+
                 >
                   <Tooltip
                     content={actionStr}
                     disabled={actionStr === "" || props.showTooltips !== true}
                     isOpen={activeHash !== "" && activeHash === itemHash}
+                    action={action}
                   >
                     <span>
                       <b>

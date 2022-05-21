@@ -32,9 +32,9 @@ regex_holder = {
         r"(?:(?P<target>.+?) of (?P<within>.+?) is amended )?by striking \"(?P<to_remove_text>.+?)\"\.",
         r"in (?P<target>.+?), by striking \"(?P<to_remove_text>.+?)\" at the end;",
         r"in (?P<target>.+?), by striking \"(?P<to_remove_text>.+?)\";(?: and)?",
+        r"in (?P<target>.*) by striking \"(?P<to_remove_text>.+?)\" and inserting \"(?P<to_replace>.+?)\"(?:, and)?",
         r"by striking \"(?P<to_remove_text>.+?)\"(?:;|\.)",
         r"by striking \"(?P<to_remove_text>.+?)\" at the end of (?P<target>.+?)(?:;|\.)",
-        r"in (?P<target>.*) by striking \"(?P<to_remove_text>.+?)\" and inserting \"(?P<to_replace>.+?)\"(?:, and)?",
     ],
     "STRIKE-TEXT-MULTIPLE": [
         r"in (?P<target>.+?), by striking \"(?P<to_remove_text>.+?)\" and inserting \"(?P<to_replace>.+?)\" each place the term appears;"
@@ -86,8 +86,8 @@ regex_holder = {
         r"Title (?P<title>\d\d?A?), (?P<document_title>.+), is amended by adding at the end the following new chapter:?"
     ],
     "TERM-DEFINITION": [
-        r"The term \"(?P<term>.+?)\" means (?P<term_def>.+)\.?",
-        r"The term (?P<term>.+?) means (?P<term_def>.+)\.?",
+        r"The term \"(?P<term>.+?)\" (means\,?|has the meaning) (?P<term_def>.+)\.?",
+        r"The term (?P<term>.+?) (means\,?|has the meaning) (?P<term_def>.+)\.?",
     ],
     "DATE": [
         r"(?:(?P<month>(?:Jan|Febr)uary|March|April|May|Ju(?:ne|ly)|August|(?:Septem|Octo|Novem|Decem)ber) (?P<day>\d\d?)\, (?P<year>\d\d\d\d))"

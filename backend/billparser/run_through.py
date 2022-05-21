@@ -98,7 +98,7 @@ def convert_to_text(element: Element, inside_quote: bool = False) -> str:
 ll = {"subsection": "ss", "paragraph": "p", "section": "s", "subparagraph": "sb"}
 
 
-def extract_actions(element: Element, path: str) -> List[dict]:
+def extract_actions(element: Element, path: str, quoted=False) -> List[dict]:
     """
     Looks at an element for textual clues to determine what actions it is implying
     These actions will be extracted and passed to other functions to utilize.
@@ -177,8 +177,8 @@ def extract_actions(element: Element, path: str) -> List[dict]:
 
 def extract_single_action(element: Element, path: str, parent_action: dict) -> list:
     """
-        Takes in an element and a path (relative within the bill)
-        returns a list of extracted actions.
+    Takes in an element and a path (relative within the bill)
+    returns a list of extracted actions.
     """
     res = {}
     try:
