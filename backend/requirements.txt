@@ -3,7 +3,7 @@ Flask-Cors==3.0.7
 Flask-Compress==1.4.0
 Flask-SQLAlchemy==2.3.2
 Flask-SQLAlchemy-Session==1.1
-lxml==4.3.0
+lxml==4.9.1
 psycopg2-binary~=2.8.4
 requests==2.21.0
 SQLAlchemy~=1.4.0
