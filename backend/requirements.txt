@@ -4,12 +4,12 @@ Flask-Compress==1.4.0
 Flask-SQLAlchemy==2.3.2
 Flask-SQLAlchemy-Session==1.1
 lxml==4.3.0
-psycopg2-binary==2.7.6.1
+psycopg2-binary~=2.8.4
 requests==2.21.0
-SQLAlchemy==1.2.16
+SQLAlchemy~=1.4.0
 dogpile.cache==0.6.7
 cachetools==2.1.0
-pandas==0.25.0
+pandas==1.0.0
 gevent==1.4.0
 joblib==0.13.2
 Unidecode==1.1.1
