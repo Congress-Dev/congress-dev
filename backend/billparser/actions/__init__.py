@@ -11,7 +11,8 @@ from unidecode import unidecode
 # The capture groups are typically consistent, especially when the same functions are used between different 'actions'
 regex_holder = {
     "SHORT-TITLE": [
-        r"This (?P<context_type>(?:act|(?:sub)?title)) may be cited as the (?P<title>.+?)\."
+        r"This (?P<context_type>(?:act|(?:sub)?title)) may be cited as the \"(?P<title>.+?)\"\.",
+        r"This (?P<context_type>(?:act|(?:sub)?title)) may be cited as the (?P<title>.+?)\.",
     ],
     "PURPOSE": [r"The purpose of this Act is (?P<purpose>.+)\."],
     "CONGRESS-FINDS": [r"Congress finds the following:"],
@@ -91,9 +92,7 @@ regex_holder = {
     "DATE": [
         r"(?:(?P<month>(?:Jan|Febr)uary|March|April|May|Ju(?:ne|ly)|August|(?:Septem|Octo|Novem|Decem)ber) (?P<day>\d\d?)\, (?P<year>\d\d\d\d))"
     ],
-    "FINANCIAL": [
-        r"(?P<dollar>\$\s?(\d{1,3}\,?)(\d{3}\,?)*(\.\d\d)?)"
-    ]
+    "FINANCIAL": [r"(?P<dollar>\$\s?(\d{1,3}\,?)(\d{3}\,?)*(\.\d\d)?)"],
 }
 
 SuchCodeRegex = re.compile(r"(Section|paragraph) (?P<section>\d*)\(", re.IGNORECASE)
@@ -210,4 +209,8 @@ class ActionObject(object):
         self.parsed_cite = self.parsed_cite.replace("//", "/")
 
     def to_dict(self):
-        return {self.action_key: self.action, "parsed_cite": self.parsed_cite, "diff_id": self.diff_id}
+        return {
+            self.action_key: self.action,
+            "parsed_cite": self.parsed_cite,
+            "diff_id": self.diff_id,
+        }
