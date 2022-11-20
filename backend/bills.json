@@ -8,5 +8,15 @@
     "title": "Senate: 117th 1st Session",
     "congress": 117,
     "url": "https://www.govinfo.gov/bulkdata/BILLS/117/1/s/BILLS-117-1-s.zip"
+  },
+  {
+    "title": "House: 117th 2nd Session",
+    "congress": 117,
+    "url": "https://www.govinfo.gov/bulkdata/BILLS/117/2/hr/BILLS-117-2-hr.zip"
+  },
+  {
+    "title": "Senate: 117th 2nd Session",
+    "congress": 117,
+    "url": "https://www.govinfo.gov/bulkdata/BILLS/117/2/s/BILLS-117-2-s.zip"
   }
 ]
