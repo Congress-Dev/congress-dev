@@ -17,9 +17,9 @@ username = os.environ.get("db_user", "bills")
 password = os.environ.get("db_pass", "bills")
 table = os.environ.get("db_table", "uscode")
 db_host = os.environ.get("db_host", "localhost:5401")
-DATABASE_URI = f"postgresql+psycopg2://{username}:{password}@{db_host}/{table}"
+DATABASE_URI = f"postgresql://{username}:{password}@{db_host}/{table}"
 print(DATABASE_URI)
-engine = create_engine(DATABASE_URI, poolclass=NullPool)
+engine = create_engine(DATABASE_URI, poolclass=NullPool, connect_args={'sslmode': "disable"})
 
 Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine, query_cls=query_callable(regions))
