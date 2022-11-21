@@ -433,11 +433,10 @@ def recursive_bill_content(
                 content_str=content_str,
                 # heading=heading.text if heading is not None else None,
             )
-        print(content.to_dict())
-        session.add(content)
-        session.flush()
     else:
         log.debug(f"Items look like: {search_element.tag} and {len(search_element)}")
+    if content is not None:
+        session.add(content)
     if True:
         root_path = search_element.getroottree().getpath(search_element)
         sections = root_path.split("/section")
@@ -478,10 +477,9 @@ def recursive_bill_content(
     ) > 0:
         if content is not None:
             content.action_parse = extracted_action
-            session.commit()
+            # session.commit()
         order = 0
 
-        
         for elem in search_element:
             if "id" in elem.attrib:
                 res.extend(
