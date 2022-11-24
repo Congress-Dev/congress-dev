@@ -177,8 +177,8 @@ def extract_actions(element: Element, path: str) -> List[dict]:
 
 def extract_single_action(element: Element, path: str, parent_action: dict) -> list:
     """
-        Takes in an element and a path (relative within the bill)
-        returns a list of extracted actions.
+    Takes in an element and a path (relative within the bill)
+    returns a list of extracted actions.
     """
     res = {}
     try:
@@ -387,11 +387,9 @@ def recursive_bill_content(
             order_number=order,
             legislation_version_id=legis_version_id,
             section_display=None,
-            content_str=None
+            content_str=None,
         )
-    elif ("id" in search_element.attrib) and len(
-        search_element
-    ) > 1:
+    elif ("id" in search_element.attrib) and len(search_element) > 1:
         enum = search_element[0]
         heading = search_element[1]
         content_str = None
@@ -806,6 +804,84 @@ def parse_archive(
                 "chamber": chamb[house],
             }
         )
+
+    names = sorted(names, key=lambda x: x["bill_number"])
+    # names = names[50:55]
+    # names = [x for x in names if (x.get('bill_version') == 'enr')]
+
+    def filter_logic(x):
+        if chamber_filter is not None and x["chamber"] != chamber_filter:
+            return False
+
+        if version_filter is not None and x["bill_version"] != version_filter:
+            return False
+
+        if number_filter is not None and str(x["bill_number"]) != str(number_filter):
+            return False
+
+        return True
+
+    names = [x for x in names if filter_logic(x)]
+    frec = Parallel(n_jobs=THREADS, backend="multiprocessing", verbose=5)(
+        delayed(parse_bill)(
+            archive.open(name["path"], "r").read().decode(),
+            str(name["bill_number"]),
+            name,
+            {"archive": path.split("/")[-1], "file": name["path"].split("/")[-1]},
+        )
+        for name in names
+    )
+    for r in frec:
+        rec.extend(r)
+
+    return rec
+
+
+def parse_archives(
+    paths: List[str],
+    chamber_filter: str = None,
+    version_filter: str = None,
+    number_filter: str = None,
+) -> List[dict]:
+    """
+    Opens a series of Zipfiles that is the dump of all bills.
+    It will parse each one and return a list of the parsed out objects
+
+    Args:
+        path (str):Path to the zip file
+
+    Returns:
+        List[dict]: List of the parsed objects
+    """
+    global BASE_VERSION
+    session = Session()
+    # Get latest release version for the base
+    # TODO: Move these around to select the correct release point given the bill
+    release_point = (
+        session.query(USCRelease).order_by(desc(USCRelease.created_at)).limit(1).all()
+    )
+    BASE_VERSION = release_point[0].version_id
+    print("Base version is", BASE_VERSION)
+    names = []
+    rec = []
+    for path in paths:
+        archive = ZipFile(path)
+        for file in archive.namelist():
+            parsed = filename_regex.search(file)
+            house = parsed.group("house")
+            session = parsed.group("session")
+            bill_number = int(parsed.group("bill_number"))
+            bill_version = parsed.group("bill_version")
+            file_title = f"{session} - {house}{bill_number} - {bill_version}"
+            names.append(
+                {
+                    "title": file_title,
+                    "path": file,
+                    "bill_number": bill_number,
+                    "bill_version": bill_version,
+                    "chamber": chamb[house],
+                }
+            )
 
     names = sorted(names, key=lambda x: x["bill_number"])
     # names = names[50:55]
