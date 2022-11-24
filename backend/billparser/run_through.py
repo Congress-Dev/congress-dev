@@ -864,10 +864,16 @@ def parse_archives(
     print("Base version is", BASE_VERSION)
     names = []
     rec = []
+    open_archives = []
+    arch_ind = 0
     for path in paths:
         archive = ZipFile(path)
+        open_archives.append(archive)
         for file in archive.namelist():
             parsed = filename_regex.search(file)
+            if parsed is None:
+                print(file, "bad")
+                continue
             house = parsed.group("house")
             session = parsed.group("session")
             bill_number = int(parsed.group("bill_number"))
@@ -880,8 +886,10 @@ def parse_archives(
                     "bill_number": bill_number,
                     "bill_version": bill_version,
                     "chamber": chamb[house],
+                    "archive_index": arch_ind,
                 }
             )
+        arch_ind += 1
 
     names = sorted(names, key=lambda x: x["bill_number"])
     # names = names[50:55]
@@ -902,7 +910,10 @@ def parse_archives(
     names = [x for x in names if filter_logic(x)]
     frec = Parallel(n_jobs=THREADS, backend="multiprocessing", verbose=5)(
         delayed(parse_bill)(
-            archive.open(name["path"], "r").read().decode(),
+            open_archives[name["archive_index"]]
+            .open(name["path"], "r")
+            .read()
+            .decode(),
             str(name["bill_number"]),
             name,
             {"archive": path.split("/")[-1], "file": name["path"].split("/")[-1]},
