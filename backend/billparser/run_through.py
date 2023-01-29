@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import time
+import logging
 import traceback
 from zipfile import ZipFile
 import hashlib
@@ -41,7 +42,7 @@ from billparser.db.models import (
     Congress,
 )
 from billparser.helpers import convert_to_usc_id
-from billparser.logger import log
+from billparser.utils.logger import LogContext
 from billparser.db.handler import Session
 from billparser.translater import translate_paragraph
 
@@ -171,7 +172,7 @@ def extract_actions(element: Element, path: str) -> List[dict]:
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
         fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        log.error("{} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
+        logging.error("{} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
     return res
 
 
@@ -225,7 +226,7 @@ def extract_single_action(element: Element, path: str, parent_action: dict) -> l
                     "next": next_elem,
                 }
     except Exception as e:
-        log.error("Uncaught exception", exc_info=e)
+        logging.error("Uncaught exception", exc_info=e)
     if res != {}:
         res["parsed_cite"] = parse_action_for_cite(res).replace("//", "/")
         actions = determine_action2(res["text"])
@@ -323,7 +324,7 @@ def parse_action_for_cite(action_object: dict) -> str:
                     cite_contexts["last_title"] = cite_split[3][1:]
                 return cite
     except Exception as e:
-        log.error("Uncaught exception", exc_info=e)
+        logging.error("Uncaught exception", exc_info=e)
 
     return parent_cite
 
@@ -375,7 +376,7 @@ def recursive_bill_content(
     parent_cite: str = "",
     session: "SQLAlchemy.session" = None,
 ) -> list:
-    # log.debug(' '.join(search_element.itertext()).strip().replace('\n', ' '))
+    # logging.debug(' '.join(search_element.itertext()).strip().replace('\n', ' '))
     # if it has an id it is probably a thingy
     extracted_action = []
     res = []
@@ -432,7 +433,9 @@ def recursive_bill_content(
                 # heading=heading.text if heading is not None else None,
             )
     else:
-        log.debug(f"Items look like: {search_element.tag} and {len(search_element)}")
+        logging.debug(
+            f"Items look like: {search_element.tag} and {len(search_element)}"
+        )
     if content is not None:
         session.add(content)
     if True:
@@ -523,76 +526,95 @@ def check_for_existing_legislation_version(bill_obj: object, session) -> bool:
 
 
 def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object):
-    res = []
-    try:
-        session = Session()
-        found = check_for_existing_legislation_version(bill_obj, session)
-        if found:
-            print(f"Skipping {archive_obj.get('file')}")
-            return []
-
-        root = etree.fromstring(f)
+    with LogContext(
+        {
+            "bill_number": bill_obj["bill_number"],
+            "bill_version": bill_obj["bill_version"],
+            "bill_chamber": bill_obj["chamber"],
+        }
+    ):
+        start_time = time.time()
+        res = []
         try:
-            title = root.xpath("//dublinCore")[0][0].text
-            if ":" in title:
-                title = title.split(":")[-1].strip()
-        except:
-            log.error("Couldn't parse title")
-            title = "Could not find"
+            session = Session()
+            found = check_for_existing_legislation_version(bill_obj, session)
+            if found:
+                logging.info(f"Skipping {archive_obj.get('file')}")
+                return []
 
-        log.info(title)
-        try:
-            new_bill, new_bill_version = find_or_create_bill(bill_obj, title, session)
-        except sqlalchemy.exc.IntegrityError as e:
-            log.error("Caught IntegrityError, retrying")
-            session.rollback()
-            time.sleep(1)
-            new_bill, new_bill_version = find_or_create_bill(bill_obj, title, session)
-
-        session.commit()
-
-        new_vers_id = new_bill_version.version_id
-        log.debug(f"New bill has id {new_vers_id}")
-        form_dates = root.xpath("//form/action/action-date")
-        if len(form_dates) > 0:
-            last_date = form_dates[-1]
+            root = etree.fromstring(f)
             try:
-                new_bill_version.effective_date = parser.parse(last_date.get("date"))
+                title = root.xpath("//dublinCore")[0][0].text
+                if ":" in title:
+                    title = title.split(":")[-1].strip()
             except:
+                logging.error("Couldn't parse title")
+                title = "Could not find"
+
+            logging.info(title)
+            try:
+                new_bill, new_bill_version = find_or_create_bill(
+                    bill_obj, title, session
+                )
+            except sqlalchemy.exc.IntegrityError as e:
+                logging.error("Caught IntegrityError, retrying")
+                session.rollback()
+                time.sleep(1)
+                new_bill, new_bill_version = find_or_create_bill(
+                    bill_obj, title, session
+                )
+
+            session.commit()
+
+            new_vers_id = new_bill_version.version_id
+            logging.debug(f"New bill has id {new_vers_id}")
+            form_dates = root.xpath("//form/action/action-date")
+            if len(form_dates) > 0:
+                last_date = form_dates[-1]
                 try:
-                    new_bill_version.effective_date = parser.parse(last_date.text)
+                    new_bill_version.effective_date = parser.parse(
+                        last_date.get("date")
+                    )
                 except:
-                    log.error("Unable to parse date")
+                    try:
+                        new_bill_version.effective_date = parser.parse(last_date.text)
+                    except:
+                        logging.error("Unable to parse date")
 
-        legis = root.xpath("//legis-body")
-        if len(legis) > 0:
-            legis = legis[0]
-        else:
-            log.warning(f"Bill has {len(legis)} legis-bodies")
-            return
-        session.commit()
-        res = recursive_bill_content(
-            None,
-            legis,
-            0,
-            new_bill_version.legislation_version_id,
-            {},
-            path,
-            new_vers_id,
-            session=session,
-        )
-        new_bill_version.completed_at = datetime.datetime.now()
-        session.commit()
-    except Exception as e:
-        log.error("Uncaught exception", exc_info=e)
+            legis = root.xpath("//legis-body")
+            if len(legis) > 0:
+                legis = legis[0]
+            else:
+                logging.warning(f"Bill has {len(legis)} legis-bodies")
+                return
+            session.commit()
+            res = recursive_bill_content(
+                None,
+                legis,
+                0,
+                new_bill_version.legislation_version_id,
+                {},
+                path,
+                new_vers_id,
+                session=session,
+            )
+            new_bill_version.completed_at = datetime.datetime.now()
+            session.commit()
+            end_time = time.time()
+            logging.info(
+                "Finished parsing bill",
+                extra={"bill_parse_duration": end_time - start_time},
+            )
+        except Exception as e:
+            logging.error("Uncaught exception", exc_info=e)
 
-    for r in res:
-        if "text_element" in r:
-            del r["text_element"]
-        if "next" in r:
-            del r["next"]
+        for r in res:
+            if "text_element" in r:
+                del r["text_element"]
+            if "next" in r:
+                del r["next"]
 
-    return res
+        return res
 
 
 def open_usc(title):
@@ -705,7 +727,7 @@ def run_action2(ACTION, new_bill_version, new_vers_id, session):
                 elif action_key == "INSERT-TEXT-END":
                     insert_end(action_object, session)
             else:
-                log.debug(
+                logging.debug(
                     "Unable to find",
                     len(cited_content),
                     action_object.parsed_cite,

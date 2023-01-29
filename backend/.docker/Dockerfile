@@ -1,4 +1,4 @@
-FROM python:3.7.4-slim-stretch
+FROM python:3.7.16-slim-bullseye
 
 RUN apt update && apt install wget -y
 
