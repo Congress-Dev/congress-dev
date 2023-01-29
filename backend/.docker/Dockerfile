@@ -1,7 +1,6 @@
 FROM python:3.7.4-slim-stretch
 
-RUN apt update
-RUN apt install wget -y
+RUN apt update && apt install wget -y
 
 COPY requirements.txt .
 RUN pip3 install -r requirements.txt
