@@ -43,7 +43,11 @@ class ContextLogger(jsonlogger.JsonFormatter):
     def add_fields(
         self,
         log_record: Dict[str, Any],
+<<<<<<< HEAD
         record: logging.LogRecord,
+=======
+        record: "logging.LogRecord",
+>>>>>>> 6b99d086834dfa9941ea72de66bfe168397ec9f5
         message_dict: Dict[str, Any],
     ) -> None:
         super(ContextLogger, self).add_fields(log_record, record, message_dict)
