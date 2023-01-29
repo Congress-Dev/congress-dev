@@ -1,4 +1,4 @@
-Flask==1.0.2
+Flask~=1.0.2
 Flask-Cors==3.0.9
 Flask-Compress==1.4.0
 Flask-SQLAlchemy==2.3.2
@@ -21,3 +21,5 @@ connexion == 2.4.0; python_version<="2.7"
 swagger-ui-bundle >= 0.0.2
 python_dateutil >= 2.6.0
 setuptools >= 21.0.0
+jinja2~=3.0.1
+python-json-logger~=2.0.4
