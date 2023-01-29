@@ -1,15 +1,14 @@
 import logging
-from pythonjsonlogger import jsonlogger
+import logging.config
 import threading
 from typing import Dict, Optional, Any
-import logging
-import logging.config
-from typing import Dict, Optional, Any
+
+from pythonjsonlogger import jsonlogger
 
 
 class _LogExtraData:
     _data: Dict[str, Any] = {}
-    _thread_data: threading._local = threading.local()
+    _thread_data: threading.local = threading.local()
 
     def __init__(self):
         self._thread_data.data = {}
@@ -43,7 +42,7 @@ class ContextLogger(jsonlogger.JsonFormatter):
     def add_fields(
         self,
         log_record: Dict[str, Any],
-        record: "logging.LogRecord",
+        record: logging.LogRecord,
         message_dict: Dict[str, Any],
     ) -> None:
         super(ContextLogger, self).add_fields(log_record, record, message_dict)
@@ -68,6 +67,7 @@ class LogContext:
 
 
 def initialize_logger():
+    print("Initialize")
     context_data = _LogExtraData()
     LogContext._global_data = context_data
     logging.config.dictConfig(
