@@ -13,7 +13,7 @@ function BillSearch(props) {
   const [textBox, setTextBox] = useState("Test");
   const [totalResults, setTotalResults] = useState(0);
   const [currentSearch, setCurrentSearch] = useState({
-    congress: "117",
+    congress: "118",
     chamber: "House,Senate",
     versions: Object.keys(versionToFull).join(","),
     text: "",
@@ -27,7 +27,7 @@ function BillSearch(props) {
     return lodash.map(items, (n, i) => {
       return (
         <span
-        key={`item-${i}`}
+          key={`item-${i}`}
           className={
             n === curPage || n === "..." ? "page-button current-page" : "page-button"
           }
@@ -104,7 +104,7 @@ function BillSearch(props) {
   }, [currentSearch]);
   useEffect(() => {
     setCurrentSearch({
-      congress: "117",
+      congress: "118",
       chamber: "House,Senate",
       versions: Object.keys(versionToFull).join(","),
       text: "",

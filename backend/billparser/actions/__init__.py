@@ -44,7 +44,7 @@ regex_holder = {
     ],
     "INSERT-SECTION-AFTER": [
         r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended by inserting after (?P<target_section>(?:sub)?(?:section|paragraph) .+?) the following(?: new (paragraph|section)s?)?:",
-        r"by inserting after (?P<target>(?:sub)?(?:section|paragraph) .+?) the following(?: new paragraphs?)?:",
+        r"by inserting after (?P<target>(?:sub)?(?:section|paragraph) .+?) the following(?: (?:new )?(?:sub)?(?:section|paragraph)s?)?:",
     ],
     "INSERT-END": [
         r"At the end of (?P<target>.+?) of (?P<within>.+?),? insert the following:",
