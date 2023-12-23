@@ -1,7 +1,7 @@
-FROM python:3.7.4-slim-stretch
+FROM python:3.8-slim
 
 RUN apt update
-RUN apt install wget -y
+RUN apt install wget build-essential -y
 
 COPY requirements.txt .
 RUN pip3 install -r requirements.txt

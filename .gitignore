@@ -8,3 +8,4 @@ venv/
 
 .resources/
 *.backup
+import.sh
