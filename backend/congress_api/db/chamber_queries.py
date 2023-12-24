@@ -171,7 +171,7 @@ def search_legislation(
     # We need to know the total results so we can do the pagination
     # TODO: Is there a cleaner way to do this?
     query = current_session.query(
-        Legislation, "count(legislation.legislation_id) OVER() as total_results"
+        Legislation, func.count(Legislation.legislation_id).over().label('total_results')
     )
     query = query.filter(Legislation.congress_id.in_(list(congresses.keys())))
     if chambers != []:
