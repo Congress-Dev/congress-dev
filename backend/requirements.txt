@@ -1,15 +1,19 @@
-Flask==1.0.2
-Flask-Cors==3.0.9
-Flask-Compress==1.4.0
-Flask-SQLAlchemy==2.3.2
-Flask-SQLAlchemy-Session==1.1
+Flask==2.0.2
+Flask-Cors==3.0.10
+Flask-Compress==1.10.1
+Flask-SQLAlchemy==2.5.1
+
+Flask-SQLAlchemy-Session==1.1 # TODO: Replace with something that can use newer werkzeug?
+werkzeug<=2.0.0 # Needed for above
+
+
 lxml==4.9.1
 psycopg2-binary~=2.8.4
 requests==2.21.0
 SQLAlchemy~=1.4.0
 dogpile.cache==0.6.7
 cachetools==2.1.0
-pandas==1.0.0
+pandas~=1.3.5
 gevent==1.4.0
 joblib==1.2.0
 Unidecode==1.1.1
@@ -21,3 +25,5 @@ connexion == 2.4.0; python_version<="2.7"
 swagger-ui-bundle >= 0.0.2
 python_dateutil >= 2.6.0
 setuptools >= 21.0.0
+jinja2~=3.0.1
+python-json-logger~=2.0.4

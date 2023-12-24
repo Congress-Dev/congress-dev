@@ -1,4 +1,4 @@
-FROM node
+FROM node:15
 
 RUN curl -o- -L https://yarnpkg.com/install.sh | bash
 

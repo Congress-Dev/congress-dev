@@ -7,3 +7,7 @@
 bills/
 usc/
 .vscode/
+
+**.egg-info/
+dist/
+build/

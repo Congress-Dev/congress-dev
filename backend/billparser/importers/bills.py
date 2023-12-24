@@ -2,22 +2,33 @@ import os
 import sys
 import json
 import zipfile
+import requests
 import argparse
-
-from billparser.run_through import parse_archive, ensure_congress
+from datetime import datetime
+from billparser.run_through import parse_archives, ensure_congress
 
 parser = argparse.ArgumentParser(description="Reprocess")
 parser.add_argument("--bill", type=str, help="Which bill you want to reprocess")
 
+PATH_TEMPLATE = "https://www.govinfo.gov/bulkdata/BILLS/{congress}/{session}/{chamber}/BILLS-{congress}-{session}-{chamber}.zip"
 
 
 def download_path(url: str):
     os.makedirs("bills", exist_ok=True)
     output_name = url.split("/")[-1]
     if os.path.exists(f"bills/{output_name}"):
-        return output_name
+        return f"bills/{output_name}"
+    res = requests.head(url)
+    if res.status_code == 404:
+        return None
     os.system(f"wget {url} --output-document bills/{output_name}")
-    return output_name
+    return f"bills/{output_name}"
+
+
+def calculate_congress_from_year() -> int:
+    current_year = datetime.now().year
+    congress = ((current_year - 2001) // 2) + 107
+    return congress
 
 
 if __name__ == "__main__":
@@ -27,20 +38,33 @@ if __name__ == "__main__":
     the database
     """
     chamber_lookup = {"HR": "House", "S": "Senate"}
-    bill_versions = json.load(open(sys.argv[1], "rt"))
     bill = None
-    if len(sys.argv) > 2:
-        bill = sys.argv[2]
-    for rp in bill_versions:
-        print("=" * 5)
-        print(rp.get("title"))
-        zip_file_path = "bills/" + download_path(rp.get("url"))
-        ensure_congress(rp.get("congress", 117))
-        if bill != None:
-            parse_archive(
-                zip_file_path,
-                chamber_filter=chamber_lookup[bill.split(" ")[0]],
-                number_filter=bill.split(" ")[1],
+    if len(sys.argv) > 1:
+        bill = sys.argv[1]
+
+    congress = calculate_congress_from_year()
+    ensure_congress(congress)
+
+    zip_paths = []
+    for session in [1, 2]:
+        for chamber in ["hr", "s"]:
+            print("=" * 5)
+            print(f"{congress}: {session} - {chamber}")
+            zip_file_path = download_path(
+                PATH_TEMPLATE.format(
+                    congress=congress, session=session, chamber=chamber
+                )
             )
-        else:
-            parse_archive(zip_file_path)
+            if zip_file_path is None:
+                print("Could not find archive")
+                continue
+            zip_paths.append(zip_file_path)
+
+    if bill != None:
+        parse_archives(
+            zip_paths,
+            chamber_filter=chamber_lookup[bill.split(" ")[0]],
+            number_filter=bill.split(" ")[1],
+        )
+    else:
+        parse_archives(zip_paths)
