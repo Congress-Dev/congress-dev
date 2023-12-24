@@ -381,6 +381,7 @@ def recursive_bill_content(
     extracted_action = []
     res = []
     content = None
+
     if search_element.tag == "legis-body":
         content = LegislationContent(
             content_type=search_element.tag,
@@ -437,6 +438,7 @@ def recursive_bill_content(
             f"Items look like: {search_element.tag} and {len(search_element)}"
         )
     if content is not None:
+        print(content.content_type, content.content_str)
         session.add(content)
     if True:
         root_path = search_element.getroottree().getpath(search_element)
@@ -478,7 +480,7 @@ def recursive_bill_content(
     ) > 0:
         if content is not None:
             content.action_parse = extracted_action
-            # session.commit()
+            session.commit()
         order = 0
 
         for elem in search_element:
