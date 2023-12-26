@@ -571,7 +571,7 @@ class Legislator(Base):
 
     legislator_id = Column(Integer, primary_key=True)
 
-    bioguide_id = Column(String, index=True)  # https://bioguideretro.congress.gov/
+    bioguide_id = Column(String, index=True, unique=True)  # https://bioguideretro.congress.gov/
 
     first_name = Column(String)
     middle_name = Column(String)
