@@ -41,6 +41,7 @@ from billparser.db.models import (
     USCRelease,
     Congress,
 )
+from billparser.metadata.sponsors import extract_sponsors_from_form
 from billparser.helpers import convert_to_usc_id
 from billparser.utils.logger import LogContext
 from billparser.db.handler import Session
@@ -582,7 +583,11 @@ def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object):
                         new_bill_version.effective_date = parser.parse(last_date.text)
                     except:
                         logging.error("Unable to parse date")
-
+            form_element = root.xpath("//form")
+            if len(form_element) > 0:
+                form_element = form_element[0]
+            extract_sponsors_from_form(form_element, new_bill.legislation_id, session)
+            
             legis = root.xpath("//legis-body")
             if len(legis) > 0:
                 legis = legis[0]

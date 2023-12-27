@@ -592,8 +592,8 @@ class LegislationSponsorship(Base):
 
     legislation_sponsorship_id = Column(Integer, primary_key=True)
 
-    legsilator_id = Column(
-        Integer, ForeignKey("legislator.legislator_id", ondelete="CASCADE"), index=True
+    legislator_bioguide_id = Column(
+        String, ForeignKey("legislator.bioguide_id", ondelete="CASCADE"), index=True
     )
 
     legislation_id = Column(
