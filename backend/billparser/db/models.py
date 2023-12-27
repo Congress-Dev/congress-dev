@@ -577,6 +577,7 @@ class Legislator(Base):
     middle_name = Column(String)
     last_name = Column(String)
 
+    # TODO: Enum?
     party = Column(String, index=True)
     state = Column(String, index=True)
     district = Column(Integer, index=True)
