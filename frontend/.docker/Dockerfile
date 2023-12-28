@@ -1,4 +1,4 @@
-FROM node:15
+FROM node:16
 
 RUN curl -o- -L https://yarnpkg.com/install.sh | bash
 
@@ -7,6 +7,7 @@ COPY yarn.lock /usr/src/app/yarn.lock
 WORKDIR /usr/src/app
 RUN yarn install
 
+COPY config-overrides.js /usr/src/app/config-overrides.js
 COPY .env /usr/src/app/.env
 COPY ./src /usr/src/app/src
 COPY ./public /usr/src/app/public

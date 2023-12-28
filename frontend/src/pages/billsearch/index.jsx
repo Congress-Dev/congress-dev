@@ -1,7 +1,7 @@
 import { Card, Elevation, FormGroup, InputGroup, Checkbox } from "@blueprintjs/core";
-import { versionToFull } from "common/lookups";
-import BillSearchContent from "components/billsearch";
-import CollapseableSection from "components/collapseformgroup";
+import { versionToFull } from "../../common/lookups";
+import BillSearchContent from "../../components/billsearch";
+import CollapseableSection from "../../components/collapseformgroup";
 import React, { useState, useEffect } from "react";
 import lodash from "lodash";
 import qs from "query-string";

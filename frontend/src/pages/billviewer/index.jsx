@@ -3,12 +3,12 @@ import lodash from "lodash";
 
 import { Checkbox, Tabs, Tab } from "@blueprintjs/core";
 
-import { getBillSummary, getBillVersionDiffForSection, getBillVersionText } from "common/api.js";
+import { getBillSummary, getBillVersionDiffForSection, getBillVersionText } from "../../common/api.js";
 
-import BillDisplay from "components/billdisplay";
-import BillDiffSidebar from "components/billdiffsidebar";
-import BillViewAnchorList from "components/billviewanchorlistcomp";
-import USCView from "components/uscview";
+import BillDisplay from "../../components/billdisplay";
+import BillDiffSidebar from "../../components/billdiffsidebar";
+import BillViewAnchorList from "../../components/billviewanchorlistcomp";
+import USCView from "../../components/uscview";
 
 // Default bill versions to choose
 const defaultVers = {
@@ -212,15 +212,15 @@ function BillViewer(props) {
             diffs={diffs}
           />
         ) : (
-            <BillDisplay
-              congress={congress}
-              chamber={chamber}
-              billNumber={billNumber}
-              billVersion={billVersion}
-              textTree={textTree}
-              showTooltips={actionParse}
-            />
-          )}
+          <BillDisplay
+            congress={congress}
+            chamber={chamber}
+            billNumber={billNumber}
+            billVersion={billVersion}
+            textTree={textTree}
+            showTooltips={actionParse}
+          />
+        )}
       </div>
     </>
   );

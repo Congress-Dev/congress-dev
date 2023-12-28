@@ -11,7 +11,7 @@ import USCodeRevisionList from "./pages/uscodemain";
 import USCodeViewer from "./pages/uscodeviewer";
 import BillSearch from "./pages/billsearch";
 
-import "styles/common.scss";
+import "./styles/common.scss";
 import "./App.css";
 
 function App() {

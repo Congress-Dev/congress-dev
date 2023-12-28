@@ -4,7 +4,7 @@ import { withRouter } from "react-router-dom";
 
 import { Card, Tag } from "@blueprintjs/core";
 
-import { chamberLookup, versionToFull } from "common/lookups";
+import { chamberLookup, versionToFull } from "../../common/lookups";
 
 function BillCard(props) {
   const { bill } = props;
@@ -55,7 +55,7 @@ function BillCard(props) {
   }
   return (
     <Card>
-      <h2 style={{marginTop: "0px"}}>{genTitle()}</h2>
+      <h2 style={{ marginTop: "0px" }}>{genTitle()}</h2>
       <span style={{ fontStyle: "italic" }}>{bill.title}</span>
       <br />
       <span className="bill-card-introduced-date">

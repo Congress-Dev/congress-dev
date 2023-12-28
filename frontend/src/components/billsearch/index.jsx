@@ -2,9 +2,9 @@
 import React, { useEffect, useState, useRef } from "react";
 import lodash from "lodash";
 
-import BillCard from "components/billcard";
+import BillCard from "../billcard";
 
-import { getCongressSearch } from "common/api";
+import { getCongressSearch } from "../../common/api";
 
 function BillSearchContent(props) {
   const [billList, setBillList] = useState({ legislation: [], total_results: 0 });
