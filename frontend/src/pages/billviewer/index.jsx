@@ -11,6 +11,7 @@ import BillViewAnchorList from "../../components/billviewanchorlistcomp";
 import USCView from "../../components/uscview";
 
 // Default bill versions to choose
+// TODO: These should be enums
 const defaultVers = {
   house: "IH",
   senate: "IS",
