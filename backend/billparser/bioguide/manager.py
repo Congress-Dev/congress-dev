@@ -55,6 +55,7 @@ class BioGuideImporter:
                 try:
                     # TODO: Make this look nicer, but not everybody has a party
                     # TODO: If we're modeling this for real, we'd want to have a table for the jobs
+                    # TODO: What can I do to extract the image url?
                     party = legislator.jobPositions[-1].congressAffiliation.partyAffiliation[0].party.name
                 except:
                     party = None

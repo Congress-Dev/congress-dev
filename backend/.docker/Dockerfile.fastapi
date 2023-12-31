@@ -1,0 +1,15 @@
+FROM python:3.9-slim
+
+RUN apt update
+RUN apt install wget build-essential -y
+
+COPY requirements-fastapi.txt .
+COPY requirements-billparser.txt .
+RUN pip3 install -r requirements-fastapi.txt
+RUN pip3 install -r requirements-billparser.txt
+
+COPY . /usr/src/app
+WORKDIR /usr/src/app
+
+ENTRYPOINT ["uvicorn"]
+CMD ["congress_fastapi.app:app", "--host", "0.0.0.0", "--port", "8080"]
