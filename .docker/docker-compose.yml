@@ -34,7 +34,7 @@ services:
     stdin_open: true
     environment:
     - STAGE=dev
-    - PORT=8081
+    - PORT=9091
     - db_host=congress_postgres:5432
     - db_user=parser
     - db_pass=parser
@@ -45,7 +45,7 @@ services:
     volumes:
     - ../backend:/usr/src/app/
     ports:
-    - "8081:8080"
+    - "9091:8080"
     depends_on:
       - congress_postgres
     networks:

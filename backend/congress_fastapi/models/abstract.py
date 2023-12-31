@@ -1,9 +1,18 @@
+from typing import (
+    Annotated,
+    Any,
+    Generic,
+    List,
+    Type,
+    TypeVar,
+    get_args,
+    get_origin,
+    get_type_hints,
+)
+
+from humps import camelize
 from pydantic import BaseModel
-
-from typing import Any, List, get_type_hints, Annotated, get_args, get_origin
-from typing import TypeVar, Generic, Type, Any
 from sqlalchemy import Column
-
 
 
 class MappableBase(BaseModel):
@@ -15,7 +24,9 @@ class MappableBase(BaseModel):
         for field_name, field_type in type_hints.items():
             if get_origin(field_type) is Annotated:
                 column: Column = get_args(field_type)[1]
-                columns.append(column.label(field_name))
+
+                # Because we have the custom aliaser, we need to retrieve it
+                columns.append(column.label(cls.__fields__[field_name].alias))
         return columns
 
     @classmethod
@@ -27,3 +38,7 @@ class MappableBase(BaseModel):
         #         column = field_type.__args__[1]
         #         field_values[field_name] = getattr(row, column.name)
         return cls(**field_values)
+
+    class Config:
+        alias_generator = camelize
+        allow_population_by_field_name = True

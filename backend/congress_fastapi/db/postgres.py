@@ -1,9 +1,11 @@
 import os
+
 from databases import Database
 
 DATABASE_URL = f"postgresql://{os.getenv('db_user')}:{os.getenv('db_pass')}@{os.getenv('db_host')}/{os.getenv('db_table')}"
 
 database = None
+
 
 async def get_database() -> Database:
     """

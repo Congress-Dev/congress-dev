@@ -1,7 +1,9 @@
-from fastapi import FastAPI, Request
-from starlette.responses import Response
 import traceback
+
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.responses import Response
+
 from congress_fastapi.routes.members import router as members_router
 
 origins = [
