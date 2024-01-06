@@ -10,6 +10,7 @@ import BillViewer from "./pages/billviewer";
 import USCodeRevisionList from "./pages/uscodemain";
 import USCodeViewer from "./pages/uscodeviewer";
 import BillSearch from "./pages/billsearch";
+import MemberViewer from "./pages/members";
 
 import "./styles/common.scss";
 import "./App.css";
@@ -39,6 +40,7 @@ function App() {
         <Route exact path="/about" component={AboutUs} />
         <Route exact path="/contact" component={ContactUs} />
         <Route exact path="/uscode" component={USCodeRevisionList} />
+        <Route exact path="/member/:bioguideId" component={MemberViewer} />
         <Route
           path="/uscode/:uscReleaseId/:uscTitle?/:uscSection?"
           component={USCodeViewer}

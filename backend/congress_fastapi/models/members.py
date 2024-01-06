@@ -2,7 +2,7 @@ from typing import Annotated, List, Optional
 
 from pydantic import BaseModel
 
-from billparser.db.models import Legislation, LegislationSponsorship, Legislator
+from billparser.db.models import Legislation, LegislationSponsorship, Legislator, LegislationVersion, Congress
 from congress_fastapi.models.abstract import MappableBase
 
 
@@ -24,7 +24,9 @@ class LegislationSponsorshipInfo(MappableBase):
 
     # Bill info
     chamber: Annotated[str, Legislation.chamber]
+    session: Annotated[int, Congress.session_number]
     number: Annotated[int, Legislation.number]
+    version: Annotated[int, LegislationVersion.legislation_version]
     title: Annotated[str, Legislation.title]
 
 

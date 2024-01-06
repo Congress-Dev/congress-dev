@@ -1,8 +1,14 @@
 import React from 'react';
 import { Card, Elevation, H5, H6, Divider } from '@blueprintjs/core';
+import SponsoredLegislation from './sponsoredLegislation';
 
-const LegislatorProfile = ({ bioguideId, firstName, middleName, lastName, imageUrl }) => {
+const LegislatorProfile = ({ bioguideId, firstName, middleName, lastName, imageUrl, sponsoredLegislation = [] }) => {
   // I will make an element that links to the real profile page at https://bioguide.congress.gov/search/bio/${bioguideId}
+
+  const renderSponsoredLegislation = () => {
+    return sponsoredLegislation.map((sponsorship) => <SponsoredLegislation {...sponsorship} />);
+  }
+
   return (
     <Card interactive={false} elevation={Elevation.TWO}>
       <div style={{ textAlign: 'center' }}>
@@ -12,6 +18,9 @@ const LegislatorProfile = ({ bioguideId, firstName, middleName, lastName, imageU
       </div>
       <Divider />
       <p>More information about the legislator...</p>
+      <div>
+        {renderSponsoredLegislation()}
+      </div>>
     </Card>
   );
 };

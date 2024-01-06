@@ -196,3 +196,9 @@ export const getBillVersionDiffForSection = (
 export const getMemberInfo = (bioGuideId) => {
   return fetch(`${endPv2}/member/${bioGuideId}`).then(handleStatus);
 };
+
+export const getMemberSponsoredLegislation = (bioGuideId) => {
+  return fetch(`${endPv2}/member/${bioGuideId}/sponsorships`).then(
+    handleStatus
+  );
+};
