@@ -10,6 +10,9 @@ from billparser.db.models import (
     Legislation,
     LegislationCommitteeAssociation,
     LegislationChamber,
+    Congress,
+    LegislativePolicyArea,
+    LegislativePolicyAreaAssociation,
 )
 from billparser.db.handler import Session
 
@@ -120,32 +123,82 @@ def handle_committees(committee_elements: List[Element], bill_object: Legislatio
     pass
 
 
+def handle_policy_area(policy_area: Element, bill_object: Legislation):
+    session = Session()
+    existing_obj: LegislativePolicyArea = (
+        session
+        .query(LegislativePolicyArea)
+        .filter(LegislativePolicyArea.name == policy_area.text)
+        .first()
+    )
+    if existing_obj is None:
+        new_obj = LegislativePolicyArea(name=policy_area.text)
+        session.add(new_obj)
+        session.commit()
+        policy_area_id = new_obj.legislative_policy_area_id
+    else:
+        policy_area_id = existing_obj.legislative_policy_area_id
+    existing_obj: LegislativePolicyAreaAssociation = (
+        session
+        .query(LegislativePolicyAreaAssociation)
+        .filter(
+            LegislativePolicyAreaAssociation.legislation_id
+            == bill_object.legislation_id,
+            LegislativePolicyAreaAssociation.legislative_policy_area_id == policy_area_id,
+        )
+        .first()
+    )
+    if existing_obj is None:
+        new_obj = LegislativePolicyAreaAssociation(
+            legislation_id=bill_object.legislation_id,
+            legislative_policy_area_id=policy_area_id,
+        )
+        session.add(new_obj)
+        session.commit()
+    else:
+        print("Policy area already exists")
+
+
 def parse_status(input_str: str):
     try:
         root = etree.fromstring(input_str)
         bill_element = root.xpath("//bill")[0]
         committees = root.xpath("//billCommittees/item")
+        policy_area = root.xpath("//policyArea/name")
         bill_info = {
             e.tag: e.text
             for e in bill_element
-            if e.tag in ["billNumber", "originChamber", "billType", "congress"]
+            if e.tag in ["billNumber", "originChamber", "type", "congress", "number"]
         }
         session = Session()
+        congress: Congress = (
+            session.query(Congress)
+            .filter(Congress.session_number == bill_info["congress"])
+            .first()
+        )
         # TODO: Filter on Legislation type, congress
         matching_bill: Legislation = (
             session.query(Legislation)
             .filter(
                 Legislation.chamber == LegislationChamber(bill_info["originChamber"]),
-                Legislation.number == bill_info["billNumber"],
+                Legislation.number == bill_info["number"],
+                Legislation.congress_id == congress.congress_id,
             )
             .first()
         )
         if matching_bill is None:
             print("Did not find bill")
-            matching_bill = Legislation(legislation_id=1)
+            return
+            # matching_bill = Legislation(legislation_id=1)
         handle_committees(committees, matching_bill)
+        if policy_area:
+            handle_policy_area(policy_area[0], matching_bill)
+        else:
+            print("No policy area")
     except Exception as e:
         print(e)
+        print(bill_info)
+        raise e
 
 
 def parse_archive(f_path: str):

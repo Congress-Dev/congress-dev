@@ -549,7 +549,7 @@ class LegislationCommitteeAssociation(Base):
 
     referred_date = Column(DateTime)
     discharge_date = Column(DateTime)
-    
+
     legislation_id = Column(
         Integer, ForeignKey("legislation.legislation_id"), index=True
     )
@@ -568,7 +568,9 @@ class Legislator(Base):
 
     legislator_id = Column(Integer, primary_key=True)
 
-    bioguide_id = Column(String, index=True, unique=True)  # https://bioguideretro.congress.gov/
+    bioguide_id = Column(
+        String, index=True, unique=True
+    )  # https://bioguideretro.congress.gov/
 
     first_name = Column(String)
     middle_name = Column(String)
@@ -603,3 +605,82 @@ class LegislationSponsorship(Base):
 
     sponsorship_date = Column(Date)
     sponsorship_withdrawn_date = Column(Date, index=True, nullable=True)
+
+
+class LegislativeSubject(Base):
+    """
+    Represents a subject of a bill
+    https://www.congress.gov/browse/legislative-subject-terms/118th-congress
+    """
+
+    __tablename__ = "legislative_subject"
+
+    legislative_subject_id = Column(Integer, primary_key=True)
+
+    # TODO: Enum?
+    # Probably not, since these don't seem to be set in stone
+    subject = Column(String, index=True)
+    congress_id = Column(
+        Integer, ForeignKey("congress.congress_id", ondelete="CASCADE"), index=True
+    )
+
+    __table_args__ = (UniqueConstraint("subject", "congress_id", name="unq_leg_subj"),)
+
+
+class LegislativeSubjectAssociation(Base):
+    """
+    The join table for legislative subjects and bills
+    """
+
+    __tablename__ = "legislative_subject_association"
+
+    legislative_subject_association_id = Column(Integer, primary_key=True)
+
+    legislative_subject_id = Column(
+        Integer,
+        ForeignKey("legislative_subject.legislative_subject_id", ondelete="CASCADE"),
+        index=True,
+    )
+    legislation_id = Column(
+        Integer,
+        ForeignKey("legislation.legislation_id", ondelete="CASCADE"),
+        index=True,
+    )
+
+
+class LegislativePolicyArea(Base):
+    """
+    Represents a policy area of a bill
+    https://www.congress.gov/browse/legislative-subject-terms/118th-congress
+    """
+
+    __tablename__ = "legislative_policy_area"
+
+    legislative_policy_area_id = Column(Integer, primary_key=True)
+    name = Column(String, index=True, unique=True)
+    congress_id = Column(
+        Integer, ForeignKey("congress.congress_id", ondelete="CASCADE"), index=True
+    )
+
+    __table_args__ = (
+        UniqueConstraint("name", "congress_id", name="unq_leg_pol"),
+    )
+class LegislativePolicyAreaAssociation(Base):
+    """
+    The join table for legislative policy areas and bills
+    """
+
+    __tablename__ = "legislative_policy_area_association"
+
+    legislative_policy_area_association_id = Column(Integer, primary_key=True)
+
+    legislative_policy_area_id = Column(
+        Integer,
+        ForeignKey("legislative_policy_area.legislative_policy_area_id", ondelete="CASCADE"),
+        index=True,
+    )
+    legislation_id = Column(
+        Integer,
+        ForeignKey("legislation.legislation_id", ondelete="CASCADE"),
+        index=True,
+    )
