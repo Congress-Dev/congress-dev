@@ -553,9 +553,6 @@ class LegislationCommitteeAssociation(Base):
     legislation_id = Column(
         Integer, ForeignKey("legislation.legislation_id"), index=True
     )
-    legsilation_id = Column(
-        Integer, ForeignKey("legislation.legislation_id"), index=True
-    )
 
     congress_id = Column(
         Integer, ForeignKey("congress.congress_id", ondelete="CASCADE"), index=True
