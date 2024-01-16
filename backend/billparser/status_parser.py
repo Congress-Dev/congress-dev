@@ -132,7 +132,7 @@ def handle_policy_area(policy_area: Element, bill_object: Legislation):
         .first()
     )
     if existing_obj is None:
-        new_obj = LegislativePolicyArea(name=policy_area.text)
+        new_obj = LegislativePolicyArea(name=policy_area.text, congress_id=bill_object.congress_id)
         session.add(new_obj)
         session.commit()
         policy_area_id = new_obj.legislative_policy_area_id
@@ -170,12 +170,14 @@ def parse_status(input_str: str):
             for e in bill_element
             if e.tag in ["billNumber", "originChamber", "type", "congress", "number"]
         }
+        print(bill_info)
         session = Session()
         congress: Congress = (
             session.query(Congress)
-            .filter(Congress.session_number == bill_info["congress"])
+            .filter(Congress.session_number == int(bill_info["congress"]))
             .first()
         )
+        print(congress)
         # TODO: Filter on Legislation type, congress
         matching_bill: Legislation = (
             session.query(Legislation)
