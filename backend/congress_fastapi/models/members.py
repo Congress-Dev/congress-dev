@@ -30,5 +30,5 @@ class LegislationSponsorshipInfo(MappableBase):
     title: Annotated[str, Legislation.title]
 
 
-class LegislationSponsorshipList(BaseModel):
+class LegislationSponsorshipList(MappableBase):
     legislation_sponsorships: List[LegislationSponsorshipInfo]
