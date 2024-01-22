@@ -35,9 +35,10 @@ regex_holder = {
         r"by striking \"(?P<to_remove_text>.+?)\"(?:;|\.)",
         r"by striking \"(?P<to_remove_text>.+?)\" at the end of (?P<target>.+?)(?:;|\.)",
         r"in (?P<target>.*) by striking \"(?P<to_remove_text>.+?)\" and inserting \"(?P<to_replace>.+?)\"(?:, and)?",
+        r"in (?P<target>.*), by striking \"(?P<to_remove_text>.+?)\" and all that follows and inserting a (?P<to_replace>.+?); and"
     ],
     "STRIKE-TEXT-MULTIPLE": [
-        r"in (?P<target>.+?), by striking \"(?P<to_remove_text>.+?)\" and inserting \"(?P<to_replace>.+?)\" each place the term appears;"
+        r"in (?P<target>.+?), by striking \"(?P<to_remove_text>.+?)\" and inserting \"(?P<to_replace>.+?)\" each place the term appears;",
     ],
     "STRIKE-INSERT-SECTION": [
         r"by striking \"(?P<to_remove_section>.+?)\" and inserting the following:"
@@ -93,6 +94,9 @@ regex_holder = {
         r"(?:(?P<month>(?:Jan|Febr)uary|March|April|May|Ju(?:ne|ly)|August|(?:Septem|Octo|Novem|Decem)ber) (?P<day>\d\d?)\, (?P<year>\d\d\d\d))"
     ],
     "FINANCIAL": [r"(?P<dollar>\$\s?(\d{1,3}\,?)(\d{3}\,?)*(\.\d\d)?)"],
+    "TRANSFER-FUNDS": [
+        r"Notwithstanding any other provision of law, amounts made available to carry out (?P<from_budget>.*) shall be made available to (?P<to_budget>.*) to carry out (?P<target>.*)"
+    ]
 }
 
 SuchCodeRegex = re.compile(r"(Section|paragraph) (?P<section>\d*)\(", re.IGNORECASE)
