@@ -42,8 +42,8 @@ def parse_action_for_cite(action_object: dict) -> str:
             xref = action_object["text_element"].find("external-xref[@legal-doc='usc']")
             if xref is not None:
                 cite = convert_to_usc_id(xref)
-                action_object["cite_parse"] = cite
-                cite_contexts[action_object["enum"]] = cite
+                action_object["cite_parse"] = str(cite)
+                cite_contexts[action_object["enum"]] = str(cite)
                 if len(cite.split("/")) > 3:
                     cite_contexts["last_title"] = cite.split("/")[3][1:]
                 return cite
