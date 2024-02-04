@@ -10,6 +10,7 @@ from sqlalchemy import (
     DateTime,
     Date,
     UniqueConstraint,
+    MetaData,
 )
 from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import JSONB, ARRAY
@@ -21,6 +22,9 @@ from sqlalchemy.schema import Index
 from billparser.db.caching import CacheableMixin, query_callable, regions
 
 Base = declarative_base()
+
+# This will hold various things related to my appropriation parsing
+AppropriationsBase = declarative_base(metadata=MetaData(schema="appropriations"))
 
 
 class CastingArray(ARRAY):
@@ -662,9 +666,9 @@ class LegislativePolicyArea(Base):
         Integer, ForeignKey("congress.congress_id", ondelete="CASCADE"), index=True
     )
 
-    __table_args__ = (
-        UniqueConstraint("name", "congress_id", name="unq_leg_pol"),
-    )
+    __table_args__ = (UniqueConstraint("name", "congress_id", name="unq_leg_pol"),)
+
+
 class LegislativePolicyAreaAssociation(Base):
     """
     The join table for legislative policy areas and bills
@@ -676,7 +680,9 @@ class LegislativePolicyAreaAssociation(Base):
 
     legislative_policy_area_id = Column(
         Integer,
-        ForeignKey("legislative_policy_area.legislative_policy_area_id", ondelete="CASCADE"),
+        ForeignKey(
+            "legislative_policy_area.legislative_policy_area_id", ondelete="CASCADE"
+        ),
         index=True,
     )
     legislation_id = Column(
@@ -684,3 +690,46 @@ class LegislativePolicyAreaAssociation(Base):
         ForeignKey("legislation.legislation_id", ondelete="CASCADE"),
         index=True,
     )
+def merge_metadata(*metadata):
+    merged = MetaData()
+    for metadatum in metadata:
+        for table in metadatum.tables.values():
+            table.to_metadata(merged)
+    return merged
+merge_metadata(Base.metadata, AppropriationsBase.metadata)
+class Appropriation(AppropriationsBase):
+    """
+    A table for holding detected appropriations
+    """
+
+    __tablename__ = "appropriation"
+    
+    appropriation_id = Column(Integer, primary_key=True)
+
+    legislation_version_id = Column(
+        Integer,
+        ForeignKey(
+            LegislationVersion.legislation_version_id, ondelete="CASCADE"
+        ),
+        index=True,
+    )
+
+    # This is what we'll mainly use to actually key it off
+    legislation_content_id = Column(
+        Integer,
+        ForeignKey(
+            LegislationContent.legislation_content_id, ondelete="CASCADE"
+        ),
+        index=True,
+    )
+
+    amount = Column(Integer, nullable=True)
+    new_spending = Column(Boolean, nullable=False, default=False)
+
+    fiscal_years = Column(ARRAY(Integer), nullable=False, default=[], index=True)
+
+    until_expended = Column(Boolean, nullable=False, default=False)
+    expiration_year = Column(Integer, nullable=True)
+
+    # Subject to change tbh
+    target = Column(String, nullable=True)
