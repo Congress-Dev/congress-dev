@@ -27,6 +27,10 @@ export const getBillSummary = (congress, chamber, billNumber) => {
   ).then(handleStatus);
 };
 
+export const getBillSummary2 = (legislationId) => {
+  return fetch(`${endPv2}/legislation/${legislationId}`).then(handleStatus);
+};
+
 export const getBillVersionText = (
   congress,
   chamber,
