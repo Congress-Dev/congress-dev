@@ -5,11 +5,15 @@ from sqlalchemy import or_, select, func, and_
 from billparser.db.models import (
     Legislation,
     LegislationVersion,
+    USCRelease,
+    Version,
+    Appropriation as AppropriationModel,
 )
 from congress_fastapi.db.postgres import get_database
 from congress_fastapi.models.legislation import (
     LegislationMetadata,
     LegislationVersionMetadata,
+    Appropriation
 )
 
 
@@ -25,12 +29,27 @@ async def get_legislation_version_metadata_by_legislation_id(
             *LegislationVersionMetadata.sqlalchemy_columns(),
         )
         .where(LegislationVersion.legislation_id == legislation_id)
-        .order_by(LegislationVersion.effective_date)
+        # .order_by(LegislationVersion.effective_date)
     )
-    results = await database.fetch_all(query)
-    if results is None:
+    results = list(await database.fetch_all(query))
+    if results is None or len(results) == 0:
         return None
-    return [LegislationVersionMetadata(**result) for result in results]
+    print(results)
+    return [LegislationVersionMetadata.from_sqlalchemy(result) for result in results if result]
+
+
+async def get_appropriations_by_legislation_version_id(
+    legislation_version_id: int,
+) -> List[Appropriation]:
+    """
+    Returns a list of Appropriation objects for a given legislation_version_id
+    """
+    database = await get_database()
+    query = select(
+        *Appropriation.sqlalchemy_columns(),
+    ).where(AppropriationModel.legislation_version_id == legislation_version_id)
+    results = await database.fetch_all(query)
+    return [Appropriation(**result) for result in results]
 
 
 async def get_legislation_metadata_by_legislation_id(
@@ -49,8 +68,26 @@ async def get_legislation_metadata_by_legislation_id(
     legis_versions = await get_legislation_version_metadata_by_legislation_id(
         legislation_id
     )
-
-    usc_release_id = legis_versions[0].usc_release_id
+    # TODO: Right now we only get the first one
+    appropriations = await get_appropriations_by_legislation_version_id(
+        legis_versions[0].legislation_version_id
+    )
+    usc_query = (
+        select(USCRelease)
+        .join(
+            LegislationVersion,
+            LegislationVersion.legislation_version_id
+            == legis_versions[0].legislation_version_id,
+        )
+        .join(Version, USCRelease.version_id == Version.base_id)
+        .filter(LegislationVersion.version_id == Version.version_id)
+    )
+    usc_res = await database.fetch_one(usc_query)
+    print(usc_query)
+    usc_release_id = (await database.fetch_one(usc_query)).usc_release_id
     return LegislationMetadata(
-        legislation_versions=legis_versions, usc_release_id=usc_release_id, **result
+        legislation_versions=legis_versions,
+        usc_release_id=usc_release_id,
+        appropriations=appropriations,
+        **result,
     )

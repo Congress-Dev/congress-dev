@@ -34,11 +34,16 @@ class MappableBase(BaseModel):
         field_values = {}
         # type_hints = get_type_hints(cls)
         # for field_name, field_type in type_hints.items():
-        #     if hasattr(field_type, '__origin__') and field_type.__origin__ is ColMap:
+        #     if hasattr(field_type, '__origin__') and field_type.__origin__ is Annotated:
         #         column = field_type.__args__[1]
         #         field_values[field_name] = getattr(row, column.name)
-        return cls(**field_values)
+        #     elif hasattr(field_type, '__origin__'):
+        #         print(field_type.__origin__)
+        # print(field_values)
+        return cls(**row)
 
     class Config:
         alias_generator = camelize
         allow_population_by_field_name = True
+        arbitrary_types_allowed = True
+        populate_by_name = True
