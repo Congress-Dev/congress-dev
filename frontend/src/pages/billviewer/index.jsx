@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import lodash from "lodash";
-
+import { useHistory } from "react-router-dom";
 import { Checkbox, Tabs, Tab } from "@blueprintjs/core";
 
 import { getBillSummary, getBillSummary2, getBillVersionDiffForSection, getBillVersionText } from "../../common/api.js";
@@ -53,6 +53,7 @@ function BillViewer(props) {
   const [dollarAnchors, setDollarAnchors] = useState([]);
   const [treeLookup, setTreeLookup] = useState({});
   const [diffMode, setDiffMode] = useState(false);
+  const history = useHistory();
   const {
     congress,
     chamber,
@@ -132,9 +133,10 @@ function BillViewer(props) {
     }
   }, [bill.legislation_versions]);
   useEffect(() => {
-    console.log(bill)
-    getBillSummary2(bill.legislation_id).then(setBill2);
-  }, [bill.legislation_id])
+    if (bill.legislation_id) {
+      getBillSummary2(bill.legislation_id, billVersion).then(setBill2);
+    }
+  }, [bill.legislation_id, billVersion])
   useEffect(() => {
     const newLookup = {};
     const _recursive = (node) => {
@@ -187,6 +189,7 @@ function BillViewer(props) {
     if (treeLookup[contentId] !== undefined) {
       const ele = document.getElementById(treeLookup[contentId]);
       if (ele) {
+        history.location.hash = treeLookup[contentId];
         ele.scrollIntoView();
       }
     }
@@ -241,7 +244,7 @@ function BillViewer(props) {
             billVersion={billVersion}
           />}
         />
-        {bill2 && bill2.appropriations && (
+        {bill2 && bill2.appropriations && bill2.appropriations.length > 0 && (
           <Tab
             id="dollarlist"
             title="Dollars"

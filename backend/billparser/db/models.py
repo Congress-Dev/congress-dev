@@ -32,20 +32,20 @@ class CastingArray(ARRAY):
         return sa.cast(bindvalue, self)
 
 
-class LegislationType(enum.Enum):
+class LegislationType(str, enum.Enum):
     Bill = "Bill"
     CRes = "Continuing Resolution"
     Res = "Resolution"
     JRes = "Joint Resolution"
 
 
-class LegislationChamber(enum.Enum):
+class LegislationChamber(str, enum.Enum):
     House = "House"
     Senate = "Senate"
 
 
 # https://www.senate.gov/legislative/KeytoVersionsofPrintedLegislation.htm
-class LegislationVersionEnum(enum.Enum):
+class LegislationVersionEnum(str, enum.Enum):
     IS = "IS"  # Introduced in the Senate
     IH = "IH"  # Introduced in the House
     RAS = "RAS"  # Referred with Amendments Senate

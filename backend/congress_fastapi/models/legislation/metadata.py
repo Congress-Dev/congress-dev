@@ -7,6 +7,7 @@ from billparser.db.models import (
     Legislation,
     LegislationVersion,
     Appropriation as AppropriationModel,
+    LegislationVersionEnum,
     USCRelease,
 )
 from congress_fastapi.models.abstract import MappableBase
@@ -40,7 +41,7 @@ class LegislationVersionMetadata(MappableBase):
     legislation_version_id: Annotated[int, LegislationVersion.legislation_version_id]
     effective_date: Annotated[Optional[datetime], LegislationVersion.effective_date]
     created_at: Annotated[datetime, LegislationVersion.created_at]
-    legislation_version: Annotated[int, LegislationVersion.legislation_version]
+    legislation_version: Annotated[LegislationVersionEnum, LegislationVersion.legislation_version]
 
 
 class LegislationMetadata(MappableBase):

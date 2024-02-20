@@ -1,4 +1,5 @@
 from typing import List
+from billparser.db.models import LegislationVersionEnum
 
 from fastapi import APIRouter, HTTPException, Query, status
 
@@ -12,7 +13,7 @@ router = APIRouter()
 
 
 @router.get(
-    "/legislation/{legislation_id}",
+    "/legislation/{legislation_id}/{version_str}",
     responses={
         status.HTTP_404_NOT_FOUND: {
             "model": Error,
@@ -24,10 +25,10 @@ router = APIRouter()
         },
     },
 )
-async def get_legislation_by_id(legislation_id: int) -> LegislationMetadata:
+async def get_legislation_by_id_and_version(legislation_id: int, version_str: LegislationVersionEnum) -> LegislationMetadata:
     """Returns a LegislationMetadata object for a given legislation_id
     contains the data to render the legislation page"""
-    obj = await get_legislation_metadata_by_legislation_id(legislation_id)
+    obj = await get_legislation_metadata_by_legislation_id(legislation_id, version_str)
     if obj is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Legislation not found"

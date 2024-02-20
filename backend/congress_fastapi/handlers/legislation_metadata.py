@@ -5,6 +5,7 @@ from sqlalchemy import or_, select, func, and_
 from billparser.db.models import (
     Legislation,
     LegislationVersion,
+    LegislationVersionEnum,
     USCRelease,
     Version,
     Appropriation as AppropriationModel,
@@ -13,7 +14,7 @@ from congress_fastapi.db.postgres import get_database
 from congress_fastapi.models.legislation import (
     LegislationMetadata,
     LegislationVersionMetadata,
-    Appropriation
+    Appropriation,
 )
 
 
@@ -27,15 +28,18 @@ async def get_legislation_version_metadata_by_legislation_id(
     query = (
         select(
             *LegislationVersionMetadata.sqlalchemy_columns(),
-        )
-        .where(LegislationVersion.legislation_id == legislation_id)
+        ).where(LegislationVersion.legislation_id == legislation_id)
         # .order_by(LegislationVersion.effective_date)
     )
     results = list(await database.fetch_all(query))
     if results is None or len(results) == 0:
         return None
     print(results)
-    return [LegislationVersionMetadata.from_sqlalchemy(result) for result in results if result]
+    return [
+        LegislationVersionMetadata.from_sqlalchemy(result)
+        for result in results
+        if result
+    ]
 
 
 async def get_appropriations_by_legislation_version_id(
@@ -53,7 +57,7 @@ async def get_appropriations_by_legislation_version_id(
 
 
 async def get_legislation_metadata_by_legislation_id(
-    legislation_id: int,
+    legislation_id: int, verstion_str: LegislationVersionEnum
 ) -> Optional[LegislationMetadata]:
     """
     Returns a LegislationMetadata object for a given legislation_id
@@ -68,10 +72,13 @@ async def get_legislation_metadata_by_legislation_id(
     legis_versions = await get_legislation_version_metadata_by_legislation_id(
         legislation_id
     )
+    matching_vers = legis_versions[0].legislation_version_id
+    for version in legis_versions:
+        if version.legislation_version == verstion_str:
+            matching_vers = version.legislation_version_id
+            break
     # TODO: Right now we only get the first one
-    appropriations = await get_appropriations_by_legislation_version_id(
-        legis_versions[0].legislation_version_id
-    )
+    appropriations = await get_appropriations_by_legislation_version_id(matching_vers)
     usc_query = (
         select(USCRelease)
         .join(
