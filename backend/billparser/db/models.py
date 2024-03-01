@@ -43,6 +43,15 @@ class LegislationChamber(str, enum.Enum):
     House = "House"
     Senate = "Senate"
 
+    @classmethod
+    def from_string(cls, string: str) -> "LegislationChamber":
+        if string.lower() == "house":
+            return cls.House
+        elif string.lower() == "senate":
+            return cls.Senate
+        else:
+            raise ValueError(f"Invalid chamber: {string}")
+
 
 # https://www.senate.gov/legislative/KeytoVersionsofPrintedLegislation.htm
 class LegislationVersionEnum(str, enum.Enum):
@@ -67,6 +76,53 @@ class LegislationVersionEnum(str, enum.Enum):
     ES = "ES"  # Engrossed in the Senate
     EH = "EH"  # Engrossed in the House
     ENR = "ENR"  # Enrolled
+
+    @classmethod
+    def from_string(cls, string: str) -> "LegislationVersionEnum":
+        if string.lower() == "is":
+            return cls.IS
+        elif string.lower() == "ih":
+            return cls.IH
+        elif string.lower() == "ras":
+            return cls.RAS
+        elif string.lower() == "rah":
+            return cls.RAH
+        elif string.lower() == "rfs":
+            return cls.RFS
+        elif string.lower() == "rfh":
+            return cls.RFH
+        elif string.lower() == "rds":
+            return cls.RDS
+        elif string.lower() == "rhs":
+            return cls.RHS
+        elif string.lower() == "rcs":
+            return cls.RCS
+        elif string.lower() == "rch":
+            return cls.RCH
+        elif string.lower() == "rs":
+            return cls.RS
+        elif string.lower() == "rh":
+            return cls.RH
+        elif string.lower() == "pcs":
+            return cls.PCS
+        elif string.lower() == "pch":
+            return cls.PCH
+        elif string.lower() == "cps":
+            return cls.CPS
+        elif string.lower() == "cph":
+            return cls.CPH
+        elif string.lower() == "eas":
+            return cls.EAS
+        elif string.lower() == "eah":
+            return cls.EAH
+        elif string.lower() == "es":
+            return cls.ES
+        elif string.lower() == "eh":
+            return cls.EH
+        elif string.lower() == "enr":
+            return cls.ENR
+        else:
+            raise ValueError(f"Invalid version: {string}")
 
 
 class Congress(Base):

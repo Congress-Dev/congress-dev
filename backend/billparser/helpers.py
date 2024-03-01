@@ -1,5 +1,4 @@
 from lxml import etree
-import pandas
 import re
 from billparser.translater import translate_paragraph
 
