@@ -1,8 +1,8 @@
 // Will hold a sidebar, and a main viewing area
 import React, { useEffect, useState } from "react";
 
-import USCSidebar from "components/uscsidebar";
-import USCView from "components/uscview";
+import USCSidebar from "../../components/uscsidebar";
+import USCView from "../../components/uscview";
 
 function USCodeViewer(props) {
   const [title, setTitle] = useState("01");
@@ -12,7 +12,7 @@ function USCodeViewer(props) {
   console.log(window.innerHeight);
   return (
     <>
-      <div className="sidebar" style={{height: `${window.innerHeight - 70}px`, overflow: 'auto'}}>
+      <div className="sidebar" style={{ height: `${window.innerHeight - 70}px`, overflow: 'auto' }}>
         <USCSidebar release={uscReleaseId} title={(uscTitle || "").replace("#", "")} section={uscSection} />
       </div>
       <div className="content">

@@ -6,7 +6,7 @@ import { Breadcrumbs, Boundary } from "@blueprintjs/core";
 
 import { Tree } from "@blueprintjs/core";
 
-import { getUSCTitleList, getUSCSectionList, getUSCLevelSections, getUSCSectionLineage } from "common/api";
+import { getUSCTitleList, getUSCSectionList, getUSCLevelSections, getUSCSectionLineage } from "../../common/api";
 
 function USCSidebar(props) {
   const [tree, setTree] = useState([]);
@@ -105,7 +105,7 @@ function USCSidebar(props) {
               number,
               childNodes: []
             };
-            if(content_type === 'chapter'){
+            if (content_type === 'chapter') {
               const existingChildren = internalTree[`${usc_chapter_id}`] || [];
               innerIntUpdates[`${usc_chapter_id}`] = lodash.uniqBy([...existingChildren, nodeObj], 'id');
               expansionUpd[`${usc_chapter_id}`] = true;
@@ -121,7 +121,7 @@ function USCSidebar(props) {
           });
           intUpdates[chapId] = firstNode;
           console.log("Updating", intUpdates, internalTree);
-          setInternalTree({ ...internalTree, ...intUpdates, ...innerIntUpdates, [0]: rootNode.childNodes});
+          setInternalTree({ ...internalTree, ...intUpdates, ...innerIntUpdates, [0]: rootNode.childNodes });
           setTreeExpansion({ ...treeExpansion, ...expansionUpd });
         });
       });

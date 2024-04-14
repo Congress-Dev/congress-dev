@@ -8,11 +8,11 @@ import lodash from "lodash";
 import SyncLoader from "react-spinners/SyncLoader";
 import { Tooltip } from "@blueprintjs/core";
 
-import { md5 } from "common/other";
+import { md5 } from "../../common/other";
 
-import { getBillVersionText } from "common/api.js";
-import "styles/actions.scss";
-import "styles/bill-view.scss";
+import { getBillVersionText } from "../../common/api.js";
+import "../../styles/actions.scss";
+import "../../styles/bill-view.scss";
 
 window.lodash = lodash;
 
@@ -166,9 +166,9 @@ function BillDisplay(props) {
       "parsed_cite": "/us/usc/t52/s21083/b/1/A"
     }
     */
-   // Within each one we are using the VALID_ACTIONS list to pull out the action key "AMEND-MULTIPLE" in this case
-   // And then these correspond to the regex groups we identify, except for the REGEX key, which we ignore
-   // Using those substrings, we then highlight the next
+    // Within each one we are using the VALID_ACTIONS list to pull out the action key "AMEND-MULTIPLE" in this case
+    // And then these correspond to the regex groups we identify, except for the REGEX key, which we ignore
+    // Using those substrings, we then highlight the next
     const strings = lodash
       .chain(action)
       .map(lodash.toPairs)
@@ -216,8 +216,7 @@ function BillDisplay(props) {
             let actionStr = generateActionStr(action);
             content_str = generateActionHighlighting(content_str, action);
             const itemHash = (`${lc_ident || legislation_content_id}`).toLowerCase();
-            const outerClass = `bill-content-${content_type} bill-content-section ${
-              activeHash !== "" && activeHash === itemHash ? "usc-content-hash" : ""
+            const outerClass = `bill-content-${content_type} bill-content-section ${activeHash !== "" && activeHash === itemHash ? "usc-content-hash" : ""
               }`;
             if (!renderedTarget && itemHash && activeHash && itemHash === activeHash) {
               setRenderedTarget(true);

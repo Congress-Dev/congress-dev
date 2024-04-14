@@ -1,16 +1,40 @@
 import React, { useEffect, useState } from "react";
 import lodash from "lodash";
-
+import { useHistory } from "react-router-dom";
 import { Checkbox, Tabs, Tab } from "@blueprintjs/core";
 
-import { getBillSummary, getBillVersionDiffForSection, getBillVersionText } from "common/api.js";
+import { getBillSummary, getBillSummary2, getBillVersionDiffForSection, getBillVersionText } from "../../common/api.js";
 
-import BillDisplay from "components/billdisplay";
-import BillDiffSidebar from "components/billdiffsidebar";
-import BillViewAnchorList from "components/billviewanchorlistcomp";
-import USCView from "components/uscview";
+import BillDisplay from "../../components/billdisplay";
+import BillDiffSidebar from "../../components/billdiffsidebar";
+import BillViewAnchorList from "../../components/billviewanchorlistcomp";
+import USCView from "../../components/uscview";
 
+
+// AppropriationItem component to display individual appropriation details
+const AppropriationItem = ({ appropriation, onNavigate }) => {
+  // Function to handle click events
+  const handleClick = () => {
+    // This function could navigate to the specific clause in the legislation
+    // For example, by setting the window's location hash to an anchor tag or by using a router navigation method
+    onNavigate(appropriation.legislationContentId);
+  };
+
+  return (
+    <div className="appropriation-item" onClick={handleClick}>
+      <h4>Appropriation #{appropriation.appropriationId}</h4>
+      <p>Amount: ${appropriation.amount.toLocaleString()}</p>
+      {appropriation.newSpending && <p>New Spending</p>}
+      {appropriation.fiscalYears.length > 0 && (
+        <p>Fiscal Years: {appropriation.fiscalYears.join(', ')}</p>
+      )}
+      {appropriation.expirationYear && <p>Expires: {appropriation.expirationYear}</p>}
+      <p>Until Expended: {appropriation.untilExpended ? 'Yes' : 'No'}</p>
+    </div>
+  );
+};
 // Default bill versions to choose
+// TODO: These should be enums
 const defaultVers = {
   house: "IH",
   senate: "IS",
@@ -20,14 +44,16 @@ function BillViewer(props) {
   // TODO: Add sidebar for viewing the differences that a bill will generate
   // TODO: Option for comparing two versions of the same bill and highlighting differences
   const [bill, setBill] = useState({});
+  const [bill2, setBill2] = useState({});
   const [diffs, setDiffs] = useState({});
   const [textTree, setTextTree] = useState({});
   const [actionParse, setActionParse] = useState(false);
   const [selectedTab, setSelectedTab] = useState("ud");
   const [dateAnchors, setDateAnchors] = useState([]);
   const [dollarAnchors, setDollarAnchors] = useState([]);
-
+  const [treeLookup, setTreeLookup] = useState({});
   const [diffMode, setDiffMode] = useState(false);
+  const history = useHistory();
   const {
     congress,
     chamber,
@@ -106,7 +132,24 @@ function BillViewer(props) {
       }
     }
   }, [bill.legislation_versions]);
-
+  useEffect(() => {
+    if (bill.legislation_id) {
+      getBillSummary2(bill.legislation_id, billVersion).then(setBill2);
+    }
+  }, [bill.legislation_id, billVersion])
+  useEffect(() => {
+    const newLookup = {};
+    const _recursive = (node) => {
+      newLookup[node.legislation_content_id] = `${node.lc_ident || node.legislation_content_id}`.toLowerCase();
+      if (node.children === undefined) {
+        return;
+      }
+      node.children.map(_recursive);
+    }
+    _recursive(textTree);
+    setTreeLookup(newLookup);
+    console.log(newLookup);
+  }, [textTree]);
   const extractDatesAndDollars = function (_textTree) {
     const dateRegex = /(?:(?<month>(?:Jan|Febr)uary|March|April|May|Ju(?:ne|ly)|August|(?:Septem|Octo|Novem|Decem)ber) (?<day>\d\d?)\, (?<year>\d\d\d\d))/gmi;
     const dollarRegex = /(?<dollar>\$\s?(\,?\d{1,3})(\,?\d{3})*(\.\d\d)?)/gmi;
@@ -141,7 +184,16 @@ function BillViewer(props) {
     setDateAnchors(dates);
     setDollarAnchors(dollars);
   }, [textTree]);
-  console.log(dollarAnchors);
+  const scrollContentIdIntoView = (contentId) => {
+    console.log(treeLookup, contentId, treeLookup[contentId])
+    if (treeLookup[contentId] !== undefined) {
+      const ele = document.getElementById(treeLookup[contentId]);
+      if (ele) {
+        history.location.hash = treeLookup[contentId];
+        ele.scrollIntoView();
+      }
+    }
+  }
   return (
     <>
       <h3>{bill.title}</h3>Selected Version:{" "}
@@ -192,16 +244,14 @@ function BillViewer(props) {
             billVersion={billVersion}
           />}
         />
-        <Tab
-          id="dollarlist"
-          title="Dollars"
-          panel={<BillViewAnchorList
-            anchors={dollarAnchors}
-            congress={congress}
-            chamber={chamber}
-            billNumber={billNumber}
-            billVersion={billVersion} />}
-        />
+        {bill2 && bill2.appropriations && bill2.appropriations.length > 0 && (
+          <Tab
+            id="dollarlist"
+            title="Dollars"
+            panel={<>{bill2.appropriations.map((app) => <AppropriationItem appropriation={app} onNavigate={scrollContentIdIntoView} />)}</>}
+          />
+        )}
+
       </Tabs>
       <div className="content">
         {diffMode === true ? (
@@ -212,15 +262,15 @@ function BillViewer(props) {
             diffs={diffs}
           />
         ) : (
-            <BillDisplay
-              congress={congress}
-              chamber={chamber}
-              billNumber={billNumber}
-              billVersion={billVersion}
-              textTree={textTree}
-              showTooltips={actionParse}
-            />
-          )}
+          <BillDisplay
+            congress={congress}
+            chamber={chamber}
+            billNumber={billNumber}
+            billVersion={billVersion}
+            textTree={textTree}
+            showTooltips={actionParse}
+          />
+        )}
       </div>
     </>
   );

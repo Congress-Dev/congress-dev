@@ -1,6 +1,6 @@
 import React from "react";
 import { useHistory } from "react-router-dom";
-import { version } from "common/version";
+import { version } from "../../common/version";
 import {
   Alignment,
   Button,

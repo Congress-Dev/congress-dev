@@ -10,6 +10,7 @@ from sqlalchemy import (
     DateTime,
     Date,
     UniqueConstraint,
+    MetaData,
 )
 from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import JSONB, ARRAY
@@ -22,26 +23,38 @@ from billparser.db.caching import CacheableMixin, query_callable, regions
 
 Base = declarative_base()
 
+# This will hold various things related to my appropriation parsing
+AppropriationsBase = declarative_base(metadata=MetaData(schema="appropriations"))
+
 
 class CastingArray(ARRAY):
     def bind_expression(self, bindvalue):
         return sa.cast(bindvalue, self)
 
 
-class LegislationType(enum.Enum):
+class LegislationType(str, enum.Enum):
     Bill = "Bill"
     CRes = "Continuing Resolution"
     Res = "Resolution"
     JRes = "Joint Resolution"
 
 
-class LegislationChamber(enum.Enum):
+class LegislationChamber(str, enum.Enum):
     House = "House"
     Senate = "Senate"
 
+    @classmethod
+    def from_string(cls, string: str) -> "LegislationChamber":
+        if string.lower() == "house":
+            return cls.House
+        elif string.lower() == "senate":
+            return cls.Senate
+        else:
+            raise ValueError(f"Invalid chamber: {string}")
+
 
 # https://www.senate.gov/legislative/KeytoVersionsofPrintedLegislation.htm
-class LegislationVersionEnum(enum.Enum):
+class LegislationVersionEnum(str, enum.Enum):
     IS = "IS"  # Introduced in the Senate
     IH = "IH"  # Introduced in the House
     RAS = "RAS"  # Referred with Amendments Senate
@@ -63,6 +76,53 @@ class LegislationVersionEnum(enum.Enum):
     ES = "ES"  # Engrossed in the Senate
     EH = "EH"  # Engrossed in the House
     ENR = "ENR"  # Enrolled
+
+    @classmethod
+    def from_string(cls, string: str) -> "LegislationVersionEnum":
+        if string.lower() == "is":
+            return cls.IS
+        elif string.lower() == "ih":
+            return cls.IH
+        elif string.lower() == "ras":
+            return cls.RAS
+        elif string.lower() == "rah":
+            return cls.RAH
+        elif string.lower() == "rfs":
+            return cls.RFS
+        elif string.lower() == "rfh":
+            return cls.RFH
+        elif string.lower() == "rds":
+            return cls.RDS
+        elif string.lower() == "rhs":
+            return cls.RHS
+        elif string.lower() == "rcs":
+            return cls.RCS
+        elif string.lower() == "rch":
+            return cls.RCH
+        elif string.lower() == "rs":
+            return cls.RS
+        elif string.lower() == "rh":
+            return cls.RH
+        elif string.lower() == "pcs":
+            return cls.PCS
+        elif string.lower() == "pch":
+            return cls.PCH
+        elif string.lower() == "cps":
+            return cls.CPS
+        elif string.lower() == "cph":
+            return cls.CPH
+        elif string.lower() == "eas":
+            return cls.EAS
+        elif string.lower() == "eah":
+            return cls.EAH
+        elif string.lower() == "es":
+            return cls.ES
+        elif string.lower() == "eh":
+            return cls.EH
+        elif string.lower() == "enr":
+            return cls.ENR
+        else:
+            raise ValueError(f"Invalid version: {string}")
 
 
 class Congress(Base):
@@ -549,11 +609,8 @@ class LegislationCommitteeAssociation(Base):
 
     referred_date = Column(DateTime)
     discharge_date = Column(DateTime)
-    
+
     legislation_id = Column(
-        Integer, ForeignKey("legislation.legislation_id"), index=True
-    )
-    legsilation_id = Column(
         Integer, ForeignKey("legislation.legislation_id"), index=True
     )
 
@@ -571,12 +628,15 @@ class Legislator(Base):
 
     legislator_id = Column(Integer, primary_key=True)
 
-    bioguide_id = Column(String, index=True)  # https://bioguideretro.congress.gov/
+    bioguide_id = Column(
+        String, index=True, unique=True
+    )  # https://bioguideretro.congress.gov/
 
     first_name = Column(String)
     middle_name = Column(String)
     last_name = Column(String)
 
+    # TODO: Enum?
     party = Column(String, index=True)
     state = Column(String, index=True)
     district = Column(Integer, index=True)
@@ -591,8 +651,8 @@ class LegislationSponsorship(Base):
 
     legislation_sponsorship_id = Column(Integer, primary_key=True)
 
-    legsilator_id = Column(
-        Integer, ForeignKey("legislator.legislator_id", ondelete="CASCADE"), index=True
+    legislator_bioguide_id = Column(
+        String, ForeignKey("legislator.bioguide_id", ondelete="CASCADE"), index=True
     )
 
     legislation_id = Column(
@@ -605,3 +665,128 @@ class LegislationSponsorship(Base):
 
     sponsorship_date = Column(Date)
     sponsorship_withdrawn_date = Column(Date, index=True, nullable=True)
+
+
+class LegislativeSubject(Base):
+    """
+    Represents a subject of a bill
+    https://www.congress.gov/browse/legislative-subject-terms/118th-congress
+    """
+
+    __tablename__ = "legislative_subject"
+
+    legislative_subject_id = Column(Integer, primary_key=True)
+
+    # TODO: Enum?
+    # Probably not, since these don't seem to be set in stone
+    subject = Column(String, index=True)
+    congress_id = Column(
+        Integer, ForeignKey("congress.congress_id", ondelete="CASCADE"), index=True
+    )
+
+    __table_args__ = (UniqueConstraint("subject", "congress_id", name="unq_leg_subj"),)
+
+
+class LegislativeSubjectAssociation(Base):
+    """
+    The join table for legislative subjects and bills
+    """
+
+    __tablename__ = "legislative_subject_association"
+
+    legislative_subject_association_id = Column(Integer, primary_key=True)
+
+    legislative_subject_id = Column(
+        Integer,
+        ForeignKey("legislative_subject.legislative_subject_id", ondelete="CASCADE"),
+        index=True,
+    )
+    legislation_id = Column(
+        Integer,
+        ForeignKey("legislation.legislation_id", ondelete="CASCADE"),
+        index=True,
+    )
+
+
+class LegislativePolicyArea(Base):
+    """
+    Represents a policy area of a bill
+    https://www.congress.gov/browse/legislative-subject-terms/118th-congress
+    """
+
+    __tablename__ = "legislative_policy_area"
+
+    legislative_policy_area_id = Column(Integer, primary_key=True)
+    name = Column(String, index=True, unique=True)
+    congress_id = Column(
+        Integer, ForeignKey("congress.congress_id", ondelete="CASCADE"), index=True
+    )
+
+    __table_args__ = (UniqueConstraint("name", "congress_id", name="unq_leg_pol"),)
+
+
+class LegislativePolicyAreaAssociation(Base):
+    """
+    The join table for legislative policy areas and bills
+    """
+
+    __tablename__ = "legislative_policy_area_association"
+
+    legislative_policy_area_association_id = Column(Integer, primary_key=True)
+
+    legislative_policy_area_id = Column(
+        Integer,
+        ForeignKey(
+            "legislative_policy_area.legislative_policy_area_id", ondelete="CASCADE"
+        ),
+        index=True,
+    )
+    legislation_id = Column(
+        Integer,
+        ForeignKey("legislation.legislation_id", ondelete="CASCADE"),
+        index=True,
+    )
+def merge_metadata(*metadata):
+    merged = MetaData()
+    for metadatum in metadata:
+        for table in metadatum.tables.values():
+            table.to_metadata(merged)
+    return merged
+merge_metadata(Base.metadata, AppropriationsBase.metadata)
+class Appropriation(AppropriationsBase):
+    """
+    A table for holding detected appropriations
+    """
+
+    __tablename__ = "appropriation"
+    
+    appropriation_id = Column(Integer, primary_key=True)
+    parent_id = Column(Integer, primary_key=True)
+    legislation_version_id = Column(
+        Integer,
+        ForeignKey(
+            LegislationVersion.legislation_version_id, ondelete="CASCADE"
+        ),
+        index=True,
+    )
+
+    # This is what we'll mainly use to actually key it off
+    legislation_content_id = Column(
+        Integer,
+        ForeignKey(
+            LegislationContent.legislation_content_id, ondelete="CASCADE"
+        ),
+        index=True,
+    )
+    # For text highlighting
+    content_str_indicies = Column(ARRAY(Integer), nullable=False, default=[])
+    amount = Column(Integer, nullable=True)
+    new_spending = Column(Boolean, nullable=False, default=False)
+
+    fiscal_years = Column(ARRAY(Integer), nullable=False, default=[], index=True)
+
+    until_expended = Column(Boolean, nullable=False, default=False)
+    expiration_year = Column(Integer, nullable=True)
+
+    # Subject to change tbh
+    target = Column(String, nullable=True)

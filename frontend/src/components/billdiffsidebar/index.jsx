@@ -5,8 +5,8 @@ import { withRouter } from "react-router-dom";
 
 import { Tree } from "@blueprintjs/core";
 
-import { getBillVersionDiffSummary, capFirstLetter } from "common/api.js";
-import { chamberLookup } from "common/lookups.js";
+import { getBillVersionDiffSummary, capFirstLetter } from "../../common/api.js";
+import { chamberLookup } from "../../common/lookups.js";
 
 function BillDiffSidebar(props) {
   const [tree, setTree] = useState([]);
@@ -59,9 +59,8 @@ function BillDiffSidebar(props) {
               hasCaret: true,
               icon: "th-list",
               isExpanded: treeExpansion[0] === true,
-              label: `${
-                chamberLookup[capFirstLetter(chamber)]
-              } ${billNumber} - ${billVersion.toUpperCase()}`,
+              label: `${chamberLookup[capFirstLetter(chamber)]
+                } ${billNumber} - ${billVersion.toUpperCase()}`,
               childNodes: children,
               className: "link",
             },

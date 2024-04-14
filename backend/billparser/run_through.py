@@ -1,3 +1,4 @@
+from collections import defaultdict
 import os
 import re
 import sys
@@ -8,7 +9,8 @@ from zipfile import ZipFile
 import hashlib
 import datetime
 import dateutil.parser as parser
-import pandas
+
+# import pandas
 from lxml import etree
 from lxml.etree import Element
 from unidecode import unidecode  # GPLV2
@@ -41,13 +43,15 @@ from billparser.db.models import (
     USCRelease,
     Congress,
 )
-from billparser.helpers import convert_to_usc_id
+from billparser.metadata.sponsors import extract_sponsors_from_form
+
 from billparser.utils.logger import LogContext
+from billparser.utils.cite_parser import parse_action_for_cite
 from billparser.db.handler import Session
 from billparser.translater import translate_paragraph
 
 from joblib import Parallel, delayed
-from typing import List
+from typing import Any, Dict, List
 
 text_paths = ["legis-body/section/subsection/text", "legis-body/section/text"]
 filename_regex = re.compile(
@@ -236,99 +240,6 @@ def extract_single_action(element: Element, path: str, parent_action: dict) -> l
     return res
 
 
-SecTitleRegex = re.compile(
-    r"(?:(?:Subsection|paragraph) \((?P<finalsub>.?)\) of )?Section (?P<section>\d*)(?:\((?P<sub1>.*?)\)(?:\((?P<sub2>.*?)\)(?:\((?P<sub3>.*?)\))?)?)? of title (?P<title>[0-9A]*)",
-    re.IGNORECASE,
-)
-
-SubSecRegex = re.compile(r"subsection\s\((.)\)", re.IGNORECASE)
-
-SuchTitleRegex = re.compile(
-    r"Section (?P<section>\d*)(?:\((?P<sub1>.*?)\)(?:\((?P<sub2>.*?)\)(?:\((?P<sub3>.*?)\))?)?)? of such (title)",
-    re.IGNORECASE,
-)
-
-cite_contexts = {"last_title": None}
-
-
-def parse_action_for_cite(action_object: dict) -> str:
-    """
-    Looks at a given action object to determine what citation it is trying to edit.
-    A citation represents a location in the USCode
-
-    # TODO: Split function apart
-
-    Args:
-        action_object (dict): An object represented an extract action
-
-    Returns:
-        str: A USCode citation str
-    """
-    try:
-        parent_cite = ""
-        if action_object["text_element"] is not None:
-            xref = action_object["text_element"].find("external-xref[@legal-doc='usc']")
-            if xref is not None:
-                cite = convert_to_usc_id(xref)
-                action_object["cite_parse"] = cite
-                cite_contexts[action_object["enum"]] = cite
-                if len(cite.split("/")) > 3:
-                    cite_contexts["last_title"] = cite.split("/")[3][1:]
-                return cite
-            if not isinstance(action_object["text_element"].text, str):
-                return ""
-            text_obj = action_object["text_element"].text.strip()
-            SecTitleRegex_match = SecTitleRegex.search(text_obj)
-            if SecTitleRegex_match:
-                cite = "/us/usc/t{}/s{}".format(
-                    SecTitleRegex_match["title"], SecTitleRegex_match["section"]
-                )
-                possibles = [
-                    SecTitleRegex_match[f"sub{x}"]
-                    for x in range(1, 3)
-                    if SecTitleRegex_match[f"sub{x}"]
-                ]
-                if SecTitleRegex_match["finalsub"]:
-                    possibles.append(SecTitleRegex_match["finalsub"])
-                if len(possibles) > 0:
-                    cite += "/" + "/".join(possibles)
-                cite_contexts[action_object["enum"]] = cite
-                cite_split = cite.split("/")
-                if len(cite_split) > 3:
-                    cite_contexts["last_title"] = cite.split("/")[3][1:]
-                return cite
-            SuchTitleRegex_match = SuchTitleRegex.search(text_obj)
-            if SuchTitleRegex_match:
-                cite = "/us/usc/t{}/s{}".format(
-                    cite_contexts["last_title"], SuchTitleRegex_match["section"]
-                )
-                possibles = [
-                    SuchTitleRegex_match[f"sub{x}"]
-                    for x in range(1, 3)
-                    if SuchTitleRegex_match[f"sub{x}"]
-                ]
-                if len(possibles) > 0:
-                    cite += "/" + "/".join(possibles)
-                cite_contexts[action_object["enum"]] = cite
-                return cite
-            if action_object["parent"] in cite_contexts:
-                parent_cite = cite_contexts[action_object["parent"]]
-            else:
-                parent_cite = ""
-            SubSecRegex_match = SubSecRegex.search(text_obj)
-            if SubSecRegex_match:
-                cite = parent_cite + "/" + SubSecRegex_match[1]
-                cite_contexts[action_object["enum"]] = cite
-                cite_split = cite.split("/")
-                if len(cite_split) > 3:
-                    cite_contexts["last_title"] = cite_split[3][1:]
-                return cite
-    except Exception as e:
-        logging.error("Uncaught exception", exc_info=e)
-
-    return parent_cite
-
-
 def find_or_create_bill(bill_obj: dict, title: str, session: "SQLAlchemy.session"):
     global BASE_VERSION, CURRENT_CONGRESS
     new_version = Version(base_id=BASE_VERSION)
@@ -457,11 +368,11 @@ def recursive_bill_content(
                 for act in temp_actions:
                     act["legislation_content"] = content
                     if act.get("parsed_cite") is not None:
-                        parent_cite = act.get("parsed_cite")
-                    chg, act = run_action2(act, None, vers_id, session)
-                    for e in act:
+                        parent_cite = str(act.get("parsed_cite"))
+                    chg, act2 = run_action2(act, None, vers_id, session)
+                    for e in act2:
                         e["changed"] = chg
-                    new_acts.extend(act)
+                    new_acts.extend(act2)
 
                 for e in new_acts:
                     if isinstance(
@@ -527,6 +438,31 @@ def check_for_existing_legislation_version(bill_obj: object, session) -> bool:
     return len(result) > 0
 
 
+def retrieve_existing_legislations(session) -> List[dict]:
+    """
+    Retrieves the existing legislations from the database, we are interested in the fields
+    that will tell us if our bill number and version already exists. This will let us avoid
+    trying to parse those.
+    """
+    existing_legis = (
+        session.query(
+            Legislation.chamber,
+            Legislation.number,
+            LegislationVersion.legislation_version,
+        )
+        .join(LegislationVersion)
+        .all()
+    )
+    return [
+        {
+            "chamber": x[0],
+            "bill_number": x[1],
+            "bill_version": x[2],
+        }
+        for x in existing_legis
+    ]
+
+
 def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object):
     with LogContext(
         {
@@ -582,7 +518,10 @@ def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object):
                         new_bill_version.effective_date = parser.parse(last_date.text)
                     except:
                         logging.error("Unable to parse date")
-
+            form_element = root.xpath("//form")
+            if len(form_element) > 0:
+                form_element = form_element[0]
+            extract_sponsors_from_form(form_element, new_bill.legislation_id, session)
             legis = root.xpath("//legis-body")
             if len(legis) > 0:
                 legis = legis[0]
@@ -656,7 +595,6 @@ def run_action2(ACTION, new_bill_version, new_vers_id, session):
     # First set some linkage to the parent
     parent_cites[ACTION.get("enum", "")] = ACTION
     parsed_cite = ACTION.get("parsed_cite", "")
-
     if parsed_cite != "":
         last_title = "/".join(parsed_cite.split("/")[:4])
         # print('Last title set to', last_title)
@@ -682,7 +620,6 @@ def run_action2(ACTION, new_bill_version, new_vers_id, session):
     if len(actions) == 1 or (len(actions) == 2 and "AMEND-MULTIPLE" in actions):
         for action_key in actions:
             action = actions.get(action_key)
-
             action_object = ActionObject(
                 action_key=action_key,
                 parent_cite=parent_cite,
@@ -698,7 +635,6 @@ def run_action2(ACTION, new_bill_version, new_vers_id, session):
             action_objs.append(action_object.to_dict())
             if action_key == "AMEND-MULTIPLE" or action_object.parsed_cite == "":
                 continue
-
             cited_content = (
                 session.query(USCContent)
                 .filter(
@@ -886,7 +822,7 @@ def parse_archives(
     )
     BASE_VERSION = release_point[0].version_id
     print("Base version is", BASE_VERSION)
-    names = []
+    names: List[Dict[str, Any]] = []
     rec = []
     open_archives = []
     arch_ind = 0
@@ -908,8 +844,8 @@ def parse_archives(
                     "title": file_title,
                     "path": file,
                     "bill_number": bill_number,
-                    "bill_version": bill_version,
-                    "chamber": chamb[house],
+                    "bill_version": LegislationVersionEnum.from_string(bill_version),
+                    "chamber": LegislationChamber.from_string(chamb[house]),
                     "archive_index": arch_ind,
                 }
             )
@@ -931,7 +867,29 @@ def parse_archives(
 
         return True
 
-    names = [x for x in names if filter_logic(x)]
+    session = Session()
+    existing_legislation = retrieve_existing_legislations(session)
+    print("Existing legislation", len(existing_legislation))
+    legis_lookup: Dict[LegislationChamber, List[LegislationVersionEnum]] = defaultdict(
+        lambda: defaultdict(list)
+    )
+    for leg in existing_legislation:
+        legis_lookup[LegislationChamber(leg["chamber"])][leg["bill_number"]].append(
+            LegislationVersionEnum(leg["bill_version"])
+        )
+
+    def filter_existing_legislation(x):
+        if x["chamber"] in legis_lookup:
+            if (
+                LegislationVersionEnum(x["bill_version"])
+                in legis_lookup[x["chamber"]][x["bill_number"]]
+            ):
+                return False
+        return True
+
+    names = [x for x in names if filter_logic(x) and filter_existing_legislation(x)]
+    print("New legislation", len(names))
+
     frec = Parallel(n_jobs=THREADS, backend="multiprocessing", verbose=5)(
         delayed(parse_bill)(
             open_archives[name["archive_index"]]
@@ -965,11 +923,11 @@ def run_archives():
     print("Base version is", BASE_VERSION)
     rec = parse_archive("bills/116/hr_1.zip")
     rec = rec + parse_archive("bills/116/s_1.zip")
-    df = pandas.DataFrame.from_records(rec)
-    # df.drop('text_element', inplace=True)
-    df.replace({"\u8211": "-", "\u8212": "-"}, inplace=True)
-    os.makedirs("reports", exist_ok=True)
-    df.to_csv("reports/out_{}.csv".format(time.strftime("%d-%m-%Y_%H-%M")), index=False)
+    # df = pandas.DataFrame.from_records(rec)
+    # # df.drop('text_element', inplace=True)
+    # df.replace({"\u8211": "-", "\u8212": "-"}, inplace=True)
+    # os.makedirs("reports", exist_ok=True)
+    # df.to_csv("reports/out_{}.csv".format(time.strftime("%d-%m-%Y_%H-%M")), index=False)
 
 
 if __name__ == "__main__":

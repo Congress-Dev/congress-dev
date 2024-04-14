@@ -2,9 +2,9 @@
 import React, { useEffect, useState } from "react";
 import lodash from "lodash";
 
-import USCRevisionBox from "components/uscrevisionbox";
+import USCRevisionBox from "../../components/uscrevisionbox";
 
-import { getUSCRevisions } from "common/api";
+import { getUSCRevisions } from "../../common/api";
 
 function USCodeRevisionList() {
   const [releases, setReleases] = useState([]);

@@ -35,9 +35,10 @@ regex_holder = {
         r"by striking \"(?P<to_remove_text>.+?)\"(?:;|\.)",
         r"by striking \"(?P<to_remove_text>.+?)\" at the end of (?P<target>.+?)(?:;|\.)",
         r"in (?P<target>.*) by striking \"(?P<to_remove_text>.+?)\" and inserting \"(?P<to_replace>.+?)\"(?:, and)?",
+        r"in (?P<target>.*), by striking \"(?P<to_remove_text>.+?)\" and all that follows and inserting a (?P<to_replace>.+?); and"
     ],
     "STRIKE-TEXT-MULTIPLE": [
-        r"in (?P<target>.+?), by striking \"(?P<to_remove_text>.+?)\" and inserting \"(?P<to_replace>.+?)\" each place the term appears;"
+        r"in (?P<target>.+?), by striking \"(?P<to_remove_text>.+?)\" and inserting \"(?P<to_replace>.+?)\" each place the term appears;",
     ],
     "STRIKE-INSERT-SECTION": [
         r"by striking \"(?P<to_remove_section>.+?)\" and inserting the following:"
@@ -93,6 +94,10 @@ regex_holder = {
         r"(?:(?P<month>(?:Jan|Febr)uary|March|April|May|Ju(?:ne|ly)|August|(?:Septem|Octo|Novem|Decem)ber) (?P<day>\d\d?)\, (?P<year>\d\d\d\d))"
     ],
     "FINANCIAL": [r"(?P<dollar>\$\s?(\d{1,3}\,?)(\d{3}\,?)*(\.\d\d)?)"],
+    "TRANSFER-FUNDS": [
+        r"Notwithstanding any other provision of law, amounts made available to carry out (?P<from_budget>.*) shall be made available to (?P<to_budget>.*) to carry out (?P<target>.*)",
+        r"There is appropriated to the (?P<to_budget>.*?), out of any money in the (?P<from_budget>(Treasury)) not otherwise appropriated, (?P<amount>\$[\d,]*) for (?:the )?fiscal year (?P<fiscal_year>\d{4}), to remain available (?P<available>.*)\."
+    ]
 }
 
 SuchCodeRegex = re.compile(r"(Section|paragraph) (?P<section>\d*)\(", re.IGNORECASE)
@@ -119,6 +124,7 @@ def determine_action(text: str) -> dict:
     """
     actions = {}
     text = unidecode(text).replace("--", "-")
+
     for action in regex_holder:
         c = 0
         for reg in regex_holder[action]:
@@ -129,6 +135,8 @@ def determine_action(text: str) -> dict:
                 gg["REGEX"] = c
                 actions[action] = gg
                 break
+            elif action == "TRANSFER-FUNDS":
+                print("No match for", action, text)
     return actions
 
 
@@ -172,11 +180,15 @@ class ActionObject(object):
         self.diff_id = diff_id
 
     def set_action(self, action):
+        print("set_action")
+        # TODO: We need a way to say the cite is fully parsed already
         # print(action)
         self.action = action
         within = action.get("within", None)
         target = action.get("target", None)
+        print(f"{self.parsed_cite=}")
         if self.parsed_cite == "" and (self.last_title != "") and (target is not None):
+            print("Parse such code")
             if within is None or within.lower() == "such code":
                 # print("suchcode")
                 try:
@@ -188,11 +200,15 @@ class ActionObject(object):
                 # print(self.parsed_cite)
         elif target is not None:
             # print('Add target?')
-            self.parsed_cite = "/".join(
-                [self.parsed_cite] + SubParts.findall(action.get("target", ""))
-            )
+            if target.split(" ")[-1] not in self.parsed_cite:
+                self.parsed_cite = "/".join(
+                    [self.parsed_cite] + SubParts.findall(action.get("target", ""))
+                )
+            print(f"{self.parsed_cite=}")
         target_section = action.get("target_section", None)
-        if target_section is not None:
+        
+        if target_section is not None and len(self.parsed_cite.split("/")) < 5:
+            print("Add target section", self.parsed_cite.split("/"))
             self.parsed_cite = "/".join(
                 [self.parsed_cite] + SubParts.findall(target_section)
             )

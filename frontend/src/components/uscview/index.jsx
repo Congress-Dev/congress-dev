@@ -3,14 +3,14 @@ import { useHistory, Link } from "react-router-dom";
 
 import lodash from "lodash";
 
-import { getUSCSectionContent } from "common/api";
-import { md5 } from "common/other";
+import { getUSCSectionContent } from "../../common/api";
+import { md5 } from "../../common/other";
 
 import SyncLoader from "react-spinners/SyncLoader";
 import { diffWords } from "diff";
 import xmldoc from 'xmldoc';
 
-import "styles/usc-view.scss";
+import "../../styles/usc-view.scss";
 
 function USCView(props) {
   const history = useHistory();
@@ -133,8 +133,7 @@ function USCView(props) {
             <div
               id={itemHash}
               name={usc_content_id}
-              className={`usc-content-${correctedType} usc-content-section ${
-                activeHash === itemHash ? "usc-content-hash" : ""
+              className={`usc-content-${correctedType} usc-content-section ${activeHash === itemHash ? "usc-content-hash" : ""
                 }`}
               key={ind}
               onClick={changeUrl}
@@ -145,10 +144,10 @@ function USCView(props) {
                     {section_display} {heading}
                   </b>
                 ) : (
-                    <span className={"usc-content-section-display"}>
-                      {section_display}{" "}
-                    </span>
-                  )}
+                  <span className={"usc-content-section-display"}>
+                    {section_display}{" "}
+                  </span>
+                )}
                 <span className={heading !== undefined ? "usc-content-continue" : ""}>
                   {content_str}
                 </span>

@@ -1,0 +1,4 @@
+databases[postgresql]~=0.8.0
+fastapi~=0.108.0
+uvicorn[standard]
+pyhumps~=3.8.0  # camelCase <-> snake_case

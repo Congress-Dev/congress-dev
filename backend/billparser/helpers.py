@@ -1,5 +1,4 @@
 from lxml import etree
-import pandas
 import re
 from billparser.translater import translate_paragraph
 
@@ -34,7 +33,7 @@ def convert_to_usc_id(xref):
                 parts = part_regex.findall(groups[-1])
             else:
                 parts = []
-            return "/us/usc/t{}/s{}/{}".format(groups[0], groups[1], "/".join(parts))
+            return "/us/usc/t{}/s{}/{}".format(groups[0], groups[1], groups[2])
         elif section_match:
             groups = section_match.groups()
             if groups[-1] is not None:
