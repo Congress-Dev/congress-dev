@@ -127,8 +127,12 @@ def upgrade() -> None:
     op.create_table(
         "appropriation",
         sa.Column("appropriation_id", sa.Integer(), nullable=False),
+        sa.Column("parent_id", sa.Integer(), nullable=False),
         sa.Column("legislation_version_id", sa.Integer(), nullable=True),
         sa.Column("legislation_content_id", sa.Integer(), nullable=True),
+        sa.Column(
+            "content_str_indicies", postgresql.ARRAY(sa.Integer()), nullable=False
+        ),
         sa.Column("amount", sa.Integer(), nullable=True),
         sa.Column("new_spending", sa.Boolean(), nullable=False),
         sa.Column("fiscal_years", postgresql.ARRAY(sa.Integer()), nullable=False),
@@ -145,7 +149,7 @@ def upgrade() -> None:
             ["legislation_version.legislation_version_id"],
             ondelete="CASCADE",
         ),
-        sa.PrimaryKeyConstraint("appropriation_id"),
+        sa.PrimaryKeyConstraint("appropriation_id", "parent_id"),
         schema="appropriations",
     )
     op.create_index(

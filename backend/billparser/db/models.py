@@ -761,7 +761,7 @@ class Appropriation(AppropriationsBase):
     __tablename__ = "appropriation"
     
     appropriation_id = Column(Integer, primary_key=True)
-
+    parent_id = Column(Integer, primary_key=True)
     legislation_version_id = Column(
         Integer,
         ForeignKey(
@@ -778,7 +778,8 @@ class Appropriation(AppropriationsBase):
         ),
         index=True,
     )
-
+    # For text highlighting
+    content_str_indicies = Column(ARRAY(Integer), nullable=False, default=[])
     amount = Column(Integer, nullable=True)
     new_spending = Column(Boolean, nullable=False, default=False)
 
