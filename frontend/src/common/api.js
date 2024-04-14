@@ -16,6 +16,7 @@ let endP = "http://localhost:9090"; // process.env.REACT_APP_API_URL || "http://
 let endPv2 = "http://localhost:9091"; // process.env.REACT_APP_API_V2_URL || "http://localhost:9091";
 if (window.location.href.includes("congress.dev")) {
   endP = "https://api.congress.dev";
+  endPv2 = "https://api-v2.congress.dev";
 }
 export const endpoint = endP;
 
