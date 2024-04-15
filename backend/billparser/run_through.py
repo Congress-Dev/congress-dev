@@ -830,25 +830,29 @@ def parse_archives(
         archive = ZipFile(path)
         open_archives.append(archive)
         for file in archive.namelist():
-            parsed = filename_regex.search(file)
-            if parsed is None:
-                print(file, "bad")
-                continue
-            house = parsed.group("house")
-            session = parsed.group("session")
-            bill_number = int(parsed.group("bill_number"))
-            bill_version = parsed.group("bill_version")
-            file_title = f"{session} - {house}{bill_number} - {bill_version}"
-            names.append(
-                {
-                    "title": file_title,
-                    "path": file,
-                    "bill_number": bill_number,
-                    "bill_version": LegislationVersionEnum.from_string(bill_version),
-                    "chamber": LegislationChamber.from_string(chamb[house]),
-                    "archive_index": arch_ind,
-                }
-            )
+            try:
+                parsed = filename_regex.search(file)
+                if parsed is None:
+                    print(file, "bad")
+                    continue
+                house = parsed.group("house")
+                session = parsed.group("session")
+                bill_number = int(parsed.group("bill_number"))
+                bill_version = parsed.group("bill_version")
+                file_title = f"{session} - {house}{bill_number} - {bill_version}"
+                names.append(
+                    {
+                        "title": file_title,
+                        "path": file,
+                        "bill_number": bill_number,
+                        "bill_version": LegislationVersionEnum.from_string(bill_version),
+                        "chamber": LegislationChamber.from_string(chamb[house]),
+                        "archive_index": arch_ind,
+                    }
+                )
+            except Exception as e:
+                print("Error parsing", file)
+                print(e)
         arch_ind += 1
 
     names = sorted(names, key=lambda x: x["bill_number"])
