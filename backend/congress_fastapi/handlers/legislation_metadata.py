@@ -53,7 +53,14 @@ async def get_appropriations_by_legislation_version_id(
         *Appropriation.sqlalchemy_columns(),
     ).where(AppropriationModel.legislation_version_id == legislation_version_id)
     results = await database.fetch_all(query)
-    return [Appropriation(**result) for result in results]
+    result_objs = []
+    for result in results:
+        try:
+            result_objs.append(Appropriation(**result))
+        except Exception as e:
+            print(result)
+            print(e)
+    return result_objs
 
 
 async def get_legislation_metadata_by_legislation_id(
