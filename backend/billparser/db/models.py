@@ -13,7 +13,7 @@ from sqlalchemy import (
     MetaData,
 )
 from sqlalchemy.sql import func
-from sqlalchemy.dialects.postgresql import JSONB, ARRAY
+from sqlalchemy.dialects.postgresql import JSONB, ARRAY, BIGINT
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 import sqlalchemy as sa
@@ -761,7 +761,7 @@ class Appropriation(AppropriationsBase):
     __tablename__ = "appropriation"
     
     appropriation_id = Column(Integer, primary_key=True)
-    parent_id = Column(Integer, primary_key=True)
+    parent_id = Column(Integer, nullable=True)
     legislation_version_id = Column(
         Integer,
         ForeignKey(
@@ -780,7 +780,7 @@ class Appropriation(AppropriationsBase):
     )
     # For text highlighting
     content_str_indicies = Column(ARRAY(Integer), nullable=False, default=[])
-    amount = Column(Integer, nullable=True)
+    amount = Column(BIGINT, nullable=True)
     new_spending = Column(Boolean, nullable=False, default=False)
 
     fiscal_years = Column(ARRAY(Integer), nullable=False, default=[], index=True)
@@ -790,3 +790,5 @@ class Appropriation(AppropriationsBase):
 
     # Subject to change tbh
     target = Column(String, nullable=True)
+
+    purpose = Column(String, default="")

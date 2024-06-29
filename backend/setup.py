@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='billparser',
-    version='0.8.7',
+    version='0.8.8',
     author='Bradley',
     author_email='mustyoshi@gmail.com',
     description='Congress.dev bill parser',

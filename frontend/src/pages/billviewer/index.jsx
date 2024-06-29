@@ -22,7 +22,8 @@ const AppropriationItem = ({ appropriation, onNavigate }) => {
 
   return (
     <div className="appropriation-item" onClick={handleClick}>
-      <h4>Appropriation #{appropriation.appropriationId}</h4>
+      <h4>{appropriation.parentId ? "Sub " : ""}Appropriation #{appropriation.appropriationId}</h4>
+      <p>Purpose:  {appropriation.briefPurpose}</p>
       <p>Amount: ${appropriation.amount.toLocaleString()}</p>
       {appropriation.newSpending && <p>New Spending</p>}
       {appropriation.fiscalYears.length > 0 && (
@@ -194,6 +195,45 @@ function BillViewer(props) {
       }
     }
   }
+  const createNestedAppropriationTree = (appropriations) => {
+    // Put all of them into a hashmap by parentId
+    // then create a tuple of (parentId, children)
+    // for all the ones with no parentId
+    // sort them by their appropriationId
+    // for each of them, render their children in a list under them
+    let appropMap = {};
+    let appropTree = [];
+    lodash.forEach(appropriations, (approp) => {
+      if (approp.parentId in appropMap) {
+        appropMap[approp.parentId].push(approp);
+      } else {
+        appropMap[approp.parentId] = [approp];
+      }
+    });
+    let results = [];
+    let rootApprops = appropMap[null];
+    rootApprops = lodash.sortBy(rootApprops, (x) => x.appropriationId);
+    console.log(appropMap);
+    lodash.forEach(rootApprops, (rootApprop) => {
+      let children = appropMap[rootApprop.appropriationId];
+      console.log(children);
+      results.push(
+        <AppropriationItem appropriation={rootApprop} onNavigate={scrollContentIdIntoView} />
+      );
+      if (children) {
+        children = lodash.sortBy(children, (x) => x.appropriationId);
+        results.push(
+          <div className="nested-appropriation" style={{ paddingLeft: '25px' }}>
+            {children.map((child) => (
+              <AppropriationItem appropriation={child} onNavigate={scrollContentIdIntoView} />
+            ))}
+          </div>
+        );
+      }
+    });
+    console.log(results);
+    return <>{results.map(x => x)}</>;;
+  }
   return (
     <>
       <h3>{bill.title}</h3>Selected Version:{" "}
@@ -248,7 +288,7 @@ function BillViewer(props) {
           <Tab
             id="dollarlist"
             title="Dollars"
-            panel={<>{bill2.appropriations.map((app) => <AppropriationItem appropriation={app} onNavigate={scrollContentIdIntoView} />)}</>}
+            panel={createNestedAppropriationTree(bill2.appropriations)}
           />
         )}
 
