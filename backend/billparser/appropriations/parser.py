@@ -86,6 +86,7 @@ async def parse_bill_for_appropriations(
             .filter(LegislationContent.content_str.ilike("%appropriated%"), LegislationContent.content_str.ilike("%$%"))
         )
         appropriations = []
+        print("Found", len(contents), "appropriations")
         for content in contents:
             try:
                 res = calculate_appropriation(content)
