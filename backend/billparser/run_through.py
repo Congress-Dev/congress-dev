@@ -463,7 +463,7 @@ def retrieve_existing_legislations(session) -> List[dict]:
     ]
 
 
-def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object):
+def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object) -> LegislationVersion:
     with LogContext(
         {
             "bill_number": bill_obj["bill_number"],
@@ -555,7 +555,7 @@ def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object):
             if "next" in r:
                 del r["next"]
 
-        return res
+        return new_bill_version, res
 
 
 def open_usc(title):
@@ -725,7 +725,7 @@ def parse_archive(
     chamber_filter: str = None,
     version_filter: str = None,
     number_filter: str = None,
-) -> List[dict]:
+) -> List[LegislationVersion]:
     """
     Opens a ZipFile that is the dump of all bills.
     It will parse each one and return a list of the parsed out objects
@@ -734,7 +734,7 @@ def parse_archive(
         path (str):Path to the zip file
 
     Returns:
-        List[dict]: List of the parsed objects
+        List[Legislation]: List of the parsed objects
     """
     global BASE_VERSION
     session = Session()
@@ -845,7 +845,9 @@ def parse_archives(
                         "title": file_title,
                         "path": file,
                         "bill_number": bill_number,
-                        "bill_version": LegislationVersionEnum.from_string(bill_version),
+                        "bill_version": LegislationVersionEnum.from_string(
+                            bill_version
+                        ),
                         "chamber": LegislationChamber.from_string(chamb[house]),
                         "archive_index": arch_ind,
                     }

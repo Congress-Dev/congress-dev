@@ -19,16 +19,17 @@ class Appropriation(MappableBase):
     'amount': 'amount'"""
 
     appropriation_id: Annotated[int, AppropriationModel.appropriation_id]
+    parent_id: Annotated[Optional[int], AppropriationModel.parent_id]
     legislation_version_id: Annotated[int, AppropriationModel.legislation_version_id]
     amount: Annotated[Optional[float], AppropriationModel.amount]
     legislation_content_id: Annotated[int, AppropriationModel.legislation_content_id]
-    fiscal_years: Annotated[List[int], AppropriationModel.fiscal_years]
+    fiscal_years: Annotated[Optional[List[int]], AppropriationModel.fiscal_years]
     new_spending: Annotated[bool, AppropriationModel.new_spending]
     target: Annotated[Optional[str], AppropriationModel.target]
 
     until_expended: Annotated[bool, AppropriationModel.until_expended]
     expiration_year: Annotated[Optional[int], AppropriationModel.expiration_year]
-
+    brief_purpose: Annotated[Optional[str], AppropriationModel.purpose]
 
 class LegislationVersionMetadata(MappableBase):
     """ "legislation_id": "legislation_id",
