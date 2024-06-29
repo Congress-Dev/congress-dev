@@ -2,6 +2,8 @@ import os
 import sys
 import json
 import zipfile
+from billparser.appropriations.parser import parse_bill_for_appropriations
+from billparser.db.models import LegislationVersion
 import requests
 import argparse
 from datetime import datetime
@@ -61,10 +63,19 @@ if __name__ == "__main__":
             zip_paths.append(zip_file_path)
 
     if bill != None:
-        parse_archives(
+        legis_objs = parse_archives(
             zip_paths,
             chamber_filter=chamber_lookup[bill.split(" ")[0]],
             number_filter=bill.split(" ")[1],
         )
     else:
-        parse_archives(zip_paths)
+        legis_objs = parse_archives(zip_paths)
+
+    # After we've downloaded the bills, we can parse them for appropriation
+    legis_obj: LegislationVersion = None
+    for legis_obj in legis_objs:
+        try:
+            parse_bill_for_appropriations(legis_obj.legislation_version_id)
+        except Exception as e:
+            print(e)
+

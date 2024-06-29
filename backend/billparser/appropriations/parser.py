@@ -12,6 +12,7 @@ async def parse_bill_for_appropriations(
             session.query(LegislationContent)
             .filter(LegislationContent.legislation_version_id == legislation_version_id)
             .filter(LegislationContent.content_str.ilike("%appropriated%"), LegislationContent.content_str.ilike("%$%"))
+            .all()
         )
         appropriations = []
         for content in contents:
