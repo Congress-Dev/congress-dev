@@ -4,7 +4,7 @@ python_dateutil >= 2.6.0
 
 lxml==4.9.1
 psycopg2-binary~=2.8.4
-requests==2.21.0
+requests==2.32.2
 SQLAlchemy~=1.4.0
 
 Unidecode==1.1.1
