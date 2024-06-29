@@ -10,7 +10,7 @@ pydantic~=2.5.3
 
 lxml==4.9.1
 psycopg2-binary~=2.8.4
-requests==2.21.0
+requests==2.32.2
 SQLAlchemy~=1.4.0
 dogpile.cache==0.6.7
 cachetools==2.1.0
