@@ -471,6 +471,7 @@ def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object) -> Legi
             "bill_chamber": bill_obj["chamber"],
         }
     ):
+        new_bill_version = None
         start_time = time.time()
         res = []
         try:
