@@ -75,7 +75,8 @@ if __name__ == "__main__":
     legis_obj: LegislationVersion = None
     for legis_obj in legis_objs:
         try:
-            parse_bill_for_appropriations(legis_obj.legislation_version_id)
+            if legis_obj and isinstance(legis_obj, LegislationVersion):
+                parse_bill_for_appropriations(legis_obj.legislation_version_id)
         except Exception as e:
             print(e)
 
