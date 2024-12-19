@@ -160,7 +160,7 @@ function BillSearch(props) {
       <div className="sidebar">
         <FormGroup label={"Search"} labelFor="text-input">
           <ControlGroup fill={true}>
-            <HTMLSelect options={['Date', 'Name', '']} />
+            <HTMLSelect options={['Date', 'Name']} />
             <InputGroup
               value={textBox}
               onChange={event => {
