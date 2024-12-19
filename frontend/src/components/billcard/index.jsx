@@ -2,7 +2,7 @@ import React from "react";
 import lodash from "lodash";
 import { withRouter, Link } from "react-router-dom";
 
-import { Card, Tag } from "@blueprintjs/core";
+import { Card, Tag, Breadcrumbs, Breadcrumb } from "@blueprintjs/core";
 
 import { chamberLookup, versionToFull } from "../../common/lookups";
 
@@ -18,7 +18,6 @@ function BillCard(props) {
         >
           {`${chamberLookup[bill.chamber]} ${bill.number}`}
         </Link>
-        <Tag minimal={true}>Congress.gov</Tag>
       </>
     );
   }
@@ -31,28 +30,19 @@ function BillCard(props) {
     const { legislation_versions = [] } = bill;
     const len = legislation_versions.length;
     return (
-      <>
-        {lodash.map(legislation_versions, (vers, ind) => {
-          const anchorObj = (
-            <Link
-              to={`/bill/${bill.congress}/${bill.chamber}/${bill.number}/${vers.legislation_version}`}
-              key={`item-${ind}`}
-            >
-              {versionToFull[vers.legislation_version.toLowerCase()]}
-            </Link>
-          );
-          if (ind < len - 1) {
-            return (
-              <>
-                {anchorObj}
-                <span>{" >> "}</span>
-              </>
-            );
-          } else {
-            return anchorObj;
+      <Breadcrumbs
+        breadcrumbRenderer={({ text, link, ...rest }) => (
+            <Breadcrumb {...rest}>
+                <Link to={link}>{text}</Link>
+            </Breadcrumb>
+        )}
+        items={lodash.map(legislation_versions, (vers, ind) => {
+          return {
+            text: versionToFull[vers.legislation_version.toLowerCase()],
+            link: `/bill/${bill.congress}/${bill.chamber}/${bill.number}/${vers.legislation_version}`
           }
         })}
-      </>
+      />
     );
   }
   return (

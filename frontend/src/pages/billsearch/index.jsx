@@ -1,4 +1,4 @@
-import { Card, Elevation, FormGroup, InputGroup, Checkbox, Button, Classes } from "@blueprintjs/core";
+import { Card, Elevation, FormGroup, InputGroup, Checkbox, Button, Divider, ControlGroup, HTMLSelect, ButtonGroup } from "@blueprintjs/core";
 import { versionToFull } from "../../common/lookups";
 import BillSearchContent from "../../components/billsearch";
 import CollapseableSection from "../../components/collapseformgroup";
@@ -7,7 +7,7 @@ import lodash from "lodash";
 import qs from "query-string";
 
 function BillSearch(props) {
-  const [resPageSize, setResPageSize] = useState(10);
+  const [resPageSize, setResPageSize] = useState(5);
   const [chamberButtons, setChamberButtons] = useState({ House: true, Senate: true });
   const [versionButtons, setVersionButtons] = useState(versionToFull);
   const [textBox, setTextBox] = useState("Test");
@@ -21,6 +21,42 @@ function BillSearch(props) {
     pageSize: resPageSize,
     ...qs.parse(props.location.search),
   });
+
+  const [collapsed, setCollapsed] = useState(false); // State to control the signal
+
+  function toggleCollapseAll() {
+    setCollapsed(true);
+  }
+  function toggleExpandAll() {
+    setCollapsed(false);
+  }
+  function toggleCheckAll() {
+    setChamberButtons({ House: true, Senate: true });
+    setVersionButtons(lodash.mapValues(versionToFull, () => {
+      return true
+    }));
+  }
+
+  function toggleUncheckAll() {
+    setChamberButtons({ House: false, Senate: false });
+    setVersionButtons(lodash.mapValues(versionToFull, () => {
+      return false
+    }));
+  }
+
+  function executeSearch() {
+    setCurrentSearch({
+      ...currentSearch,
+      chamber: lodash
+        .keys(lodash.pickBy(chamberButtons, value => value))
+        .join(","),
+      versions: lodash
+        .keys(lodash.pickBy(versionButtons, value => value))
+        .join(","),
+      text: textBox,
+    })
+  }
+
   function innerPageRender(items) {
     const curPage = parseInt(currentSearch.page);
 
@@ -31,7 +67,7 @@ function BillSearch(props) {
           disabled={n === '...'}
           minimal={n === '...'}
           intent={
-           (n === curPage ? "primary" : "")
+            (n === curPage ? "primary" : "")
           }
           onClick={() => {
             setCurrentSearch({ ...currentSearch, page: n });
@@ -123,32 +159,32 @@ function BillSearch(props) {
     <Card className="search-content" elevation={Elevation.ONE}>
       <div className="sidebar">
         <FormGroup label={"Search"} labelFor="text-input">
-          <InputGroup
-            value={textBox}
-            onChange={event => {
-              setTextBox(event.target.value);
-            }}
-            rightElement={
-              <button
-                className="bp3-button bp3-minimal bp3-intent-primary bp3-icon-arrow-right"
-                onClick={() => {
-                  setCurrentSearch({
-                    ...currentSearch,
-                    chamber: lodash
-                      .keys(lodash.pickBy(chamberButtons, value => value))
-                      .join(","),
-                    versions: lodash
-                      .keys(lodash.pickBy(versionButtons, value => value))
-                      .join(","),
-                    text: textBox,
-                  });
-                }}
-              ></button>
-            }
-          />
+          <ControlGroup fill={true}>
+            <HTMLSelect options={['Date', 'Name', '']} />
+            <InputGroup
+              value={textBox}
+              onChange={event => {
+                setTextBox(event.target.value);
+              }}
+              rightElement={
+                <Button
+                  icon="arrow-right"
+                  intent="primary"
+                  onClick={executeSearch}
+                />
+              }
+            />
+          </ControlGroup>
         </FormGroup>
-        <CollapseableSection title="Session of Congress"></CollapseableSection>
-        <CollapseableSection title="Chamber of Origin">
+        <Divider />
+        <ButtonGroup className="collapse-controls">
+          <Button icon="collapse-all" onClick={toggleCollapseAll}></Button>
+          <Button icon="expand-all" onClick={toggleExpandAll}></Button>
+          <Button icon="add" onClick={toggleCheckAll}>Select All</Button>
+          <Button icon="remove" onClick={toggleUncheckAll}>Deselect All</Button>
+        </ButtonGroup>
+        <CollapseableSection title="Session of Congress" collapsed={collapsed}></CollapseableSection>
+        <CollapseableSection title="Chamber of Origin" collapsed={collapsed}>
           <Checkbox
             checked={chamberButtons.House === true}
             label="House"
@@ -164,7 +200,7 @@ function BillSearch(props) {
             }}
           />
         </CollapseableSection>
-        <CollapseableSection title="Legislation Status">
+        <CollapseableSection title="Legislation Status" collapsed={collapsed}>
           {lodash.map(versionToFull, (value, key) => {
             return (
               <Checkbox

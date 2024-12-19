@@ -13,5 +13,5 @@ code {
 }
 
 html:has(#root.bp3-dark) {
-  background-color: #111;
+  background-color: #1a232b;
 }

@@ -46,3 +46,11 @@
 .anchor-list-link {
   cursor: pointer;
 }
+
+#root.bp3-dark .bill-content-added {
+  background-color: #2f8842;
+}
+
+#root.bp3-dark .bill-content-removed {
+  background-color: #882f2f;
+}

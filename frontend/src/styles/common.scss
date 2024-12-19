@@ -31,7 +31,7 @@
   margin-left: auto;
 }
 
-.search-content {
+.bill-content, .search-content {
   width: 80%;
   margin-left: 10%;
 }
@@ -50,4 +50,18 @@
 
 .search-pager {
   margin-top: 10px;
+}
+
+.sidebar .collapse-controls {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.sidebar .collapse-wrapper {
+  margin-bottom: 10px;
+}
+
+.sidebar .collapse-wrapper .collapse-section {
+  margin-top: 10px;
+  margin-left: 20px;
 }
