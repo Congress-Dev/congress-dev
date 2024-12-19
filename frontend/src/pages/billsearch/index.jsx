@@ -1,4 +1,4 @@
-import { Card, Elevation, FormGroup, InputGroup, Checkbox } from "@blueprintjs/core";
+import { Card, Elevation, FormGroup, InputGroup, Checkbox, Button, Classes } from "@blueprintjs/core";
 import { versionToFull } from "../../common/lookups";
 import BillSearchContent from "../../components/billsearch";
 import CollapseableSection from "../../components/collapseformgroup";
@@ -26,17 +26,19 @@ function BillSearch(props) {
 
     return lodash.map(items, (n, i) => {
       return (
-        <span
+        <Button
           key={`item-${i}`}
-          className={
-            n === curPage || n === "..." ? "page-button current-page" : "page-button"
+          disabled={n === '...'}
+          minimal={n === '...'}
+          intent={
+           (n === curPage ? "primary" : "")
           }
           onClick={() => {
             setCurrentSearch({ ...currentSearch, page: n });
           }}
         >
           {n}
-        </span>
+        </Button>
       );
     });
   }
@@ -45,12 +47,13 @@ function BillSearch(props) {
     const curPage = parseInt(currentSearch.page);
     if (totalPages < 6) {
       return (
-        <>
-          Total Results: {totalResults} -{" Page: "}
-          <span className="search-pager">
+        <div className="search-pager">
+          Total Results: {totalResults}
+          <div className="search-pager-buttons">
+            {" Page: "}
             {innerPageRender(lodash.range(1, totalPages + 1))}
-          </span>
-        </>
+          </div>
+        </div>
       );
     } else {
       let sectionOne = lodash.range(1, 4);
@@ -77,10 +80,13 @@ function BillSearch(props) {
         }
       }
       return (
-        <>
-          Total Results: {totalResults} -{" Page: "}
-          <span className="search-pager">{innerPageRender(masterSection)}</span>
-        </>
+        <div className="search-pager">
+          Total Results: {totalResults}
+          <div className="search-pager-buttons">
+            {" Page: "}
+            {innerPageRender(masterSection)}
+          </div>
+        </div>
       );
     }
     return <span>Test {totalResults}</span>;
@@ -174,7 +180,6 @@ function BillSearch(props) {
         </CollapseableSection>
       </div>
       <div className="content" style={{ paddingLeft: "20px" }}>
-        {renderPageList()}
         <BillSearchContent
           congress={currentSearch.congress}
           chamber={currentSearch.chamber}
@@ -184,6 +189,7 @@ function BillSearch(props) {
           pageSize={currentSearch.pageSize}
           setResults={setTotalResults}
         />
+        {renderPageList()}
       </div>
     </Card>
   );

@@ -23,6 +23,14 @@
   margin-bottom: 10px;
 }
 
+.main-navbar .main-navbar-group {
+  width: 100%;
+}
+
+.main-navbar .button-right {
+  margin-left: auto;
+}
+
 .search-content {
   width: 80%;
   margin-left: 10%;
@@ -40,10 +48,6 @@
   cursor: pointer;
 }
 
-.search-pager > span:not(.current-page) {
-  color: blue;
-  cursor: pointer;
-}
-.search-pager > span.page-button:not(:last-child)::after {
-  content: ", ";
+.search-pager {
+  margin-top: 10px;
 }
