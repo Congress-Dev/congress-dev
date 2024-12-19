@@ -12,8 +12,8 @@ export const capFirstLetter = function (str) {
   return str.charAt(0).toUpperCase() + str.substring(1);
 };
 
-let endP = "http://localhost:9090"; // process.env.REACT_APP_API_URL || "http://localhost:9090";
-let endPv2 = "http://localhost:9091"; // process.env.REACT_APP_API_V2_URL || "http://localhost:9091";
+let endP = process.env.REACT_APP_API_URL || "http://localhost:9090";
+let endPv2 = process.env.REACT_APP_API_V2_URL || "http://localhost:9091";
 if (window.location.href.includes("congress.dev")) {
   endP = "https://api.congress.dev";
   endPv2 = "https://api-v2.congress.dev";
