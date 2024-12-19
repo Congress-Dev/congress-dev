@@ -2,7 +2,7 @@ import React from "react";
 import lodash from "lodash";
 import { withRouter, Link } from "react-router-dom";
 
-import { Callout, Breadcrumbs, Breadcrumb } from "@blueprintjs/core";
+import { Callout, Breadcrumbs, Breadcrumb, Button } from "@blueprintjs/core";
 
 import { chamberLookup, versionToFull } from "../../common/lookups";
 
@@ -47,6 +47,11 @@ function BillCard(props) {
   }
   return (
     <Callout className="bill-card">
+      <Button
+        className="congress-link"
+        icon="share"
+        onClick={() => {  window.open(`https://congress.gov/bill/${bill.congress}-congress/${bill.chamber}-bill/${bill.number}`, '_blank') }}
+      />
       <h2 style={{ marginTop: "0px" }}>{genTitle()}</h2>
       <span style={{ fontStyle: "italic" }}>{bill.title}</span>
       <br />
