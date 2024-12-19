@@ -281,7 +281,7 @@ function BillDisplay(props) {
   }
 
   // TODO: Convert this to recursive components to speed up rerenders
-  return <Callout>{renderRecursive(props.textTree)}</Callout>;
+  return <>{renderRecursive(props.textTree)}</>;
 }
 
 export default BillDisplay;
