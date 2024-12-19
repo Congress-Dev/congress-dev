@@ -1,6 +1,6 @@
 const webpack = require("webpack");
 
-module.exports = function override(config) {
+module.exports = function override(config, env) {
   const fallback = config.resolve.fallback || {};
   Object.assign(fallback, {
     crypto: require.resolve("crypto-browserify"), // require.resolve("crypto-browserify") can be polyfilled here if needed

@@ -11,3 +11,7 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+html:has(#root.bp3-dark) {
+  background-color: #1a232b;
+}

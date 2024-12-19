@@ -23,9 +23,21 @@
   margin-bottom: 10px;
 }
 
-.search-content {
+.main-navbar .main-navbar-group {
+  width: 100%;
+}
+
+.main-navbar .button-right {
+  margin-left: auto;
+}
+
+.bill-content, .search-content {
   width: 80%;
   margin-left: 10%;
+}
+
+.bill-card {
+  margin-bottom: 10px;
 }
 
 .section-tree div {
@@ -40,10 +52,24 @@
   cursor: pointer;
 }
 
-.search-pager > span:not(.current-page) {
-  color: blue;
-  cursor: pointer;
+.search-pager {
+  margin-top: 10px;
 }
-.search-pager > span.page-button:not(:last-child)::after {
-  content: ", ";
+
+.sidebar .collapse-controls {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.sidebar .collapse-wrapper {
+  margin-bottom: 10px;
+}
+
+.sidebar .collapse-wrapper .collapse-section {
+  margin-top: 10px;
+  margin-left: 20px;
+}
+
+.congress-link {
+  float: right;
 }

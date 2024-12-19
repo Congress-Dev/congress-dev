@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import lodash from "lodash";
 import { useHistory } from "react-router-dom";
-import { Checkbox, Tabs, Tab } from "@blueprintjs/core";
+import { Checkbox, Tabs, Tab, Card } from "@blueprintjs/core";
 
 import { getBillSummary, getBillSummary2, getBillVersionDiffForSection, getBillVersionText } from "../../common/api.js";
 
@@ -235,7 +235,7 @@ function BillViewer(props) {
     return <>{results.map(x => x)}</>;;
   }
   return (
-    <>
+    <Card className="bill-content">
       <h3>{bill.title}</h3>Selected Version:{" "}
       <select
         id="bill-version-select"
@@ -312,7 +312,7 @@ function BillViewer(props) {
           />
         )}
       </div>
-    </>
+    </Card>
   );
 }
 

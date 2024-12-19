@@ -6,7 +6,7 @@ import { useHistory } from "react-router-dom";
 import lodash from "lodash";
 
 import SyncLoader from "react-spinners/SyncLoader";
-import { Tooltip } from "@blueprintjs/core";
+import { Tooltip, Callout } from "@blueprintjs/core";
 
 import { md5 } from "../../common/other";
 

@@ -25,7 +25,7 @@
     "xmldoc": "^1.1.2"
   },
   "scripts": {
-    "start": "react-app-rewired start",
+    "start": "WATCHPACK_POLLING=true react-app-rewired start",
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
     "eject": "react-scripts eject"
