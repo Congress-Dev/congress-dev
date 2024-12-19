@@ -115,7 +115,7 @@ function USCView(props) {
       .sortBy("order_number")
       .value();
     return (
-      <Callout>
+      <>
         {lodash.map(newChildren, (item, ind) => {
           const {
             usc_content_id,
@@ -158,7 +158,7 @@ function USCView(props) {
             </div>
           );
         })}
-      </Callout>
+      </>
     );
   }
   if (contentTree.loading) {

@@ -1,7 +1,9 @@
 .bill-content-section {
-  margin-left: 20px;
+  margin-left: 15px;
   margin-bottom: 0px;
   line-height: 20px;
+  border-left: 1px dashed gray;
+  padding-left: 5px;
 }
 
 .bill-content-continue {
@@ -32,10 +34,6 @@
 }
 
 .bill-content-quoted-block {
-  border-width: 1px;
-  border-style: solid;
-  border-color: gray;
-  background-color: lightgray;
 }
 
 .anchor-list-bad {
@@ -53,4 +51,8 @@
 
 #root.bp3-dark .bill-content-removed {
   background-color: #882f2f;
+}
+
+#root.bp3-dark .bill-content-hash {
+  border-color: #fff;
 }

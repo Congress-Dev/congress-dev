@@ -2,7 +2,7 @@ import React from "react";
 import lodash from "lodash";
 import { withRouter, Link } from "react-router-dom";
 
-import { Card, Tag, Breadcrumbs, Breadcrumb } from "@blueprintjs/core";
+import { Callout, Breadcrumbs, Breadcrumb } from "@blueprintjs/core";
 
 import { chamberLookup, versionToFull } from "../../common/lookups";
 
@@ -46,7 +46,7 @@ function BillCard(props) {
     );
   }
   return (
-    <Card>
+    <Callout className="bill-card">
       <h2 style={{ marginTop: "0px" }}>{genTitle()}</h2>
       <span style={{ fontStyle: "italic" }}>{bill.title}</span>
       <br />
@@ -56,7 +56,7 @@ function BillCard(props) {
       </span>
       <br />
       {renderVersions()}
-    </Card>
+    </Callout>
   );
 }
 
