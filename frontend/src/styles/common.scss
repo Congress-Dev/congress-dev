@@ -73,3 +73,11 @@
 .congress-link {
   float: right;
 }
+
+.bill-versions {
+  display: inline-flex;
+}
+
+.bill-versions .bp3-breadcrumb {
+  font-size: 14px;
+}

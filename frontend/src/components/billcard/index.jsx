@@ -30,7 +30,7 @@ function BillCard(props) {
     const { legislation_versions = [] } = bill;
     const len = legislation_versions.length;
     return (
-      <Breadcrumbs
+      <Breadcrumbs className="bill-versions"
         breadcrumbRenderer={({ text, link, ...rest }) => (
             <Breadcrumb {...rest}>
                 <Link to={link}>{text}</Link>
@@ -52,15 +52,15 @@ function BillCard(props) {
         icon="share"
         onClick={() => {  window.open(`https://congress.gov/bill/${bill.congress}-congress/${bill.chamber}-bill/${bill.number}`, '_blank') }}
       />
-      <h2 style={{ marginTop: "0px" }}>{genTitle()}</h2>
-      <span style={{ fontStyle: "italic" }}>{bill.title}</span>
-      <br />
+      <h2 style={{ marginTop: "0px", marginBottom: "0px" }}>{genTitle()} - {bill.title}</h2>
       <span className="bill-card-introduced-date">
-        <span style={{ fontWeight: "bold" }}>First Introduced:</span>{" "}
+        <span style={{ fontWeight: "bold" }}>Introduced:</span>{" "}
         {getFirstEffectiveDate()}
       </span>
       <br />
-      {renderVersions()}
+      <span style={{ fontWeight: "bold" }}>Tags:</span>{" "}
+      <br />
+      <span style={{ fontWeight: "bold" }}>Versions:</span>{" "}{renderVersions()}
     </Callout>
   );
 }

@@ -1,5 +1,5 @@
 import { Card, Elevation, FormGroup, InputGroup, Checkbox, Button, Divider, ControlGroup, HTMLSelect, ButtonGroup } from "@blueprintjs/core";
-import { versionToFull } from "../../common/lookups";
+import { initialVersionToFull, versionToFull } from "../../common/lookups";
 import BillSearchContent from "../../components/billsearch";
 import CollapseableSection from "../../components/collapseformgroup";
 import React, { useState, useEffect } from "react";
@@ -9,8 +9,8 @@ import qs from "query-string";
 function BillSearch(props) {
   const [resPageSize, setResPageSize] = useState(5);
   const [chamberButtons, setChamberButtons] = useState({ House: true, Senate: true });
-  const [versionButtons, setVersionButtons] = useState(versionToFull);
-  const [textBox, setTextBox] = useState("Test");
+  const [versionButtons, setVersionButtons] = useState(initialVersionToFull);
+  const [textBox, setTextBox] = useState("");
   const [totalResults, setTotalResults] = useState(0);
   const [currentSearch, setCurrentSearch] = useState({
     congress: "118",
@@ -32,26 +32,28 @@ function BillSearch(props) {
   }
   function toggleCheckAll() {
     setChamberButtons({ House: true, Senate: true });
-    setVersionButtons(lodash.mapValues(versionToFull, () => {
+    setVersionButtons(lodash.mapValues(initialVersionToFull, () => {
       return true
     }));
   }
 
   function toggleUncheckAll() {
     setChamberButtons({ House: false, Senate: false });
-    setVersionButtons(lodash.mapValues(versionToFull, () => {
+    setVersionButtons(lodash.mapValues(initialVersionToFull, () => {
       return false
     }));
   }
 
   function executeSearch() {
+    const versionKeys = lodash.keys(lodash.pickBy(versionButtons, value => value));
+
     setCurrentSearch({
       ...currentSearch,
       chamber: lodash
         .keys(lodash.pickBy(chamberButtons, value => value))
         .join(","),
       versions: lodash
-        .keys(lodash.pickBy(versionButtons, value => value))
+        .keys(lodash.pickBy(versionToFull, value => versionKeys.includes(value)))
         .join(","),
       text: textBox,
     })
@@ -135,7 +137,7 @@ function BillSearch(props) {
     });
     let temp = {};
     lodash.forEach(currentSearch.versions.split(","), item => {
-      temp[item] = true;
+      temp[versionToFull[item]] = true;
     });
     setVersionButtons(temp);
     temp = {};
@@ -201,12 +203,12 @@ function BillSearch(props) {
           />
         </CollapseableSection>
         <CollapseableSection title="Legislation Status" collapsed={collapsed}>
-          {lodash.map(versionToFull, (value, key) => {
+          {lodash.map(initialVersionToFull, (value, key) => {
             return (
               <Checkbox
                 key={`checkbox-${key}`}
                 checked={versionButtons[key] === true}
-                label={value}
+                label={key}
                 onChange={() => {
                   setVersionButtons({ ...versionButtons, [key]: !versionButtons[key] });
                 }}
