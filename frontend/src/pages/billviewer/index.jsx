@@ -103,13 +103,14 @@ function BillViewer(props) {
       diffStr = `/diffs/${uscTitle}/${uscSection}`;
     }
     if (billVers !== undefined) {
-      // Make sure to push the search and hash onto the url
-      props.history.push(
-        `/bill/${congress}/${chamber}/${billNumber}/${billVers || billVersion
-        }${diffStr}` +
+      const url = `/bill/${congress}/${chamber}/${billNumber}/${billVers || billVersion}${diffStr}` +
         props.location.search +
         props.location.hash
-      );
+
+      if(url != window.location.pathname + window.location.hash) {
+        props.history.push(url);
+      }
+      // Make sure to push the search and hash onto the url
       getBillVersionText(congress, chamber, billNumber, billVers).then(setTextTree);
     }
   }, [billVers]);
