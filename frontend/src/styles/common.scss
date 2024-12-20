@@ -2,6 +2,12 @@
 @import "~@blueprintjs/core/lib/css/blueprint.css";
 @import "~@blueprintjs/icons/lib/css/blueprint-icons.css";
 
+:focus {
+  outline: none !important;
+  outline-offset: 0px !important;
+  -moz-outline-radius: 0px !important;
+}
+
 .usc-release-box {
   width: 400px;
   border-radius: 10px;
@@ -17,15 +23,28 @@
   display: inline-block;
   vertical-align: top;
   width: 80%;
+  padding-left: 20px;
 }
 
 .main-navbar {
   margin-bottom: 10px;
 }
 
-.search-content {
+.main-navbar .main-navbar-group {
+  width: 100%;
+}
+
+.main-navbar .button-right {
+  margin-left: auto;
+}
+
+.bill-content, .search-content {
   width: 80%;
   margin-left: 10%;
+}
+
+.bill-card {
+  margin-bottom: 10px;
 }
 
 .section-tree div {
@@ -40,10 +59,40 @@
   cursor: pointer;
 }
 
-.search-pager > span:not(.current-page) {
-  color: blue;
-  cursor: pointer;
+.search-count {
+  float: left;
 }
-.search-pager > span.page-button:not(:last-child)::after {
-  content: ", ";
+
+.search-pager {
+  float: right;
+}
+
+.search-pager-buttons button {
+  margin-left: 1px;
+}
+
+.sidebar .collapse-controls {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.sidebar .collapse-wrapper {
+  margin-bottom: 10px;
+}
+
+.sidebar .collapse-wrapper .collapse-section {
+  margin-top: 10px;
+  margin-left: 20px;
+}
+
+.congress-link {
+  float: right;
+}
+
+.bill-versions {
+  display: inline-flex;
+}
+
+.bill-versions .bp3-breadcrumb {
+  font-size: 14px;
 }

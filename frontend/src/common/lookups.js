@@ -4,35 +4,39 @@ export const chamberLookup = {
   Senate: "S.",
 };
 export const versionToFull = {
-  ih: "Introduced in the House",
-  is: "Introduced in the Senate",
-
-  rfh: "Referred in House",
-  rfs: "Referred in Senate",
-
-  rds: "Received in Senate",
-  rhs: "Received in House",
-
-  rcs: "Reference Change Senate",
-  rch: "Reference Change House",
-
-  rs: "Reported in the Senate",
-  rh: "Reported in the House",
-
-  pcs: "Placed on Calendar Senate",
-  pch: "Placed on Calendar House",
-
-  cps: "Considered and Passed Senate",
-  cph: "Considered and Passed House",
-
-  eas: "Engrossed amendment Senate",
-  eah: "Engrossed amendment House",
-
-  es: "Engrossed in the Senate",
-  eh: "Engrossed in the House",
-
-  ras: "Referred w/Amendments Senate",
-  rah: "Referred w/Amendments House",
-
+  ih: "Introduced",
+  is: "Introduced",
+  rfh: "Referred",
+  rfs: "Referred",
+  rds: "Received",
+  rhs: "Received",
+  rcs: "Reference Change",
+  rch: "Reference Change",
+  rs: "Reported",
+  rh: "Reported",
+  pcs: "Placed on Calendar",
+  pch: "Placed on Calendar",
+  cps: "Considered and Passed",
+  cph: "Considered and Passed",
+  eas: "Engrossed Amendment",
+  eah: "Engrossed Amendment",
+  es: "Engrossed",
+  eh: "Engrossed",
+  ras: "Referred w/Amendments",
+  rah: "Referred w/Amendments",
   enr: "Enrolled",
+};
+
+export const initialVersionToFull = {
+  "Introduced": true,
+  "Referred": true,
+  "Received": true,
+  "Reference Change": true,
+  "Reported": true,
+  "Placed on Calendar": true,
+  "Considered and Passed": true,
+  "Engrossed Amendment": true,
+  "Engrossed": true,
+  "Referred w/Amendments": true,
+  "Enrolled": true,
 };

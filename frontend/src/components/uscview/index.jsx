@@ -3,10 +3,11 @@ import { useHistory, Link } from "react-router-dom";
 
 import lodash from "lodash";
 
+import { Spinner } from "@blueprintjs/core";
+
 import { getUSCSectionContent } from "../../common/api";
 import { md5 } from "../../common/other";
 
-import SyncLoader from "react-spinners/SyncLoader";
 import { diffWords } from "diff";
 import xmldoc from 'xmldoc';
 
@@ -160,7 +161,7 @@ function USCView(props) {
     );
   }
   if (contentTree.loading) {
-    return <SyncLoader loading={true} />;
+    return <Spinner intent="primary" />;
   }
   return <>{renderRecursive(contentTree)}</>;
 }
