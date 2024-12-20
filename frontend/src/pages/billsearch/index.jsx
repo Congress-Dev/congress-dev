@@ -49,6 +49,7 @@ function BillSearch(props) {
 
     setCurrentSearch({
       ...currentSearch,
+      page: 1,
       chamber: lodash
         .keys(lodash.pickBy(chamberButtons, value => value))
         .join(","),
