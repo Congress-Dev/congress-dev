@@ -1,1 +1,6 @@
-from .metadata import LegislationMetadata, LegislationVersionMetadata, Appropriation
+from .metadata import (
+    LegislationMetadata,
+    LegislationVersionMetadata,
+    Appropriation,
+    LegislationClauseTag,
+)

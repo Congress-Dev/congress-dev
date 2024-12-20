@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-from sqlalchemy import or_, select, func, and_
+from sqlalchemy import select
 
 from billparser.db.models import (
     Legislation,
@@ -97,7 +97,7 @@ async def get_legislation_metadata_by_legislation_id(
         .filter(LegislationVersion.version_id == Version.version_id)
     )
     usc_res = await database.fetch_one(usc_query)
-    print(usc_query)
+
     usc_release_id = (await database.fetch_one(usc_query)).usc_release_id
     return LegislationMetadata(
         legislation_versions=legis_versions,

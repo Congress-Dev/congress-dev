@@ -6,7 +6,7 @@ services:
     - db_host=10.0.0.248:5432
     - CACHE_HEADER_TIME=432000
     - CACHE_TIME=900
-    - db_table=us_code
+    - db_table=us_code_2023
     restart: unless-stopped
   congress_parser_fastapi:
     environment:
@@ -14,7 +14,7 @@ services:
     - db_host=10.0.0.248:5432
     - CACHE_HEADER_TIME=432000
     - CACHE_TIME=900
-    - db_table=us_code
+    - db_table=us_code_2023
     restart: unless-stopped
   congress_viewer_app:
     volumes:

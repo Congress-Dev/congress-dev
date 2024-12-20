@@ -25,7 +25,9 @@ router = APIRouter()
         },
     },
 )
-async def get_legislation_by_id_and_version(legislation_id: int, version_str: LegislationVersionEnum) -> LegislationMetadata:
+async def get_legislation_by_id_and_version(
+    legislation_id: int, version_str: LegislationVersionEnum
+) -> LegislationMetadata:
     """Returns a LegislationMetadata object for a given legislation_id
     contains the data to render the legislation page"""
     obj = await get_legislation_metadata_by_legislation_id(legislation_id, version_str)
