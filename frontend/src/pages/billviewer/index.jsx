@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import lodash from "lodash";
 import { useHistory } from "react-router-dom";
-import { Checkbox, Tabs, Tab, Card } from "@blueprintjs/core";
+import { Checkbox, Callout, Button, Tabs, Tab, Card, Divider } from "@blueprintjs/core";
 
+import { chamberLookup } from "../../common/lookups";
 import { getBillSummary, getBillSummary2, getBillVersionDiffForSection, getBillVersionText } from "../../common/api.js";
 
 import BillDisplay from "../../components/billdisplay";
@@ -237,81 +238,97 @@ function BillViewer(props) {
   }
   return (
     <Card className="bill-content">
-      <h3>{bill.title}</h3>Selected Version:{" "}
-      <select
-        id="bill-version-select"
-        value={(billVers || "").toUpperCase()}
-        onChange={(e) => setBillVers(e.target.value)}
-        className="bp3"
-      >
-        {lodash.map(
-          bill.legislation_versions,
-          ({ legislation_version, effective_date }, ind) => {
-            return (
-              <option value={legislation_version} key={`bill-version-select-${ind}`}>
-                {legislation_version}
-                {effective_date !== "None" ? ` - ${effective_date}` : null}
-              </option>
-            );
-          }
-        )}
-      </select>
-      <br />
-      <Checkbox
-        label="Show action parsing details"
-        value={actionParse}
-        onClick={() => setActionParse(!actionParse)}
+      <Button
+        className="congress-link"
+        icon="share"
+        onClick={() => {  window.open(`https://congress.gov/bill/${bill.congress}-congress/${bill.chamber}-bill/${bill.number}`, '_blank') }}
       />
-      <hr />
-      <Tabs className="sidebar" id="sidebar-tabs" selectedTabId={selectedTab} onChange={setSelectedTab}>
-        <Tab
-          id="ud"
-          title="USCode Diffs"
-          panel={<BillDiffSidebar
-            congress={congress}
-            chamber={chamber}
-            billNumber={billNumber}
-            billVersion={billVers || billVersion}
-          />}
-        />
-        <Tab
-          id="datelist"
-          title="Dates"
-          panel={<BillViewAnchorList
-            anchors={dateAnchors}
-            congress={congress}
-            chamber={chamber}
-            billNumber={billNumber}
-            billVersion={billVersion}
-          />}
-        />
-        {bill2 && bill2.appropriations && bill2.appropriations.length > 0 && (
-          <Tab
-            id="dollarlist"
-            title="Dollars"
-            panel={createNestedAppropriationTree(bill2.appropriations)}
-          />
-        )}
+      <h1>{`${chamberLookup[bill.chamber]} ${bill.number}`} - {bill.title}</h1>
 
-      </Tabs>
+      <Divider />
+      <div className="sidebar">
+        Selected Version:{" "}
+        <div class="bp3-html-select">
+          <select
+            id="bill-version-select"
+            value={(billVers || "").toUpperCase()}
+            onChange={(e) => setBillVers(e.target.value)}
+            className="bp3"
+          >
+            {lodash.map(
+              bill.legislation_versions,
+              ({ legislation_version, effective_date }, ind) => {
+                return (
+                  <option value={legislation_version} key={`bill-version-select-${ind}`}>
+                    {legislation_version}
+                    {effective_date !== "None" ? ` - ${effective_date}` : null}
+                  </option>
+                );
+              }
+            )}
+          </select>
+          <span class="bp3-icon bp3-icon-double-caret-vertical"></span>
+        </div>
+
+        {/* <Checkbox
+          label="Show action parsing details"
+          value={actionParse}
+          onClick={() => setActionParse(!actionParse)}
+        /> */}
+
+        <Tabs id="sidebar-tabs" selectedTabId={selectedTab} onChange={setSelectedTab}>
+          <Tab
+            id="ud"
+            title="USCode Diffs"
+            panel={<BillDiffSidebar
+              congress={congress}
+              chamber={chamber}
+              billNumber={billNumber}
+              billVersion={billVers || billVersion}
+            />}
+          />
+          <Tab
+            id="datelist"
+            title="Dates"
+            panel={<BillViewAnchorList
+              anchors={dateAnchors}
+              congress={congress}
+              chamber={chamber}
+              billNumber={billNumber}
+              billVersion={billVersion}
+            />}
+          />
+          {bill2 && bill2.appropriations && bill2.appropriations.length > 0 && (
+            <Tab
+              id="dollarlist"
+              title="Dollars"
+              panel={createNestedAppropriationTree(bill2.appropriations)}
+            />
+          )}
+
+        </Tabs>
+      </div>
+
       <div className="content">
-        {diffMode === true ? (
-          <USCView
-            release={bill.usc_release_id || "latest"}
-            section={uscSection}
-            title={uscTitle}
-            diffs={diffs}
-          />
-        ) : (
-          <BillDisplay
-            congress={congress}
-            chamber={chamber}
-            billNumber={billNumber}
-            billVersion={billVersion}
-            textTree={textTree}
-            showTooltips={actionParse}
-          />
-        )}
+        <Callout>
+          {diffMode === true ? (
+            <USCView
+              release={bill.usc_release_id || "latest"}
+              section={uscSection}
+              title={uscTitle}
+              diffs={diffs}
+            />
+          ) : (
+            <BillDisplay
+              congress={congress}
+              chamber={chamber}
+              billNumber={billNumber}
+              billVersion={billVersion}
+              textTree={textTree}
+              showTooltips={actionParse}
+            />
+          )}
+        </Callout>
       </div>
     </Card>
   );

@@ -159,7 +159,7 @@ function BillSearch(props) {
   return (
     <Card className="search-content" elevation={Elevation.ONE}>
       <div className="sidebar">
-        <FormGroup label={"Search"} labelFor="text-input">
+        <FormGroup labelFor="text-input">
           <ControlGroup fill={true}>
             <HTMLSelect options={['Date', 'Name']} />
             <InputGroup
@@ -216,7 +216,7 @@ function BillSearch(props) {
           })}
         </CollapseableSection>
       </div>
-      <div className="content" style={{ paddingLeft: "20px" }}>
+      <div className="content">
         <BillSearchContent
           congress={currentSearch.congress}
           chamber={currentSearch.chamber}
