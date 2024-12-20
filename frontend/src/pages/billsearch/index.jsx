@@ -86,7 +86,6 @@ function BillSearch(props) {
     if (totalPages < 6) {
       return (
         <div className="search-pager">
-          Total Results: {totalResults}
           <div className="search-pager-buttons">
             {" Page: "}
             {innerPageRender(lodash.range(1, totalPages + 1))}
@@ -119,7 +118,6 @@ function BillSearch(props) {
       }
       return (
         <div className="search-pager">
-          Total Results: {totalResults}
           <div className="search-pager-buttons">
             {" Page: "}
             {innerPageRender(masterSection)}
@@ -227,6 +225,9 @@ function BillSearch(props) {
           pageSize={currentSearch.pageSize}
           setResults={setTotalResults}
         />
+        <div className="search-count">
+          Total Results: {totalResults}
+        </div>
         {renderPageList()}
       </div>
     </Card>

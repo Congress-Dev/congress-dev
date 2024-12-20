@@ -52,8 +52,16 @@
   cursor: pointer;
 }
 
+.search-count {
+  float: left;
+}
+
 .search-pager {
-  margin-top: 10px;
+  float: right;
+}
+
+.search-pager-buttons button {
+  margin-left: 1px;
 }
 
 .sidebar .collapse-controls {
