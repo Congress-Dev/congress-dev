@@ -157,6 +157,19 @@ class Version(Base):
         }
         return {k: v for (k, v) in boi.items() if v is not None}
 
+class Prompt(PromptsBase):
+    """
+    Table for holding the prompts
+    """
+
+    __tablename__ = "prompt"
+    __table_args__ = {'schema': 'prompts'}
+    prompt_id = Column(Integer, primary_key=True)
+    version = Column(String, nullable=False)
+    title = Column(String, nullable=False)
+    description = Column(String, nullable=True)
+    prompt = Column(String, nullable=False)
+
 
 class Legislation(Base):
     """
@@ -241,7 +254,35 @@ try:
 except:
     pass
 
+class PromptBatch(PromptsBase):
+    """
+    Table for holding the records for which legislation versions have run through a prompt
+    """
 
+    __tablename__ = "prompt_batch"
+    __table_args__ = {'schema': 'prompts'}
+    prompt_batch_id = Column(Integer, primary_key=True)
+    prompt_id = Column(
+        Integer,
+        ForeignKey(Prompt.prompt_id, ondelete="CASCADE"),
+        index=True,
+    )
+    legislation_version_id = Column(
+        Integer,
+        ForeignKey(LegislationVersion.legislation_version_id, ondelete="CASCADE"),
+        index=True,
+    )
+
+    created_at = Column(DateTime(timezone=False), server_default=func.now())
+    completed_at = Column(DateTime(timezone=False), nullable=True)
+
+    # Unique to each prompt, but holds info about how many items in the bill have been attempted
+    attempted = Column(Integer, nullable=False, default=0)
+    successful = Column(Integer, nullable=False, default=0)  # Generated a response
+    failed = Column(Integer, nullable=False, default=0)  # Failed to generate a response
+    skipped = Column(
+        Integer, nullable=False, default=0
+    )  # Skipped due to not matching the predicate
 class LegislationContent(Base):
     __tablename__ = "legislation_content"
 
@@ -298,8 +339,8 @@ class LegislationContentTag(Base):
     __tablename__ = "legislation_content_tag"
 
     legislation_content_tag_id = Column(Integer, primary_key=True)
-    prompt_id = Column(
-        Integer, ForeignKey("prompts.prompt.prompt_id"), index=True, nullable=True
+    prompt_batch_id = Column(
+        Integer, ForeignKey(PromptBatch.prompt_batch_id), index=True, nullable=True
     )
     legislation_content_id = Column(
         Integer,
@@ -815,45 +856,4 @@ class Appropriation(AppropriationsBase):
 
     purpose = Column(String, default="")
 
-
-class Prompt(PromptsBase):
-    """
-    Table for holding the prompts
-    """
-
-    __tablename__ = "prompt"
-    prompt_id = Column(Integer, primary_key=True)
-    version = Column(String, nullable=False)
-    title = Column(String, nullable=False)
-    description = Column(String, nullable=True)
-    prompt = Column(String, nullable=False)
-
-class PromptBatch(PromptsBase):
-    """
-    Table for holding the records for which legislation versions have run through a prompt
-    """
-
-    __tablename__ = "prompt_batch"
-    prompt_batch_id = Column(Integer, primary_key=True)
-    prompt_id = Column(
-        Integer,
-        ForeignKey(Prompt.prompt_id, ondelete="CASCADE"),
-        index=True,
-    )
-    legislation_version_id = Column(
-        Integer,
-        ForeignKey(LegislationVersion.legislation_version_id, ondelete="CASCADE"),
-        index=True,
-    )
-
-    created_at = Column(DateTime(timezone=False), server_default=func.now())
-    completed_at = Column(DateTime(timezone=False), nullable=True)
-
-    # Unique to each prompt, but holds info about how many items in the bill have been attempted
-    attempted = Column(Integer, nullable=False, default=0)
-    successful = Column(Integer, nullable=False, default=0)  # Generated a response
-    failed = Column(Integer, nullable=False, default=0)  # Failed to generate a response
-    skipped = Column(
-        Integer, nullable=False, default=0
-    )  # Skipped due to not matching the predicate
 merge_metadata(Base.metadata, PromptsBase.metadata)
