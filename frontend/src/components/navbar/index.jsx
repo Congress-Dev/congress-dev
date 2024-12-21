@@ -73,22 +73,6 @@ function NavBar() {
         />
         <Button
           className={Classes.MINIMAL}
-          icon="th-filtered"
-          text="Enrolled Bills"
-          onClick={() => {
-            history.push("/bills?versions=enr&text=");
-          }}
-        />
-        {/* <Button
-          className={Classes.MINIMAL}
-          icon="shop"
-          text="Swag Store"
-          onClick={() => {
-            window.location = "https://github.com/Congress-Dev/congress-dev";
-          }}
-        /> */}
-        <Button
-          className={Classes.MINIMAL}
           icon="people"
           text="About Us"
           onClick={() => {
@@ -96,17 +80,8 @@ function NavBar() {
           }}
         />
         <Button
-          className={Classes.MINIMAL}
-          icon="envelope"
-          text="Contact"
-          onClick={() => {
-            history.push("/contact");
-          }}
-        />
-        <Button
           className={Classes.MINIMAL + ' button-right'}
           icon={isDarkMode ? 'flash' : 'moon'}
-          // text={isDarkMode ? 'Light Mode' : 'Dark Mode'}
           onClick={toggleDarkMode}
         />
       </NavbarGroup>

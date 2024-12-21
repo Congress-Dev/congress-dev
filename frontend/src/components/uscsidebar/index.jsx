@@ -120,7 +120,6 @@ function USCSidebar(props) {
             }
           });
           intUpdates[chapId] = firstNode;
-          console.log("Updating", intUpdates, internalTree);
           setInternalTree({ ...internalTree, ...intUpdates, ...innerIntUpdates, [0]: rootNode.childNodes });
           setTreeExpansion({ ...treeExpansion, ...expansionUpd });
         });
@@ -144,8 +143,6 @@ function USCSidebar(props) {
     const newTree = lodash.map(tree, drillExpansion);
     setTree(newTree);
   }, [treeExpansion, internalTree]);
-
-  console.log(tree);
 
   function navigate(url) {
     props.history.push(url);

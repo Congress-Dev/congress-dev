@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 
-import { Button, Card, Elevation } from "@blueprintjs/core";
+import { Button, Callout, Elevation } from "@blueprintjs/core";
 
 function USCRevisionBox({
   usc_release_id,
@@ -12,7 +12,7 @@ function USCRevisionBox({
   url,
 }) {
   return (
-    <Card
+    <Callout
       id={`usc-release-box-${usc_release_id}`}
       className="usc-release-box"
       interactive={true}
@@ -22,7 +22,7 @@ function USCRevisionBox({
       <p style={{ fontStyle: "italic" }}>{long_title}</p>
       <p>Effective: {effective_date}</p>
       <Button><a href={url}>House.gov</a></Button>
-    </Card>
+    </Callout>
   );
 }
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import lodash from "lodash";
 import { useHistory } from "react-router-dom";
-import { Checkbox, Callout, Button, Tabs, Tab, Card, Divider } from "@blueprintjs/core";
+import { Switch, Callout, Button, Tabs, Tab, Card, Divider, FormGroup } from "@blueprintjs/core";
 
 import { chamberLookup } from "../../common/lookups";
 import { getBillSummary, getBillSummary2, getBillVersionDiffForSection, getBillVersionText } from "../../common/api.js";
@@ -151,7 +151,6 @@ function BillViewer(props) {
     }
     _recursive(textTree);
     setTreeLookup(newLookup);
-    console.log(newLookup);
   }, [textTree]);
   const extractDatesAndDollars = function (_textTree) {
     const dateRegex = /(?:(?<month>(?:Jan|Febr)uary|March|April|May|Ju(?:ne|ly)|August|(?:Septem|Octo|Novem|Decem)ber) (?<day>\d\d?)\, (?<year>\d\d\d\d))/gmi;
@@ -188,7 +187,6 @@ function BillViewer(props) {
     setDollarAnchors(dollars);
   }, [textTree]);
   const scrollContentIdIntoView = (contentId) => {
-    console.log(treeLookup, contentId, treeLookup[contentId])
     if (treeLookup[contentId] !== undefined) {
       const ele = document.getElementById(treeLookup[contentId]);
       if (ele) {
@@ -215,10 +213,8 @@ function BillViewer(props) {
     let results = [];
     let rootApprops = appropMap[null];
     rootApprops = lodash.sortBy(rootApprops, (x) => x.appropriationId);
-    console.log(appropMap);
     lodash.forEach(rootApprops, (rootApprop) => {
       let children = appropMap[rootApprop.appropriationId];
-      console.log(children);
       results.push(
         <AppropriationItem appropriation={rootApprop} onNavigate={scrollContentIdIntoView} />
       );
@@ -233,11 +229,10 @@ function BillViewer(props) {
         );
       }
     });
-    console.log(results);
     return <>{results.map(x => x)}</>;;
   }
   return (
-    <Card className="bill-content">
+    <Card className="page">
       <Button
         className="congress-link"
         icon="share"
@@ -247,34 +242,44 @@ function BillViewer(props) {
 
       <Divider />
       <div className="sidebar">
-        Selected Version:{" "}
-        <div class="bp5-html-select">
-          <select
-            id="bill-version-select"
-            value={(billVers || "").toUpperCase()}
-            onChange={(e) => setBillVers(e.target.value)}
-            className="bp3"
-          >
-            {lodash.map(
-              bill.legislation_versions,
-              ({ legislation_version, effective_date }, ind) => {
-                return (
-                  <option value={legislation_version} key={`bill-version-select-${ind}`}>
-                    {legislation_version}
-                    {effective_date !== "None" ? ` - ${effective_date}` : null}
-                  </option>
-                );
-              }
-            )}
-          </select>
-          <span class="bp5-icon bp5-icon-double-caret-vertical"></span>
-        </div>
+        <FormGroup
+          label="Version:"
+          labelFor="bill-version-select"
+        >
+          <div class="bp5-html-select">
+            <select
+              id="bill-version-select"
+              value={(billVers || "").toUpperCase()}
+              onChange={(e) => setBillVers(e.target.value)}
+              className="bp3"
+            >
+              {lodash.map(
+                bill.legislation_versions,
+                ({ legislation_version, effective_date }, ind) => {
+                  return (
+                    <option value={legislation_version} key={`bill-version-select-${ind}`}>
+                      {legislation_version}
+                      {effective_date !== "None" ? ` - ${effective_date}` : null}
+                    </option>
+                  );
+                }
+              )}
+            </select>
+            <span class="bp5-icon bp5-icon-double-caret-vertical"></span>
+          </div>
+        </FormGroup>
 
-        <Checkbox
-          label="Show action parsing details"
-          value={actionParse}
-          onClick={() => setActionParse(!actionParse)}
-        />
+        <FormGroup
+          label="Display Options:"
+        >
+          <Switch
+            label="Action parsing details"
+            value={actionParse}
+            onClick={() => setActionParse(!actionParse)}
+          />
+        </FormGroup>
+
+        <Divider/>
 
         <Tabs id="sidebar-tabs" selectedTabId={selectedTab} onChange={setSelectedTab}>
           <Tab

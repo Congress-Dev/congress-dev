@@ -5,7 +5,6 @@ import NavBar from "./components/navbar";
 // Pages
 import FrontPage from "./pages/frontpage";
 import AboutUs from "./pages/aboutus";
-import ContactUs from "./pages/contactus";
 import BillViewer from "./pages/billviewer";
 import USCodeRevisionList from "./pages/uscodemain";
 import USCodeViewer from "./pages/uscodeviewer";
@@ -38,7 +37,6 @@ function App() {
 
         <Route exact path="/bills" component={BillSearch} />
         <Route exact path="/about" component={AboutUs} />
-        <Route exact path="/contact" component={ContactUs} />
         <Route exact path="/uscode" component={USCodeRevisionList} />
         <Route exact path="/member/:bioguideId" component={MemberViewer} />
         <Route

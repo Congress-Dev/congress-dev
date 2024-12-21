@@ -2,6 +2,8 @@
 import React, { useEffect, useState } from "react";
 import lodash from "lodash";
 
+import { Card } from "@blueprintjs/core";
+
 import USCRevisionBox from "../../components/uscrevisionbox";
 
 import { getUSCRevisions } from "../../common/api";
@@ -11,9 +13,9 @@ function USCodeRevisionList() {
   useEffect(() => {
     getUSCRevisions().then(setReleases);
   }, []);
-  console.log(releases);
+
   return (
-    <>
+    <Card className="page">
       {lodash.map(
         releases,
         ({ usc_release_id, effective_date, long_title, short_title, url }, ind) => (
@@ -29,7 +31,7 @@ function USCodeRevisionList() {
           />
         )
       )}
-    </>
+    </Card>
   );
 }
 

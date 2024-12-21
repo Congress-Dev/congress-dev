@@ -30,6 +30,16 @@ function BillSearch(props) {
   function toggleExpandAll() {
     setCollapsed(false);
   }
+
+  function toggleEnrolled() {
+    setVersionButtons({
+      ...(lodash.mapValues(initialVersionToFull, () => {
+        return false
+      })),
+      "Enrolled": true,
+    })
+  }
+
   function toggleCheckAll() {
     setChamberButtons({ House: true, Senate: true });
     setVersionButtons(lodash.mapValues(initialVersionToFull, () => {
@@ -157,7 +167,7 @@ function BillSearch(props) {
     });
   }, [props.location.search]);
   return (
-    <Card className="search-content" elevation={Elevation.ONE}>
+    <Card className="page" elevation={Elevation.ONE}>
       <div className="sidebar">
         <FormGroup labelFor="text-input">
           <ControlGroup fill={true}>
@@ -181,8 +191,9 @@ function BillSearch(props) {
         <ButtonGroup className="collapse-controls">
           <Button icon="collapse-all" onClick={toggleCollapseAll}></Button>
           <Button icon="expand-all" onClick={toggleExpandAll}></Button>
-          <Button icon="add" onClick={toggleCheckAll}>Select All</Button>
-          <Button icon="remove" onClick={toggleUncheckAll}>Deselect All</Button>
+          <Button icon="add" onClick={toggleCheckAll}></Button>
+          <Button icon="remove" onClick={toggleUncheckAll}></Button>
+          <Button icon="th-filtered" onClick={toggleEnrolled}>Enrolled</Button>
         </ButtonGroup>
         <CollapseableSection title="Session of Congress" collapsed={collapsed}></CollapseableSection>
         <CollapseableSection title="Chamber of Origin" collapsed={collapsed}>
