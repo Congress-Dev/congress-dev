@@ -476,8 +476,9 @@ def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object) -> Legi
         new_bill_version = None
         start_time = time.time()
         res = []
+        session = Session()
         try:
-            session = Session()
+            
             found = check_for_existing_legislation_version(bill_obj)
             if found:
                 logging.info(f"Skipping {archive_obj.get('file')}")
@@ -551,7 +552,8 @@ def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object) -> Legi
             )
         except Exception as e:
             logging.error("Uncaught exception", exc_info=e)
-
+        finally:
+            session.close()
         for r in res:
             if "text_element" in r:
                 del r["text_element"]
