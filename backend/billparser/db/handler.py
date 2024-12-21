@@ -6,7 +6,7 @@ import time
 from lxml import etree
 from unidecode import unidecode  # GPLV2
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.pool import NullPool
 
 from billparser.utils.citation import resolve_citations
@@ -26,36 +26,7 @@ Base.metadata.create_all(engine)
 
 ribber = string.ascii_letters + string.digits
 
-def create_session_function(engine, query_cls, retries=5, delay=5):
-    """
-    Returns a callable `Session` function with retry logic for creating sessions.
-
-    Args:
-        engine: The SQLAlchemy engine to bind the session to.
-        query_cls: The custom query class to use with the session.
-        retries: Number of retries before giving up. Default is 5.
-        delay: Delay in seconds between retries. Default is 5.
-
-    Returns:
-        A callable `Session` function that creates a new session with retry logic.
-    """
-    def Session():
-        for attempt in range(retries):
-            try:
-                # Create the session factory
-                session_factory = sessionmaker(bind=engine, query_cls=query_cls)
-                # Create a new session instance
-                return session_factory()
-            except Exception as e:
-                if attempt < retries - 1:
-                    print(f"Connection failed: {e}. Retrying in {delay} seconds...")
-                    time.sleep(delay)
-                else:
-                    print("Max retries reached. Could not establish a connection.")
-                    raise
-
-    return Session
-Session = create_session_function(engine, query_cls=query_callable(regions))
+Session = scoped_session(sessionmaker(bind=engine, query_cls=query_callable(regions)))
 def unidecode_str(input_str: str) -> str:
     return unidecode(input_str or "").replace("--", "-")
 
