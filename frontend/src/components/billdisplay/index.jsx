@@ -275,7 +275,7 @@ function BillDisplay(props) {
       </>
     );
   }
-  if (textTree.loading || textTree.content_type !== "legis-body") {
+  if (textTree == null || textTree.loading || textTree.content_type !== "legis-body") {
     return <Spinner className="loading-spinner" intent="primary" />;
   }
 

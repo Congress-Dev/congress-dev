@@ -23,7 +23,7 @@ function AboutUs() {
         </li>
       </ul>
 
-      <h3 class="bp5-heading">Contact Us</h3>
+      <h3 className="bp5-heading">Contact Us</h3>
       <ul>
         <li>
           <a href="mailto:admin@congress.dev">Admin</a>

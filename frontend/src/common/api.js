@@ -1,10 +1,13 @@
 import lodash from "lodash";
 
+import { toastError } from "./utils";
+
 function handleStatus(res) {
   if (res.status === 200) {
     return res.json();
   } else {
     console.error(res);
+    throw new Error(res);
     return null;
   }
 }
@@ -70,26 +73,30 @@ export const getBillVersionText = (
       } else {
         return {};
       }
-    });
+    })
+    .catch(toastError);
 };
 
 export const getUSCRevisions = () => {
   // Grab the list of USCode revision points from the server
   return fetch(`${endpoint}/usc/releases`)
     .then(handleStatus)
-    .then((obj) => obj.releases);
+    .then((obj) => obj.releases)
+    .catch(toastError);
 };
 
 export const getUSCTitleList = (uscReleaseId) => {
   return fetch(`${endpoint}/usc/${uscReleaseId}/titles`)
     .then(handleStatus)
-    .then(({ titles }) => lodash.sortBy(titles, "short_title"));
+    .then(({ titles }) => lodash.sortBy(titles, "short_title"))
+    .catch(toastError);
 };
 
 export const getUSCSectionList = (uscReleaseId, shortTitle) => {
   return fetch(`${endpoint}/usc/${uscReleaseId}/${shortTitle}/sections`)
     .then(handleStatus)
-    .then(({ sections }) => lodash.sortBy(sections, "number"));
+    .then(({ sections }) => lodash.sortBy(sections, "number"))
+    .catch(toastError);
 };
 
 export const getUSCLevelSections = (
@@ -103,7 +110,8 @@ export const getUSCLevelSections = (
   }
   return fetch(url)
     .then(handleStatus)
-    .then(({ sections }) => lodash.sortBy(sections, "usc_section_id"));
+    .then(({ sections }) => lodash.sortBy(sections, "usc_section_id"))
+    .catch(toastError);
 };
 
 export const getUSCSectionLineage = (
@@ -115,7 +123,8 @@ export const getUSCSectionLineage = (
     `${endpoint}/usc/${uscReleaseId}/${shortTitle}/lineage/${uscSectionId}`
   )
     .then(handleStatus)
-    .then(({ sections }) => lodash.sortBy(sections, "usc_section_id"));
+    .then(({ sections }) => lodash.sortBy(sections, "usc_section_id"))
+    .catch(toastError);
 };
 
 export const getUSCSectionContent = (
@@ -149,7 +158,8 @@ export const getUSCSectionContent = (
       } else {
         return {};
       }
-    });
+    })
+    .catch(toastError);
 };
 
 export const getCongressSearch = (
@@ -164,13 +174,15 @@ export const getCongressSearch = (
     `${endpoint}/congress/search?congress=${congress || "None"}&chamber=${
       chamber || "None"
     }&versions=${versions || ""}&text=${text}&page=${page}&pageSize=${pageSize}`
-  ).then(handleStatus);
+  ).then(handleStatus)
+  .catch(toastError);
 };
 
 export const getBillVersionDiffSummary = (session, chamber, bill, version) => {
   return fetch(
     `${endpoint}/congress/${session}/${chamber.toLowerCase()}-bill/${bill}/${version}/diffs`
-  ).then(handleStatus);
+  ).then(handleStatus)
+  .catch(toastError);
 };
 
 export const getBillVersionDiffForSection = (
@@ -195,17 +207,20 @@ export const getBillVersionDiffForSection = (
       } else {
         return {};
       }
-    });
+    })
+    .catch(toastError);
 };
 
 // Endpoint V2 being
 
 export const getMemberInfo = (bioGuideId) => {
-  return fetch(`${endPv2}/member/${bioGuideId}`).then(handleStatus);
+  return fetch(`${endPv2}/member/${bioGuideId}`).then(handleStatus)
+  .catch(toastError);
 };
 
 export const getMemberSponsoredLegislation = (bioGuideId) => {
   return fetch(`${endPv2}/member/${bioGuideId}/sponsorships`).then(
     handleStatus
-  );
+  )
+  .catch(toastError);
 };

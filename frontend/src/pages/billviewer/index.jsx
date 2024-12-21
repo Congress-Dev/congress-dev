@@ -11,7 +11,6 @@ import BillDiffSidebar from "../../components/billdiffsidebar";
 import BillViewAnchorList from "../../components/billviewanchorlistcomp";
 import USCView from "../../components/uscview";
 
-
 // AppropriationItem component to display individual appropriation details
 const AppropriationItem = ({ appropriation, onNavigate }) => {
   // Function to handle click events
@@ -91,9 +90,9 @@ function BillViewer(props) {
   const [billVers, setBillVers] = useState(
     billVersion || defaultVers[chamber.toLowerCase()]
   );
+
   useEffect(() => {
     // Grab the info from the rest API
-
     if (props.location.pathname.includes("diffs")) {
       setDiffMode(true);
       getBillVersionDiffForSection(
@@ -103,7 +102,7 @@ function BillViewer(props) {
         billVersion,
         uscTitle,
         uscSection
-      ).then(setDiffs);
+      ).then(setDiffs)
     } else {
       // If we didn't get a bill version, default to the introduced one.
       if (billVersion === undefined) {
@@ -139,6 +138,9 @@ function BillViewer(props) {
     }
   }, [billVers]);
   useEffect(() => {
+    if(bill.legislation_versions == null) {
+      return
+    }
     // If we didn't get a bill version, default to the introduced one.
     if (billVersion === undefined) {
       if (bill.legislation_versions !== undefined) {
@@ -164,6 +166,9 @@ function BillViewer(props) {
     }
   }, [bill.legislation_id, billVersion])
   useEffect(() => {
+    if(textTree == null) {
+      return
+    }
     const newLookup = {};
     const _recursive = (node) => {
       newLookup[node.legislation_content_id] = `${node.lc_ident || node.legislation_content_id}`.toLowerCase();
@@ -205,6 +210,9 @@ function BillViewer(props) {
     return { dates: _dates, dollars: _dollars };
   }
   useEffect(() => {
+    if(textTree == null) {
+      return
+    }
     const { dates, dollars } = extractDatesAndDollars(textTree);
     setDateAnchors(dates);
     setDollarAnchors(dollars);
@@ -275,7 +283,7 @@ function BillViewer(props) {
                   label="Version:"
                   labelFor="bill-version-select"
                 >
-                  <div class="bp5-html-select">
+                  <div className="bp5-html-select">
                     <select
                       id="bill-version-select"
                       value={(billVers || "").toUpperCase()}
@@ -294,7 +302,7 @@ function BillViewer(props) {
                         }
                       )}
                     </select>
-                    <span class="bp5-icon bp5-icon-double-caret-vertical"></span>
+                    <span className="bp5-icon bp5-icon-double-caret-vertical"></span>
                   </div>
                 </FormGroup>
 
