@@ -815,11 +815,11 @@ def parse_archives(
         List[dict]: List of the parsed objects
     """
     global BASE_VERSION
-    session = Session()
+    congress_session = Session()
     # Get latest release version for the base
     # TODO: Move these around to select the correct release point given the bill
     release_point = (
-        session.query(USCRelease).order_by(desc(USCRelease.created_at)).limit(1).all()
+        congress_session.query(USCRelease).order_by(desc(USCRelease.created_at)).limit(1).all()
     )
     BASE_VERSION = release_point[0].version_id
     print("Base version is", BASE_VERSION)
@@ -837,10 +837,10 @@ def parse_archives(
                     print(file, "bad")
                     continue
                 house = parsed.group("house")
-                session = parsed.group("session")
+                congress_session = parsed.group("session")
                 bill_number = int(parsed.group("bill_number"))
                 bill_version = parsed.group("bill_version")
-                file_title = f"{session} - {house}{bill_number} - {bill_version}"
+                file_title = f"{congress_session} - {house}{bill_number} - {bill_version}"
                 names.append(
                     {
                         "title": file_title,
@@ -874,7 +874,6 @@ def parse_archives(
 
         return True
 
-    session = Session()
     existing_legislation = retrieve_existing_legislations(session)
     print("Existing legislation", len(existing_legislation))
     legis_lookup: Dict[LegislationChamber, List[LegislationVersionEnum]] = defaultdict(
