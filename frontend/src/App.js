@@ -2,17 +2,17 @@ import React from "react";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
 import NavBar from "./components/navbar";
-// Pages
-import FrontPage from "./pages/frontpage";
-import AboutUs from "./pages/aboutus";
-import BillViewer from "./pages/billviewer";
-import USCodeRevisionList from "./pages/uscodemain";
-import USCodeViewer from "./pages/uscodeviewer";
-import BillSearch from "./pages/billsearch";
-import MemberViewer from "./pages/members";
+import {
+  AboutUs,
+  FrontPage,
+  BillViewer,
+  USCodeRevisionList,
+  USCodeViewer,
+  BillSearch,
+  MemberViewer,
+} from "./pages";
 
 import "./styles/common.scss";
-import "./App.css";
 
 function App() {
   return (
