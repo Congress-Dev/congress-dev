@@ -6,57 +6,12 @@ import { HTMLTable, HTMLSelect, Switch, Tag, Callout, Button, Tabs, Tab, Card, D
 import { chamberLookup } from "../../common/lookups";
 import { getBillSummary, getBillSummary2, getBillVersionDiffForSection, getBillVersionText } from "../../common/api.js";
 
+import AppropriationTree from "../../components/appropriationtree/index.js";
 import BillDisplay from "../../components/billdisplay";
 import BillDiffSidebar from "../../components/billdiffsidebar";
 import BillViewAnchorList from "../../components/billviewanchorlistcomp";
 import USCView from "../../components/uscview";
 
-// AppropriationItem component to display individual appropriation details
-const AppropriationItem = ({ appropriation, onNavigate }) => {
-  // Function to handle click events
-  const handleClick = () => {
-    // This function could navigate to the specific clause in the legislation
-    // For example, by setting the window's location hash to an anchor tag or by using a router navigation method
-    onNavigate(appropriation.legislationContentId);
-  };
-
-  return (
-    <>
-      <Callout>
-        <h4 className="appropriation-title" onClick={handleClick}>{appropriation.parentId ? "Sub " : ""}Appropriation #{appropriation.appropriationId} {appropriation.newSpending && <Tag intent="warning">New Spending</Tag>}</h4>
-        <HTMLTable compact={true} striped={true} className="appropriation-item">
-          <tbody>
-            <tr>
-              <td><b>Purpose</b></td>
-              <td>{appropriation.briefPurpose}</td>
-            </tr>
-            <tr>
-              <td><b>Amount</b></td>
-              <td>${appropriation.amount.toLocaleString()}</td>
-            </tr>
-            <tr>
-              <td><b>Until Expended</b></td>
-              <td>{appropriation.untilExpended ? 'Yes' : 'No'}</td>
-            </tr>
-            {appropriation.fiscalYears.length > 0 && (
-              <tr>
-                <td><b>Fiscal Years</b></td>
-                <td>{appropriation.fiscalYears.join(', ')}</td>
-              </tr>
-            )}
-            {appropriation.expirationYear && (
-              <tr>
-                <td><b>Expires</b></td>
-                <td>{appropriation.expirationYear}</td>
-              </tr>
-            )}
-          </tbody>
-        </HTMLTable>
-      </Callout>
-      <br/>
-    </>
-  );
-};
 // Default bill versions to choose
 // TODO: These should be enums
 const defaultVers = {
@@ -74,7 +29,6 @@ function BillViewer(props) {
   const [actionParse, setActionParse] = useState(false);
   const [selectedTab, setSelectedTab] = useState("bill");
   const [dateAnchors, setDateAnchors] = useState([]);
-  const [dollarAnchors, setDollarAnchors] = useState([]);
   const [treeLookup, setTreeLookup] = useState({});
   const [diffMode, setDiffMode] = useState(false);
   const history = useHistory();
@@ -180,15 +134,11 @@ function BillViewer(props) {
     _recursive(textTree);
     setTreeLookup(newLookup);
   }, [textTree]);
-  const extractDatesAndDollars = function (_textTree) {
+  const extractDates = function (_textTree) {
     const dateRegex = /(?:(?<month>(?:Jan|Febr)uary|March|April|May|Ju(?:ne|ly)|August|(?:Septem|Octo|Novem|Decem)ber) (?<day>\d\d?)\, (?<year>\d\d\d\d))/gmi;
-    const dollarRegex = /(?<dollar>\$\s?(\,?\d{1,3})(\,?\d{3})*(\.\d\d)?)/gmi;
     let _dates = [];
-    let _dollars = [];
     lodash.forEach(_textTree.children, (node) => {
-      const { dates, dollars } = extractDatesAndDollars(node);
-      _dates = [..._dates, ...dates];
-      _dollars = [..._dollars, ...dollars];
+      _dates = [..._dates, ...extractDates(node)];
     });
     const itemHash = `${_textTree.lc_ident || _textTree.legislation_content_id}`.toLowerCase();
     let m;
@@ -197,25 +147,16 @@ function BillViewer(props) {
       if (m.index === dateRegex.lastIndex) {
         dateRegex.lastIndex++;
       }
-      _dates.push([m[0], itemHash]);
-    }
-    while ((m = dollarRegex.exec(_textTree.content_str)) !== null) {
-      // This is necessary to avoid infinite loops with zero-width matches
-      if (m.index === dollarRegex.lastIndex) {
-        dollarRegex.lastIndex++;
-      }
-      _dollars.push([m[0], itemHash]);
+      _dates.push({title: m[0], hash: itemHash});
     }
 
-    return { dates: _dates, dollars: _dollars };
+    return _dates;
   }
   useEffect(() => {
     if(textTree == null) {
       return
     }
-    const { dates, dollars } = extractDatesAndDollars(textTree);
-    setDateAnchors(dates);
-    setDollarAnchors(dollars);
+    setDateAnchors(extractDates(textTree));
   }, [textTree]);
   const scrollContentIdIntoView = (contentId) => {
     if (treeLookup[contentId] !== undefined) {
@@ -226,42 +167,7 @@ function BillViewer(props) {
       }
     }
   }
-  const createNestedAppropriationTree = (appropriations) => {
-    // Put all of them into a hashmap by parentId
-    // then create a tuple of (parentId, children)
-    // for all the ones with no parentId
-    // sort them by their appropriationId
-    // for each of them, render their children in a list under them
-    let appropMap = {};
-    let appropTree = [];
-    lodash.forEach(appropriations, (approp) => {
-      if (approp.parentId in appropMap) {
-        appropMap[approp.parentId].push(approp);
-      } else {
-        appropMap[approp.parentId] = [approp];
-      }
-    });
-    let results = [];
-    let rootApprops = appropMap[null];
-    rootApprops = lodash.sortBy(rootApprops, (x) => x.appropriationId);
-    lodash.forEach(rootApprops, (rootApprop) => {
-      let children = appropMap[rootApprop.appropriationId];
-      results.push(
-        <AppropriationItem key={rootApprop.parentId} appropriation={rootApprop} onNavigate={scrollContentIdIntoView} />
-      );
-      if (children) {
-        children = lodash.sortBy(children, (x) => x.appropriationId);
-        results.push(
-          <div className="nested-appropriation" style={{ paddingLeft: '25px' }}>
-            {children.map((child) => (
-              <AppropriationItem key={child.parentId} appropriation={child} onNavigate={scrollContentIdIntoView} />
-            ))}
-          </div>
-        );
-      }
-    });
-    return <>{results.map(x => x)}</>;;
-  }
+
   return (
     <Card className="page">
       <Button
@@ -352,7 +258,7 @@ function BillViewer(props) {
             <Tab
               id="dollarlist"
               title="Dollars"
-              panel={createNestedAppropriationTree(bill2.appropriations)}
+              panel={<AppropriationTree appropriations={bill2.appropriations} onNavigate={scrollContentIdIntoView}/>}
             />
           )}
 

@@ -28,13 +28,15 @@ export const getBillSummary = (congress, chamber, billNumber) => {
     `${endpoint}/congress/${congress}/${capFirstLetter(
       chamber
     )}-bill/${billNumber}`
-  ).then(handleStatus);
+  ).then(handleStatus)
+  .catch(toastError);
 };
 
 export const getBillSummary2 = (legislationId, versionStr) => {
   return fetch(`${endPv2}/legislation/${legislationId}/${versionStr}`).then(
     handleStatus
-  );
+  )
+  .catch(toastError);
 };
 
 export const getBillVersionText = (

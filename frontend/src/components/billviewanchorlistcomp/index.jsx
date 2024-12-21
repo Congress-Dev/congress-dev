@@ -7,13 +7,13 @@ function BillViewAnchorList(props) {
   const { anchors } = props;
   return <><p>Grey and crossed out means we detected it, but are unable to offer a jump to view of it at this moment</p>{
     lodash.map(anchors, (arr, ind) => {
-      if (arr[1] !== undefined) {
+      if (arr.hash !== undefined) {
         return <p className="anchor-list-link" key={ind} onClick={() => {
-          history.replace({ hash: arr[1] });
-          document.getElementById(arr[1]).scrollIntoView();
-        }}>{arr[0]}</p>
+          history.replace({ hash: arr.hash });
+          document.getElementById(arr.hash).scrollIntoView();
+        }}>{arr.title}</p>
       } else {
-        return <p className="anchor-list-bad" key={ind} >{arr[0]}</p>
+        return <p className="anchor-list-bad" key={ind} >{arr.title}</p>
       }
     })
   }</>
