@@ -900,7 +900,7 @@ def parse_archives(
     names = [x for x in names if filter_logic(x) and filter_existing_legislation(x)]
     print("New legislation", len(names))
 
-    frec = Parallel(n_jobs=THREADS, backend="multiprocessing", verbose=5)(
+    frec = Parallel(n_jobs=THREADS, backend="loky", verbose=5)(
         delayed(parse_bill)(
             open_archives[name["archive_index"]]
             .open(name["path"], "r")
