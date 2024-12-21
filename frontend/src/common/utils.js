@@ -5,6 +5,6 @@ export const toastError = (e) => {
     myToaster.show({
         intent: Intent.DANGER,
         icon: "warning-sign",
-        message: `Something went wrong!`
+        message: `Something went wrong!`,
     });
-}
+};

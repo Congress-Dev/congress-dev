@@ -3,99 +3,99 @@
 @import "~@blueprintjs/icons/lib/css/blueprint-icons.css";
 
 :focus {
-  outline: none !important;
-  outline-offset: 0px !important;
-  -moz-outline-radius: 0px !important;
+    outline: none !important;
+    outline-offset: 0px !important;
+    -moz-outline-radius: 0px !important;
 }
 
 .usc-release-box {
-  width: 400px;
+    width: 400px;
 }
 
 .sidebar {
-  width: 20%;
-  display: inline-block;
-  vertical-align: top;
+    width: 20%;
+    display: inline-block;
+    vertical-align: top;
 }
 
 .content {
-  display: inline-block;
-  vertical-align: top;
-  width: 80%;
-  padding-left: 20px;
+    display: inline-block;
+    vertical-align: top;
+    width: 80%;
+    padding-left: 20px;
 }
 
 .main-navbar {
-  margin-bottom: 10px;
+    margin-bottom: 10px;
 }
 
 .main-navbar .main-navbar-group {
-  width: 100%;
+    width: 100%;
 }
 
 .main-navbar .button-right {
-  margin-left: auto;
+    margin-left: auto;
 }
 
 .page {
-  width: 80%;
-  margin-left: 10%;
+    width: 80%;
+    margin-left: 10%;
 }
 
 .bill-card {
-  margin-bottom: 10px;
+    margin-bottom: 10px;
 }
 
 .section-tree div {
-  height: auto;
+    height: auto;
 }
 .section-tree div span {
-  white-space: normal;
-  cursor: pointer;
+    white-space: normal;
+    cursor: pointer;
 }
 
 .link > div:first-child > span:nth-child(3) {
-  cursor: pointer;
+    cursor: pointer;
 }
 
 .search-count {
-  float: left;
+    float: left;
 }
 
 .search-pager {
-  float: right;
+    float: right;
 }
 
 .search-pager-buttons button {
-  margin-left: 1px;
+    margin-left: 1px;
 }
 
 .sidebar .collapse-controls {
-  margin-top: 10px;
-  margin-bottom: 10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 .sidebar .collapse-wrapper {
-  margin-bottom: 10px;
+    margin-bottom: 10px;
 }
 
 .sidebar .collapse-wrapper .collapse-section {
-  margin-top: 10px;
-  margin-left: 20px;
+    margin-top: 10px;
+    margin-left: 20px;
 }
 
 .congress-link {
-  float: right;
+    float: right;
 }
 
 .bill-versions {
-  display: inline-flex;
+    display: inline-flex;
 }
 
 .bill-versions .bp5-breadcrumb {
-  font-size: 14px;
+    font-size: 14px;
 }
 
 .bp5-divider {
-  margin: 10px 0px;
+    margin: 10px 0px;
 }

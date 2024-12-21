@@ -1,46 +1,46 @@
 .usc-content-section {
-  margin-left: 15px;
-  margin-bottom: 0px;
-  margin-top: 5px;
-  border-left: 1px dashed gray;
-  padding-left: 10px;
+    margin-left: 15px;
+    margin-bottom: 0px;
+    margin-top: 5px;
+    border-left: 1px dashed gray;
+    padding-left: 10px;
 }
 
 .usc-content-continue {
-  margin-left: 20px;
-  margin-bottom: 0px;
-  display: block;
+    margin-left: 20px;
+    margin-bottom: 0px;
+    display: block;
 }
 
 .usc-content-section-display {
-  font-weight: bolder;
+    font-weight: bolder;
 }
 
 .usc-content-added {
-  background-color: #cdffd8;
+    background-color: #cdffd8;
 }
 .usc-content-removed {
-  background-color: #ffdce0;
-  text-decoration: line-through;
-  text-decoration-color: #ff576b;
+    background-color: #ffdce0;
+    text-decoration: line-through;
+    text-decoration-color: #ff576b;
 }
 
 .usc-content-hash {
-  border-width: 2px;
-  border-style: dashed;
-  border-color: rgba($color: #000000, $alpha: .5);
-  margin-left: 0px;
-  padding-left: 18px;
+    border-width: 2px;
+    border-style: dashed;
+    border-color: rgba($color: #000000, $alpha: 0.5);
+    margin-left: 0px;
+    padding-left: 18px;
 }
 
 #root.bp5-dark .usc-content-added {
-  background-color: #2f8842;
+    background-color: #2f8842;
 }
 
 #root.bp5-dark .usc-content-removed {
-  background-color: #882f2f;
+    background-color: #882f2f;
 }
 
 #root.bp5-dark .usc-content-hash {
-  border-color: #fff;
+    border-color: #fff;
 }
