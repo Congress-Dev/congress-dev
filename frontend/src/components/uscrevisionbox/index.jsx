@@ -13,7 +13,7 @@ function USCRevisionBox({
         <Callout
             id={`usc-release-box-${usc_release_id}`}
             className="usc-release-box"
-            interactive={true}
+            interactive="true"
             elevation={Elevation.TWO}
         >
             <h2>

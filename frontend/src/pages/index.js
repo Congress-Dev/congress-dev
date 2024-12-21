@@ -1,7 +1,7 @@
-export { default as AboutUs } from "./aboutus";
-export { default as BillSearch } from "./billsearch";
-export { default as BillViewer } from "./billviewer";
-export { default as FrontPage } from "./frontpage";
-export { default as MemberViewer } from "./members";
-export { default as USCodeRevisionList } from "./uscodemain";
-export { default as USCodeViewer } from "./uscodeviewer";
+export { default as AboutUs } from "./AboutUs";
+export { default as BillSearch } from "./BillSearch";
+export { default as BillViewer } from "./BillViewer";
+export { default as FrontPage } from "./FrontPage";
+export { default as MemberViewer } from "./Members";
+export { default as USCodeRevisionList } from "./USCodeRevisionList";
+export { default as USCodeViewer } from "./USCodeViewer";
