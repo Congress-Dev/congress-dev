@@ -55,7 +55,7 @@ def create_session_function(engine, query_cls, retries=5, delay=5):
                     raise
 
     return Session
-Session = create_session_function(bind=engine, query_cls=query_callable(regions))
+Session = create_session_function(engine, query_cls=query_callable(regions))
 def unidecode_str(input_str: str) -> str:
     return unidecode(input_str or "").replace("--", "-")
 
