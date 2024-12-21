@@ -45,7 +45,7 @@ function NavBar() {
   return (
     <Navbar className="main-navbar">
       <NavbarGroup className="main-navbar-group" align={Alignment.LEFT}>
-        <NavbarHeading>Congress.Dev - {version}</NavbarHeading>
+        <NavbarHeading>Congress.Dev</NavbarHeading>
         <NavbarDivider />
         <Button
           className={Classes.MINIMAL}

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import lodash from "lodash";
 import { useHistory } from "react-router-dom";
-import { Switch, Tag, Callout, Button, Tabs, Tab, Card, Divider, FormGroup } from "@blueprintjs/core";
+import { HTMLTable, HTMLSelect, Switch, Tag, Callout, Button, Tabs, Tab, Card, Divider, FormGroup } from "@blueprintjs/core";
 
 import { chamberLookup } from "../../common/lookups";
 import { getBillSummary, getBillSummary2, getBillVersionDiffForSection, getBillVersionText } from "../../common/api.js";
@@ -24,7 +24,7 @@ const AppropriationItem = ({ appropriation, onNavigate }) => {
     <>
       <Callout>
         <h4 className="appropriation-title" onClick={handleClick}>{appropriation.parentId ? "Sub " : ""}Appropriation #{appropriation.appropriationId} {appropriation.newSpending && <Tag intent="warning">New Spending</Tag>}</h4>
-        <table className="bp5-compact bp5-html-table bp5-html-table-striped appropriation-item">
+        <HTMLTable compact={true} striped={true} className="appropriation-item">
           <tbody>
             <tr>
               <td><b>Purpose</b></td>
@@ -51,7 +51,7 @@ const AppropriationItem = ({ appropriation, onNavigate }) => {
               </tr>
             )}
           </tbody>
-        </table>
+        </HTMLTable>
       </Callout>
       <br/>
     </>
@@ -247,14 +247,14 @@ function BillViewer(props) {
     lodash.forEach(rootApprops, (rootApprop) => {
       let children = appropMap[rootApprop.appropriationId];
       results.push(
-        <AppropriationItem appropriation={rootApprop} onNavigate={scrollContentIdIntoView} />
+        <AppropriationItem key={rootApprop.parentId} appropriation={rootApprop} onNavigate={scrollContentIdIntoView} />
       );
       if (children) {
         children = lodash.sortBy(children, (x) => x.appropriationId);
         results.push(
           <div className="nested-appropriation" style={{ paddingLeft: '25px' }}>
             {children.map((child) => (
-              <AppropriationItem appropriation={child} onNavigate={scrollContentIdIntoView} />
+              <AppropriationItem key={child.parentId} appropriation={child} onNavigate={scrollContentIdIntoView} />
             ))}
           </div>
         );
@@ -283,27 +283,21 @@ function BillViewer(props) {
                   label="Version:"
                   labelFor="bill-version-select"
                 >
-                  <div className="bp5-html-select">
-                    <select
-                      id="bill-version-select"
-                      value={(billVers || "").toUpperCase()}
-                      onChange={(e) => setBillVers(e.target.value)}
-                      className="bp3"
-                    >
-                      {lodash.map(
-                        bill.legislation_versions,
-                        ({ legislation_version, effective_date }, ind) => {
-                          return (
-                            <option value={legislation_version} key={`bill-version-select-${ind}`}>
-                              {legislation_version}
-                              {effective_date !== "None" ? ` - ${effective_date}` : null}
-                            </option>
-                          );
-                        }
-                      )}
-                    </select>
-                    <span className="bp5-icon bp5-icon-double-caret-vertical"></span>
-                  </div>
+                  <HTMLSelect
+                    id="bill-version-select"
+                    value={(billVers || "").toUpperCase()}
+                    onChange={(e) => setBillVers(e.currentTarget.value)}
+                    className="bp3"
+                    options={lodash.map(
+                      bill.legislation_versions,
+                      ({ legislation_version, effective_date }, ind) => {
+                        return {
+                          label: `${legislation_version} ${effective_date !== "None" ? ` - ${effective_date}` : ''}`,
+                          value: legislation_version
+                        };
+                      }
+                    )}
+                  />
                 </FormGroup>
 
                 <FormGroup
