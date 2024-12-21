@@ -1,59 +1,31 @@
 .bill-content-section {
-  margin-left: 15px;
-  margin-bottom: 0px;
-  margin-top: 5px;
-  line-height: 20px;
-  border-left: 1px dashed gray;
-  padding-left: 10px;
+    margin-left: 15px;
+    margin-bottom: 0px;
+    margin-top: 5px;
+    line-height: 20px;
+    border-left: 1px dashed gray;
+    padding-left: 10px;
 }
 
 .bill-content-continue {
-  margin-left: 20px;
-  margin-bottom: 0px;
-  display: block;
+    margin-left: 20px;
+    margin-bottom: 0px;
+    display: block;
 }
 
 .bill-content-section-display {
-  font-weight: bolder;
-}
-
-.bill-content-added {
-  background-color: #cdffd8;
-}
-.bill-content-removed {
-  background-color: #ffdce0;
-  text-decoration: line-through;
-  text-decoration-color: #ff576b;
-}
-
-.bill-content-hash {
-  border-width: 2px;
-  border-style: dashed;
-  border-color: rgba($color: #000000, $alpha: .5);
-  margin-left: 0px;
-  padding-left: 18px;
-}
-
-.bill-content-quoted-block {
+    font-weight: bolder;
 }
 
 .anchor-list-bad {
-  text-decoration: line-through;
-  color: lightgray;
+    text-decoration: line-through;
+    color: lightgray;
 }
 
 .anchor-list-link {
-  cursor: pointer;
+    cursor: pointer;
 }
 
-#root.bp3-dark .bill-content-added {
-  background-color: #2f8842;
-}
-
-#root.bp3-dark .bill-content-removed {
-  background-color: #882f2f;
-}
-
-#root.bp3-dark .bill-content-hash {
-  border-color: #fff;
+.appropriation-title {
+    margin-top: 0px;
 }
