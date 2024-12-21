@@ -2,10 +2,13 @@ import traceback
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.responses import Response
 
 from congress_fastapi.routes.members import router as members_router
 from congress_fastapi.routes.legislation import router as legislation_router
+from congress_fastapi.routes.legislation_version import (
+    router as legislation_version_router,
+)
+
 origins = [
     "http://localhost:3000",
     "https://congress.dev",
@@ -36,4 +39,5 @@ async def log_exceptions_middleware(request: Request, call_next):
 
 app.include_router(members_router)
 app.include_router(legislation_router)
+app.include_router(legislation_version_router)
 print("Loaded")

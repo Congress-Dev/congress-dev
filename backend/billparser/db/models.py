@@ -25,6 +25,7 @@ Base = declarative_base()
 
 # This will hold various things related to my appropriation parsing
 AppropriationsBase = declarative_base(metadata=MetaData(schema="appropriations"))
+PromptsBase = declarative_base(metadata=MetaData(schema="prompts"))
 
 
 class CastingArray(ARRAY):
@@ -156,6 +157,19 @@ class Version(Base):
         }
         return {k: v for (k, v) in boi.items() if v is not None}
 
+class Prompt(PromptsBase):
+    """
+    Table for holding the prompts
+    """
+
+    __tablename__ = "prompt"
+    __table_args__ = {'schema': 'prompts'}
+    prompt_id = Column(Integer, primary_key=True)
+    version = Column(String, nullable=False)
+    title = Column(String, nullable=False)
+    description = Column(String, nullable=True)
+    prompt = Column(String, nullable=False)
+
 
 class Legislation(Base):
     """
@@ -240,7 +254,35 @@ try:
 except:
     pass
 
+class PromptBatch(PromptsBase):
+    """
+    Table for holding the records for which legislation versions have run through a prompt
+    """
 
+    __tablename__ = "prompt_batch"
+    __table_args__ = {'schema': 'prompts'}
+    prompt_batch_id = Column(Integer, primary_key=True)
+    prompt_id = Column(
+        Integer,
+        ForeignKey(Prompt.prompt_id, ondelete="CASCADE"),
+        index=True,
+    )
+    legislation_version_id = Column(
+        Integer,
+        ForeignKey(LegislationVersion.legislation_version_id, ondelete="CASCADE"),
+        index=True,
+    )
+
+    created_at = Column(DateTime(timezone=False), server_default=func.now())
+    completed_at = Column(DateTime(timezone=False), nullable=True)
+
+    # Unique to each prompt, but holds info about how many items in the bill have been attempted
+    attempted = Column(Integer, nullable=False, default=0)
+    successful = Column(Integer, nullable=False, default=0)  # Generated a response
+    failed = Column(Integer, nullable=False, default=0)  # Failed to generate a response
+    skipped = Column(
+        Integer, nullable=False, default=0
+    )  # Skipped due to not matching the predicate
 class LegislationContent(Base):
     __tablename__ = "legislation_content"
 
@@ -287,6 +329,25 @@ class LegislationContent(Base):
             "ap": ap,
         }
         return {k: v for (k, v) in boi.items() if v is not None and v != {}}
+
+
+class LegislationContentTag(Base):
+    """
+    Represents a tag on a piece of legislation content
+    """
+
+    __tablename__ = "legislation_content_tag"
+
+    legislation_content_tag_id = Column(Integer, primary_key=True)
+    prompt_batch_id = Column(
+        Integer, ForeignKey(PromptBatch.prompt_batch_id), index=True, nullable=True
+    )
+    legislation_content_id = Column(
+        Integer,
+        ForeignKey("legislation_content.legislation_content_id", ondelete="CASCADE"),
+        index=True,
+    )
+    tags = Column(ARRAY(String), index=True)
 
 
 class USCRelease(Base):
@@ -746,36 +807,38 @@ class LegislativePolicyAreaAssociation(Base):
         ForeignKey("legislation.legislation_id", ondelete="CASCADE"),
         index=True,
     )
+
+
 def merge_metadata(*metadata):
     merged = MetaData()
     for metadatum in metadata:
         for table in metadatum.tables.values():
             table.to_metadata(merged)
     return merged
+
+
 merge_metadata(Base.metadata, AppropriationsBase.metadata)
+
+
 class Appropriation(AppropriationsBase):
     """
     A table for holding detected appropriations
     """
 
     __tablename__ = "appropriation"
-    
+
     appropriation_id = Column(Integer, primary_key=True)
     parent_id = Column(Integer, nullable=True)
     legislation_version_id = Column(
         Integer,
-        ForeignKey(
-            LegislationVersion.legislation_version_id, ondelete="CASCADE"
-        ),
+        ForeignKey(LegislationVersion.legislation_version_id, ondelete="CASCADE"),
         index=True,
     )
 
     # This is what we'll mainly use to actually key it off
     legislation_content_id = Column(
         Integer,
-        ForeignKey(
-            LegislationContent.legislation_content_id, ondelete="CASCADE"
-        ),
+        ForeignKey(LegislationContent.legislation_content_id, ondelete="CASCADE"),
         index=True,
     )
     # For text highlighting
@@ -792,3 +855,5 @@ class Appropriation(AppropriationsBase):
     target = Column(String, nullable=True)
 
     purpose = Column(String, default="")
+
+merge_metadata(Base.metadata, PromptsBase.metadata)

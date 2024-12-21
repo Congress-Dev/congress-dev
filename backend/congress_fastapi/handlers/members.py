@@ -1,6 +1,6 @@
 from typing import List
 
-from sqlalchemy import or_, select, func, and_
+from sqlalchemy import select, and_
 
 from billparser.db.models import (
     Legislation,
@@ -58,7 +58,6 @@ async def get_member_sponsorships_by_bioguide_id(
                 LegislationVersion.legislation_id.in_(most_recent_version),
             ),
         )
-        
         .where(LegislationSponsorship.legislator_bioguide_id == bioguide_id)
     )
     conds = []

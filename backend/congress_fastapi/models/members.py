@@ -2,7 +2,13 @@ from typing import Annotated, List, Optional
 
 from pydantic import BaseModel
 
-from billparser.db.models import Legislation, LegislationSponsorship, Legislator, LegislationVersion, Congress
+from billparser.db.models import (
+    Legislation,
+    LegislationSponsorship,
+    Legislator,
+    LegislationVersion,
+    Congress,
+)
 from congress_fastapi.models.abstract import MappableBase
 
 
