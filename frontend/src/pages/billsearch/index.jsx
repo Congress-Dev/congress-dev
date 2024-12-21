@@ -188,7 +188,7 @@ function BillSearch(props) {
           </ControlGroup>
         </FormGroup>
         <Divider />
-        <ButtonGroup className="collapse-controls">
+        <ButtonGroup className="collapse-controls" fill={true}>
           <Button icon="collapse-all" onClick={toggleCollapseAll}></Button>
           <Button icon="expand-all" onClick={toggleExpandAll}></Button>
           <Button icon="add" onClick={toggleCheckAll}></Button>

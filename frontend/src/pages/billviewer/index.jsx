@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import lodash from "lodash";
 import { useHistory } from "react-router-dom";
-import { Switch, Callout, Button, Tabs, Tab, Card, Divider, FormGroup } from "@blueprintjs/core";
+import { Switch, Tag, Callout, Button, Tabs, Tab, Card, Divider, FormGroup } from "@blueprintjs/core";
 
 import { chamberLookup } from "../../common/lookups";
 import { getBillSummary, getBillSummary2, getBillVersionDiffForSection, getBillVersionText } from "../../common/api.js";
@@ -22,17 +22,40 @@ const AppropriationItem = ({ appropriation, onNavigate }) => {
   };
 
   return (
-    <div className="appropriation-item" onClick={handleClick}>
-      <h4>{appropriation.parentId ? "Sub " : ""}Appropriation #{appropriation.appropriationId}</h4>
-      <p>Purpose:  {appropriation.briefPurpose}</p>
-      <p>Amount: ${appropriation.amount.toLocaleString()}</p>
-      {appropriation.newSpending && <p>New Spending</p>}
-      {appropriation.fiscalYears.length > 0 && (
-        <p>Fiscal Years: {appropriation.fiscalYears.join(', ')}</p>
-      )}
-      {appropriation.expirationYear && <p>Expires: {appropriation.expirationYear}</p>}
-      <p>Until Expended: {appropriation.untilExpended ? 'Yes' : 'No'}</p>
-    </div>
+    <>
+      <Callout>
+        <h4 className="appropriation-title" onClick={handleClick}>{appropriation.parentId ? "Sub " : ""}Appropriation #{appropriation.appropriationId} {appropriation.newSpending && <Tag intent="warning">New Spending</Tag>}</h4>
+        <table className="bp5-compact bp5-html-table bp5-html-table-striped appropriation-item">
+          <tbody>
+            <tr>
+              <td><b>Purpose</b></td>
+              <td>{appropriation.briefPurpose}</td>
+            </tr>
+            <tr>
+              <td><b>Amount</b></td>
+              <td>${appropriation.amount.toLocaleString()}</td>
+            </tr>
+            <tr>
+              <td><b>Until Expended</b></td>
+              <td>{appropriation.untilExpended ? 'Yes' : 'No'}</td>
+            </tr>
+            {appropriation.fiscalYears.length > 0 && (
+              <tr>
+                <td><b>Fiscal Years</b></td>
+                <td>{appropriation.fiscalYears.join(', ')}</td>
+              </tr>
+            )}
+            {appropriation.expirationYear && (
+              <tr>
+                <td><b>Expires</b></td>
+                <td>{appropriation.expirationYear}</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </Callout>
+      <br/>
+    </>
   );
 };
 // Default bill versions to choose
@@ -50,7 +73,7 @@ function BillViewer(props) {
   const [diffs, setDiffs] = useState({});
   const [textTree, setTextTree] = useState({});
   const [actionParse, setActionParse] = useState(false);
-  const [selectedTab, setSelectedTab] = useState("ud");
+  const [selectedTab, setSelectedTab] = useState("bill");
   const [dateAnchors, setDateAnchors] = useState([]);
   const [dollarAnchors, setDollarAnchors] = useState([]);
   const [treeLookup, setTreeLookup] = useState({});
@@ -242,46 +265,66 @@ function BillViewer(props) {
 
       <Divider />
       <div className="sidebar">
-        <FormGroup
-          label="Version:"
-          labelFor="bill-version-select"
-        >
-          <div class="bp5-html-select">
-            <select
-              id="bill-version-select"
-              value={(billVers || "").toUpperCase()}
-              onChange={(e) => setBillVers(e.target.value)}
-              className="bp3"
-            >
-              {lodash.map(
-                bill.legislation_versions,
-                ({ legislation_version, effective_date }, ind) => {
-                  return (
-                    <option value={legislation_version} key={`bill-version-select-${ind}`}>
-                      {legislation_version}
-                      {effective_date !== "None" ? ` - ${effective_date}` : null}
-                    </option>
-                  );
-                }
-              )}
-            </select>
-            <span class="bp5-icon bp5-icon-double-caret-vertical"></span>
-          </div>
-        </FormGroup>
-
-        <FormGroup
-          label="Display Options:"
-        >
-          <Switch
-            label="Action parsing details"
-            value={actionParse}
-            onClick={() => setActionParse(!actionParse)}
-          />
-        </FormGroup>
-
-        <Divider/>
-
         <Tabs id="sidebar-tabs" selectedTabId={selectedTab} onChange={setSelectedTab}>
+          <Tab
+            id="bill"
+            title="Bill"
+            panel={
+              <>
+                <FormGroup
+                  label="Version:"
+                  labelFor="bill-version-select"
+                >
+                  <div class="bp5-html-select">
+                    <select
+                      id="bill-version-select"
+                      value={(billVers || "").toUpperCase()}
+                      onChange={(e) => setBillVers(e.target.value)}
+                      className="bp3"
+                    >
+                      {lodash.map(
+                        bill.legislation_versions,
+                        ({ legislation_version, effective_date }, ind) => {
+                          return (
+                            <option value={legislation_version} key={`bill-version-select-${ind}`}>
+                              {legislation_version}
+                              {effective_date !== "None" ? ` - ${effective_date}` : null}
+                            </option>
+                          );
+                        }
+                      )}
+                    </select>
+                    <span class="bp5-icon bp5-icon-double-caret-vertical"></span>
+                  </div>
+                </FormGroup>
+
+                <FormGroup
+                  label="Display Options:"
+                >
+                  <Switch
+                    label="Highlight dates"
+                    value={actionParse}
+                    onClick={() => setActionParse(!actionParse)}
+                  />
+                  <Switch
+                    label="Highlight spending"
+                    value={actionParse}
+                    onClick={() => setActionParse(!actionParse)}
+                  />
+                  <Switch
+                    label="Highlight tags"
+                    value={actionParse}
+                    onClick={() => setActionParse(!actionParse)}
+                  />
+                  <Switch
+                    label="Action parsing details"
+                    value={actionParse}
+                    onClick={() => setActionParse(!actionParse)}
+                  />
+                </FormGroup>
+              </>
+            }
+          />
           <Tab
             id="ud"
             title="USCode Diffs"
