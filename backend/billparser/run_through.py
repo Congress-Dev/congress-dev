@@ -815,11 +815,11 @@ def parse_archives(
         List[dict]: List of the parsed objects
     """
     global BASE_VERSION
-    congress_session = Session()
+    session = Session()
     # Get latest release version for the base
     # TODO: Move these around to select the correct release point given the bill
     release_point = (
-        congress_session.query(USCRelease).order_by(desc(USCRelease.created_at)).limit(1).all()
+        session.query(USCRelease).order_by(desc(USCRelease.created_at)).limit(1).all()
     )
     BASE_VERSION = release_point[0].version_id
     print("Base version is", BASE_VERSION)
