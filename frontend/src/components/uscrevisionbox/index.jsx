@@ -1,7 +1,5 @@
-// Tiny component for holding information about a single USC Revision point
-
-import React, { useEffect, useState } from "react";
-
+import React from "react";
+import { Link } from "react-router-dom";
 import { Button, Callout, Elevation } from "@blueprintjs/core";
 
 function USCRevisionBox({
@@ -18,10 +16,14 @@ function USCRevisionBox({
       interactive={true}
       elevation={Elevation.TWO}
     >
-      <h2><a href={`/uscode/${usc_release_id}`}>{short_title}</a></h2>
+      <h2>
+        <Link to={`/uscode/${usc_release_id}`}>{short_title}</Link>
+      </h2>
       <p style={{ fontStyle: "italic" }}>{long_title}</p>
       <p>Effective: {effective_date}</p>
-      <Button><a href={url}>House.gov</a></Button>
+      <Button>
+        <a href={url}>House.gov</a>
+      </Button>
     </Callout>
   );
 }

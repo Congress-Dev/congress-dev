@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
-import lodash from "lodash";
 
-import { getMemberInfo, getMemberSponsoredLegislation } from "../../common/api.js";
-import LegislatorProfile from "../../components/members/legislatorProfile.jsx";
+import {
+  getMemberInfo,
+  getMemberSponsoredLegislation,
+} from "../../common/api.js";
+import { LegislatorProfile } from "../../components";
 
 function MemberViewer(props) {
   const { bioguideId } = props.match.params;
@@ -13,8 +15,17 @@ function MemberViewer(props) {
     // Grab the info from the rest API
     getMemberInfo(bioguideId).then(setMemberInfo);
     getMemberSponsoredLegislation(bioguideId).then(setSponsoredLegislation);
-  }, [bioguideId])
-  return <span><LegislatorProfile {...memberInfo} sponsoredLegislation={sponsoredLegislation.legislation_sponsorships || []}></LegislatorProfile></span >
-};
+  }, [bioguideId]);
+  return (
+    <span>
+      <LegislatorProfile
+        {...memberInfo}
+        sponsoredLegislation={
+          sponsoredLegislation.legislation_sponsorships || []
+        }
+      ></LegislatorProfile>
+    </span>
+  );
+}
 
 export default MemberViewer;

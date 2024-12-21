@@ -1,10 +1,10 @@
-import { Card, Elevation, FormGroup, InputGroup, Checkbox, Button, Divider, ControlGroup, HTMLSelect, ButtonGroup } from "@blueprintjs/core";
-import { initialVersionToFull, versionToFull } from "../../common/lookups";
-import BillSearchContent from "../../components/billsearch";
-import CollapseableSection from "../../components/collapseformgroup";
 import React, { useState, useEffect } from "react";
 import lodash from "lodash";
 import qs from "query-string";
+import { Card, Elevation, FormGroup, InputGroup, Checkbox, Button, Divider, ControlGroup, HTMLSelect, ButtonGroup } from "@blueprintjs/core";
+
+import { initialVersionToFull, versionToFull } from "../../common/lookups";
+import { BillSearchContent, CollapseableSection } from "../../components";
 
 function BillSearch(props) {
   const [resPageSize, setResPageSize] = useState(5);

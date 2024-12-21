@@ -1,6 +1,5 @@
 import React from "react";
-
-import { Card, Callout } from "@blueprintjs/core";
+import { Card } from "@blueprintjs/core";
 
 function AboutUs() {
   return (
@@ -9,14 +8,19 @@ function AboutUs() {
       <p>The source for our data is from official government websites</p>
       <ul>
         <li>
-          <a href="https://www.govinfo.gov/bulkdata" target="_blank" rel="noopener noreferrer">
+          <a
+            href="https://www.govinfo.gov/bulkdata"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             Bill Text/Statuses
           </a>
         </li>
         <li>
           <a
             href="https://uscode.house.gov/download/priorreleasepoints.htm"
-            target="_blank" rel="noopener noreferrer"
+            target="_blank"
+            rel="noopener noreferrer"
           >
             USCode Text
           </a>

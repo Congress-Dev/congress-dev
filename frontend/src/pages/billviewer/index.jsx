@@ -1,16 +1,33 @@
 import React, { useEffect, useState } from "react";
 import lodash from "lodash";
 import { useHistory } from "react-router-dom";
-import { HTMLTable, HTMLSelect, Switch, Tag, Callout, Button, Tabs, Tab, Card, Divider, FormGroup } from "@blueprintjs/core";
+import {
+  HTMLSelect,
+  Switch,
+  Callout,
+  Button,
+  Tabs,
+  Tab,
+  Card,
+  Divider,
+  FormGroup,
+} from "@blueprintjs/core";
 
 import { chamberLookup } from "../../common/lookups";
-import { getBillSummary, getBillSummary2, getBillVersionDiffForSection, getBillVersionText } from "../../common/api.js";
+import {
+  getBillSummary,
+  getBillSummary2,
+  getBillVersionDiffForSection,
+  getBillVersionText,
+} from "../../common/api.js";
 
-import AppropriationTree from "../../components/appropriationtree/index.js";
-import BillDisplay from "../../components/billdisplay";
-import BillDiffSidebar from "../../components/billdiffsidebar";
-import BillViewAnchorList from "../../components/billviewanchorlistcomp";
-import USCView from "../../components/uscview";
+import {
+  AppropriationTree,
+  BillDisplay,
+  BillDiffSidebar,
+  BillViewAnchorList,
+  USCView,
+} from "../../components/";
 
 // Default bill versions to choose
 // TODO: These should be enums
@@ -32,17 +49,11 @@ function BillViewer(props) {
   const [treeLookup, setTreeLookup] = useState({});
   const [diffMode, setDiffMode] = useState(false);
   const history = useHistory();
-  const {
-    congress,
-    chamber,
-    billNumber,
-    billVersion,
-    uscTitle,
-    uscSection,
-  } = props.match.params;
+  const { congress, chamber, billNumber, billVersion, uscTitle, uscSection } =
+    props.match.params;
 
   const [billVers, setBillVers] = useState(
-    billVersion || defaultVers[chamber.toLowerCase()]
+    billVersion || defaultVers[chamber.toLowerCase()],
   );
 
   useEffect(() => {
@@ -55,8 +66,8 @@ function BillViewer(props) {
         billNumber,
         billVersion,
         uscTitle,
-        uscSection
-      ).then(setDiffs)
+        uscSection,
+      ).then(setDiffs);
     } else {
       // If we didn't get a bill version, default to the introduced one.
       if (billVersion === undefined) {
@@ -80,20 +91,23 @@ function BillViewer(props) {
       diffStr = `/diffs/${uscTitle}/${uscSection}`;
     }
     if (billVers !== undefined) {
-      const url = `/bill/${congress}/${chamber}/${billNumber}/${billVers || billVersion}${diffStr}` +
+      const url =
+        `/bill/${congress}/${chamber}/${billNumber}/${billVers || billVersion}${diffStr}` +
         props.location.search +
-        props.location.hash
+        props.location.hash;
 
-      if(url != window.location.pathname + window.location.hash) {
+      if (url != window.location.pathname + window.location.hash) {
         props.history.push(url);
       }
       // Make sure to push the search and hash onto the url
-      getBillVersionText(congress, chamber, billNumber, billVers).then(setTextTree);
+      getBillVersionText(congress, chamber, billNumber, billVers).then(
+        setTextTree,
+      );
     }
   }, [billVers]);
   useEffect(() => {
-    if(bill.legislation_versions == null) {
-      return
+    if (bill.legislation_versions == null) {
+      return;
     }
     // If we didn't get a bill version, default to the introduced one.
     if (billVersion === undefined) {
@@ -105,7 +119,7 @@ function BillViewer(props) {
     } else {
       const validVersions = lodash.map(
         bill.legislation_versions,
-        "legislation_version"
+        "legislation_version",
       );
       if (!validVersions.includes(billVersion)) {
         setBillVers(validVersions[0]);
@@ -118,43 +132,46 @@ function BillViewer(props) {
     if (bill.legislation_id) {
       getBillSummary2(bill.legislation_id, billVersion).then(setBill2);
     }
-  }, [bill.legislation_id, billVersion])
+  }, [bill.legislation_id, billVersion]);
   useEffect(() => {
-    if(textTree == null) {
-      return
+    if (textTree == null) {
+      return;
     }
     const newLookup = {};
     const _recursive = (node) => {
-      newLookup[node.legislation_content_id] = `${node.lc_ident || node.legislation_content_id}`.toLowerCase();
+      newLookup[node.legislation_content_id] =
+        `${node.lc_ident || node.legislation_content_id}`.toLowerCase();
       if (node.children === undefined) {
         return;
       }
       node.children.map(_recursive);
-    }
+    };
     _recursive(textTree);
     setTreeLookup(newLookup);
   }, [textTree]);
   const extractDates = function (_textTree) {
-    const dateRegex = /(?:(?<month>(?:Jan|Febr)uary|March|April|May|Ju(?:ne|ly)|August|(?:Septem|Octo|Novem|Decem)ber) (?<day>\d\d?)\, (?<year>\d\d\d\d))/gmi;
+    const dateRegex =
+      /(?:(?<month>(?:Jan|Febr)uary|March|April|May|Ju(?:ne|ly)|August|(?:Septem|Octo|Novem|Decem)ber) (?<day>\d\d?)\, (?<year>\d\d\d\d))/gim;
     let _dates = [];
     lodash.forEach(_textTree.children, (node) => {
       _dates = [..._dates, ...extractDates(node)];
     });
-    const itemHash = `${_textTree.lc_ident || _textTree.legislation_content_id}`.toLowerCase();
+    const itemHash =
+      `${_textTree.lc_ident || _textTree.legislation_content_id}`.toLowerCase();
     let m;
     while ((m = dateRegex.exec(_textTree.content_str)) !== null) {
       // This is necessary to avoid infinite loops with zero-width matches
       if (m.index === dateRegex.lastIndex) {
         dateRegex.lastIndex++;
       }
-      _dates.push({title: m[0], hash: itemHash});
+      _dates.push({ title: m[0], hash: itemHash });
     }
 
     return _dates;
-  }
+  };
   useEffect(() => {
-    if(textTree == null) {
-      return
+    if (textTree == null) {
+      return;
     }
     setDateAnchors(extractDates(textTree));
   }, [textTree]);
@@ -166,29 +183,37 @@ function BillViewer(props) {
         ele.scrollIntoView();
       }
     }
-  }
+  };
 
   return (
     <Card className="page">
       <Button
         className="congress-link"
         icon="share"
-        onClick={() => {  window.open(`https://congress.gov/bill/${bill.congress}-congress/${bill.chamber}-bill/${bill.number}`, '_blank') }}
+        onClick={() => {
+          window.open(
+            `https://congress.gov/bill/${bill.congress}-congress/${bill.chamber}-bill/${bill.number}`,
+            "_blank",
+          );
+        }}
       />
-      <h1>{`${chamberLookup[bill.chamber]} ${bill.number}`} - {bill.title}</h1>
+      <h1>
+        {`${chamberLookup[bill.chamber]} ${bill.number}`} - {bill.title}
+      </h1>
 
       <Divider />
       <div className="sidebar">
-        <Tabs id="sidebar-tabs" selectedTabId={selectedTab} onChange={setSelectedTab}>
+        <Tabs
+          id="sidebar-tabs"
+          selectedTabId={selectedTab}
+          onChange={setSelectedTab}
+        >
           <Tab
             id="bill"
             title="Bill"
             panel={
               <>
-                <FormGroup
-                  label="Version:"
-                  labelFor="bill-version-select"
-                >
+                <FormGroup label="Version:" labelFor="bill-version-select">
                   <HTMLSelect
                     id="bill-version-select"
                     value={(billVers || "").toUpperCase()}
@@ -198,17 +223,15 @@ function BillViewer(props) {
                       bill.legislation_versions,
                       ({ legislation_version, effective_date }, ind) => {
                         return {
-                          label: `${legislation_version} ${effective_date !== "None" ? ` - ${effective_date}` : ''}`,
-                          value: legislation_version
+                          label: `${legislation_version} ${effective_date !== "None" ? ` - ${effective_date}` : ""}`,
+                          value: legislation_version,
                         };
-                      }
+                      },
                     )}
                   />
                 </FormGroup>
 
-                <FormGroup
-                  label="Display Options:"
-                >
+                <FormGroup label="Display Options:">
                   <Switch
                     label="Highlight dates"
                     value={actionParse}
@@ -236,32 +259,40 @@ function BillViewer(props) {
           <Tab
             id="ud"
             title="USCode Diffs"
-            panel={<BillDiffSidebar
-              congress={congress}
-              chamber={chamber}
-              billNumber={billNumber}
-              billVersion={billVers || billVersion}
-            />}
+            panel={
+              <BillDiffSidebar
+                congress={congress}
+                chamber={chamber}
+                billNumber={billNumber}
+                billVersion={billVers || billVersion}
+              />
+            }
           />
           <Tab
             id="datelist"
             title="Dates"
-            panel={<BillViewAnchorList
-              anchors={dateAnchors}
-              congress={congress}
-              chamber={chamber}
-              billNumber={billNumber}
-              billVersion={billVersion}
-            />}
+            panel={
+              <BillViewAnchorList
+                anchors={dateAnchors}
+                congress={congress}
+                chamber={chamber}
+                billNumber={billNumber}
+                billVersion={billVersion}
+              />
+            }
           />
           {bill2 && bill2.appropriations && bill2.appropriations.length > 0 && (
             <Tab
               id="dollarlist"
               title="Dollars"
-              panel={<AppropriationTree appropriations={bill2.appropriations} onNavigate={scrollContentIdIntoView}/>}
+              panel={
+                <AppropriationTree
+                  appropriations={bill2.appropriations}
+                  onNavigate={scrollContentIdIntoView}
+                />
+              }
             />
           )}
-
         </Tabs>
       </div>
 
