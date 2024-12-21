@@ -910,7 +910,8 @@ def parse_archives(
         for name in names
     )
     for r in frec:
-        rec.extend(r)
+        if r is not None:
+            rec.extend(r)
 
     return rec
 
