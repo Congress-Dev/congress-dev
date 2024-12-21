@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import lodash from "lodash";
 
-import BillCard from "components";
+import { BillCard } from "components";
 import { getCongressSearch } from "common/api";
 
 function BillSearchContent(props) {
