@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
-import lodash from "lodash";
-import { md5 } from "../../common/other";
+import React from "react";
 import { useHistory } from "react-router-dom";
-function BillViewAnchorList(props) {
+import lodash from "lodash";
+
+function BillViewAnchorList({ anchors }) {
     const history = useHistory();
-    const { anchors } = props;
+
     return (
         <>
             <p>

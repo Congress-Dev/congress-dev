@@ -1,4 +1,5 @@
 const webpack = require("webpack");
+const path = require("path");
 
 module.exports = function override(config, env) {
     const fallback = config.resolve.fallback || {};
@@ -12,6 +13,12 @@ module.exports = function override(config, env) {
         url: false, // require.resolve("url") can be polyfilled here if needed
         zlib: false, // require.resolve("browserify-zlib") can be polyfilled here if needed
     });
+    config.resolve.alias = {
+        "common": path.resolve(__dirname, "src/common"),
+        "components": path.resolve(__dirname, "src/components"),
+        "pages": path.resolve(__dirname, "src/pages"),
+        "styles": path.resolve(__dirname, "src/styles"),
+    };
     config.resolve.fallback = fallback;
     config.plugins = (config.plugins || []).concat([
         new webpack.ProvidePlugin({

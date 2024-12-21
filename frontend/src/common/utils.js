@@ -8,3 +8,10 @@ export const toastError = (e) => {
         message: `Something went wrong!`,
     });
 };
+
+export const getLongestString = (str1, str2) => {
+    if (str1.length > str2.length) {
+        return str1;
+    }
+    return str2;
+}

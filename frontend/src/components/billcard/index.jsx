@@ -1,13 +1,11 @@
 import React from "react";
 import lodash from "lodash";
 import { withRouter, Link } from "react-router-dom";
-
 import { Callout, Breadcrumbs, Breadcrumb, Button } from "@blueprintjs/core";
 
-import { chamberLookup, versionToFull } from "../../common/lookups";
+import { chamberLookup, versionToFull } from "common/lookups";
 
-function BillCard(props) {
-    const { bill } = props;
+function BillCard({ bill }) {
     function genTitle() {
         const { legislation_versions = [] } = bill;
 
@@ -21,11 +19,13 @@ function BillCard(props) {
             </>
         );
     }
+
     function getFirstEffectiveDate() {
         const { legislation_versions = [] } = bill;
         const dateStr = legislation_versions[0].effective_date;
         return `${dateStr}`;
     }
+
     function renderVersions() {
         const { legislation_versions = [] } = bill;
         const len = legislation_versions.length;
@@ -48,6 +48,7 @@ function BillCard(props) {
             />
         );
     }
+
     return (
         <Callout className="bill-card">
             <Button

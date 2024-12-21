@@ -2,7 +2,7 @@
 import React from "react";
 import { Card, Callout } from "@blueprintjs/core";
 
-import { USCSidebar, USCView } from "../../components";
+import { USCSidebar, USCView } from "components";
 
 function USCodeViewer(props) {
     const { uscReleaseId, uscTitle, uscSection } = props.match.params;

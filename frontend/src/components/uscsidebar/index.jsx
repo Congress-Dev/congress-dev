@@ -2,28 +2,22 @@
 import React, { useEffect, useState } from "react";
 import lodash from "lodash";
 import { withRouter } from "react-router-dom";
-import { Breadcrumbs, Boundary } from "@blueprintjs/core";
-
 import { Tree } from "@blueprintjs/core";
 
 import {
     getUSCTitleList,
-    getUSCSectionList,
     getUSCLevelSections,
     getUSCSectionLineage,
-} from "../../common/api";
+} from "common/api";
 
 function USCSidebar(props) {
     const [tree, setTree] = useState([]);
     const [treeExpansion, setTreeExpansion] = useState({ 0: true });
     const [internalTree, setInternalTree] = useState({});
-    const [titleList, setTitleList] = useState([]);
-    const [sectionList, setSectionList] = useState([]);
 
     useEffect(() => {
         if (!props.title) {
             getUSCTitleList(props.release).then((res) => {
-                setTitleList(res);
                 let n = 0;
                 let intUpdates = {};
                 let childNodes = lodash.map(
@@ -63,7 +57,6 @@ function USCSidebar(props) {
             // TODO: When a user lands on the section url, we need to drill down and expand for them
             // getUSCSectionList(props.release, props.title).then(setSectionList);
             getUSCTitleList(props.release).then((res) => {
-                setTitleList(res);
                 let n = 0;
                 let intUpdates = {};
                 let childNodes = lodash.map(
@@ -179,6 +172,11 @@ function USCSidebar(props) {
         }
     }, [props.section]);
 
+    useEffect(() => {
+        const newTree = lodash.map(tree, drillExpansion);
+        setTree(newTree);
+    }, [treeExpansion, internalTree]);
+
     function drillExpansion(node) {
         let childNodes = [];
         if (treeExpansion[node.id] === true) {
@@ -190,14 +188,11 @@ function USCSidebar(props) {
             childNodes: lodash.uniqBy(childNodes, "id"),
         };
     }
-    useEffect(() => {
-        const newTree = lodash.map(tree, drillExpansion);
-        setTree(newTree);
-    }, [treeExpansion, internalTree]);
 
     function navigate(url) {
         props.history.push(url);
     }
+
     function navigateToSection(node) {
         if (node.number) {
             navigate(
@@ -210,6 +205,7 @@ function USCSidebar(props) {
             // props.history.push(`/bill/${congress}/${chamber}/${billNumber}/${billVersion}`);
         }
     }
+
     function onExpand(node) {
         if (node.childNodes.length === 0) {
             getUSCLevelSections(
@@ -249,9 +245,11 @@ function USCSidebar(props) {
         }
         setTreeExpansion({ ...treeExpansion, [node.id]: true });
     }
+
     function onCollapse(node) {
         setTreeExpansion({ ...treeExpansion, [node.id]: false });
     }
+
     return (
         <Tree
             contents={tree}

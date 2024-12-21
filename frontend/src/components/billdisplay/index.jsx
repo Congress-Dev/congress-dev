@@ -1,49 +1,14 @@
-// Will have to handle fetching the bill text, and formatting it correctly.
-
 import React, { useEffect, useState } from "react";
-import { useHistory } from "react-router-dom";
-
+import { useHistory, Link } from "react-router-dom";
 import lodash from "lodash";
-
 import { Tooltip, Spinner } from "@blueprintjs/core";
 
-import { md5 } from "../../common/other";
+import { md5 } from "common/other";
+import { VALID_ACTIONS } from "common/enums";
+import { getLongestString } from "common/utils";
 
-import { getBillVersionText } from "../../common/api.js";
-import "../../styles/actions.scss";
-import "../../styles/bill-view.scss";
-
-window.lodash = lodash;
-
-// Source: backend/billparser/actions/__init__.py
-const VALID_ACTIONS = [
-    "SHORT-TITLE",
-    "PURPOSE",
-    "CONGRESS-FINDS",
-    "REPLACE-SECTION",
-    "IN-CONTEXT",
-    "AMEND-MULTIPLE",
-    "STRIKE-TEXT",
-    "STRIKE-TEXT-MULTIPLE",
-    "STRIKE-INSERT-SECTION",
-    "INSERT-SECTION-AFTER",
-    "INSERT-END",
-    "INSERT-TEXT-AFTER",
-    "INSERT-TEXT",
-    "INSERT-TEXT-END",
-    "STRIKE-SECTION-INSERT",
-    "STRIKE-SUBSECTION",
-    "STRIKE-PARAGRAPHS-MULTIPLE",
-    "REDESIGNATE",
-    "REPEAL",
-    "EFFECTIVE-DATE",
-    "TABLE-OF-CONTENTS",
-    "TABLE-OF-CHAPTERS",
-    "INSERT-CHAPTER-AT-END",
-    "TERM-DEFINITION",
-    "DATE",
-    "FINANCIAL",
-];
+import "styles/actions.scss";
+import "styles/bill-view.scss";
 
 function BillDisplay(props) {
     // TODO: Add minimap scrollbar
@@ -52,7 +17,6 @@ function BillDisplay(props) {
     // TODO: Add highlight feature to permalink in the url ?link=a/1/ii&highlight=a/1/ii,a/1/v
     const history = useHistory();
     const textTree = props.textTree;
-    // const [textTree, setTextTree] = useState({});
     const [activeHash, setActiveHash] = useState(
         (history.location.hash || "#").slice(1) || "",
     );
@@ -70,12 +34,6 @@ function BillDisplay(props) {
         setActiveHash((history.location.hash || "#").slice(1) || "");
     }, [history.location.hash]);
 
-    useEffect(() => {
-        const { congress, chamber, billNumber, billVersion } = props;
-        // setTextTree({ loading: true });
-        // getBillVersionText(congress, chamber, billNumber, billVersion).then(setTextTree);
-    }, [props.billVersion]);
-
     function goUpParentChain(element) {
         if (
             element &&
@@ -92,9 +50,8 @@ function BillDisplay(props) {
 
     function changeUrl(event) {
         history.replace({ hash: `#${goUpParentChain(event.target)}` });
-        event.preventDefault();
-        event.stopPropagation();
     }
+
     function generateLinkToCite(citeLink) {
         const { congress, chamber, billNumber, billVersion } = props;
         const parts = citeLink.split("/");
@@ -105,24 +62,19 @@ function BillDisplay(props) {
                 Math.max(paddedTitle.lastIndexOf("0"), paddedTitle.length - 2),
             );
             return (
-                <a
-                    href={`/bill/${congress}/${chamber}/${billNumber}/${billVersion}/diffs/${paddedTitle}/${parts[4].slice(
+                <Link
+                    to={`/bill/${congress}/${chamber}/${billNumber}/${billVersion}/diffs/${paddedTitle}/${parts[4].slice(
                         1,
                     )}#${itemHash}`}
                 >
                     {citeLink}
-                </a>
+                </Link>
             );
         } else {
             return null;
         }
     }
-    function getLongest(str1, str2) {
-        if (str1.length > str2.length) {
-            return str1;
-        }
-        return str2;
-    }
+
     function generateActionStr(action) {
         let actionStr = [];
         if (props.showTooltips === false) {
@@ -130,7 +82,7 @@ function BillDisplay(props) {
         }
         let cite_link = "";
         lodash.forEach(action, (actionP) => {
-            cite_link = getLongest(actionP.parsed_cite || "", cite_link);
+            cite_link = getLongestString(actionP.parsed_cite || "", cite_link);
             const keys = lodash
                 .chain(actionP)
                 .keys()
@@ -164,6 +116,7 @@ function BillDisplay(props) {
         }
         return "";
     }
+
     function generateActionHighlighting(contentStr, action) {
         if (props.showTooltips === false) {
             return contentStr;
@@ -214,6 +167,7 @@ function BillDisplay(props) {
             />
         );
     }
+
     function renderRecursive(node) {
         return (
             <>
@@ -239,7 +193,7 @@ function BillDisplay(props) {
                         );
                         const itemHash =
                             `${lc_ident || legislation_content_id}`.toLowerCase();
-                        const outerClass = `bill-content-${content_type} bill-content-section ${
+                        const outerClass = `content-${content_type} bill-content-section ${
                             activeHash !== "" && activeHash === itemHash
                                 ? "usc-content-hash"
                                 : ""
@@ -329,6 +283,7 @@ function BillDisplay(props) {
             </>
         );
     }
+
     if (
         textTree == null ||
         textTree.loading ||

@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from "react";
 import lodash from "lodash";
-
 import { withRouter } from "react-router-dom";
-
 import { Tree } from "@blueprintjs/core";
 
-import { getBillVersionDiffSummary, capFirstLetter } from "../../common/api.js";
-import { chamberLookup } from "../../common/lookups.js";
+import { getBillVersionDiffSummary, capFirstLetter } from "common/api";
+import { chamberLookup } from "common/lookups";
 
 function BillDiffSidebar(props) {
     const [tree, setTree] = useState([]);
@@ -25,6 +23,7 @@ function BillDiffSidebar(props) {
             );
         }
     }
+
     useEffect(() => {
         if (congress && chamber && billNumber && billVersion) {
             getBillVersionDiffSummary(
@@ -78,12 +77,15 @@ function BillDiffSidebar(props) {
             });
         }
     }, [congress, chamber, billNumber, billVersion, treeExpansion]);
+
     function onExpand(node) {
         setTreeExpansion({ ...treeExpansion, [node.id]: true });
     }
+
     function onCollapse(node) {
         setTreeExpansion({ ...treeExpansion, [node.id]: false });
     }
+
     return (
         <Tree
             contents={tree}

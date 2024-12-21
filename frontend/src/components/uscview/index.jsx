@@ -1,17 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { useHistory, Link } from "react-router-dom";
-
 import lodash from "lodash";
-
-import { Spinner } from "@blueprintjs/core";
-
-import { getUSCSectionContent } from "../../common/api";
-import { md5 } from "../../common/other";
-
 import { diffWords } from "diff";
 import xmldoc from "xmldoc";
+import { Spinner } from "@blueprintjs/core";
 
-import "../../styles/usc-view.scss";
+import { getUSCSectionContent } from "common/api";
+import { md5 } from "common/other";
+
+import "styles/usc-view.scss";
 
 function USCView(props) {
     const history = useHistory();
@@ -36,6 +33,7 @@ function USCView(props) {
             getUSCSectionContent(release, title, section).then(setContentTree);
         }
     }, [release, title, section]);
+
     function diffStyle(diffList) {
         return diffList.map((part, ind) => {
             let style = "unchanged";
@@ -45,18 +43,20 @@ function USCView(props) {
                 style = "added";
             }
             return (
-                <span className={`usc-content-${style}`} key={ind}>
+                <span className={`content-${style}`} key={ind}>
                     {" "}
                     {part.value}
                 </span>
             );
         });
     }
+
     function removeCitations(str) {
         return str
             .replace(/\<usccite src.*?\"\>/g, "")
             .replace(/\<\/usccite\>/g, "");
     }
+
     function resolveCitations(str) {
         if (!str) {
             return str;
@@ -86,6 +86,7 @@ function USCView(props) {
         }
         return str;
     }
+
     function computeDiff(item) {
         let newItem = Object.assign({}, item);
         const itemDiff = diffs[`${item.usc_content_id}`];
@@ -111,6 +112,7 @@ function USCView(props) {
         }
         return newItem;
     }
+
     function goUpParentChain(element) {
         if (
             element.className.indexOf("usc-content-section") > -1 &&
@@ -121,6 +123,7 @@ function USCView(props) {
         }
         return goUpParentChain(element.parentElement);
     }
+
     function changeUrl(event) {
         if (event.target.tagName.toLowerCase() !== "a") {
             history.replace({ hash: `#${goUpParentChain(event.target)}` });
@@ -128,6 +131,7 @@ function USCView(props) {
             event.stopPropagation();
         }
     }
+
     function renderRecursive(node) {
         const newChildren = lodash
             .chain(node.children || [])
@@ -201,9 +205,11 @@ function USCView(props) {
             </>
         );
     }
+
     if (contentTree.loading) {
         return <Spinner intent="primary" />;
     }
+
     return <>{renderRecursive(contentTree)}</>;
 }
 

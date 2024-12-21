@@ -3,8 +3,8 @@ import React, { useEffect, useState } from "react";
 import {
     getMemberInfo,
     getMemberSponsoredLegislation,
-} from "../../common/api.js";
-import { LegislatorProfile } from "../../components";
+} from "common/api";
+import { LegislatorProfile } from "components";
 
 function MemberViewer(props) {
     const { bioguideId } = props.match.params;
@@ -16,6 +16,7 @@ function MemberViewer(props) {
         getMemberInfo(bioguideId).then(setMemberInfo);
         getMemberSponsoredLegislation(bioguideId).then(setSponsoredLegislation);
     }, [bioguideId]);
+
     return (
         <span>
             <LegislatorProfile

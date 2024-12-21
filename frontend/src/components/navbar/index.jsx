@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useHistory } from "react-router-dom";
-import { version } from "../../common/version";
 import {
     Alignment,
     Button,
@@ -13,34 +12,26 @@ import {
 
 function NavBar() {
     const history = useHistory();
-
     const [isDarkMode, setIsDarkMode] = useState(() => {
-        // Check if 'dark-mode' key exists in localStorage
         const savedTheme = localStorage.getItem("dark-mode");
-        const newState = savedTheme ? JSON.parse(savedTheme) : false;
-        if (newState) {
-            window.root.classList.add("bp5-dark");
-        } else {
-            window.root.classList.remove("bp5-dark");
-        }
-        return newState;
+        return savedTheme ? JSON.parse(savedTheme) : false;
     });
 
-    // Function to toggle dark mode class on the <html> element
     const toggleDarkMode = () => {
         setIsDarkMode((prevState) => {
             const newState = !prevState;
             localStorage.setItem("dark-mode", JSON.stringify(newState));
-
-            if (newState) {
-                window.root.classList.add("bp5-dark");
-            } else {
-                window.root.classList.remove("bp5-dark");
-            }
-
             return newState;
         });
     };
+
+    useEffect(() => {
+        if (isDarkMode) {
+            window.root.classList.add("bp5-dark");
+        } else {
+            window.root.classList.remove("bp5-dark");
+        }
+    }, [isDarkMode]);
 
     return (
         <Navbar className="main-navbar">

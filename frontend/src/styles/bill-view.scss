@@ -17,26 +17,6 @@
     font-weight: bolder;
 }
 
-.bill-content-added {
-    background-color: #cdffd8;
-}
-.bill-content-removed {
-    background-color: #ffdce0;
-    text-decoration: line-through;
-    text-decoration-color: #ff576b;
-}
-
-.bill-content-hash {
-    border-width: 2px;
-    border-style: dashed;
-    border-color: rgba($color: #000000, $alpha: 0.5);
-    margin-left: 0px;
-    padding-left: 18px;
-}
-
-.bill-content-quoted-block {
-}
-
 .anchor-list-bad {
     text-decoration: line-through;
     color: lightgray;
@@ -44,18 +24,6 @@
 
 .anchor-list-link {
     cursor: pointer;
-}
-
-#root.bp5-dark .bill-content-added {
-    background-color: #2f8842;
-}
-
-#root.bp5-dark .bill-content-removed {
-    background-color: #882f2f;
-}
-
-#root.bp5-dark .bill-content-hash {
-    border-color: #fff;
 }
 
 .appropriation-title {

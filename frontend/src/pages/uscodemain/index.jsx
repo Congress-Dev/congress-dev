@@ -3,11 +3,12 @@ import React, { useEffect, useState } from "react";
 import lodash from "lodash";
 import { Card } from "@blueprintjs/core";
 
-import { USCRevisionBox } from "../../components";
-import { getUSCRevisions } from "../../common/api";
+import { USCRevisionBox } from "components";
+import { getUSCRevisions } from "common/api";
 
 function USCodeRevisionList() {
     const [releases, setReleases] = useState([]);
+
     useEffect(() => {
         getUSCRevisions().then(setReleases);
     }, []);

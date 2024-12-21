@@ -2,17 +2,10 @@ import lodash from "lodash";
 import { Callout, HTMLTable, Tag } from "@blueprintjs/core";
 
 const AppropriationItem = ({ appropriation, onNavigate }) => {
-    // Function to handle click events
-    const handleClick = () => {
-        // This function could navigate to the specific clause in the legislation
-        // For example, by setting the window's location hash to an anchor tag or by using a router navigation method
-        onNavigate(appropriation.legislationContentId);
-    };
-
     return (
         <>
             <Callout>
-                <h4 className="appropriation-title" onClick={handleClick}>
+                <h4 className="appropriation-title" onClick={() => onNavigate(appropriation.legislationContentId)}>
                     {appropriation.parentId ? "Sub " : ""}Appropriation #
                     {appropriation.appropriationId}{" "}
                     {appropriation.newSpending && (

@@ -13,13 +13,13 @@ import {
     FormGroup,
 } from "@blueprintjs/core";
 
-import { chamberLookup } from "../../common/lookups";
+import { chamberLookup } from "common/lookups";
 import {
     getBillSummary,
     getBillSummary2,
     getBillVersionDiffForSection,
     getBillVersionText,
-} from "../../common/api.js";
+} from "common/api";
 
 import {
     AppropriationTree,
@@ -27,7 +27,7 @@ import {
     BillDiffSidebar,
     BillViewAnchorList,
     USCView,
-} from "../../components/";
+} from "components";
 
 // Default bill versions to choose
 // TODO: These should be enums
@@ -85,6 +85,7 @@ function BillViewer(props) {
         }
         getBillSummary(congress, chamber, billNumber).then(setBill);
     }, [props.location.pathname]);
+
     useEffect(() => {
         // When the user selects a new version, update the url
         // TODO: Update this to replace state when changing the bill version multiple times
@@ -107,6 +108,7 @@ function BillViewer(props) {
             );
         }
     }, [billVers]);
+
     useEffect(() => {
         if (bill.legislation_versions == null) {
             return;
@@ -130,11 +132,13 @@ function BillViewer(props) {
             }
         }
     }, [bill.legislation_versions]);
+
     useEffect(() => {
         if (bill.legislation_id) {
             getBillSummary2(bill.legislation_id, billVersion).then(setBill2);
         }
     }, [bill.legislation_id, billVersion]);
+
     useEffect(() => {
         if (textTree == null) {
             return;
@@ -151,6 +155,14 @@ function BillViewer(props) {
         _recursive(textTree);
         setTreeLookup(newLookup);
     }, [textTree]);
+
+    useEffect(() => {
+        if (textTree == null) {
+            return;
+        }
+        setDateAnchors(extractDates(textTree));
+    }, [textTree]);
+
     const extractDates = function (_textTree) {
         const dateRegex =
             /(?:(?<month>(?:Jan|Febr)uary|March|April|May|Ju(?:ne|ly)|August|(?:Septem|Octo|Novem|Decem)ber) (?<day>\d\d?)\, (?<year>\d\d\d\d))/gim;
@@ -171,12 +183,7 @@ function BillViewer(props) {
 
         return _dates;
     };
-    useEffect(() => {
-        if (textTree == null) {
-            return;
-        }
-        setDateAnchors(extractDates(textTree));
-    }, [textTree]);
+
     const scrollContentIdIntoView = (contentId) => {
         if (treeLookup[contentId] !== undefined) {
             const ele = document.getElementById(treeLookup[contentId]);

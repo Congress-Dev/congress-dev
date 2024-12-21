@@ -99,3 +99,36 @@
 .bp5-divider {
     margin: 10px 0px;
 }
+
+.content-added {
+    background-color: #cdffd8;
+}
+
+.content-removed {
+    background-color: #ffdce0;
+    text-decoration: line-through;
+    text-decoration-color: #ff576b;
+}
+
+.content-hash {
+    border-width: 2px;
+    border-style: dashed;
+    border-color: rgba($color: #000000, $alpha: 0.5);
+    margin-left: 0px;
+    padding-left: 18px;
+}
+
+#root.bp5-dark {
+    .content-added {
+        background-color: #2f8842;
+    }
+
+    .content-removed {
+        background-color: #882f2f;
+    }
+
+    .content-hash {
+        border-color: #fff;
+    }
+}
+

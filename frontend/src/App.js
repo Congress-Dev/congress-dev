@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
 
-import NavBar from "./components/navbar";
+import NavBar from "components/navbar";
 import {
     AboutUs,
     FrontPage,
@@ -10,9 +10,9 @@ import {
     USCodeViewer,
     BillSearch,
     MemberViewer,
-} from "./pages";
+} from "pages";
 
-import "./styles/common.scss";
+import "styles/common.scss";
 
 function App() {
     return (
