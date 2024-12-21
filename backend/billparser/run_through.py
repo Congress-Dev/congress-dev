@@ -47,7 +47,7 @@ from billparser.metadata.sponsors import extract_sponsors_from_form
 
 from billparser.utils.logger import LogContext
 from billparser.utils.cite_parser import parse_action_for_cite
-from billparser.db.handler import Session
+from billparser.db.handler import Session, init_session
 from billparser.translater import translate_paragraph
 
 from joblib import Parallel, delayed
@@ -465,6 +465,7 @@ def retrieve_existing_legislations(session) -> List[dict]:
 
 
 def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object) -> LegislationVersion:
+    init_session()
     with LogContext(
         {
             "bill_number": bill_obj["bill_number"],

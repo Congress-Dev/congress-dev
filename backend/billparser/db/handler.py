@@ -25,8 +25,14 @@ engine = create_engine(DATABASE_URI, poolclass=NullPool, connect_args={'sslmode'
 Base.metadata.create_all(engine)
 
 ribber = string.ascii_letters + string.digits
-
 Session = scoped_session(sessionmaker(bind=engine, query_cls=query_callable(regions)))
+
+def init_session():
+    """Initialize the Session object in the current process."""
+    global Session
+    engine = create_engine(DATABASE_URI, poolclass=NullPool, connect_args={'sslmode': "disable"})
+    Session = scoped_session(sessionmaker(bind=engine))
+    
 def unidecode_str(input_str: str) -> str:
     return unidecode(input_str or "").replace("--", "-")
 
