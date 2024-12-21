@@ -10,11 +10,12 @@ yarn start
 
 ## Windows Development w/ VSCode
 
-- Install Prettier extension for VSCode
 - Install Node.js for Windows (reboot after installing)
 - Run Powershell as Administrator
     - Execute `Set-ExecutionPolicy Unrestricted`
 - Run `yarn install`
+- Install Prettier extension for VSCode
+    - Under Preferences > Settings set `Default Formatter` to Prettier
 - To format code:
     - Open command pallete in VSCode with `Ctrl+Shift+P` and run `Format Document`
     - OR: Run `yarn format` to format code for all files before creating pull request
