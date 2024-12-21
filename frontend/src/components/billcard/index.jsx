@@ -1,22 +1,23 @@
 import React from "react";
 import lodash from "lodash";
-import { withRouter } from "react-router-dom";
+import { withRouter, Link } from "react-router-dom";
 
-import { Card, Tag } from "@blueprintjs/core";
+import { Callout, Breadcrumbs, Breadcrumb, Button } from "@blueprintjs/core";
 
 import { chamberLookup, versionToFull } from "../../common/lookups";
 
 function BillCard(props) {
   const { bill } = props;
   function genTitle() {
+    const { legislation_versions = [] } = bill;
+
     return (
       <>
-        <a
-          href={`https://congress.gov/bill/${bill.congress}-congress/${bill.chamber}-bill/${bill.number}`}
+        <Link
+          to={`/bill/${bill.congress}/${bill.chamber}/${bill.number}/${legislation_versions[legislation_versions.length - 1].legislation_version}`}
         >
           {`${chamberLookup[bill.chamber]} ${bill.number}`}
-        </a>
-        <Tag minimal={true}>Congress.gov</Tag>
+        </Link>
       </>
     );
   }
@@ -29,42 +30,38 @@ function BillCard(props) {
     const { legislation_versions = [] } = bill;
     const len = legislation_versions.length;
     return (
-      <>
-        {lodash.map(legislation_versions, (vers, ind) => {
-          const anchorObj = (
-            <a
-              href={`/bill/${bill.congress}/${bill.chamber}/${bill.number}/${vers.legislation_version}`}
-              key={`item-${ind}`}
-            >
-              {versionToFull[vers.legislation_version.toLowerCase()]}
-            </a>
-          );
-          if (ind < len - 1) {
-            return (
-              <>
-                {anchorObj}
-                <span>{" >> "}</span>
-              </>
-            );
-          } else {
-            return anchorObj;
+      <Breadcrumbs className="bill-versions"
+        breadcrumbRenderer={({ text, link, ...rest }) => (
+            <Breadcrumb {...rest}>
+                <Link to={link}>{text}</Link>
+            </Breadcrumb>
+        )}
+        items={lodash.map(legislation_versions, (vers, ind) => {
+          return {
+            text: versionToFull[vers.legislation_version.toLowerCase()],
+            link: `/bill/${bill.congress}/${bill.chamber}/${bill.number}/${vers.legislation_version}`
           }
         })}
-      </>
+      />
     );
   }
   return (
-    <Card>
-      <h2 style={{ marginTop: "0px" }}>{genTitle()}</h2>
-      <span style={{ fontStyle: "italic" }}>{bill.title}</span>
-      <br />
+    <Callout className="bill-card">
+      <Button
+        className="congress-link"
+        icon="share"
+        onClick={() => {  window.open(`https://congress.gov/bill/${bill.congress}-congress/${bill.chamber}-bill/${bill.number}`, '_blank') }}
+      />
+      <h2 style={{ marginTop: "0px", marginBottom: "0px" }}>{genTitle()} - {bill.title}</h2>
       <span className="bill-card-introduced-date">
-        <span style={{ fontWeight: "bold" }}>First Introduced:</span>{" "}
+        <span style={{ fontWeight: "bold" }}>Introduced:</span>{" "}
         {getFirstEffectiveDate()}
       </span>
       <br />
-      {renderVersions()}
-    </Card>
+      <span style={{ fontWeight: "bold" }}>Tags:</span>{" "}
+      <br />
+      <span style={{ fontWeight: "bold" }}>Versions:</span>{" "}{renderVersions()}
+    </Callout>
   );
 }
 

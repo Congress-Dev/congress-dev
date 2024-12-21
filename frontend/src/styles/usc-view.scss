@@ -1,6 +1,9 @@
 .usc-content-section {
-  margin-left: 20px;
+  margin-left: 15px;
   margin-bottom: 0px;
+  margin-top: 5px;
+  border-left: 1px dashed gray;
+  padding-left: 10px;
 }
 
 .usc-content-continue {
@@ -28,4 +31,16 @@
   border-color: rgba($color: #000000, $alpha: .5);
   margin-left: 0px;
   padding-left: 18px;
+}
+
+#root.bp3-dark .usc-content-added {
+  background-color: #2f8842;
+}
+
+#root.bp3-dark .usc-content-removed {
+  background-color: #882f2f;
+}
+
+#root.bp3-dark .usc-content-hash {
+  border-color: #fff;
 }

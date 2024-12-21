@@ -5,8 +5,7 @@ import { useHistory } from "react-router-dom";
 
 import lodash from "lodash";
 
-import SyncLoader from "react-spinners/SyncLoader";
-import { Tooltip } from "@blueprintjs/core";
+import { Tooltip, Spinner } from "@blueprintjs/core";
 
 import { md5 } from "../../common/other";
 
@@ -277,7 +276,7 @@ function BillDisplay(props) {
     );
   }
   if (textTree.loading || textTree.content_type !== "legis-body") {
-    return <SyncLoader loading={true} />;
+    return <Spinner className="loading-spinner" intent="primary" />;
   }
 
   // TODO: Convert this to recursive components to speed up rerenders
