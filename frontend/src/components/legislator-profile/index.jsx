@@ -1,6 +1,7 @@
 import React from "react";
 import { Card, Elevation, H5, H6, Divider } from "@blueprintjs/core";
-import SponsoredLegislation from "./sponsoredLegislation";
+
+import { SponsoredLegislation } from "components";
 
 const LegislatorProfile = ({
     bioguideId,
@@ -41,7 +42,7 @@ const LegislatorProfile = ({
             </div>
             <Divider />
             <p>More information about the legislator...</p>
-            <div>{renderSponsoredLegislation()}</div>>
+            <div>{renderSponsoredLegislation()}</div>
         </Card>
     );
 };

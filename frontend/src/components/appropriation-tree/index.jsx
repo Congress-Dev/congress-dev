@@ -5,7 +5,12 @@ const AppropriationItem = ({ appropriation, onNavigate }) => {
     return (
         <>
             <Callout>
-                <h4 className="appropriation-title" onClick={() => onNavigate(appropriation.legislationContentId)}>
+                <h4
+                    className="appropriation-title"
+                    onClick={() =>
+                        onNavigate(appropriation.legislationContentId)
+                    }
+                >
                     {appropriation.parentId ? "Sub " : ""}Appropriation #
                     {appropriation.appropriationId}{" "}
                     {appropriation.newSpending && (

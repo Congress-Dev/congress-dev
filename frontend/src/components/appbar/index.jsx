@@ -10,7 +10,7 @@ import {
     NavbarHeading,
 } from "@blueprintjs/core";
 
-function NavBar() {
+function AppBar() {
     const history = useHistory();
     const [isDarkMode, setIsDarkMode] = useState(() => {
         const savedTheme = localStorage.getItem("dark-mode");
@@ -80,4 +80,4 @@ function NavBar() {
     );
 }
 
-export default NavBar;
+export default AppBar;

@@ -1,9 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-import {
-    getMemberInfo,
-    getMemberSponsoredLegislation,
-} from "common/api";
+import { getMemberInfo, getMemberSponsoredLegislation } from "common/api";
 import { LegislatorProfile } from "components";
 
 function MemberViewer(props) {

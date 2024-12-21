@@ -15,7 +15,7 @@ import {
 } from "@blueprintjs/core";
 
 import { initialVersionToFull, versionToFull } from "common/lookups";
-import { BillSearchContent, CollapseableSection } from "components";
+import { BillSearchContent, CollapsibleSection } from "components";
 
 function BillSearch(props) {
     const [resPageSize, setResPageSize] = useState(5);
@@ -245,11 +245,11 @@ function BillSearch(props) {
                         Enrolled
                     </Button>
                 </ButtonGroup>
-                <CollapseableSection
+                <CollapsibleSection
                     title="Session of Congress"
                     collapsed={collapsed}
-                ></CollapseableSection>
-                <CollapseableSection
+                ></CollapsibleSection>
+                <CollapsibleSection
                     title="Chamber of Origin"
                     collapsed={collapsed}
                 >
@@ -273,8 +273,8 @@ function BillSearch(props) {
                             });
                         }}
                     />
-                </CollapseableSection>
-                <CollapseableSection
+                </CollapsibleSection>
+                <CollapsibleSection
                     title="Legislation Status"
                     collapsed={collapsed}
                 >
@@ -293,7 +293,7 @@ function BillSearch(props) {
                             />
                         );
                     })}
-                </CollapseableSection>
+                </CollapsibleSection>
             </div>
             <div className="content">
                 <BillSearchContent

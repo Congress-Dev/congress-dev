@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Collapse, Icon } from "@blueprintjs/core";
 
-function CollapseableSection(props) {
+function CollapsibleSection(props) {
     const [isOpen, setIsOpen] = useState(true);
 
     useEffect(() => {
@@ -11,7 +11,8 @@ function CollapseableSection(props) {
     return (
         <div className="collapse-wrapper">
             <span onClick={() => setIsOpen(!isOpen)}>
-                <Icon icon={isOpen ? 'unarchive' : 'archive'} /> - {props.title || "Toggle"}
+                <Icon icon={isOpen ? "unarchive" : "archive"} /> -{" "}
+                {props.title || "Toggle"}
             </span>
             <Collapse className="collapse-section" isOpen={isOpen}>
                 {props.children}
@@ -20,4 +21,4 @@ function CollapseableSection(props) {
     );
 }
 
-export default CollapseableSection;
+export default CollapsibleSection;

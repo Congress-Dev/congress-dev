@@ -1,15 +1,15 @@
 import React from "react";
-import { BrowserRouter as Router, Switch, Route } from "react-router-dom";
+import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
 
-import { NavBar } from "components";
+import { AppBar } from "components";
 import {
     AboutUs,
-    FrontPage,
+    BillSearch,
     BillViewer,
+    Home,
+    MemberViewer,
     USCodeRevisionList,
     USCodeViewer,
-    BillSearch,
-    MemberViewer,
 } from "pages";
 
 import "styles/common.scss";
@@ -17,7 +17,7 @@ import "styles/common.scss";
 function App() {
     return (
         <Router>
-            <NavBar />
+            <AppBar />
             <Switch>
                 <Route
                     exact
@@ -47,7 +47,7 @@ function App() {
                     path="/uscode/:uscReleaseId/:uscTitle?/:uscSection?"
                     component={USCodeViewer}
                 />
-                <Route path={["/", "/home"]} component={FrontPage} />
+                <Route path={["/", "/home"]} component={Home} />
             </Switch>
         </Router>
     );

@@ -1,8 +1,8 @@
 import React from "react";
 import { Redirect } from "react-router-dom";
 
-function FrontPage() {
+function Home() {
     return <Redirect to={"/bills"} />;
 }
 
-export default FrontPage;
+export default Home;

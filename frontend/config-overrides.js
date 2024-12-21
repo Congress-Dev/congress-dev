@@ -14,10 +14,10 @@ module.exports = function override(config, env) {
         zlib: false, // require.resolve("browserify-zlib") can be polyfilled here if needed
     });
     config.resolve.alias = {
-        "common": path.resolve(__dirname, "src/common"),
-        "components": path.resolve(__dirname, "src/components"),
-        "pages": path.resolve(__dirname, "src/pages"),
-        "styles": path.resolve(__dirname, "src/styles"),
+        common: path.resolve(__dirname, "src/common"),
+        components: path.resolve(__dirname, "src/components"),
+        pages: path.resolve(__dirname, "src/pages"),
+        styles: path.resolve(__dirname, "src/styles"),
     };
     config.resolve.fallback = fallback;
     config.plugins = (config.plugins || []).concat([
