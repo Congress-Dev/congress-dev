@@ -30,15 +30,15 @@ def parse_action_for_cite(action_object: dict) -> str:
     Returns:
         str: A USCode citation str
     """
-    print(action_object)
+    # print(action_object)
     try:
         parent_cite = ""
         if action_object["text_element"] is not None:
-            print(
-                etree.tostring(
-                    action_object["text_element"], pretty_print=True, encoding="unicode"
-                )
-            )
+            # print(
+            #     etree.tostring(
+            #         action_object["text_element"], pretty_print=True, encoding="unicode"
+            #     )
+            # )
             xref = action_object["text_element"].find("external-xref[@legal-doc='usc']")
             if xref is not None:
                 cite = convert_to_usc_id(xref)

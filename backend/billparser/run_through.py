@@ -349,7 +349,7 @@ def recursive_bill_content(
             f"Items look like: {search_element.tag} and {len(search_element)}"
         )
     if content is not None:
-        print(content.content_type, content.content_str)
+        # print(content.content_type, content.content_str)
         session.add(content)
     if True:
         root_path = search_element.getroottree().getpath(search_element)

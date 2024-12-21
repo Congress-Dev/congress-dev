@@ -57,7 +57,7 @@ def determine_action(xref):
     # TODO: Unused function?
     par = xref.getparent()
     texts = [x for x in par.itertext() if x != xref.text]
-    print("actions", texts[-1])
+    # print("actions", texts[-1])
     if "adding at the end the following" in texts[-1]:
         return "APPEND"
     if "is amended—" in texts[-1]:
