@@ -1,6 +1,7 @@
 import os
 import re
 import string
+import time
 
 from lxml import etree
 from unidecode import unidecode  # GPLV2
@@ -22,10 +23,39 @@ print(DATABASE_URI)
 engine = create_engine(DATABASE_URI, poolclass=NullPool, connect_args={'sslmode': "disable"})
 
 Base.metadata.create_all(engine)
-Session = sessionmaker(bind=engine, query_cls=query_callable(regions))
+
 ribber = string.ascii_letters + string.digits
 
+def create_session_function(engine, query_cls, retries=5, delay=5):
+    """
+    Returns a callable `Session` function with retry logic for creating sessions.
 
+    Args:
+        engine: The SQLAlchemy engine to bind the session to.
+        query_cls: The custom query class to use with the session.
+        retries: Number of retries before giving up. Default is 5.
+        delay: Delay in seconds between retries. Default is 5.
+
+    Returns:
+        A callable `Session` function that creates a new session with retry logic.
+    """
+    def Session():
+        for attempt in range(retries):
+            try:
+                # Create the session factory
+                session_factory = sessionmaker(bind=engine, query_cls=query_cls)
+                # Create a new session instance
+                return session_factory()
+            except Exception as e:
+                if attempt < retries - 1:
+                    print(f"Connection failed: {e}. Retrying in {delay} seconds...")
+                    time.sleep(delay)
+                else:
+                    print("Max retries reached. Could not establish a connection.")
+                    raise
+
+    return Session
+Session = create_session_function(bind=engine, query_cls=query_callable(regions))
 def unidecode_str(input_str: str) -> str:
     return unidecode(input_str or "").replace("--", "-")
 
