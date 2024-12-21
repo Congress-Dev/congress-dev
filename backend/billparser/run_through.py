@@ -413,7 +413,8 @@ def recursive_bill_content(
     return res
 
 
-def check_for_existing_legislation_version(bill_obj: object, session) -> bool:
+def check_for_existing_legislation_version(bill_obj: object) -> bool:
+    session = Session()
     # Check to see if we've already ingested this bill
     existing_legis = (
         session.query(Legislation)
@@ -476,7 +477,7 @@ def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object) -> Legi
         res = []
         try:
             session = Session()
-            found = check_for_existing_legislation_version(bill_obj, session)
+            found = check_for_existing_legislation_version(bill_obj)
             if found:
                 logging.info(f"Skipping {archive_obj.get('file')}")
                 return []
