@@ -3,7 +3,7 @@ import React from "react";
 function AboutUs() {
   return (
     <>
-      <h3 className="bp3-heading">About Us</h3>
+      <h3 className="bp5-heading">About Us</h3>
       <p>The source for our data is from official government websites</p>
       <ul>
         <li>

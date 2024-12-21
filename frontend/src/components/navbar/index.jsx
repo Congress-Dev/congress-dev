@@ -19,9 +19,9 @@ function NavBar() {
     const savedTheme = localStorage.getItem('dark-mode');
     const newState = savedTheme ? JSON.parse(savedTheme) : false;
     if (newState) {
-      window.root.classList.add('bp3-dark');
+      window.root.classList.add('bp5-dark');
     } else {
-      window.root.classList.remove('bp3-dark');
+      window.root.classList.remove('bp5-dark');
     }
     return newState;
   });
@@ -33,9 +33,9 @@ function NavBar() {
       localStorage.setItem('dark-mode', JSON.stringify(newState));
 
       if (newState) {
-        window.root.classList.add('bp3-dark');
+        window.root.classList.add('bp5-dark');
       } else {
-        window.root.classList.remove('bp3-dark');
+        window.root.classList.remove('bp5-dark');
       }
 
       return newState;

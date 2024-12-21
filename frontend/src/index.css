@@ -12,6 +12,6 @@ code {
     monospace;
 }
 
-html:has(#root.bp3-dark) {
+html:has(#root.bp5-dark) {
   background-color: #1a232b;
 }

@@ -248,7 +248,7 @@ function BillViewer(props) {
       <Divider />
       <div className="sidebar">
         Selected Version:{" "}
-        <div class="bp3-html-select">
+        <div class="bp5-html-select">
           <select
             id="bill-version-select"
             value={(billVers || "").toUpperCase()}
@@ -267,14 +267,14 @@ function BillViewer(props) {
               }
             )}
           </select>
-          <span class="bp3-icon bp3-icon-double-caret-vertical"></span>
+          <span class="bp5-icon bp5-icon-double-caret-vertical"></span>
         </div>
 
-        {/* <Checkbox
+        <Checkbox
           label="Show action parsing details"
           value={actionParse}
           onClick={() => setActionParse(!actionParse)}
-        /> */}
+        />
 
         <Tabs id="sidebar-tabs" selectedTabId={selectedTab} onChange={setSelectedTab}>
           <Tab
