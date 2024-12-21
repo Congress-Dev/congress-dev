@@ -553,7 +553,10 @@ def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object) -> Legi
         except Exception as e:
             logging.error("Uncaught exception", exc_info=e)
         finally:
-            session.close()
+            try:
+                session.close()
+            except:
+                pass
         for r in res:
             if "text_element" in r:
                 del r["text_element"]
