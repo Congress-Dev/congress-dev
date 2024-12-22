@@ -1,11 +1,12 @@
 import os
 import re
 import string
+import time
 
 from lxml import etree
 from unidecode import unidecode  # GPLV2
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.pool import NullPool
 
 from billparser.utils.citation import resolve_citations
@@ -22,10 +23,16 @@ print(DATABASE_URI)
 engine = create_engine(DATABASE_URI, poolclass=NullPool, connect_args={'sslmode': "disable"})
 
 Base.metadata.create_all(engine)
-Session = sessionmaker(bind=engine, query_cls=query_callable(regions))
+
 ribber = string.ascii_letters + string.digits
+Session = scoped_session(sessionmaker(bind=engine, query_cls=query_callable(regions)))
 
-
+def init_session():
+    """Initialize the Session object in the current process."""
+    global Session
+    engine = create_engine(DATABASE_URI, poolclass=NullPool, connect_args={'sslmode': "disable"})
+    Session = scoped_session(sessionmaker(bind=engine))
+    
 def unidecode_str(input_str: str) -> str:
     return unidecode(input_str or "").replace("--", "-")
 

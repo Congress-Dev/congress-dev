@@ -136,7 +136,8 @@ def determine_action(text: str) -> dict:
                 actions[action] = gg
                 break
             elif action == "TRANSFER-FUNDS":
-                print("No match for", action, text)
+                # print("No match for", action, text)
+                pass
     return actions
 
 
@@ -180,15 +181,15 @@ class ActionObject(object):
         self.diff_id = diff_id
 
     def set_action(self, action):
-        print("set_action")
+        # print("set_action")
         # TODO: We need a way to say the cite is fully parsed already
         # print(action)
         self.action = action
         within = action.get("within", None)
         target = action.get("target", None)
-        print(f"{self.parsed_cite=}")
+        # print(f"{self.parsed_cite=}")
         if self.parsed_cite == "" and (self.last_title != "") and (target is not None):
-            print("Parse such code")
+            # print("Parse such code")
             if within is None or within.lower() == "such code":
                 # print("suchcode")
                 try:
@@ -204,11 +205,11 @@ class ActionObject(object):
                 self.parsed_cite = "/".join(
                     [self.parsed_cite] + SubParts.findall(action.get("target", ""))
                 )
-            print(f"{self.parsed_cite=}")
+            # print(f"{self.parsed_cite=}")
         target_section = action.get("target_section", None)
         
         if target_section is not None and len(self.parsed_cite.split("/")) < 5:
-            print("Add target section", self.parsed_cite.split("/"))
+            # print("Add target section", self.parsed_cite.split("/"))
             self.parsed_cite = "/".join(
                 [self.parsed_cite] + SubParts.findall(target_section)
             )

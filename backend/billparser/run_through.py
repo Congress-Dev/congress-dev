@@ -47,7 +47,7 @@ from billparser.metadata.sponsors import extract_sponsors_from_form
 
 from billparser.utils.logger import LogContext
 from billparser.utils.cite_parser import parse_action_for_cite
-from billparser.db.handler import Session
+from billparser.db.handler import Session, init_session
 from billparser.translater import translate_paragraph
 
 from joblib import Parallel, delayed
@@ -349,7 +349,7 @@ def recursive_bill_content(
             f"Items look like: {search_element.tag} and {len(search_element)}"
         )
     if content is not None:
-        print(content.content_type, content.content_str)
+        # print(content.content_type, content.content_str)
         session.add(content)
     if True:
         root_path = search_element.getroottree().getpath(search_element)
@@ -413,7 +413,8 @@ def recursive_bill_content(
     return res
 
 
-def check_for_existing_legislation_version(bill_obj: object, session) -> bool:
+def check_for_existing_legislation_version(bill_obj: object) -> bool:
+    session = Session()
     # Check to see if we've already ingested this bill
     existing_legis = (
         session.query(Legislation)
@@ -464,6 +465,7 @@ def retrieve_existing_legislations(session) -> List[dict]:
 
 
 def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object) -> LegislationVersion:
+    init_session()
     with LogContext(
         {
             "bill_number": bill_obj["bill_number"],
@@ -474,9 +476,10 @@ def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object) -> Legi
         new_bill_version = None
         start_time = time.time()
         res = []
+        session = Session()
         try:
-            session = Session()
-            found = check_for_existing_legislation_version(bill_obj, session)
+            
+            found = check_for_existing_legislation_version(bill_obj)
             if found:
                 logging.info(f"Skipping {archive_obj.get('file')}")
                 return []
@@ -549,7 +552,11 @@ def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object) -> Legi
             )
         except Exception as e:
             logging.error("Uncaught exception", exc_info=e)
-
+        finally:
+            try:
+                session.close()
+            except:
+                pass
         for r in res:
             if "text_element" in r:
                 del r["text_element"]
@@ -750,21 +757,24 @@ def parse_archive(
     names = []
     rec = []
     for file in archive.namelist():
-        parsed = filename_regex.search(file)
-        house = parsed.group("house")
-        session = parsed.group("session")
-        bill_number = int(parsed.group("bill_number"))
-        bill_version = parsed.group("bill_version")
-        file_title = f"{session} - {house}{bill_number} - {bill_version}"
-        names.append(
-            {
-                "title": file_title,
-                "path": file,
-                "bill_number": bill_number,
-                "bill_version": bill_version,
-                "chamber": chamb[house],
-            }
-        )
+        try:
+            parsed = filename_regex.search(file)
+            house = parsed.group("house")
+            session = parsed.group("session")
+            bill_number = int(parsed.group("bill_number"))
+            bill_version = parsed.group("bill_version")
+            file_title = f"{session} - {house}{bill_number} - {bill_version}"
+            names.append(
+                {
+                    "title": file_title,
+                    "path": file,
+                    "bill_number": bill_number,
+                    "bill_version": bill_version,
+                    "chamber": chamb[house],
+                }
+            )
+        except:
+            pass
 
     names = sorted(names, key=lambda x: x["bill_number"])
     # names = names[50:55]
@@ -837,10 +847,10 @@ def parse_archives(
                     print(file, "bad")
                     continue
                 house = parsed.group("house")
-                session = parsed.group("session")
+                congress_session = parsed.group("session")
                 bill_number = int(parsed.group("bill_number"))
                 bill_version = parsed.group("bill_version")
-                file_title = f"{session} - {house}{bill_number} - {bill_version}"
+                file_title = f"{congress_session} - {house}{bill_number} - {bill_version}"
                 names.append(
                     {
                         "title": file_title,
@@ -874,7 +884,6 @@ def parse_archives(
 
         return True
 
-    session = Session()
     existing_legislation = retrieve_existing_legislations(session)
     print("Existing legislation", len(existing_legislation))
     legis_lookup: Dict[LegislationChamber, List[LegislationVersionEnum]] = defaultdict(
@@ -897,7 +906,7 @@ def parse_archives(
     names = [x for x in names if filter_logic(x) and filter_existing_legislation(x)]
     print("New legislation", len(names))
 
-    frec = Parallel(n_jobs=THREADS, backend="multiprocessing", verbose=5)(
+    frec = Parallel(n_jobs=THREADS, backend="loky", verbose=5)(
         delayed(parse_bill)(
             open_archives[name["archive_index"]]
             .open(name["path"], "r")
