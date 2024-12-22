@@ -42,7 +42,7 @@ function USCSidebar(props) {
                     hasCaret: true,
                     icon: "th-list",
                     isExpanded: treeExpansion[0] === true,
-                    label: `Hmmst`,
+                    label: `USC`,
                     childNodes,
                     className: "link",
                 };

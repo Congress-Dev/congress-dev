@@ -193,7 +193,7 @@ class Legislation(Base):
         Integer, ForeignKey("congress.congress_id", ondelete="CASCADE")
     )
     version_id = Column(Integer, ForeignKey("version.version_id", ondelete="CASCADE"))
-    versions = versions = relationship("LegislationVersion")
+    versions = relationship("LegislationVersion")
 
     policy_areas = Column(ARRAY(String), index=True)
     legislative_subjects = Column(ARRAY(String), index=True)

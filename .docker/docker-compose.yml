@@ -11,7 +11,7 @@ services:
     - db_host=congress_postgres:5432
     - db_user=parser
     - db_pass=parser
-    - db_table=us_code
+    - db_table=us_code_2023
     build:
       context: ../backend
       dockerfile: .docker/Dockerfile
@@ -38,7 +38,7 @@ services:
     - db_host=congress_postgres:5432
     - db_user=parser
     - db_pass=parser
-    - db_table=us_code
+    - db_table=us_code_2023
     build:
       context: ../backend
       dockerfile: .docker/Dockerfile.fastapi
@@ -81,7 +81,7 @@ services:
     environment:
       POSTGRES_PASSWORD: parser
       POSTGRES_USER: parser
-      POSTGRES_DB: us_code
+      POSTGRES_DB: us_code_2023
     volumes:
       - postgres-volume:/var/lib/postgresql/data
     networks:

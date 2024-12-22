@@ -17,14 +17,20 @@ function BillSearchContent(props) {
             props.chamber,
             props.versions,
             props.text,
+            props.sort,
             props.page,
             props.pageSize,
-        ).then(setBillList);
+        ).then((billList) => {
+            if(billList != null) {
+                setBillList(billList)
+            }
+        });
     }, [
         props.congress,
         props.chamber,
         props.versions,
         props.text,
+        props.sort,
         props.page,
         props.pageSize,
     ]);
