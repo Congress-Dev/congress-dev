@@ -757,21 +757,24 @@ def parse_archive(
     names = []
     rec = []
     for file in archive.namelist():
-        parsed = filename_regex.search(file)
-        house = parsed.group("house")
-        session = parsed.group("session")
-        bill_number = int(parsed.group("bill_number"))
-        bill_version = parsed.group("bill_version")
-        file_title = f"{session} - {house}{bill_number} - {bill_version}"
-        names.append(
-            {
-                "title": file_title,
-                "path": file,
-                "bill_number": bill_number,
-                "bill_version": bill_version,
-                "chamber": chamb[house],
-            }
-        )
+        try:
+            parsed = filename_regex.search(file)
+            house = parsed.group("house")
+            session = parsed.group("session")
+            bill_number = int(parsed.group("bill_number"))
+            bill_version = parsed.group("bill_version")
+            file_title = f"{session} - {house}{bill_number} - {bill_version}"
+            names.append(
+                {
+                    "title": file_title,
+                    "path": file,
+                    "bill_number": bill_number,
+                    "bill_version": bill_version,
+                    "chamber": chamb[house],
+                }
+            )
+        except:
+            pass
 
     names = sorted(names, key=lambda x: x["bill_number"])
     # names = names[50:55]
