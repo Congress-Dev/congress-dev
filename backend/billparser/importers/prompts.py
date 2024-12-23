@@ -2,6 +2,8 @@ from collections import defaultdict
 import logging
 from typing import Dict, List
 from sqlalchemy import select, and_, not_
+import litellm
+
 
 from billparser.db.models import PromptBatch, LegislationVersion, Prompt
 from billparser.db.handler import Session
@@ -39,13 +41,13 @@ if __name__ == "__main__":
     Looks for bills without prompts run on them yet
     """
     session = Session()
-
+    litellm._logging._disable_debugging()
     prompts = session.query(Prompt).all()
 
     prompts_by_name: Dict[str, Prompt] = defaultdict(list)
 
     for prompt in prompts:
-        prompts_by_name[prompt.prompt].append(prompt)
+        prompts_by_name[prompt.title].append(prompt)
 
     # Sort them by id for each prompt
     for prompt_name, prompt_list in prompts_by_name.items():
