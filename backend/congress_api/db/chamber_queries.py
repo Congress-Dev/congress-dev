@@ -8,6 +8,7 @@ from sqlalchemy import String, or_
 from sqlalchemy.orm import load_only
 from sqlalchemy.sql.functions import func
 from sqlalchemy.sql.expression import cast
+from sqlalchemy import Date
 
 from billparser.db.models import (
     Congress,
@@ -129,8 +130,17 @@ def get_chamber_bills_list(
 
 @cached(TTLCache(CACHE_SIZE, CACHE_TIME))
 def search_legislation(
-    congress: str, chamber: str, versions: str, text: str, page: int, page_size: int
+    congress: str, chamber: str, versions: str, text: str, sort: str, page: int, page_size: int
 ):
+    sortReference = {
+        "title": Legislation.title,
+        "number": Legislation.number,
+        "effective_date": 'min_effective_date',
+    }
+
+    sortField = Legislation.number
+    if sort in sortReference:
+        sortField = sortReference[sort]
 
     if chamber not in ["None", "", None]:
         chambers = chamber.replace(" ", "").lower().split(",")
@@ -171,7 +181,9 @@ def search_legislation(
     # We need to know the total results so we can do the pagination
     # TODO: Is there a cleaner way to do this?
     query = current_session.query(
-        Legislation, func.count(Legislation.legislation_id).over().label('total_results')
+        Legislation,
+        func.count(Legislation.legislation_id).over().label('total_results'),
+        func.min(func.cast(LegislationVersion.effective_date, Date)).label('min_effective_date')
     )
     query = query.filter(Legislation.congress_id.in_(list(congresses.keys())))
     if chambers != []:
@@ -186,7 +198,7 @@ def search_legislation(
     )
     query = query.join(LegislationVersion)
     query = query.filter(LegislationVersion.legislation_version.in_(version_srch))
-    query = query.order_by(Legislation.number)
+    query = query.order_by(sortField)
     query = query.group_by(Legislation.legislation_id)
     query = query.limit(int(page_size)).offset(int((page - 1) * page_size))
     query = query.options(
@@ -207,7 +219,7 @@ def search_legislation(
 
     # Pull out the bill object, and the total results column we created
     # TODO: Cleaner way to do this?
-    bill_ids = [x.legislation_id for (x, _) in bills_results]
+    bill_ids = [bill.legislation_id for (bill, total_results, min_effective_date) in bills_results]
 
     legis_versions = (
         current_session.query(LegislationVersion)
@@ -227,7 +239,7 @@ def search_legislation(
     )
 
     bill_metadatas = []
-    for (bill, total_results) in bills_results:
+    for (bill, total_results, min_effective_date) in bills_results:
         result = BillMetadata(
             legislation_type=bill.legislation_type,
             congress=congresses[bill.congress_id],

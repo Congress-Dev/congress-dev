@@ -172,13 +172,14 @@ export const getCongressSearch = (
     chamber,
     versions,
     text,
+    sort,
     page,
     pageSize,
 ) => {
     return fetch(
         `${endpoint}/congress/search?congress=${congress || "None"}&chamber=${
             chamber || "None"
-        }&versions=${versions || ""}&text=${text}&page=${page}&pageSize=${pageSize}`,
+        }&versions=${versions || ""}&text=${text}&sort=${sort}&page=${page}&pageSize=${pageSize}`,
     )
         .then(handleStatus)
         .catch(toastError);
