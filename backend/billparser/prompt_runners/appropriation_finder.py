@@ -1,0 +1,164 @@
+from typing import List
+from billparser.db.models import Appropriation, LegislationContent
+from billparser.db.handler import Session, engine
+import json
+from typing import List
+from billparser.db.models import LegislationContent, Appropriation, Prompt, PromptBatch
+from billparser.db.handler import Session
+from billparser.prompt_runners.utils import run_query
+from datetime import datetime
+
+
+def convert_to_int(dollar_str: str) -> int:
+    try:
+        return int(float(str(dollar_str).replace("$", "").replace(",", "")))
+    except:
+        return 0
+
+
+def appropriation_finder(
+    legislation_version_id: int, prompt_id: int
+) -> List[Appropriation]:
+    with Session() as session:
+        prompt = session.query(Prompt).filter(Prompt.prompt_id == prompt_id).first()
+        existing_prompt_batch = (
+            session.query(PromptBatch)
+            .filter(
+                PromptBatch.prompt_id == prompt_id,
+                PromptBatch.legislation_version_id == legislation_version_id,
+            )
+            .first()
+        )
+        if existing_prompt_batch:
+            print("Prompt batch already exists")
+            return
+        prompt_text = prompt.prompt
+        prompt_batch = PromptBatch(
+            prompt_id=prompt_id,
+            legislation_version_id=legislation_version_id,
+            attempted=0,
+            successful=0,
+            failed=0,
+            skipped=0,
+            created_at=datetime.now(),
+        )
+        session.add(prompt_batch)
+        session.commit()
+        legis_content: List[LegislationContent] = (
+            session.query(LegislationContent)
+            .filter(LegislationContent.legislation_version_id == legislation_version_id)
+            .order_by(LegislationContent.legislation_content_id)
+            .all()
+        )
+        try_better_model = []
+        for content in legis_content:
+            if content.content_str and "$" in content.content_str:
+                prompt_batch.attempted += 1
+                if len(content.content_str) > 2700:
+                    # Too big for qwen
+                    try_better_model.append(content)
+                    continue
+            else:
+                prompt_batch.skipped += 1
+                if (prompt_batch.attempted + prompt_batch.skipped) % 10 == 0:
+                    session.commit()
+                continue
+            print(f"Attempting to parse: {content.legislation_content_id}")
+            query = prompt_text.format(clause=content.content_str)
+            try:
+                response = run_query(query, model="ollama/qwen2.5:32b")
+                obj = json.loads(response.json()["choices"][0]["message"]["content"])
+            except:
+                prompt_batch.failed += 1
+                continue
+
+            def recursive_load(a: dict, parent_id: int = None):
+                initial_amount = convert_to_int(a.get("initial_amount", 0) or 0)
+                new_amount = convert_to_int(a.get("new_amount", 0) or 0)
+                net_change = convert_to_int(a.get("net_change", 0) or 0)
+                new_spending = initial_amount == 0
+                if initial_amount == new_amount:
+                    net_change = new_amount
+                    new_spending = True
+                approp = Appropriation(
+                    amount=net_change,
+                    fiscal_years=a.get("fiscal_years", []),
+                    until_expended=a.get("until_expended", False),
+                    new_spending=new_spending,
+                    legislation_content_id=content.legislation_content_id,
+                    legislation_version_id=legislation_version_id,
+                    parent_id=parent_id,
+                    purpose=a.get("brief_purpose", ""),
+                )
+                session.add(approp)
+                # Make sure to commit before we try to do the appropriation parent
+                if len(a.get("sub_appropriations", [])) > 0:
+                    session.commit()
+                for children in a.get("sub_appropriations", []):
+                    try:
+                        recursive_load(children, approp.appropriation_id)
+                    except:
+                        pass
+
+            try:
+                if len(obj.get("appropriations", [])) > 0:
+                    for approp in obj.get("appropriations", []):
+                        recursive_load(approp, None)
+                else:
+                    # Didn't find anything, put this into another list
+                    try_better_model.append(content)
+                prompt_batch.successful += 1
+            except:
+                pass
+        if len(try_better_model) > 0:
+            print("Trying better model")
+        # Do it separately so we don't move the model in and out of memory
+        for content in try_better_model:
+            print(f"Attempting to parse: {content.legislation_content_id}")
+            query = prompt_text.format(clause=content.content_str)
+            try:
+                response = run_query(query, model="ollama/nemotron:latest")
+                obj = json.loads(response.json()["choices"][0]["message"]["content"])
+            except:
+                prompt_batch.failed += 1
+                continue
+
+            def recursive_load(a: dict, parent_id: int = None):
+                initial_amount = convert_to_int(a.get("initial_amount", 0) or 0)
+                new_amount = convert_to_int(a.get("new_amount", 0) or 0)
+                net_change = convert_to_int(a.get("net_change", 0) or 0)
+                new_spending = initial_amount == 0
+                if initial_amount == new_amount:
+                    net_change = new_amount
+                    new_spending = True
+                approp = Appropriation(
+                    amount=net_change,
+                    fiscal_years=a.get("fiscal_years", []),
+                    until_expended=a.get("until_expended", False),
+                    new_spending=new_spending,
+                    legislation_content_id=content.legislation_content_id,
+                    legislation_version_id=legislation_version_id,
+                    parent_id=parent_id,
+                    purpose=a.get("brief_purpose", ""),
+                )
+                session.add(approp)
+                # Make sure to commit before we try to do the appropriation parent
+                if len(a.get("sub_appropriations", [])) > 0:
+                    session.commit()
+                for children in a.get("sub_appropriations", []):
+                    try:
+                        recursive_load(children, approp.appropriation_id)
+                    except:
+                        pass
+
+            try:
+                if len(obj.get("appropriations", [])) > 0:
+                    for approp in obj.get("appropriations", []):
+                        recursive_load(approp, None)
+                else:
+                    # Still failed
+                    pass
+            except:
+                pass
+        prompt_batch.completed_at = datetime.now()
+        session.commit()

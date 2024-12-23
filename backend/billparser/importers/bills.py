@@ -71,12 +71,3 @@ if __name__ == "__main__":
     else:
         legis_objs = parse_archives(zip_paths)
 
-    # After we've downloaded the bills, we can parse them for appropriation
-    legis_obj: LegislationVersion = None
-    for legis_obj in legis_objs:
-        try:
-            if legis_obj and isinstance(legis_obj, LegislationVersion):
-                parse_bill_for_appropriations(legis_obj.legislation_version_id)
-        except Exception as e:
-            print(e)
-
