@@ -71,6 +71,7 @@ def clause_tagger(legis_version_id: int, prompt_id: int):
                     legislation_content_id=lc.legislation_content_id,
                     tags=tags,
                 )
+                tag_obj.validate()
                 session.add(tag_obj)
                 print(f"Tagged {lc.legislation_content_id} with {tags}")
                 prompt_batch.successful += 1
