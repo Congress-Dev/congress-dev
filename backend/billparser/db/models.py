@@ -340,7 +340,7 @@ class LegislationContentTag(Base):
 
     legislation_content_tag_id = Column(Integer, primary_key=True)
     prompt_batch_id = Column(
-        Integer, ForeignKey(PromptBatch.prompt_batch_id), index=True, nullable=True
+        Integer, ForeignKey(PromptBatch.prompt_batch_id, ondelete="CASCADE"), index=True, nullable=True
     )
     legislation_content_id = Column(
         Integer,
@@ -834,7 +834,11 @@ class Appropriation(AppropriationsBase):
         ForeignKey(LegislationVersion.legislation_version_id, ondelete="CASCADE"),
         index=True,
     )
-
+    prompt_batch_id = Column(
+        Integer,
+        ForeignKey(PromptBatch.prompt_batch_id, ondelete="CASCADE"),
+        index=True,
+    )
     # This is what we'll mainly use to actually key it off
     legislation_content_id = Column(
         Integer,
