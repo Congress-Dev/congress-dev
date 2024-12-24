@@ -25,15 +25,16 @@ function BillSearch(props) {
     });
     const [versionButtons, setVersionButtons] = useState(initialVersionToFull);
     const [textBox, setTextBox] = useState("");
+    const [sortField, setSortField] = useState("number");
     const [totalResults, setTotalResults] = useState(0);
     const [currentSearch, setCurrentSearch] = useState({
         congress: "118",
         chamber: "House,Senate",
         versions: Object.keys(versionToFull).join(","),
         text: "",
+        sort: "number",
         page: 1,
         pageSize: resPageSize,
-        ...qs.parse(props.location.search),
     });
 
     const [collapsed, setCollapsed] = useState(false); // State to control the signal
@@ -92,8 +93,13 @@ function BillSearch(props) {
                 )
                 .join(","),
             text: textBox,
+            sort: sortField,
         });
     }
+
+    useEffect(() => {
+        executeSearch();
+    }, [versionButtons, chamberButtons, sortField]);
 
     function innerPageRender(items) {
         const curPage = parseInt(currentSearch.page);
@@ -135,11 +141,11 @@ function BillSearch(props) {
             );
             let sectionThree = lodash.range(
                 Math.max(totalPages - 3, 1),
-                totalPages,
+                totalPages + 1,
             );
             sectionThree = lodash.filter(
                 sectionThree,
-                (i) => !sectionTwo.includes(i),
+                (i) => !sectionTwo.includes(i) && !sectionOne.includes(i),
             );
             sectionTwo = lodash.filter(
                 sectionTwo,
@@ -175,45 +181,23 @@ function BillSearch(props) {
                 </div>
             );
         }
-        return <span>Test {totalResults}</span>;
     }
-
-    useEffect(() => {
-        // Update the query string with our new things
-        props.history.push({
-            pathname: props.location.pathname,
-            search: qs.stringify(currentSearch, { encode: false }),
-        });
-        let temp = {};
-        lodash.forEach(currentSearch.versions.split(","), (item) => {
-            temp[versionToFull[item]] = true;
-        });
-        setVersionButtons(temp);
-        temp = {};
-        lodash.forEach(currentSearch.chamber.split(","), (item) => {
-            temp[item] = true;
-        });
-        setChamberButtons(temp);
-    }, [currentSearch]);
-
-    useEffect(() => {
-        setCurrentSearch({
-            congress: "118",
-            chamber: "House,Senate",
-            versions: Object.keys(versionToFull).join(","),
-            text: "",
-            page: 1,
-            pageSize: resPageSize,
-            ...qs.parse(props.location.search),
-        });
-    }, [props.location.search]);
 
     return (
         <Card className="page" elevation={Elevation.ONE}>
             <div className="sidebar">
                 <FormGroup labelFor="text-input">
                     <ControlGroup fill={true}>
-                        <HTMLSelect options={["Date", "Name"]} />
+                        <HTMLSelect
+                            options={[
+                                { label: "Bill No.", value: "number" },
+                                { label: "Title", value: "title" },
+                                { label: "Date", value: "effective_date" },
+                            ]}
+                            onChange={(event) => {
+                                setSortField(event.currentTarget.value);
+                            }}
+                        />
                         <InputGroup
                             value={textBox}
                             onChange={(event) => {
@@ -301,6 +285,7 @@ function BillSearch(props) {
                     chamber={currentSearch.chamber}
                     versions={currentSearch.versions}
                     text={currentSearch.text}
+                    sort={currentSearch.sort}
                     page={currentSearch.page}
                     pageSize={currentSearch.pageSize}
                     setResults={setTotalResults}

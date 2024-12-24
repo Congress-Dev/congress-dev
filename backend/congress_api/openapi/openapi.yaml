@@ -71,6 +71,14 @@ paths:
         schema:
           type: string
         style: form
+      - description: Field to sort on
+        explode: true
+        in: query
+        name: sort
+        required: false
+        schema:
+          type: string
+        style: form
       - description: The page of results
         explode: true
         in: query

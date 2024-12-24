@@ -234,7 +234,7 @@ def get_chamber_summary(session, chamber) -> ChamberMetadata:  # noqa: E501
 
 
 def get_congress_search(
-    congress=None, chamber=None, versions=None, text=None, page=None, page_size=None
+    congress=None, chamber=None, versions=None, text=None, sort=None, page=None, page_size=None
 ) -> BillSearchList:  # noqa: E501
     """Your GET endpoint
 
@@ -248,13 +248,17 @@ def get_congress_search(
     :type versions: str
     :param results: How many results to return
     :type results: int
+    :param sort: The field to sort results on
+    :type sort: str
     :param page: The page of results
-    :type page:
+    :type page: int
+    :param page_size: The page size of results
+    :type page_size: int
 
     :rtype: BillSearchList
     """
     try:
-        resp = search_legislation(congress, chamber, versions, text, page, page_size)
+        resp = search_legislation(congress, chamber, versions, text, sort, page, page_size)
         return resp
     except Exception as e:
         return ErrorResponse(message=str(e)), 500
