@@ -27,8 +27,8 @@ def upgrade() -> None:
     )
     op.create_foreign_key(
         "appropriation_prompt_batch_id_fk",
-        "appropriations.appropriation",
-        "prompts.prompt_batch",
+        "appropriation",
+        "prompt_batch",
         ["prompt_batch_id"],
         ["prompt_batch_id"],
         source_schema="appropriations",  # Source schema
@@ -39,7 +39,7 @@ def upgrade() -> None:
         "legislation_content_tag_prompt_batch_id_fkey",
         "legislation_content_tag",
         type_="foreignkey",
-        schema="appropriations",
+        schema="public",
     )
 
     # Create a new foreign key constraint with ON DELETE CASCADE
