@@ -373,7 +373,7 @@ function BillViewer(props) {
                             billVersion={billVersion}
                             billSummary={billSummary}
                             textTree={textTree}
-                            showTooltips={actionParse}
+                            showActions={actionParse}
                         />
                     )}
                 </Callout>

@@ -77,7 +77,7 @@ function BillDisplay(props) {
 
     function generateActionStr(action) {
         let actionStr = [];
-        if (props.showTooltips === false) {
+        if (props.showActions === false) {
             return "";
         }
         let cite_link = "";
@@ -118,7 +118,7 @@ function BillDisplay(props) {
     }
 
     function generateActionHighlighting(contentStr, action) {
-        if (props.showTooltips === false) {
+        if (props.showActions === false) {
             return contentStr;
         }
         // We are looking at the action objects for items within it that represent the captured regex
@@ -217,28 +217,27 @@ function BillDisplay(props) {
                                 <div
                                     id={itemHash}
                                     name={legislation_content_id}
-                                    key={ind}
+                                    key={legislation_content_id}
                                     className={outerClass}
                                     onClick={changeUrl}
                                 >
                                     <Tooltip
                                         content={
-                                            <p style={{ 'max-width': '300px' }}>
+                                            <p style={{ 'maxWidth': '300px' }}>
                                                 {summaryStr != "" ? (
-                                                    <p><b>Summary:</b> {summaryStr}</p>
+                                                    <span><b>Summary:</b> {summaryStr}</span>
                                                  ) : ''}
 
                                                 {summaryStr != "" && actionStr != "" ? (
-                                                    <><br/></>
+                                                    <><br/><br/></>
                                                 ) : ''}
 
                                                 {actionStr != "" ? (
-                                                    <p><b>Actions:</b> {actionStr}</p>
+                                                    <span><b>Actions:</b> {actionStr}</span>
                                                 ) : ''}
                                             </p>}
                                         disabled={
-                                            (actionStr === "" && summaryStr === "") ||
-                                            props.showTooltips !== true
+                                            (actionStr === "" && summaryStr === "")
                                         }
                                         isOpen={
                                             activeHash !== "" &&
@@ -266,15 +265,28 @@ function BillDisplay(props) {
                                 <div
                                     id={itemHash}
                                     name={legislation_content_id}
-                                    key={ind}
+                                    key={legislation_content_id}
                                     className={outerClass}
                                     onClick={changeUrl}
                                 >
                                     <Tooltip
-                                        content={actionStr}
+                                        content={
+                                            <p style={{ 'maxWidth': '300px' }}>
+                                                {summaryStr != "" ? (
+                                                    <span><b>Summary:</b> {summaryStr}</span>
+                                                 ) : ''}
+
+                                                {summaryStr != "" && actionStr != "" ? (
+                                                    <><br/><br/></>
+                                                ) : ''}
+
+                                                {actionStr != "" ? (
+                                                    <span><b>Actions:</b> {actionStr}</span>
+                                                ) : ''}
+                                            </p>
+                                        }
                                         disabled={
-                                            actionStr === "" ||
-                                            props.showTooltips !== true
+                                            (actionStr === "" && summaryStr === "")
                                         }
                                         isOpen={
                                             activeHash !== "" &&
