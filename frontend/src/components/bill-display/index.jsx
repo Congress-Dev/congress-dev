@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useHistory, Link } from "react-router-dom";
-import lodash from "lodash";
+import lodash, { sum } from "lodash";
 import { Tooltip, Spinner } from "@blueprintjs/core";
 
 import { md5 } from "common/other";
@@ -186,6 +186,11 @@ function BillDisplay(props) {
                         },
                         ind,
                     ) => {
+                        let summaryContent = lodash.find(props.billSummary, (e) => {
+                            return e.legislationContentId === legislation_content_id
+                        });
+                        let summaryStr = summaryContent?.summary || "";
+
                         let actionStr = generateActionStr(action);
                         content_str = generateActionHighlighting(
                             content_str,
@@ -195,7 +200,7 @@ function BillDisplay(props) {
                             `${lc_ident || legislation_content_id}`.toLowerCase();
                         const outerClass = `content-${content_type} bill-content-section ${
                             activeHash !== "" && activeHash === itemHash
-                                ? "usc-content-hash"
+                                ? "content-hash"
                                 : ""
                         }`;
                         if (
@@ -217,9 +222,22 @@ function BillDisplay(props) {
                                     onClick={changeUrl}
                                 >
                                     <Tooltip
-                                        content={actionStr}
+                                        content={
+                                            <p style={{ 'max-width': '300px' }}>
+                                                {summaryStr != "" ? (
+                                                    <p><b>Summary:</b> {summaryStr}</p>
+                                                 ) : ''}
+
+                                                {summaryStr != "" && actionStr != "" ? (
+                                                    <><br/></>
+                                                ) : ''}
+
+                                                {actionStr != "" ? (
+                                                    <p><b>Actions:</b> {actionStr}</p>
+                                                ) : ''}
+                                            </p>}
                                         disabled={
-                                            actionStr === "" ||
+                                            (actionStr === "" && summaryStr === "") ||
                                             props.showTooltips !== true
                                         }
                                         isOpen={

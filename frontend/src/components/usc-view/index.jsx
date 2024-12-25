@@ -168,7 +168,7 @@ function USCView(props) {
                             name={usc_content_id}
                             className={`usc-content-${correctedType} usc-content-section ${
                                 activeHash === itemHash
-                                    ? "usc-content-hash"
+                                    ? "content-hash"
                                     : ""
                             }`}
                             key={ind}

@@ -371,6 +371,7 @@ function BillViewer(props) {
                             chamber={chamber}
                             billNumber={billNumber}
                             billVersion={billVersion}
+                            billSummary={billSummary}
                             textTree={textTree}
                             showTooltips={actionParse}
                         />
