@@ -15,8 +15,9 @@ import {
 
 import { chamberLookup } from "common/lookups";
 import {
+    getBill,
+    getBill2,
     getBillSummary,
-    getBillSummary2,
     getBillVersionDiffForSection,
     getBillVersionText,
 } from "common/api";
@@ -56,6 +57,8 @@ function BillViewer(props) {
         billVersion || defaultVers[chamber.toLowerCase()],
     );
 
+    const [billSummary, setBillSummary] = useState([]);
+
     useEffect(() => {
         // Grab the info from the rest API
         if (props.location.pathname.includes("diffs")) {
@@ -83,7 +86,24 @@ function BillViewer(props) {
             }
             setDiffMode(false);
         }
-        getBillSummary(congress, chamber, billNumber).then(setBill);
+        getBill(congress, chamber, billNumber)
+            .then((response) => {
+                const matchingVersion = lodash.find(response.legislation_versions, (e) => {
+                    if(billVersion === undefined) {
+                        return true
+                    } else {
+                        return e.legislation_version === billVersion
+                    }
+                });
+
+                if(matchingVersion != null) {
+                    getBillSummary(matchingVersion.legislation_version_id)
+                        .then(setBillSummary)
+                }
+
+                return response
+            })
+            .then(setBill);
     }, [props.location.pathname]);
 
     useEffect(() => {
@@ -103,9 +123,11 @@ function BillViewer(props) {
                 props.history.push(url);
             }
             // Make sure to push the search and hash onto the url
-            getBillVersionText(congress, chamber, billNumber, billVers).then(
-                setTextTree,
-            );
+            getBillVersionText(congress, chamber, billNumber, billVers)
+                .then(
+                    setTextTree,
+                );
+
         }
     }, [billVers]);
 
@@ -135,7 +157,7 @@ function BillViewer(props) {
 
     useEffect(() => {
         if (bill.legislation_id) {
-            getBillSummary2(bill.legislation_id, billVersion).then(setBill2);
+            getBill2(bill.legislation_id, billVersion).then(setBill2);
         }
     }, [bill.legislation_id, billVersion]);
 
@@ -209,6 +231,14 @@ function BillViewer(props) {
             <h1>
                 {`${chamberLookup[bill.chamber]} ${bill.number}`} - {bill.title}
             </h1>
+
+            {billSummary != null && billSummary[0] != null ?
+                (<p>
+                    {billSummary[0].summary}
+                    <br/>
+                    <br/>
+                </p>) : ''
+            }
 
             <Divider />
             <div className="sidebar">

@@ -23,7 +23,7 @@ if (window.location.href.includes("congress.dev")) {
 }
 export const endpoint = endP;
 
-export const getBillSummary = (congress, chamber, billNumber) => {
+export const getBill = (congress, chamber, billNumber) => {
     return fetch(
         `${endpoint}/congress/${congress}/${capFirstLetter(
             chamber,
@@ -33,11 +33,17 @@ export const getBillSummary = (congress, chamber, billNumber) => {
         .catch(toastError);
 };
 
-export const getBillSummary2 = (legislationId, versionStr) => {
+export const getBill2 = (legislationId, versionStr) => {
     return fetch(`${endPv2}/legislation/${legislationId}/${versionStr}`)
         .then(handleStatus)
         .catch(toastError);
 };
+
+export const getBillSummary = (legislationVersionId) => {
+    return fetch(`${endPv2}/legislation_version/${legislationVersionId}/summaries`)
+        .then(handleStatus)
+        .catch(() => {});
+}
 
 export const getBillVersionText = (
     congress,

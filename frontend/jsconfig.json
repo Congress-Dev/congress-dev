@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+      "baseUrl": ".",
+      "paths": {
+        "common/*": ["./src/common/*"],
+        "components/*": ["./src/components/*"],
+        "pages/*": ["./src/pages/*"],
+        "styles/*": ["./src/styles/*"]
+      }
+    },
+    "include": ["src/**/*"], // Ensure VS Code includes relevant files
+    "exclude": ["node_modules", "public"] // Exclude irrelevant folders
+  }
