@@ -157,13 +157,14 @@ class Version(Base):
         }
         return {k: v for (k, v) in boi.items() if v is not None}
 
+
 class Prompt(PromptsBase):
     """
     Table for holding the prompts
     """
 
     __tablename__ = "prompt"
-    __table_args__ = {'schema': 'prompts'}
+    __table_args__ = {"schema": "prompts"}
     prompt_id = Column(Integer, primary_key=True)
     version = Column(String, nullable=False)
     title = Column(String, nullable=False)
@@ -254,13 +255,14 @@ try:
 except:
     pass
 
+
 class PromptBatch(PromptsBase):
     """
     Table for holding the records for which legislation versions have run through a prompt
     """
 
     __tablename__ = "prompt_batch"
-    __table_args__ = {'schema': 'prompts'}
+    __table_args__ = {"schema": "prompts"}
     prompt_batch_id = Column(Integer, primary_key=True)
     prompt_id = Column(
         Integer,
@@ -283,6 +285,8 @@ class PromptBatch(PromptsBase):
     skipped = Column(
         Integer, nullable=False, default=0
     )  # Skipped due to not matching the predicate
+
+
 class LegislationContent(Base):
     __tablename__ = "legislation_content"
 
@@ -340,7 +344,10 @@ class LegislationContentTag(Base):
 
     legislation_content_tag_id = Column(Integer, primary_key=True)
     prompt_batch_id = Column(
-        Integer, ForeignKey(PromptBatch.prompt_batch_id, ondelete="CASCADE"), index=True, nullable=True
+        Integer,
+        ForeignKey(PromptBatch.prompt_batch_id, ondelete="CASCADE"),
+        index=True,
+        nullable=True,
     )
     legislation_content_id = Column(
         Integer,
@@ -348,6 +355,28 @@ class LegislationContentTag(Base):
         index=True,
     )
     tags = Column(ARRAY(String), index=True)
+
+
+class LegislationContentSummary(Base):
+    """
+    Represents a summary of a piece of legislation content
+    """
+
+    __tablename__ = "legislation_content_summary"
+
+    legislation_content_summary_id = Column(Integer, primary_key=True)
+    legislation_content_id = Column(
+        Integer,
+        ForeignKey("legislation_content.legislation_content_id", ondelete="CASCADE"),
+        index=True,
+    )
+    summary = Column(String)
+    prompt_batch_id = Column(
+        Integer,
+        ForeignKey(PromptBatch.prompt_batch_id, ondelete="CASCADE"),
+        index=True,
+        nullable=True,
+    )
 
 
 class USCRelease(Base):
@@ -859,5 +888,6 @@ class Appropriation(AppropriationsBase):
     target = Column(String, nullable=True)
 
     purpose = Column(String, default="")
+
 
 merge_metadata(Base.metadata, PromptsBase.metadata)
