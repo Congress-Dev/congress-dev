@@ -100,18 +100,7 @@ function BillSearch(props) {
             text: textBox,
             sort: sortField,
         });
-        setCurrentPage(1);
     }
-
-    useEffect(() => {
-        const params = qs.parse(props.location.search);
-        if(currentSearch.page != params.page) {
-            setCurrentSearch({
-                ...currentSearch,
-                page: params.page,
-            });
-        }
-      }, [props.location.search]);
 
     useEffect(() => {
         const urlSearchParams = new URLSearchParams(location.search);
