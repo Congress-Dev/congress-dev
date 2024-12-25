@@ -1,12 +1,29 @@
 from typing import List
-from billparser.db.models import Appropriation, LegislationContent
-from billparser.db.handler import Session, engine
-import json
-from typing import List
-from billparser.db.models import LegislationContent, Appropriation, Prompt, PromptBatch
+from billparser.db.models import Appropriation
 from billparser.db.handler import Session
-from billparser.prompt_runners.utils import run_query
+import json
+import jsonschema
+from typing import List
+from billparser.db.models import Appropriation, PromptBatch
+from billparser.db.handler import Session
+from billparser.prompt_runners.utils import get_existing_batch_or_content, run_query
 from datetime import datetime
+
+SCHEMA = {
+    "type": "object",
+    "properties": {
+        "amount": {"type": "number"},
+        "brief_purpose": {"type": "string"},
+        "expires_at": {"type": "string"},
+        "fiscal_years": {"type": "array", "items": {"type": "integer"}},
+        "related_bill": {"type": "string"},
+        "sub_appropriations": {
+            "type": "array",
+            "items": {"$ref": "#/definitions/Appropriation"},
+        },
+    },
+    "definitions": {"Appropriation": {"$ref": "#"}},
+}
 
 
 def convert_to_int(dollar_str: str) -> int:
@@ -20,17 +37,10 @@ def appropriation_finder(
     legislation_version_id: int, prompt_id: int
 ) -> List[Appropriation]:
     with Session() as session:
-        prompt = session.query(Prompt).filter(Prompt.prompt_id == prompt_id).first()
-        existing_prompt_batch = (
-            session.query(PromptBatch)
-            .filter(
-                PromptBatch.prompt_id == prompt_id,
-                PromptBatch.legislation_version_id == legislation_version_id,
-            )
-            .first()
+        existing_prompt_batch, prompt, legis_content = get_existing_batch_or_content(
+            legislation_version_id, prompt_id, session
         )
         if existing_prompt_batch:
-            print("Prompt batch already exists")
             return
         prompt_text = prompt.prompt
         prompt_batch = PromptBatch(
@@ -44,12 +54,6 @@ def appropriation_finder(
         )
         session.add(prompt_batch)
         session.commit()
-        legis_content: List[LegislationContent] = (
-            session.query(LegislationContent)
-            .filter(LegislationContent.legislation_version_id == legislation_version_id)
-            .order_by(LegislationContent.legislation_content_id)
-            .all()
-        )
         try_better_model = []
         for content in legis_content:
             if content.content_str and "$" in content.content_str:
@@ -68,6 +72,7 @@ def appropriation_finder(
             try:
                 response = run_query(query, model="ollama/qwen2.5:32b")
                 obj = json.loads(response.json()["choices"][0]["message"]["content"])
+                jsonschema.validate(obj, SCHEMA)
             except:
                 prompt_batch.failed += 1
                 continue
@@ -119,6 +124,7 @@ def appropriation_finder(
             try:
                 response = run_query(query, model="ollama/nemotron:latest")
                 obj = json.loads(response.json()["choices"][0]["message"]["content"])
+                jsonschema.validate(obj, SCHEMA)
             except:
                 prompt_batch.failed += 1
                 continue

@@ -1,5 +1,6 @@
-from typing import Dict, Optional
-from billparser.db.models import LegislationContent
+from collections import defaultdict
+from typing import Dict, List, Optional, Tuple
+from billparser.db.models import LegislationContent, Prompt, PromptBatch
 from litellm import completion
 import litellm
 
@@ -85,3 +86,46 @@ def print_clause(
     printed_str += get_my_row_content(me)
     printed_str += indent_block(recurse(legis_by_parent, lc_id))
     return printed_str
+
+
+def get_existing_batch_or_content(
+    legislation_version_id: int, prompt_id: int, session
+) -> Tuple[bool, Prompt, List[LegislationContent]]:
+    """
+    Retrieves the prompt, checks if there is an existing prompt batch, and retrieves the legislation content
+    """
+    prompt = session.query(Prompt).filter(Prompt.prompt_id == prompt_id).first()
+    existing_prompt_batch = (
+        session.query(PromptBatch)
+        .filter(
+            PromptBatch.prompt_id == prompt_id,
+            PromptBatch.legislation_version_id == legislation_version_id,
+        )
+        .first()
+    )
+    if existing_prompt_batch:
+        print("Prompt batch already exists")
+        return True, prompt, []
+
+    # Don't pull the content till we know we are gonna use it
+    legis_content: List[LegislationContent] = (
+        session.query(LegislationContent)
+        .filter(LegislationContent.legislation_version_id == legislation_version_id)
+        .all()
+    )
+    return False, prompt, legis_content
+
+
+def get_legis_by_parent_and_id(
+    legis_content: List[LegislationContent],
+) -> Tuple[Dict[int, List[LegislationContent]], Dict[int, LegislationContent]]:
+    legis_by_parent = defaultdict(list)
+    legis_by_id = {}
+    for lc in legis_content:
+        if lc is None:
+            continue
+        legis_by_parent[lc.parent_id].append(lc)
+        legis_by_id[lc.legislation_content_id] = lc
+    for keys, values in legis_by_parent.items():
+        values.sort(key=lambda x: x.legislation_content_id)
+    return legis_by_parent, legis_by_id
