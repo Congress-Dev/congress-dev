@@ -9,6 +9,7 @@ from billparser.db.models import (
     LegislationVersionEnum,
     USCRelease,
     LegislationContentTag,
+    LegislationContentSummary,
 )
 from congress_fastapi.models.abstract import MappableBase
 
@@ -75,3 +76,11 @@ class LegislationClauseTag(MappableBase):
     legislation_content_id: Annotated[int, LegislationContentTag.legislation_content_id]
     tags: Annotated[List[str], LegislationContentTag.tags]
     prompt_batch_id: Annotated[Optional[int], LegislationContentTag.prompt_batch_id]
+
+
+class LegislationClauseSummary(MappableBase):
+    legislation_content_id: Annotated[
+        int, LegislationContentSummary.legislation_content_id
+    ]
+    summary: Annotated[str, LegislationContentSummary.summary]
+    prompt_batch_id: Annotated[Optional[int], LegislationContentSummary.prompt_batch_id]
