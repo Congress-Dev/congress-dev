@@ -132,9 +132,54 @@
     }
 }
 
+.mobile-drawer {
+    display: none;
+}
+
 @media (min-device-width: 768px) and (max-device-width: 1200px) {
     .page {
         width: 100%;
         margin: 0px;
+    }
+}
+
+@media (max-device-width: 768px) {
+    .mobile-drawer {
+        display: inline-block;
+        margin-left: 0px !important;
+    }
+
+    .bp5-drawer .bp5-button {
+        justify-content: left;
+        margin-left: 10px;
+        margin-top: 10px;
+    }
+
+    .desktop-nav {
+        display: none;
+    }
+
+    .page {
+        width: 100%;
+        margin: 0px;
+
+        .sidebar {
+            display: block;
+            width: 100%;
+
+            .collapse-controls {
+                display: none;
+            }
+
+            .collapse-wrapper {
+                display: none;
+            }
+        }
+
+        .content {
+            display: block;
+            width: 100%;
+            padding: 0px;
+        }
     }
 }
