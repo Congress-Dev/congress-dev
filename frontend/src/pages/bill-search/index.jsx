@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import lodash from "lodash";
-import qs from "query-string";
 import {
     Card,
     Elevation,
@@ -13,11 +13,14 @@ import {
     HTMLSelect,
     ButtonGroup,
 } from "@blueprintjs/core";
+import qs from "query-string";
 
 import { initialVersionToFull, versionToFull } from "common/lookups";
-import { BillSearchContent, CollapsibleSection } from "components";
+import { BillSearchContent, CollapsibleSection, Paginator } from "components";
 
 function BillSearch(props) {
+    const location = useLocation();
+    const [isFirstRender, setFirstRender] = useState(true);
     const [resPageSize, setResPageSize] = useState(5);
     const [chamberButtons, setChamberButtons] = useState({
         House: true,
@@ -27,13 +30,15 @@ function BillSearch(props) {
     const [textBox, setTextBox] = useState("");
     const [sortField, setSortField] = useState("number");
     const [totalResults, setTotalResults] = useState(0);
+
+    const searchParams = new URLSearchParams(location.search);
     const [currentSearch, setCurrentSearch] = useState({
         congress: "118",
         chamber: "House,Senate",
         versions: Object.keys(versionToFull).join(","),
         text: "",
         sort: "number",
-        page: 1,
+        page:  searchParams.get('page') || 1,
         pageSize: resPageSize,
     });
 
@@ -95,93 +100,42 @@ function BillSearch(props) {
             text: textBox,
             sort: sortField,
         });
+        setCurrentPage(1);
     }
 
     useEffect(() => {
-        executeSearch();
-    }, [versionButtons, chamberButtons, sortField]);
+        const params = qs.parse(props.location.search);
+        if(currentSearch.page != params.page) {
+            setCurrentSearch({
+                ...currentSearch,
+                page: params.page,
+            });
+        }
+      }, [props.location.search]);
 
-    function innerPageRender(items) {
-        const curPage = parseInt(currentSearch.page);
+    useEffect(() => {
+        const urlSearchParams = new URLSearchParams(location.search);
+        urlSearchParams.set('page', currentSearch.page);
+        props.history.push({
+            pathname: props.location.pathname,
+            search: urlSearchParams.toString(),
+        });
+    }, [currentSearch])
 
-        return lodash.map(items, (n, i) => {
-            return (
-                <Button
-                    key={`item-${i}`}
-                    disabled={n === "..."}
-                    minimal={n === "..."}
-                    intent={n === curPage ? "primary" : ""}
-                    onClick={() => {
-                        setCurrentSearch({ ...currentSearch, page: n });
-                    }}
-                >
-                    {n}
-                </Button>
-            );
+    function setCurrentPage(page) {
+        setCurrentSearch({
+            ...currentSearch,
+            page: page,
         });
     }
 
-    function renderPageList() {
-        const totalPages = Math.ceil(totalResults / currentSearch.pageSize);
-        const curPage = parseInt(currentSearch.page);
-        if (totalPages < 6) {
-            return (
-                <div className="search-pager">
-                    <div className="search-pager-buttons">
-                        {" Page: "}
-                        {innerPageRender(lodash.range(1, totalPages + 1))}
-                    </div>
-                </div>
-            );
-        } else {
-            let sectionOne = lodash.range(1, 4);
-            let sectionTwo = lodash.range(
-                Math.max(curPage - 2, 1),
-                Math.min(totalPages, curPage + 3),
-            );
-            let sectionThree = lodash.range(
-                Math.max(totalPages - 3, 1),
-                totalPages + 1,
-            );
-            sectionThree = lodash.filter(
-                sectionThree,
-                (i) => !sectionTwo.includes(i) && !sectionOne.includes(i),
-            );
-            sectionTwo = lodash.filter(
-                sectionTwo,
-                (i) => !sectionOne.includes(i),
-            );
-            let masterSection = [...sectionOne];
-            if (sectionTwo.length > 0) {
-                if (
-                    masterSection[masterSection.length - 1] + 1 ===
-                    sectionTwo[0]
-                ) {
-                    masterSection = [...masterSection, ...sectionTwo];
-                } else {
-                    masterSection = [...masterSection, "...", ...sectionTwo];
-                }
-            }
-            if (sectionThree.length > 0) {
-                if (
-                    masterSection[masterSection.length - 1] + 1 ===
-                    sectionThree[0]
-                ) {
-                    masterSection = [...masterSection, ...sectionThree];
-                } else {
-                    masterSection = [...masterSection, "...", ...sectionThree];
-                }
-            }
-            return (
-                <div className="search-pager">
-                    <div className="search-pager-buttons">
-                        {" Page: "}
-                        {innerPageRender(masterSection)}
-                    </div>
-                </div>
-            );
+    useEffect(() => {
+        if(isFirstRender) {
+            setFirstRender(false);
+            return
         }
-    }
+        executeSearch();
+    }, [versionButtons, chamberButtons, sortField]);
 
     return (
         <Card className="page" elevation={Elevation.ONE}>
@@ -293,7 +247,13 @@ function BillSearch(props) {
                 <div className="search-count">
                     Total Results: {totalResults}
                 </div>
-                {renderPageList()}
+                <Paginator
+                    currentPage={parseInt(currentSearch.page)}
+                    totalPages={Math.ceil(totalResults / currentSearch.pageSize)}
+                    onPage={(page) => {
+                        setCurrentPage(page);
+                    }}
+                />
             </div>
         </Card>
     );
