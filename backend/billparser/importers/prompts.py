@@ -10,6 +10,7 @@ from billparser.db.handler import Session
 
 from billparser.prompt_runners.appropriation_finder import appropriation_finder
 from billparser.prompt_runners.clause_tagger import clause_tagger
+from billparser.prompt_runners.section_summarizer import section_summarizer
 
 
 def get_outstanding_legis_versions(prompt_ids: List[int]) -> List[int]:
@@ -71,3 +72,7 @@ if __name__ == "__main__":
             for legis_v_id in results:
                 logging.info(f"Running appropriation finder on {legis_v_id}")
                 appropriation_finder(legis_v_id, prompt_id)
+        elif prompt_name == "Bill Summarizer":
+            for legis_v_id in results:
+                logging.info(f"Running summarizer on {legis_v_id}")
+                section_summarizer(legis_v_id, prompt_id)
