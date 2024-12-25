@@ -103,12 +103,26 @@ function BillSearch(props) {
     }
 
     useEffect(() => {
-        const urlSearchParams = new URLSearchParams(location.search);
-        urlSearchParams.set('page', currentSearch.page);
-        props.history.push({
-            pathname: props.location.pathname,
-            search: urlSearchParams.toString(),
-        });
+        const params = qs.parse(props.location.search);
+        if(params.page != null && currentSearch.page != params.page) {
+            setCurrentSearch({
+                ...currentSearch,
+                page: params.page,
+            });
+        }
+      }, [props.location.search]);
+
+    useEffect(() => {
+        if(currentSearch.page != null) {
+            const urlSearchParams = new URLSearchParams(location.search);
+            if(urlSearchParams.get('page') != currentSearch.page) {
+                urlSearchParams.set('page', currentSearch.page);
+                props.history.push({
+                    pathname: props.location.pathname,
+                    search: urlSearchParams.toString(),
+                });
+            }
+        }
     }, [currentSearch])
 
     function setCurrentPage(page) {
