@@ -20,6 +20,8 @@ import { BillSearchContent, CollapsibleSection, Paginator } from "components";
 
 function BillSearch(props) {
     const location = useLocation();
+    const searchParams = new URLSearchParams(location.search);
+
     const [isFirstRender, setFirstRender] = useState(true);
     const [resPageSize, setResPageSize] = useState(5);
     const [chamberButtons, setChamberButtons] = useState({
@@ -27,17 +29,15 @@ function BillSearch(props) {
         Senate: true,
     });
     const [versionButtons, setVersionButtons] = useState(initialVersionToFull);
-    const [textBox, setTextBox] = useState("");
-    const [sortField, setSortField] = useState("number");
+    const [textBox, setTextBox] = useState(searchParams.get('text') || '');
     const [totalResults, setTotalResults] = useState(0);
 
-    const searchParams = new URLSearchParams(location.search);
     const [currentSearch, setCurrentSearch] = useState({
         congress: "118",
         chamber: "House,Senate",
         versions: Object.keys(versionToFull).join(","),
-        text: "",
-        sort: "number",
+        text: searchParams.get('text') || '',
+        sort: searchParams.get('sort') || 'number',
         page:  searchParams.get('page') || 1,
         pageSize: resPageSize,
     });
@@ -98,30 +98,61 @@ function BillSearch(props) {
                 )
                 .join(","),
             text: textBox,
-            sort: sortField,
         });
     }
 
     useEffect(() => {
+        let updated = false;
         const params = qs.parse(props.location.search);
+        let newSearch = {
+            ...currentSearch
+        }
         if(params.page != null && currentSearch.page != params.page) {
-            setCurrentSearch({
-                ...currentSearch,
+            updated = true;
+            newSearch = {
+                ...newSearch,
                 page: params.page,
-            });
+            }
+        }
+        if(params.sort != null && currentSearch.sort != params.sort) {
+            updated = true;
+            newSearch = {
+                ...newSearch,
+                sort: params.sort,
+            }
+        }
+        if(params.text != null && currentSearch.text != params.text) {
+            updated = true;
+            newSearch = {
+                ...newSearch,
+                text: params.text
+            }
+        }
+        if(updated) {
+            setCurrentSearch(newSearch);
         }
       }, [props.location.search]);
 
     useEffect(() => {
-        if(currentSearch.page != null) {
-            const urlSearchParams = new URLSearchParams(location.search);
-            if(urlSearchParams.get('page') != currentSearch.page) {
-                urlSearchParams.set('page', currentSearch.page);
-                props.history.push({
-                    pathname: props.location.pathname,
-                    search: urlSearchParams.toString(),
-                });
-            }
+        let updated = false;
+        const params = qs.parse(props.location.search);
+        if(currentSearch.page != null && params.page != currentSearch.page) {
+            updated = true;
+            params.page = currentSearch.page;
+        }
+        if(currentSearch.sort != null && params.sort != currentSearch.sort) {
+            updated = true;
+            params.sort = currentSearch.sort;
+        }
+        if(currentSearch.text != null && params.text != currentSearch.text) {
+            updated = true;
+            params.text = currentSearch.text;
+        }
+        if(updated) {
+            props.history.push({
+                pathname: props.location.pathname,
+                search: qs.stringify(params, { encode: true }),
+            });
         }
     }, [currentSearch])
 
@@ -138,7 +169,15 @@ function BillSearch(props) {
             return
         }
         executeSearch();
-    }, [versionButtons, chamberButtons, sortField]);
+    }, [versionButtons, chamberButtons]);
+
+    function setCurrentSort(sort) {
+        setCurrentSearch({
+            ...currentSearch,
+            page: 1,
+            sort: sort,
+        });
+    }
 
     return (
         <Card className="page" elevation={Elevation.ONE}>
@@ -146,13 +185,14 @@ function BillSearch(props) {
                 <FormGroup labelFor="text-input">
                     <ControlGroup fill={true}>
                         <HTMLSelect
+                            value={currentSearch.sort}
                             options={[
                                 { label: "Bill No.", value: "number" },
                                 { label: "Title", value: "title" },
                                 { label: "Date", value: "effective_date" },
                             ]}
                             onChange={(event) => {
-                                setSortField(event.currentTarget.value);
+                                setCurrentSort(event.currentTarget.value);
                             }}
                         />
                         <InputGroup
@@ -247,13 +287,13 @@ function BillSearch(props) {
                     pageSize={currentSearch.pageSize}
                     setResults={setTotalResults}
                 />
-                <Paginator
+                {(totalResults > 0 ? <Paginator
                     currentPage={parseInt(currentSearch.page)}
                     totalPages={Math.ceil(totalResults / currentSearch.pageSize)}
                     onPage={(page) => {
                         setCurrentPage(page);
                     }}
-                />
+                /> : '')}
             </div>
         </Card>
     );
