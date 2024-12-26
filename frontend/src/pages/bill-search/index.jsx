@@ -247,9 +247,6 @@ function BillSearch(props) {
                     pageSize={currentSearch.pageSize}
                     setResults={setTotalResults}
                 />
-                <div className="search-count">
-                    Total Results: {totalResults}
-                </div>
                 <Paginator
                     currentPage={parseInt(currentSearch.page)}
                     totalPages={Math.ceil(totalResults / currentSearch.pageSize)}
