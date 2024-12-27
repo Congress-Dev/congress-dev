@@ -22,22 +22,32 @@ function BillSearch(props) {
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
 
-    const decoded = decodeSelections(searchParams.get('selections'))
+    const decoded = decodeSelections(searchParams.get("selections"));
 
     const [isFirstRender, setFirstRender] = useState(true);
     const [resPageSize, setResPageSize] = useState(5);
     const [chamberButtons, setChamberButtons] = useState(decoded.chamber);
     const [versionButtons, setVersionButtons] = useState(decoded.versions);
-    const [textBox, setTextBox] = useState(searchParams.get('text') || '');
+    const [textBox, setTextBox] = useState(searchParams.get("text") || "");
     const [totalResults, setTotalResults] = useState(0);
 
     const [currentSearch, setCurrentSearch] = useState({
         congress: "118",
-        chamber: "House,Senate",
-        versions: Object.keys(versionToFull).join(","),
-        text: searchParams.get('text') || '',
-        sort: searchParams.get('sort') || 'number',
-        page:  searchParams.get('page') || 1,
+        chamber: lodash
+            .keys(lodash.pickBy(chamberButtons, (value) => value))
+            .join(","),
+        versions: lodash
+            .keys(
+                lodash.pickBy(versionToFull, (value) =>
+                    lodash
+                        .keys(lodash.pickBy(versionButtons, (value) => value))
+                        .includes(value),
+                ),
+            )
+            .join(","),
+        text: searchParams.get("text") || "",
+        sort: searchParams.get("sort") || "number",
+        page: searchParams.get("page") || 1,
         pageSize: resPageSize,
     });
 
@@ -79,10 +89,6 @@ function BillSearch(props) {
     }
 
     function executeSearch() {
-        const versionKeys = lodash.keys(
-            lodash.pickBy(versionButtons, (value) => value),
-        );
-
         setCurrentSearch({
             ...currentSearch,
             page: 1,
@@ -92,7 +98,11 @@ function BillSearch(props) {
             versions: lodash
                 .keys(
                     lodash.pickBy(versionToFull, (value) =>
-                        versionKeys.includes(value),
+                        lodash
+                            .keys(
+                                lodash.pickBy(versionButtons, (value) => value),
+                            )
+                            .includes(value),
                     ),
                 )
                 .join(","),
@@ -102,76 +112,79 @@ function BillSearch(props) {
 
     function encodeSelections() {
         let encoded = "1";
-        lodash.mapValues(chamberButtons, (v, k)=> {
-            encoded += (v ? "1" : "0")
+        lodash.mapValues(chamberButtons, (v, k) => {
+            encoded += v ? "1" : "0";
         });
         lodash.mapValues(versionButtons, (v, k) => {
-            encoded += (v ? "1" : "0")
+            encoded += v ? "1" : "0";
         });
         return parseInt(encoded, 2);
     }
 
     function decodeSelections(selections) {
-        if(selections == null || selections == "") {
+        if (selections == null || selections == "") {
             return {
                 chamber: {
                     House: true,
                     Senate: true,
                 },
-                versions: initialVersionToFull
-            }
+                versions: initialVersionToFull,
+            };
         }
 
         let bits = Number(selections).toString(2).split("");
         let index = 1;
 
-        const chamber = lodash.mapValues({House: true, Senate: true}, (v, k) => {
-            const value = (bits[index] == "1" ? true : false);
-            index++
-            return value
-        })
+        const chamber = lodash.mapValues(
+            { House: true, Senate: true },
+            (v, k) => {
+                const value = bits[index] == "1" ? true : false;
+                index++;
+                return value;
+            },
+        );
         const versions = lodash.mapValues(initialVersionToFull, (v, k) => {
-            const value = (bits[index] == "1" ? true : false);
+            const value = bits[index] == "1" ? true : false;
             index++;
-            return value
+            return value;
         });
 
         return {
             chamber,
             versions,
-        }
+        };
     }
 
     useEffect(() => {
         let updated = false;
         const params = qs.parse(props.location.search);
         let newSearch = {
-            ...currentSearch
-        }
-        if(params.page != null && currentSearch.page != params.page) {
+            ...currentSearch,
+        };
+        if (params.page != null && currentSearch.page != params.page) {
             updated = true;
             newSearch = {
                 ...newSearch,
                 page: params.page,
-            }
+            };
         }
-        if(params.sort != null && currentSearch.sort != params.sort) {
+        if (params.sort != null && currentSearch.sort != params.sort) {
             updated = true;
             newSearch = {
                 ...newSearch,
                 sort: params.sort,
-            }
+            };
         }
-        if(params.text != null && currentSearch.text != params.text) {
+        if (params.text != null && currentSearch.text != params.text) {
             updated = true;
             newSearch = {
                 ...newSearch,
-                text: params.text
-            }
+                text: params.text,
+            };
         }
 
         const encoded = encodeSelections();
-        if(params.selection != null && encoded != params.selection) {
+        if (params.selection != null && encoded != params.selection) {
             updated = true;
 
             const decoded = decodeSelections(params.selection);
@@ -179,43 +192,49 @@ function BillSearch(props) {
                 ...newSearch,
                 chamber: decoded.chamber,
                 versions: decoded.versions,
-            }
+            };
         }
 
-        if(updated) {
+        if (updated) {
             setCurrentSearch(newSearch);
         }
-      }, [props.location.search]);
+    }, [props.location.search]);
 
     useEffect(() => {
         let updated = false;
         const params = qs.parse(props.location.search);
-        if(currentSearch.page != null && params.page != currentSearch.page) {
+        if (currentSearch.page != null && params.page != currentSearch.page) {
             updated = true;
             params.page = currentSearch.page;
         }
-        if(currentSearch.sort != null && params.sort != currentSearch.sort) {
+        if (currentSearch.sort != null && params.sort != currentSearch.sort) {
             updated = true;
             params.sort = currentSearch.sort;
         }
-        if(currentSearch.text != null && params.text != currentSearch.text) {
+        if (currentSearch.text == "" && params.text != "") {
+            updated = true;
+            delete params.text;
+        } else if (
+            currentSearch.text != null &&
+            params.text != currentSearch.text
+        ) {
             updated = true;
             params.text = currentSearch.text;
         }
 
         const encoded = encodeSelections();
-        if(encoded != null && params.selections != encoded) {
+        if (encoded != null && params.selections != encoded) {
             updated = true;
             params.selections = encoded;
         }
 
-        if(updated) {
+        if (updated) {
             props.history.push({
                 pathname: props.location.pathname,
                 search: qs.stringify(params, { encode: false }),
             });
         }
-    }, [currentSearch])
+    }, [currentSearch]);
 
     function setCurrentPage(page) {
         setCurrentSearch({
@@ -225,9 +244,9 @@ function BillSearch(props) {
     }
 
     useEffect(() => {
-        if(isFirstRender) {
+        if (isFirstRender) {
             setFirstRender(false);
-            return
+            return;
         }
         executeSearch();
     }, [versionButtons, chamberButtons]);
@@ -348,13 +367,19 @@ function BillSearch(props) {
                     pageSize={currentSearch.pageSize}
                     setResults={setTotalResults}
                 />
-                {(totalResults > 0 ? <Paginator
-                    currentPage={parseInt(currentSearch.page)}
-                    totalPages={Math.ceil(totalResults / currentSearch.pageSize)}
-                    onPage={(page) => {
-                        setCurrentPage(page);
-                    }}
-                /> : '')}
+                {totalResults > 0 ? (
+                    <Paginator
+                        currentPage={parseInt(currentSearch.page)}
+                        totalPages={Math.ceil(
+                            totalResults / currentSearch.pageSize,
+                        )}
+                        onPage={(page) => {
+                            setCurrentPage(page);
+                        }}
+                    />
+                ) : (
+                    ""
+                )}
             </div>
         </Card>
     );
