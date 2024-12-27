@@ -23,6 +23,9 @@ function BillDiffSidebar({ congress, chamber, billNumber, billVersion, bill }) {
         }
 
         setDrawerOpen(true);
+        setDiffs(null);
+        setDiffLocation(node.diffLocation);
+
         getBillVersionDiffForSection(
             congress,
             chamber,
@@ -32,7 +35,6 @@ function BillDiffSidebar({ congress, chamber, billNumber, billVersion, bill }) {
             node.diffLocation.section_number,
         ).then((diffs) => {
             setDiffs(diffs);
-            setDiffLocation(node.diffLocation);
         });
     }
 
