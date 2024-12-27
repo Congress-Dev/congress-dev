@@ -3,7 +3,7 @@ import re
 
 def resolve_citations(text: str, title_num: str) -> str:
     """
-        Puts xml tags around all citations
+    Puts xml tags around all citations
     """
     title_cites = [
         r"\W(sections? (?P<inner>.*?) of (?P<title>(?:this )?title(?:\d\d?)?))\W",
@@ -79,4 +79,6 @@ def resolve_citations(text: str, title_num: str) -> str:
 
 
 def remove_citations(text: str) -> str:
-    return re.sub(r"\<usccite src.*?\"\>", "", text, count=200).replace("</usccite>", "")
+    return re.sub(r"\<usccite src.*?\"\>", "", text, count=200).replace(
+        "</usccite>", ""
+    )
