@@ -98,7 +98,7 @@ function AppBar() {
                 />
                 <NavbarHeading>Congress.Dev</NavbarHeading>
                 <NavbarDivider />
-                <div class="desktop-nav">
+                <div className="desktop-nav">
                     {navigationItems()}
                 </div>
 

@@ -69,7 +69,7 @@ function Paginator({currentPage, totalPages, onPage}) {
                     />) : '')}
                     <Button
                         icon="double-chevron-right"
-                        key={`item-start}`}
+                        key={`item-end}`}
                         disabled={currentPage == totalPages}
                         onClick={() => { onPage(totalPages) }}
                     />

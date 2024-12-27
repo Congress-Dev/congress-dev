@@ -22,13 +22,12 @@ function BillSearch(props) {
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
 
+    const decoded = decodeSelections(searchParams.get('selections'))
+
     const [isFirstRender, setFirstRender] = useState(true);
     const [resPageSize, setResPageSize] = useState(5);
-    const [chamberButtons, setChamberButtons] = useState({
-        House: true,
-        Senate: true,
-    });
-    const [versionButtons, setVersionButtons] = useState(initialVersionToFull);
+    const [chamberButtons, setChamberButtons] = useState(decoded.chamber);
+    const [versionButtons, setVersionButtons] = useState(decoded.versions);
     const [textBox, setTextBox] = useState(searchParams.get('text') || '');
     const [totalResults, setTotalResults] = useState(0);
 
@@ -101,6 +100,48 @@ function BillSearch(props) {
         });
     }
 
+    function encodeSelections() {
+        let encoded = "1";
+        lodash.mapValues(chamberButtons, (v, k)=> {
+            encoded += (v ? "1" : "0")
+        });
+        lodash.mapValues(versionButtons, (v, k) => {
+            encoded += (v ? "1" : "0")
+        });
+        return parseInt(encoded, 2);
+    }
+
+    function decodeSelections(selections) {
+        if(selections == null || selections == "") {
+            return {
+                chamber: {
+                    House: true,
+                    Senate: true,
+                },
+                versions: initialVersionToFull
+            }
+        }
+
+        let bits = Number(selections).toString(2).split("");
+        let index = 1;
+
+        const chamber = lodash.mapValues({House: true, Senate: true}, (v, k) => {
+            const value = (bits[index] == "1" ? true : false);
+            index++
+            return value
+        })
+        const versions = lodash.mapValues(initialVersionToFull, (v, k) => {
+            const value = (bits[index] == "1" ? true : false);
+            index++;
+            return value
+        });
+
+        return {
+            chamber,
+            versions,
+        }
+    }
+
     useEffect(() => {
         let updated = false;
         const params = qs.parse(props.location.search);
@@ -128,6 +169,19 @@ function BillSearch(props) {
                 text: params.text
             }
         }
+
+        const encoded = encodeSelections();
+        if(params.selection != null && encoded != params.selection) {
+            updated = true;
+
+            const decoded = decodeSelections(params.selection);
+            newSearch = {
+                ...newSearch,
+                chamber: decoded.chamber,
+                versions: decoded.versions,
+            }
+        }
+
         if(updated) {
             setCurrentSearch(newSearch);
         }
@@ -148,10 +202,17 @@ function BillSearch(props) {
             updated = true;
             params.text = currentSearch.text;
         }
+
+        const encoded = encodeSelections();
+        if(encoded != null && params.selections != encoded) {
+            updated = true;
+            params.selections = encoded;
+        }
+
         if(updated) {
             props.history.push({
                 pathname: props.location.pathname,
-                search: qs.stringify(params, { encode: true }),
+                search: qs.stringify(params, { encode: false }),
             });
         }
     }, [currentSearch])
