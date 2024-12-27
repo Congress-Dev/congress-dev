@@ -64,14 +64,15 @@ function BillCard({ bill }) {
             <h2 style={{ marginTop: "0px", marginBottom: "0px" }}>
                 {genTitle()} - {bill.title}
             </h2>
+            <span style={{ fontWeight: "bold" }}>Versions:</span>{" "}
+            {renderVersions()}
+            <br/>
             <span className="bill-card-introduced-date">
                 <span style={{ fontWeight: "bold" }}>Introduced:</span>{" "}
                 {getFirstEffectiveDate()}
             </span>
             <br />
             <span style={{ fontWeight: "bold" }}>Tags:</span> <br />
-            <span style={{ fontWeight: "bold" }}>Versions:</span>{" "}
-            {renderVersions()}
         </Callout>
     );
 }

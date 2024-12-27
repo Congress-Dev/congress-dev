@@ -21,32 +21,24 @@ function App() {
             <Switch>
                 <Route
                     exact
-                    path="/bill/:congress/:chamber/:billNumber/:billVersion?/diffs/:uscTitle/:uscSection"
-                    component={BillViewer}
-                />
-                <Route
-                    exact
-                    path="/bill/:congress/:chamber/:billNumber/:billVersion?/diffs/:uscTitle/:uscSection#:hasher"
-                    component={BillViewer}
-                />
-                <Route
-                    exact
                     path="/bill/:congress/:chamber/:billNumber/:billVersion?"
                     component={BillViewer}
                 />
-
                 <Route exact path="/bills" component={BillSearch} />
-                <Route exact path="/about" component={AboutUs} />
+
+                <Route
+                    path="/uscode/:uscReleaseId/:uscTitle?/:uscSection?"
+                    component={USCodeViewer}
+                />
                 <Route exact path="/uscode" component={USCodeRevisionList} />
+
                 <Route
                     exact
                     path="/member/:bioguideId"
                     component={MemberViewer}
                 />
-                <Route
-                    path="/uscode/:uscReleaseId/:uscTitle?/:uscSection?"
-                    component={USCodeViewer}
-                />
+
+                <Route exact path="/about" component={AboutUs} />
                 <Route path={["/", "/home"]} component={Home} />
             </Switch>
         </Router>

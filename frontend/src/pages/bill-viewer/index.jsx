@@ -15,8 +15,9 @@ import {
 
 import { chamberLookup } from "common/lookups";
 import {
+    getBill,
+    getBill2,
     getBillSummary,
-    getBillSummary2,
     getBillVersionDiffForSection,
     getBillVersionText,
 } from "common/api";
@@ -41,13 +42,11 @@ function BillViewer(props) {
     // TODO: Option for comparing two versions of the same bill and highlighting differences
     const [bill, setBill] = useState({});
     const [bill2, setBill2] = useState({});
-    const [diffs, setDiffs] = useState({});
     const [textTree, setTextTree] = useState({});
     const [actionParse, setActionParse] = useState(false);
     const [selectedTab, setSelectedTab] = useState("bill");
     const [dateAnchors, setDateAnchors] = useState([]);
     const [treeLookup, setTreeLookup] = useState({});
-    const [diffMode, setDiffMode] = useState(false);
     const history = useHistory();
     const { congress, chamber, billNumber, billVersion, uscTitle, uscSection } =
         props.match.params;
@@ -56,34 +55,42 @@ function BillViewer(props) {
         billVersion || defaultVers[chamber.toLowerCase()],
     );
 
+    const [billSummary, setBillSummary] = useState([]);
+
     useEffect(() => {
-        // Grab the info from the rest API
-        if (props.location.pathname.includes("diffs")) {
-            setDiffMode(true);
-            getBillVersionDiffForSection(
-                congress,
-                chamber,
-                billNumber,
-                billVersion,
-                uscTitle,
-                uscSection,
-            ).then(setDiffs);
-        } else {
-            // If we didn't get a bill version, default to the introduced one.
-            if (billVersion === undefined) {
-                if (bill.legislation_versions !== undefined) {
-                    setBillVers(
-                        bill.legislation_versions[0].legislation_version,
-                    );
-                } else {
-                    setBillVers(defaultVers[chamber.toLowerCase()]);
-                }
+        // If we didn't get a bill version, default to the introduced one.
+        if (billVersion === undefined) {
+            if (bill.legislation_versions !== undefined) {
+                setBillVers(bill.legislation_versions[0].legislation_version);
             } else {
-                setBillVers(billVersion);
+                setBillVers(defaultVers[chamber.toLowerCase()]);
             }
-            setDiffMode(false);
+        } else {
+            setBillVers(billVersion);
         }
-        getBillSummary(congress, chamber, billNumber).then(setBill);
+
+        getBill(congress, chamber, billNumber)
+            .then((response) => {
+                const matchingVersion = lodash.find(
+                    response.legislation_versions,
+                    (e) => {
+                        if (billVersion === undefined) {
+                            return true;
+                        } else {
+                            return e.legislation_version === billVersion;
+                        }
+                    },
+                );
+
+                if (matchingVersion != null) {
+                    getBillSummary(matchingVersion.legislation_version_id).then(
+                        setBillSummary,
+                    );
+                }
+
+                return response;
+            })
+            .then(setBill);
     }, [props.location.pathname]);
 
     useEffect(() => {
@@ -135,7 +142,7 @@ function BillViewer(props) {
 
     useEffect(() => {
         if (bill.legislation_id) {
-            getBillSummary2(bill.legislation_id, billVersion).then(setBill2);
+            getBill2(bill.legislation_id, billVersion).then(setBill2);
         }
     }, [bill.legislation_id, billVersion]);
 
@@ -209,6 +216,16 @@ function BillViewer(props) {
             <h1>
                 {`${chamberLookup[bill.chamber]} ${bill.number}`} - {bill.title}
             </h1>
+
+            {billSummary != null && billSummary[0] != null ? (
+                <p>
+                    {billSummary[0].summary}
+                    <br />
+                    <br />
+                </p>
+            ) : (
+                ""
+            )}
 
             <Divider />
             <div className="sidebar">
@@ -286,13 +303,14 @@ function BillViewer(props) {
                     />
                     <Tab
                         id="ud"
-                        title="USCode Diffs"
+                        title="USCode"
                         panel={
                             <BillDiffSidebar
                                 congress={congress}
                                 chamber={chamber}
                                 billNumber={billNumber}
                                 billVersion={billVers || billVersion}
+                                bill={bill}
                             />
                         }
                     />
@@ -328,23 +346,15 @@ function BillViewer(props) {
 
             <div className="content">
                 <Callout>
-                    {diffMode === true ? (
-                        <USCView
-                            release={bill.usc_release_id || "latest"}
-                            section={uscSection}
-                            title={uscTitle}
-                            diffs={diffs}
-                        />
-                    ) : (
-                        <BillDisplay
-                            congress={congress}
-                            chamber={chamber}
-                            billNumber={billNumber}
-                            billVersion={billVersion}
-                            textTree={textTree}
-                            showTooltips={actionParse}
-                        />
-                    )}
+                    <BillDisplay
+                        congress={congress}
+                        chamber={chamber}
+                        billNumber={billNumber}
+                        billVersion={billVersion}
+                        billSummary={billSummary}
+                        textTree={textTree}
+                        showActions={actionParse}
+                    />
                 </Callout>
             </div>
         </Card>

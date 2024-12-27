@@ -1,27 +1,41 @@
 import React, { useEffect, useState } from "react";
 import lodash from "lodash";
 import { withRouter } from "react-router-dom";
-import { Tree } from "@blueprintjs/core";
+import { Tree, Drawer, Spinner } from "@blueprintjs/core";
 
-import { getBillVersionDiffSummary, capFirstLetter } from "common/api";
-import { chamberLookup } from "common/lookups";
+import {
+    getBillVersionDiffSummary,
+    getBillVersionDiffForSection,
+} from "common/api";
+import { USCView } from "components";
 
-function BillDiffSidebar(props) {
+function BillDiffSidebar({ congress, chamber, billNumber, billVersion, bill }) {
     const [tree, setTree] = useState([]);
     const [treeExpansion, setTreeExpansion] = useState({ 0: true });
-    const { congress, chamber, billNumber, billVersion } = props;
+    const [drawerOpen, setDrawerOpen] = useState(false);
+    const [diffs, setDiffs] = useState({});
+    const [diffLocation, setDiffLocation] = useState(null);
+    const [results, setResults] = useState(false);
 
     function navigateToSection(node) {
-        if (node.diffLocation) {
-            const { short_title, section_number } = node.diffLocation;
-            props.history.push(
-                `/bill/${congress}/${chamber}/${billNumber}/${billVersion}/diffs/${short_title}/${section_number}`,
-            );
-        } else if (node.id === 0) {
-            props.history.push(
-                `/bill/${congress}/${chamber}/${billNumber}/${billVersion}`,
-            );
+        if (node.diffLocation == null) {
+            return;
         }
+
+        setDrawerOpen(true);
+        setDiffs(null);
+        setDiffLocation(node.diffLocation);
+
+        getBillVersionDiffForSection(
+            congress,
+            chamber,
+            billNumber,
+            billVersion,
+            node.diffLocation.short_title,
+            node.diffLocation.section_number,
+        ).then((diffs) => {
+            setDiffs(diffs);
+        });
     }
 
     useEffect(() => {
@@ -32,6 +46,12 @@ function BillDiffSidebar(props) {
                 billNumber,
                 billVersion,
             ).then((res) => {
+                if (res == null || res.length == 0) {
+                    setResults(false);
+                    return;
+                }
+
+                setResults(true);
                 let n = 0;
                 // TODO: Fix sorting for the amendment titles
                 const sorted = lodash.sortBy(res, (x) => x.short_title);
@@ -67,9 +87,7 @@ function BillDiffSidebar(props) {
                         hasCaret: true,
                         icon: "th-list",
                         isExpanded: treeExpansion[0] === true,
-                        label: `${
-                            chamberLookup[capFirstLetter(chamber)]
-                        } ${billNumber} - ${billVersion.toUpperCase()}`,
+                        label: `USC`,
                         childNodes: children,
                         className: "link",
                     },
@@ -86,13 +104,43 @@ function BillDiffSidebar(props) {
         setTreeExpansion({ ...treeExpansion, [node.id]: false });
     }
 
-    return (
-        <Tree
-            contents={tree}
-            onNodeExpand={onExpand}
-            onNodeCollapse={onCollapse}
-            onNodeClick={navigateToSection}
-        />
+    return results ? (
+        <>
+            <Tree
+                contents={tree}
+                onNodeExpand={onExpand}
+                onNodeCollapse={onCollapse}
+                onNodeClick={navigateToSection}
+            />
+            <Drawer
+                className={"bp5-dark"}
+                isOpen={drawerOpen}
+                onClose={() => setDrawerOpen(false)}
+                isCloseButtonShown={true}
+                title={
+                    diffLocation != null
+                        ? `USC - ${diffLocation.short_title}. ${diffLocation.long_title}`
+                        : ""
+                }
+            >
+                {diffs != null && diffLocation != null ? (
+                    <USCView
+                        release={bill.usc_release_id || "latest"}
+                        section={diffLocation.section_number}
+                        title={diffLocation.short_title}
+                        diffs={diffs}
+                        interactive={false}
+                    />
+                ) : (
+                    <Spinner className="loading-spinner" intent="primary" />
+                )}
+            </Drawer>
+        </>
+    ) : (
+        <p>
+            There have been no modifications to the United States Code in the
+            contents of this bill.
+        </p>
     );
 }
 
