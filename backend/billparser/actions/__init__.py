@@ -1,7 +1,36 @@
 import re
 from billparser.logger import log
 from unidecode import unidecode
+from enum import Enum
 
+class ActionType(str, Enum):
+    SHORT_TITLE = "SHORT-TITLE"
+    PURPOSE = "PURPOSE"
+    CONGRESS_FINDS = "CONGRESS-FINDS"
+    REPLACE_SECTION = "REPLACE-SECTION"
+    IN_CONTEXT = "IN-CONTEXT"
+    AMEND_MULTIPLE = "AMEND-MULTIPLE"
+    STRIKE_TEXT = "STRIKE-TEXT"
+    STRIKE_TEXT_MULTIPLE = "STRIKE-TEXT-MULTIPLE"
+    STRIKE_TEXT_INSERT = "STRIKE-TEXT-INSERT"
+    INSERT_SECTION_AFTER = "INSERT-SECTION-AFTER"
+    INSERT_END = "INSERT-END"
+    INSERT_TEXT_AFTER = "INSERT-TEXT-AFTER"
+    INSERT_TEXT = "INSERT-TEXT"
+    INSERT_TEXT_END = "INSERT-TEXT-END"
+    STRIKE_SECTION_INSERT = "STRIKE-SECTION-INSERT"
+    STRIKE_SUBSECTION = "STRIKE-SUBSECTION"
+    STRIKE_PARAGRAPHS_MULTIPLE = "STRIKE-PARAGRAPHS-MULTIPLE"
+    REDESIGNATE = "REDESIGNATE"
+    REPEAL = "REPEAL"
+    EFFECTIVE_DATE = "EFFECTIVE-DATE"
+    TABLE_OF_CONTENTS = "TABLE-OF-CONTENTS"
+    TABLE_OF_CHAPTERS = "TABLE-OF-CHAPTERS"
+    INSERT_CHAPTER_AT_END = "INSERT-CHAPTER-AT-END"
+    TERM_DEFINITION = "TERM-DEFINITION"
+    DATE = "DATE"
+    FINANCIAL = "FINANCIAL"
+    TRANSFER_FUNDS = "TRANSFER-FUNDS"
 
 # TODO: This whole file is some honkin bullshit. It's entirely unsustainable, but at the same time, unless I can get them to follow standards, I'm not sure
 # I can actually do anything else but maintain a long ass list of regexes.
@@ -11,8 +40,7 @@ from unidecode import unidecode
 # The capture groups are typically consistent, especially when the same functions are used between different 'actions'
 regex_holder = {
     "SHORT-TITLE": [
-        r"This (?P<context_type>(?:act|(?:sub)?title)) may be cited as the \"(?P<title>.+?)\"\.",
-        r"This (?P<context_type>(?:act|(?:sub)?title)) may be cited as the (?P<title>.+?)\.",
+        r"This (?P<context_type>(?:act|(?:sub)?title|part)) may be cited as the \"?(?P<title>.+?)\"?\.",
     ],
     "PURPOSE": [r"The purpose of this Act is (?P<purpose>.+)\."],
     "CONGRESS-FINDS": [r"Congress finds the following:"],
