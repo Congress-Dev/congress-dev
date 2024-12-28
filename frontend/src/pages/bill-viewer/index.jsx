@@ -10,6 +10,7 @@ import {
     Tab,
     Card,
     Divider,
+    Drawer,
     FormGroup,
 } from "@blueprintjs/core";
 
@@ -18,7 +19,6 @@ import {
     getBill,
     getBill2,
     getBillSummary,
-    getBillVersionDiffForSection,
     getBillVersionText,
 } from "common/api";
 
@@ -27,7 +27,6 @@ import {
     BillDisplay,
     BillDiffSidebar,
     BillViewAnchorList,
-    USCView,
 } from "components";
 
 // Default bill versions to choose
@@ -56,6 +55,7 @@ function BillViewer(props) {
     );
 
     const [billSummary, setBillSummary] = useState([]);
+    const [drawerOpen, setDrawerOpen] = useState(false);
 
     useEffect(() => {
         // If we didn't get a bill version, default to the introduced one.
@@ -201,6 +201,122 @@ function BillViewer(props) {
         }
     };
 
+    function renderSidebar() {
+        return <Tabs
+            id="sidebar-tabs"
+            selectedTabId={selectedTab}
+            onChange={setSelectedTab}
+        >
+            <Tab
+                id="bill"
+                title="Bill"
+                panel={
+                    <>
+                        <FormGroup
+                            label="Version:"
+                            labelFor="bill-version-select"
+                        >
+                            <HTMLSelect
+                                id="bill-version-select"
+                                value={(billVers || "").toUpperCase()}
+                                onChange={(e) =>
+                                    setBillVers(e.currentTarget.value)
+                                }
+                                className="bp3"
+                                options={lodash.map(
+                                    bill.legislation_versions,
+                                    (
+                                        {
+                                            legislation_version,
+                                            effective_date,
+                                        },
+                                        ind,
+                                    ) => {
+                                        return {
+                                            label: `${legislation_version} ${effective_date !== "None" ? ` - ${effective_date}` : ""}`,
+                                            value: legislation_version,
+                                        };
+                                    },
+                                )}
+                            />
+                        </FormGroup>
+
+                        <FormGroup label="Display Options:">
+                            <Switch
+                                label="Highlight dates"
+                                value={actionParse}
+                                onClick={() =>
+                                    setActionParse(!actionParse)
+                                }
+                            />
+                            <Switch
+                                label="Highlight spending"
+                                value={actionParse}
+                                onClick={() =>
+                                    setActionParse(!actionParse)
+                                }
+                            />
+                            <Switch
+                                label="Highlight tags"
+                                value={actionParse}
+                                onClick={() =>
+                                    setActionParse(!actionParse)
+                                }
+                            />
+                            <Switch
+                                label="Action parsing details"
+                                value={actionParse}
+                                onClick={() =>
+                                    setActionParse(!actionParse)
+                                }
+                            />
+                        </FormGroup>
+                    </>
+                }
+            />
+            <Tab
+                id="ud"
+                title="USCode"
+                panel={
+                    <BillDiffSidebar
+                        congress={congress}
+                        chamber={chamber}
+                        billNumber={billNumber}
+                        billVersion={billVers || billVersion}
+                        bill={bill}
+                    />
+                }
+            />
+            <Tab
+                id="datelist"
+                title="Dates"
+                panel={
+                    <BillViewAnchorList
+                        anchors={dateAnchors}
+                        congress={congress}
+                        chamber={chamber}
+                        billNumber={billNumber}
+                        billVersion={billVersion}
+                    />
+                }
+            />
+            {bill2 &&
+                bill2.appropriations &&
+                bill2.appropriations.length > 0 && (
+                    <Tab
+                        id="dollarlist"
+                        title="Dollars"
+                        panel={
+                            <AppropriationTree
+                                appropriations={bill2.appropriations}
+                                onNavigate={scrollContentIdIntoView}
+                            />
+                        }
+                    />
+                )}
+        </Tabs>
+    }
+
     return (
         <Card className="page">
             <Button
@@ -211,6 +327,13 @@ function BillViewer(props) {
                         `https://congress.gov/bill/${bill.congress}-congress/${bill.chamber}-bill/${bill.number}`,
                         "_blank",
                     );
+                }}
+            />
+            <Button
+                className="bill-options mobile-flex"
+                icon="menu"
+                onClick={() => {
+                    setDrawerOpen(true)
                 }}
             />
             <h1>
@@ -228,124 +351,24 @@ function BillViewer(props) {
             )}
 
             <Divider />
-            <div className="sidebar">
-                <Tabs
-                    id="sidebar-tabs"
-                    selectedTabId={selectedTab}
-                    onChange={setSelectedTab}
-                >
-                    <Tab
-                        id="bill"
-                        title="Bill"
-                        panel={
-                            <>
-                                <FormGroup
-                                    label="Version:"
-                                    labelFor="bill-version-select"
-                                >
-                                    <HTMLSelect
-                                        id="bill-version-select"
-                                        value={(billVers || "").toUpperCase()}
-                                        onChange={(e) =>
-                                            setBillVers(e.currentTarget.value)
-                                        }
-                                        className="bp3"
-                                        options={lodash.map(
-                                            bill.legislation_versions,
-                                            (
-                                                {
-                                                    legislation_version,
-                                                    effective_date,
-                                                },
-                                                ind,
-                                            ) => {
-                                                return {
-                                                    label: `${legislation_version} ${effective_date !== "None" ? ` - ${effective_date}` : ""}`,
-                                                    value: legislation_version,
-                                                };
-                                            },
-                                        )}
-                                    />
-                                </FormGroup>
 
-                                <FormGroup label="Display Options:">
-                                    <Switch
-                                        label="Highlight dates"
-                                        value={actionParse}
-                                        onClick={() =>
-                                            setActionParse(!actionParse)
-                                        }
-                                    />
-                                    <Switch
-                                        label="Highlight spending"
-                                        value={actionParse}
-                                        onClick={() =>
-                                            setActionParse(!actionParse)
-                                        }
-                                    />
-                                    <Switch
-                                        label="Highlight tags"
-                                        value={actionParse}
-                                        onClick={() =>
-                                            setActionParse(!actionParse)
-                                        }
-                                    />
-                                    <Switch
-                                        label="Action parsing details"
-                                        value={actionParse}
-                                        onClick={() =>
-                                            setActionParse(!actionParse)
-                                        }
-                                    />
-                                </FormGroup>
-                            </>
-                        }
-                    />
-                    <Tab
-                        id="ud"
-                        title="USCode"
-                        panel={
-                            <BillDiffSidebar
-                                congress={congress}
-                                chamber={chamber}
-                                billNumber={billNumber}
-                                billVersion={billVers || billVersion}
-                                bill={bill}
-                            />
-                        }
-                    />
-                    <Tab
-                        id="datelist"
-                        title="Dates"
-                        panel={
-                            <BillViewAnchorList
-                                anchors={dateAnchors}
-                                congress={congress}
-                                chamber={chamber}
-                                billNumber={billNumber}
-                                billVersion={billVersion}
-                            />
-                        }
-                    />
-                    {bill2 &&
-                        bill2.appropriations &&
-                        bill2.appropriations.length > 0 && (
-                            <Tab
-                                id="dollarlist"
-                                title="Dollars"
-                                panel={
-                                    <AppropriationTree
-                                        appropriations={bill2.appropriations}
-                                        onNavigate={scrollContentIdIntoView}
-                                    />
-                                }
-                            />
-                        )}
-                </Tabs>
+            <div className="sidebar no-mobile">
+                {renderSidebar()}
             </div>
+
+            <Drawer
+                className={"bp5-dark"}
+                isOpen={drawerOpen}
+                onClose={() => setDrawerOpen(false)}
+                isCloseButtonShown={true}
+                title="Display Options"
+            >
+                {renderSidebar()}
+            </Drawer>
 
             <div className="content">
                 <Callout>
+
                     <BillDisplay
                         congress={congress}
                         chamber={chamber}
