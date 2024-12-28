@@ -27,6 +27,7 @@ import {
     BillDisplay,
     BillDiffSidebar,
     BillViewAnchorList,
+    BillVersionsBreadcrumb
 } from "components";
 
 // Default bill versions to choose
@@ -340,8 +341,21 @@ function BillViewer(props) {
                 {`${chamberLookup[bill.chamber]} ${bill.number}`} - {bill.title}
             </h1>
 
+            <span style={{ fontWeight: "bold" }}>Legislators:</span>{" "}
+            <br/>
+
+            <span style={{ fontWeight: "bold" }}>Versions:</span>{" "}
+            <BillVersionsBreadcrumb bill={bill} />
+            <br/>
+
+            <span className="bill-card-introduced-date">
+                <span style={{ fontWeight: "bold" }}>Introduced:</span>{" "}
+                {bill.legislation_versions != null ? bill.legislation_versions[0].effective_date : ""}
+            </span>
+
             {billSummary != null && billSummary[0] != null ? (
                 <p>
+                    <span style={{ fontWeight: "bold" }}>Summary:</span>{" "}
                     {billSummary[0].summary}
                     <br />
                     <br />
