@@ -1,7 +1,7 @@
 import React from "react";
 import lodash from "lodash";
 import { withRouter, Link } from "react-router-dom";
-import { Callout, Breadcrumbs, Breadcrumb, Button } from "@blueprintjs/core";
+import { Callout, Breadcrumbs, Breadcrumb, Button, Tag } from "@blueprintjs/core";
 
 import { chamberLookup, versionToFull } from "common/lookups";
 
@@ -72,7 +72,10 @@ function BillCard({ bill }) {
                 {getFirstEffectiveDate()}
             </span>
             <br />
-            <span style={{ fontWeight: "bold" }}>Tags:</span> <br />
+            <span style={{ fontWeight: "bold" }}>Tags:</span>
+            {/* {(bill.tags.forEach((tag) => {
+                <Tag>{tag}</Tag>
+            }))}<br /> */}
         </Callout>
     );
 }
