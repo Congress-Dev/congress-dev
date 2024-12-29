@@ -21,7 +21,14 @@ def normalize_tags(tags: List[str]) -> List[str]:
     # Convert everything to title case
     # Replace underscores with spaces
     # Remove any leading or trailing whitespace
-    return [tag.replace("_", " ").strip().title() for tag in tags]
+    return list(
+        set(
+            [
+                tag.replace("_", " ").replace(" and ", " & ").strip().title()
+                for tag in tags
+            ]
+        )
+    )
 
 
 async def get_distinct_tags(legislation_ids: List[int]) -> Dict[int, List[str]]:
@@ -192,7 +199,7 @@ async def search_legislation(
             Legislation.legislation_type,
             Legislation.chamber,
             func.array_agg(lv_alias.legislation_version).label("versions"),
-            func.max(lv_alias.effective_date.label("effective_date")),
+            func.array_agg(lv_alias.effective_date).label("effective_date"),
         )
         .select_from(
             join(
@@ -245,10 +252,10 @@ async def search_legislation(
             legislation_versions=[
                 LegislationVersionEnum(x.upper()) for x in result["versions"]
             ],
-            tags=tags_by_id.get(result["legislation_id"], []),
+            tags=sorted(tags_by_id.get(result["legislation_id"], [])),
             summary=summaries_by_id.get(result["legislation_id"], None),
             appropriations=appropriations_by_id.get(result["legislation_id"], None),
-            effective_date=result.get("effective_date"),
+            effective_date=result.get("effective_date")[0],
         )
         for result in results
     ]

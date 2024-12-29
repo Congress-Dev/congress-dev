@@ -31,7 +31,14 @@ def normalize_tags(tags: List[str]) -> List[str]:
     # Convert everything to title case
     # Replace underscores with spaces
     # Remove any leading or trailing whitespace
-    return [tag.replace("_", " ").strip().title() for tag in tags]
+    return list(
+        set(
+            [
+                tag.replace("_", " ").replace(" and ", " & ").strip().title()
+                for tag in tags
+            ]
+        )
+    )
 
 def clause_tagger(legis_version_id: int, prompt_id: int):
     session = Session()
