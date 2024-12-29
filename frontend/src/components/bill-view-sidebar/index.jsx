@@ -24,8 +24,6 @@ function BillViewSidebar({
 }) {
     const [selectedTab, setSelectedTab] = useState("bill");
 
-    console.log(actionParse);
-
     return (
         <Tabs
             id="sidebar-tabs"
@@ -70,7 +68,7 @@ function BillViewSidebar({
                             <Switch
                                 label="Action parsing details"
                                 checked={actionParse}
-                                onClick={() => setActionParse(!actionParse)}
+                                onChange={() => setActionParse(!actionParse)}
                             />
                         </FormGroup>
                     </>
