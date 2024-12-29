@@ -2,7 +2,7 @@ import React from "react";
 import { withRouter, Link } from "react-router-dom";
 import { Callout, Button, Tag } from "@blueprintjs/core";
 
-import { chamberLookup } from "common/lookups";
+import { chamberLookup, partyLookup } from "common/lookups";
 import { BillVersionsBreadcrumb } from "components";
 
 const USDollar = new Intl.NumberFormat("en-US", {
@@ -55,6 +55,13 @@ function BillCard({ bill }) {
             <h2 style={{ marginTop: "0px", marginBottom: "0px" }}>
                 {genTitle()} - {bill.title}
             </h2>
+            {bill.sponsor != null ? (
+                <>
+                    <span style={{ fontWeight: "bold" }}>Sponsor:</span>{" "}
+                    Rep. {bill.sponsor.firstName} {bill.sponsor.lastName} [{partyLookup[bill.sponsor.party] != null ? partyLookup[bill.sponsor.party] : bill.sponsor.party}]
+                    <br />
+                </>
+            ) : ("")}
             <span style={{ fontWeight: "bold" }}>Versions:</span>{" "}
             <BillVersionsBreadcrumb bill={bill} />
             <br />
