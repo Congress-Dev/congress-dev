@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useHistory } from "react-router-dom";
 import {
     Alignment,
@@ -12,14 +12,12 @@ import {
     Position,
 } from "@blueprintjs/core";
 
+import { ThemeContext } from "context";
+
 function AppBar() {
     const history = useHistory();
     const [isOpen, setIsOpen] = useState(false);
-
-    const [isDarkMode, setIsDarkMode] = useState(() => {
-        const savedTheme = localStorage.getItem("dark-mode");
-        return savedTheme ? JSON.parse(savedTheme) : false;
-    });
+    const { isDarkMode, setIsDarkMode } = useContext(ThemeContext);
 
     const toggleDarkMode = () => {
         setIsDarkMode((prevState) => {
@@ -46,44 +44,46 @@ function AppBar() {
     }
 
     function navigationItems() {
-        return <>
-            <Button
-                className={Classes.MINIMAL}
-                icon="home"
-                text="Home"
-                onClick={() => {
-                    handleClose()
-                    history.push("/home");
-                }}
-            />
-            <Button
-                className={Classes.MINIMAL}
-                icon="book"
-                text="USCode"
-                onClick={() => {
-                    handleClose()
-                    history.push("/uscode");
-                }}
-            />
-            <Button
-                className={Classes.MINIMAL}
-                icon="th-list"
-                text="Bills"
-                onClick={() => {
-                    handleClose()
-                    history.push("/bills");
-                }}
-            />
-            <Button
-                className={Classes.MINIMAL}
-                icon="people"
-                text="About Us"
-                onClick={() => {
-                    handleClose()
-                    history.push("/about");
-                }}
-            />
-        </>
+        return (
+            <>
+                <Button
+                    className={Classes.MINIMAL}
+                    icon="home"
+                    text="Home"
+                    onClick={() => {
+                        handleClose();
+                        history.push("/home");
+                    }}
+                />
+                <Button
+                    className={Classes.MINIMAL}
+                    icon="book"
+                    text="U.S. Code"
+                    onClick={() => {
+                        handleClose();
+                        history.push("/uscode");
+                    }}
+                />
+                <Button
+                    className={Classes.MINIMAL}
+                    icon="th-list"
+                    text="Bills"
+                    onClick={() => {
+                        handleClose();
+                        history.push("/bills");
+                    }}
+                />
+                <Button
+                    className={Classes.MINIMAL}
+                    icon="people"
+                    text="About Us"
+                    onClick={() => {
+                        handleClose();
+                        history.push("/about");
+                    }}
+                />
+            </>
+        );
     }
 
     return (
@@ -96,11 +96,10 @@ function AppBar() {
                         handleOpen();
                     }}
                 />
+                <img className="logo" src="/favicon-32x32.png" />
                 <NavbarHeading>Congress.Dev</NavbarHeading>
                 <NavbarDivider />
-                <div className="desktop-nav">
-                    {navigationItems()}
-                </div>
+                <div className="desktop-nav">{navigationItems()}</div>
 
                 <Button
                     className={Classes.MINIMAL + " button-right"}
@@ -110,7 +109,7 @@ function AppBar() {
 
                 <Drawer
                     isOpen={isOpen}
-                    className={isDarkMode ? 'bp5-dark' : ''}
+                    className={"mobile-nav " + (isDarkMode ? "bp5-dark" : "")}
                     onClose={handleClose}
                     position={Position.LEFT}
                     canOutsideClickClose={true}

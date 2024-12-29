@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import lodash from "lodash";
 import { withRouter } from "react-router-dom";
 import { Tree, Drawer, Spinner } from "@blueprintjs/core";
 
+import { ThemeContext } from "context/theme";
 import {
     getBillVersionDiffSummary,
     getBillVersionDiffForSection,
@@ -16,6 +17,7 @@ function BillDiffSidebar({ congress, chamber, billNumber, billVersion, bill }) {
     const [diffs, setDiffs] = useState({});
     const [diffLocation, setDiffLocation] = useState(null);
     const [results, setResults] = useState(false);
+    const { isDarkMode, setIsDarkMode } = useContext(ThemeContext);
 
     function navigateToSection(node) {
         if (node.diffLocation == null) {
@@ -73,7 +75,7 @@ function BillDiffSidebar({ congress, chamber, billNumber, billVersion, bill }) {
                                 return {
                                     id: n,
                                     icon: "wrench",
-                                    label: `${obj.display} ${obj.heading}`,
+                                    label: `${obj.display.replace("SS", "§")} ${obj.heading}`,
                                     className: "section-tree",
                                     diffLocation: { ...obj, short_title },
                                 };
@@ -113,7 +115,7 @@ function BillDiffSidebar({ congress, chamber, billNumber, billVersion, bill }) {
                 onNodeClick={navigateToSection}
             />
             <Drawer
-                className={"bp5-dark"}
+                className={isDarkMode ? "bp5-dark" : ""}
                 isOpen={drawerOpen}
                 onClose={() => setDrawerOpen(false)}
                 isCloseButtonShown={true}

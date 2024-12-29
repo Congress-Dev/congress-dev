@@ -22,8 +22,8 @@ function BillSearchContent(props) {
             props.page,
             props.pageSize,
         ).then((billList) => {
-            if(billList != null) {
-                setBillList(billList)
+            if (billList != null) {
+                setBillList(billList);
             }
         });
     }, [
@@ -44,11 +44,19 @@ function BillSearchContent(props) {
         return <BillCard bill={billItem} key={`bill-search-list-${ind}`} />;
     }
 
-    return <>{
-        billList.legislation.length > 0 ?
-            lodash.map(billList.legislation, renderCardList) :
-            <Callout className="bill-card"><h2 style={{ marginTop: "0px", marginBottom: "0px" }}>No Results</h2></Callout>
-    }</>;
+    return (
+        <>
+            {billList.legislation.length > 0 ? (
+                lodash.map(billList.legislation, renderCardList)
+            ) : (
+                <Callout className="bill-card">
+                    <h2 style={{ marginTop: "0px", marginBottom: "0px" }}>
+                        No Results
+                    </h2>
+                </Callout>
+            )}
+        </>
+    );
 }
 
 export default BillSearchContent;

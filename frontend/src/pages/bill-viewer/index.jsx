@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import lodash from "lodash";
 import { useHistory } from "react-router-dom";
 import {
@@ -10,24 +10,24 @@ import {
     Tab,
     Card,
     Divider,
+    Drawer,
     FormGroup,
 } from "@blueprintjs/core";
+
+import { ThemeContext } from "context";
 
 import { chamberLookup } from "common/lookups";
 import {
     getBill,
     getBill2,
     getBillSummary,
-    getBillVersionDiffForSection,
     getBillVersionText,
 } from "common/api";
 
 import {
-    AppropriationTree,
     BillDisplay,
-    BillDiffSidebar,
-    BillViewAnchorList,
-    USCView,
+    BillViewSidebar,
+    BillVersionsBreadcrumb,
 } from "components";
 
 // Default bill versions to choose
@@ -44,7 +44,7 @@ function BillViewer(props) {
     const [bill2, setBill2] = useState({});
     const [textTree, setTextTree] = useState({});
     const [actionParse, setActionParse] = useState(false);
-    const [selectedTab, setSelectedTab] = useState("bill");
+
     const [dateAnchors, setDateAnchors] = useState([]);
     const [treeLookup, setTreeLookup] = useState({});
     const history = useHistory();
@@ -56,6 +56,8 @@ function BillViewer(props) {
     );
 
     const [billSummary, setBillSummary] = useState([]);
+    const [drawerOpen, setDrawerOpen] = useState(false);
+    const { isDarkMode, setIsDarkMode } = useContext(ThemeContext);
 
     useEffect(() => {
         // If we didn't get a bill version, default to the introduced one.
@@ -213,12 +215,29 @@ function BillViewer(props) {
                     );
                 }}
             />
+            <Button
+                className="bill-options mobile-flex"
+                icon="menu"
+                onClick={() => {
+                    setDrawerOpen(true);
+                }}
+            />
             <h1>
                 {`${chamberLookup[bill.chamber]} ${bill.number}`} - {bill.title}
             </h1>
-
+            <span style={{ fontWeight: "bold" }}>Legislators:</span> <br />
+            <span style={{ fontWeight: "bold" }}>Versions:</span>{" "}
+            <BillVersionsBreadcrumb bill={bill} />
+            <br />
+            <span className="bill-card-introduced-date">
+                <span style={{ fontWeight: "bold" }}>Introduced:</span>{" "}
+                {bill.legislation_versions != null
+                    ? bill.legislation_versions[0].effective_date
+                    : ""}
+            </span>
             {billSummary != null && billSummary[0] != null ? (
                 <p>
+                    <span style={{ fontWeight: "bold" }}>Summary:</span>{" "}
                     {billSummary[0].summary}
                     <br />
                     <br />
@@ -226,124 +245,46 @@ function BillViewer(props) {
             ) : (
                 ""
             )}
-
             <Divider />
-            <div className="sidebar">
-                <Tabs
-                    id="sidebar-tabs"
-                    selectedTabId={selectedTab}
-                    onChange={setSelectedTab}
-                >
-                    <Tab
-                        id="bill"
-                        title="Bill"
-                        panel={
-                            <>
-                                <FormGroup
-                                    label="Version:"
-                                    labelFor="bill-version-select"
-                                >
-                                    <HTMLSelect
-                                        id="bill-version-select"
-                                        value={(billVers || "").toUpperCase()}
-                                        onChange={(e) =>
-                                            setBillVers(e.currentTarget.value)
-                                        }
-                                        className="bp3"
-                                        options={lodash.map(
-                                            bill.legislation_versions,
-                                            (
-                                                {
-                                                    legislation_version,
-                                                    effective_date,
-                                                },
-                                                ind,
-                                            ) => {
-                                                return {
-                                                    label: `${legislation_version} ${effective_date !== "None" ? ` - ${effective_date}` : ""}`,
-                                                    value: legislation_version,
-                                                };
-                                            },
-                                        )}
-                                    />
-                                </FormGroup>
-
-                                <FormGroup label="Display Options:">
-                                    <Switch
-                                        label="Highlight dates"
-                                        value={actionParse}
-                                        onClick={() =>
-                                            setActionParse(!actionParse)
-                                        }
-                                    />
-                                    <Switch
-                                        label="Highlight spending"
-                                        value={actionParse}
-                                        onClick={() =>
-                                            setActionParse(!actionParse)
-                                        }
-                                    />
-                                    <Switch
-                                        label="Highlight tags"
-                                        value={actionParse}
-                                        onClick={() =>
-                                            setActionParse(!actionParse)
-                                        }
-                                    />
-                                    <Switch
-                                        label="Action parsing details"
-                                        value={actionParse}
-                                        onClick={() =>
-                                            setActionParse(!actionParse)
-                                        }
-                                    />
-                                </FormGroup>
-                            </>
-                        }
-                    />
-                    <Tab
-                        id="ud"
-                        title="USCode"
-                        panel={
-                            <BillDiffSidebar
-                                congress={congress}
-                                chamber={chamber}
-                                billNumber={billNumber}
-                                billVersion={billVers || billVersion}
-                                bill={bill}
-                            />
-                        }
-                    />
-                    <Tab
-                        id="datelist"
-                        title="Dates"
-                        panel={
-                            <BillViewAnchorList
-                                anchors={dateAnchors}
-                                congress={congress}
-                                chamber={chamber}
-                                billNumber={billNumber}
-                                billVersion={billVersion}
-                            />
-                        }
-                    />
-                    {bill2 &&
-                        bill2.appropriations &&
-                        bill2.appropriations.length > 0 && (
-                            <Tab
-                                id="dollarlist"
-                                title="Dollars"
-                                panel={
-                                    <AppropriationTree
-                                        appropriations={bill2.appropriations}
-                                        onNavigate={scrollContentIdIntoView}
-                                    />
-                                }
-                            />
-                        )}
-                </Tabs>
+            <div className="sidebar no-mobile">
+                <BillViewSidebar
+                    congress={congress}
+                    chamber={chamber}
+                    billNumber={billNumber}
+                    billVers={billVers}
+                    bill={bill}
+                    dateAnchors={dateAnchors}
+                    bill2={bill2}
+                    scrollContentIdIntoView={scrollContentIdIntoView}
+                    setActionParse={setActionParse}
+                    billVersion={billVersion}
+                    setBillVers={setBillVers}
+                    actionParse={actionParse}
+                />
             </div>
-
+            <Drawer
+                className={isDarkMode ? "bp5-dark" : ""}
+                isOpen={drawerOpen}
+                onClose={() => setDrawerOpen(false)}
+                isCloseButtonShown={true}
+                title="Display Options"
+                lazy={false}
+            >
+                <BillViewSidebar
+                    congress={congress}
+                    chamber={chamber}
+                    billNumber={billNumber}
+                    billVers={billVers}
+                    bill={bill}
+                    dateAnchors={dateAnchors}
+                    bill2={bill2}
+                    scrollContentIdIntoView={scrollContentIdIntoView}
+                    setActionParse={setActionParse}
+                    billVersion={billVersion}
+                    setBillVers={setBillVers}
+                    actionParse={actionParse}
+                />
+            </Drawer>
             <div className="content">
                 <Callout>
                     <BillDisplay

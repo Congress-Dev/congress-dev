@@ -262,7 +262,7 @@ function BillSearch(props) {
     return (
         <Card className="page" elevation={Elevation.ONE}>
             <div className="sidebar">
-                <FormGroup labelFor="text-input">
+                <FormGroup labelFor="text-input" className="search-sort">
                     <ControlGroup fill={true}>
                         <HTMLSelect
                             value={currentSearch.sort}
@@ -302,7 +302,11 @@ function BillSearch(props) {
                     ></Button>
                     <Button icon="add" onClick={toggleCheckAll}></Button>
                     <Button icon="remove" onClick={toggleUncheckAll}></Button>
-                    <Button icon="th-filtered" onClick={toggleEnrolled}>
+                    <Button
+                        className="enrolled-button"
+                        icon="th-filtered"
+                        onClick={toggleEnrolled}
+                    >
                         Enrolled
                     </Button>
                 </ButtonGroup>

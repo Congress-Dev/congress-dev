@@ -1,9 +1,9 @@
 import React from "react";
-import lodash from "lodash";
 import { withRouter, Link } from "react-router-dom";
-import { Callout, Breadcrumbs, Breadcrumb, Button } from "@blueprintjs/core";
+import { Callout, Button, Tag } from "@blueprintjs/core";
 
-import { chamberLookup, versionToFull } from "common/lookups";
+import { chamberLookup } from "common/lookups";
+import { BillVersionsBreadcrumb } from "components";
 
 function BillCard({ bill }) {
     function genTitle() {
@@ -17,35 +17,6 @@ function BillCard({ bill }) {
                     {`${chamberLookup[bill.chamber]} ${bill.number}`}
                 </Link>
             </>
-        );
-    }
-
-    function getFirstEffectiveDate() {
-        const { legislation_versions = [] } = bill;
-        const dateStr = legislation_versions[0].effective_date;
-        return `${dateStr}`;
-    }
-
-    function renderVersions() {
-        const { legislation_versions = [] } = bill;
-        const len = legislation_versions.length;
-        return (
-            <Breadcrumbs
-                className="bill-versions"
-                breadcrumbRenderer={({ text, link, ...rest }) => (
-                    <Breadcrumb {...rest}>
-                        <Link to={link}>{text}</Link>
-                    </Breadcrumb>
-                )}
-                items={lodash.map(legislation_versions, (vers, ind) => {
-                    return {
-                        text: versionToFull[
-                            vers.legislation_version.toLowerCase()
-                        ],
-                        link: `/bill/${bill.congress}/${bill.chamber}/${bill.number}/${vers.legislation_version}`,
-                    };
-                })}
-            />
         );
     }
 
@@ -65,14 +36,17 @@ function BillCard({ bill }) {
                 {genTitle()} - {bill.title}
             </h2>
             <span style={{ fontWeight: "bold" }}>Versions:</span>{" "}
-            {renderVersions()}
-            <br/>
+            <BillVersionsBreadcrumb bill={bill} />
+            <br />
             <span className="bill-card-introduced-date">
                 <span style={{ fontWeight: "bold" }}>Introduced:</span>{" "}
-                {getFirstEffectiveDate()}
+                {bill.legislation_versions[0].effective_date}
             </span>
             <br />
-            <span style={{ fontWeight: "bold" }}>Tags:</span> <br />
+            <span style={{ fontWeight: "bold" }}>Tags:</span>
+            {/* {(bill.tags.forEach((tag) => {
+                <Tag>{tag}</Tag>
+            }))}<br /> */}
         </Callout>
     );
 }
