@@ -3,7 +3,7 @@ import { withRouter, Link } from "react-router-dom";
 import { Callout, Button, Tag, CompoundTag } from "@blueprintjs/core";
 
 import { chamberLookup, partyLookup } from "common/lookups";
-import { BillVersionsBreadcrumb } from "components";
+import { BillVersionsBreadcrumb, LegislatorChip } from "components";
 
 const USDollar = new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -67,18 +67,7 @@ function BillCard({ bill }) {
                 {bill.effective_date}
             </span>
             <br />
-            {bill.sponsor != null ? (
-                <>
-                    <span style={{ fontWeight: "bold" }}>Sponsor:</span>{" "}
-                    <CompoundTag
-                        intent={bill.sponsor.party == "Republican" ? "danger" : (bill.sponsor.party == "Democrat" ? 'primary' : 'none')}
-                        leftContent={partyLookup[bill.sponsor.party] != null ? partyLookup[bill.sponsor.party] : bill.sponsor.party}
-                    >
-                        &nbsp;{bill.sponsor.lastName}, {bill.sponsor.firstName}&nbsp;
-                    </CompoundTag>
-                    <br />
-                </>
-            ) : ("")}
+            <LegislatorChip bill={bill} />
             <span style={{ fontWeight: "bold" }}>Versions:</span>{" "}
             <BillVersionsBreadcrumb bill={bill} />
             <br />

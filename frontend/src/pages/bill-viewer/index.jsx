@@ -30,6 +30,7 @@ import {
     BillViewSidebar,
     BillVersionsBreadcrumb,
 } from "components";
+import { LegislatorChip } from "components/index";
 
 // Default bill versions to choose
 // TODO: These should be enums
@@ -234,18 +235,7 @@ function BillViewer(props) {
                     : ""}
             </span>
             <br/>
-            {bill2?.sponsor != null ? (
-                <>
-                    <span style={{ fontWeight: "bold" }}>Sponsor:</span>{" "}
-                    <CompoundTag
-                        intent={bill2.sponsor.party == "Republican" ? "danger" : (bill2.sponsor.party == "Democrat" ? 'primary' : 'none')}
-                        leftContent={partyLookup[bill2.sponsor.party] != null ? partyLookup[bill2.sponsor.party] : bill2.sponsor.party}
-                    >
-                        &nbsp;{bill2.sponsor.lastName}, {bill2.sponsor.firstName}&nbsp;
-                    </CompoundTag>
-                    <br />
-                </>
-            ) : ("")}
+            <LegislatorChip bill={bill2} />
 
             <span style={{ fontWeight: "bold" }}>Versions:</span>{" "}
             <BillVersionsBreadcrumb bill={bill} />
