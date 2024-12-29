@@ -25,10 +25,8 @@ import {
 } from "common/api";
 
 import {
-    AppropriationTree,
     BillDisplay,
-    BillDiffSidebar,
-    BillViewAnchorList,
+    BillViewSidebar,
     BillVersionsBreadcrumb,
 } from "components";
 
@@ -46,7 +44,7 @@ function BillViewer(props) {
     const [bill2, setBill2] = useState({});
     const [textTree, setTextTree] = useState({});
     const [actionParse, setActionParse] = useState(false);
-    const [selectedTab, setSelectedTab] = useState("bill");
+
     const [dateAnchors, setDateAnchors] = useState([]);
     const [treeLookup, setTreeLookup] = useState({});
     const history = useHistory();
@@ -205,116 +203,6 @@ function BillViewer(props) {
         }
     };
 
-    function renderSidebar() {
-        return (
-            <Tabs
-                id="sidebar-tabs"
-                selectedTabId={selectedTab}
-                onChange={setSelectedTab}
-            >
-                <Tab
-                    id="bill"
-                    title="Bill"
-                    panel={
-                        <>
-                            <FormGroup
-                                label="Version:"
-                                labelFor="bill-version-select"
-                            >
-                                <HTMLSelect
-                                    id="bill-version-select"
-                                    value={(billVers || "").toUpperCase()}
-                                    onChange={(e) =>
-                                        setBillVers(e.currentTarget.value)
-                                    }
-                                    className="bp3"
-                                    options={lodash.map(
-                                        bill.legislation_versions,
-                                        (
-                                            {
-                                                legislation_version,
-                                                effective_date,
-                                            },
-                                            ind,
-                                        ) => {
-                                            return {
-                                                label: `${legislation_version} ${effective_date !== "None" ? ` - ${effective_date}` : ""}`,
-                                                value: legislation_version,
-                                            };
-                                        },
-                                    )}
-                                />
-                            </FormGroup>
-
-                            <FormGroup label="Display Options:">
-                                <Switch
-                                    label="Highlight dates"
-                                    value={actionParse}
-                                    onClick={() => setActionParse(!actionParse)}
-                                />
-                                <Switch
-                                    label="Highlight spending"
-                                    value={actionParse}
-                                    onClick={() => setActionParse(!actionParse)}
-                                />
-                                <Switch
-                                    label="Highlight tags"
-                                    value={actionParse}
-                                    onClick={() => setActionParse(!actionParse)}
-                                />
-                                <Switch
-                                    label="Action parsing details"
-                                    value={actionParse}
-                                    onClick={() => setActionParse(!actionParse)}
-                                />
-                            </FormGroup>
-                        </>
-                    }
-                />
-                <Tab
-                    id="ud"
-                    title="USCode"
-                    panel={
-                        <BillDiffSidebar
-                            congress={congress}
-                            chamber={chamber}
-                            billNumber={billNumber}
-                            billVersion={billVers || billVersion}
-                            bill={bill}
-                        />
-                    }
-                />
-                <Tab
-                    id="datelist"
-                    title="Dates"
-                    panel={
-                        <BillViewAnchorList
-                            anchors={dateAnchors}
-                            congress={congress}
-                            chamber={chamber}
-                            billNumber={billNumber}
-                            billVersion={billVersion}
-                        />
-                    }
-                />
-                {bill2 &&
-                    bill2.appropriations &&
-                    bill2.appropriations.length > 0 && (
-                        <Tab
-                            id="dollarlist"
-                            title="Dollars"
-                            panel={
-                                <AppropriationTree
-                                    appropriations={bill2.appropriations}
-                                    onNavigate={scrollContentIdIntoView}
-                                />
-                            }
-                        />
-                    )}
-            </Tabs>
-        );
-    }
-
     return (
         <Card className="page">
             <Button
@@ -358,15 +246,44 @@ function BillViewer(props) {
                 ""
             )}
             <Divider />
-            <div className="sidebar no-mobile">{renderSidebar()}</div>
+            <div className="sidebar no-mobile">
+                <BillViewSidebar
+                    congress={congress}
+                    chamber={chamber}
+                    billNumber={billNumber}
+                    billVers={billVers}
+                    bill={bill}
+                    dateAnchors={dateAnchors}
+                    bill2={bill2}
+                    scrollContentIdIntoView={scrollContentIdIntoView}
+                    setActionParse={setActionParse}
+                    billVersion={billVersion}
+                    setBillVers={setBillVers}
+                    actionParse={actionParse}
+                />
+            </div>
             <Drawer
                 className={isDarkMode ? "bp5-dark" : ""}
                 isOpen={drawerOpen}
                 onClose={() => setDrawerOpen(false)}
                 isCloseButtonShown={true}
                 title="Display Options"
+                lazy={false}
             >
-                {renderSidebar()}
+                <BillViewSidebar
+                    congress={congress}
+                    chamber={chamber}
+                    billNumber={billNumber}
+                    billVers={billVers}
+                    bill={bill}
+                    dateAnchors={dateAnchors}
+                    bill2={bill2}
+                    scrollContentIdIntoView={scrollContentIdIntoView}
+                    setActionParse={setActionParse}
+                    billVersion={billVersion}
+                    setBillVers={setBillVers}
+                    actionParse={actionParse}
+                />
             </Drawer>
             <div className="content">
                 <Callout>

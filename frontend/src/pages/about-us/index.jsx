@@ -36,7 +36,7 @@ function AboutUs() {
             </p>
 
             <Callout>
-                <h3 className="bp5-heading">Our Data Sources</h3>
+                <h3 className="bp5-heading">Our Data Sources:</h3>
                 <p>
                     The information provided on this platform is sourced
                     exclusively from publicly available, open-source government
@@ -89,7 +89,7 @@ function AboutUs() {
 
             <Callout>
                 <h3 className="bp5-heading">
-                    Frequently Asked Questions (FAQs)
+                    Frequently Asked Questions (FAQs):
                 </h3>
                 <ol className="faq">
                     <li>

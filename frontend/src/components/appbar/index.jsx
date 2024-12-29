@@ -58,7 +58,7 @@ function AppBar() {
                 <Button
                     className={Classes.MINIMAL}
                     icon="book"
-                    text="USCode"
+                    text="U.S. Code"
                     onClick={() => {
                         handleClose();
                         history.push("/uscode");
@@ -109,7 +109,7 @@ function AppBar() {
 
                 <Drawer
                     isOpen={isOpen}
-                    className={isDarkMode ? "bp5-dark" : ""}
+                    className={"mobile-nav " + (isDarkMode ? "bp5-dark" : "")}
                     onClose={handleClose}
                     position={Position.LEFT}
                     canOutsideClickClose={true}

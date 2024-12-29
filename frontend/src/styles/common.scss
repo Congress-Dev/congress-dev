@@ -226,10 +226,12 @@
         margin-left: 0px !important;
     }
 
-    .bp5-drawer .bp5-button {
-        justify-content: left;
-        margin-left: 10px;
-        margin-top: 10px;
+    .mobile-nav {
+        .bp5-drawer .bp5-button {
+            justify-content: left;
+            margin-left: 10px;
+            margin-top: 10px;
+        }
     }
 
     .desktop-nav {
@@ -268,5 +270,9 @@
 
     .bill-content-section {
         margin-left: 0px;
+    }
+
+    .bill-versions {
+        max-width: 270px;
     }
 }

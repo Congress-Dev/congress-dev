@@ -9,6 +9,7 @@ function BillVersionsBreadcrumb({ bill }) {
 
     return (
         <Breadcrumbs
+            minVisibleItems={1}
             className="bill-versions"
             breadcrumbRenderer={({ text, link, ...rest }) => (
                 <Breadcrumb {...rest}>
