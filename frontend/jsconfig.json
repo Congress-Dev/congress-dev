@@ -4,6 +4,7 @@
       "paths": {
         "common/*": ["./src/common/*"],
         "components/*": ["./src/components/*"],
+        "context/*": ["./src/context/*"],
         "pages/*": ["./src/pages/*"],
         "styles/*": ["./src/styles/*"]
       }

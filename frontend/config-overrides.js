@@ -16,6 +16,7 @@ module.exports = function override(config, env) {
     config.resolve.alias = {
         common: path.resolve(__dirname, "src/common"),
         components: path.resolve(__dirname, "src/components"),
+        context: path.resolve(__dirname, "src/context"),
         pages: path.resolve(__dirname, "src/pages"),
         styles: path.resolve(__dirname, "src/styles"),
     };

@@ -1,6 +1,7 @@
 import React from "react";
 import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
 
+import { ThemeProvider } from "context";
 import { AppBar } from "components";
 import {
     AboutUs,
@@ -16,32 +17,34 @@ import "styles/common.scss";
 
 function App() {
     return (
-        <Router>
-            <AppBar />
-            <Switch>
-                <Route
-                    exact
-                    path="/bill/:congress/:chamber/:billNumber/:billVersion?"
-                    component={BillViewer}
-                />
-                <Route exact path="/bills" component={BillSearch} />
+        <ThemeProvider>
+            <Router>
+                <AppBar />
+                <Switch>
+                    <Route
+                        exact
+                        path="/bill/:congress/:chamber/:billNumber/:billVersion?"
+                        component={BillViewer}
+                    />
+                    <Route exact path="/bills" component={BillSearch} />
 
-                <Route
-                    path="/uscode/:uscReleaseId/:uscTitle?/:uscSection?"
-                    component={USCodeViewer}
-                />
-                <Route exact path="/uscode" component={USCodeRevisionList} />
+                    <Route
+                        path="/uscode/:uscReleaseId/:uscTitle?/:uscSection?"
+                        component={USCodeViewer}
+                    />
+                    <Route exact path="/uscode" component={USCodeRevisionList} />
 
-                <Route
-                    exact
-                    path="/member/:bioguideId"
-                    component={MemberViewer}
-                />
+                    <Route
+                        exact
+                        path="/member/:bioguideId"
+                        component={MemberViewer}
+                    />
 
-                <Route exact path="/about" component={AboutUs} />
-                <Route path={["/", "/home"]} component={Home} />
-            </Switch>
-        </Router>
+                    <Route exact path="/about" component={AboutUs} />
+                    <Route path={["/", "/home"]} component={Home} />
+                </Switch>
+            </Router>
+        </ThemeProvider>
     );
 }
 

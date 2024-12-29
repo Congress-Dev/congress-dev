@@ -1,12 +1,7 @@
 @import "~normalize.css";
 @import "~@blueprintjs/core/lib/css/blueprint.css";
 @import "~@blueprintjs/icons/lib/css/blueprint-icons.css";
-
-:focus {
-    outline: none !important;
-    outline-offset: 0px !important;
-    -moz-outline-radius: 0px !important;
-}
+@import "blueprint.scss";
 
 .usc-release-box {
     width: 400px;
@@ -94,10 +89,6 @@
 
 .bill-versions .bp5-breadcrumb {
     font-size: 14px;
-}
-
-.bp5-divider {
-    margin: 10px 0px;
 }
 
 .content-added {
@@ -265,96 +256,4 @@
     .bill-content-section {
         margin-left: 0px;
     }
-}
-
-.bp5-drawer {
-    overflow-y: scroll;
-}
-
-.bp5-drawer > .bp5-tabs {
-    padding: 20px;
-}
-
-.bp5-tree-node-content-0 {
-    padding-left: 0px;
-}
-
-.bp5-tree-node-content-1 {
-    padding-left: 7px;
-}
-
-.bp5-tree-node-content-2 {
-    padding-left: 15px;
-}
-
-.bp5-tree-node-content-3 {
-    padding-left: 23px;
-}
-
-.bp5-tree-node-content-4 {
-    padding-left: 30px;
-}
-
-.bp5-tree-node-content-5 {
-    padding-left: 38px;
-}
-
-.bp5-tree-node-content-6 {
-    padding-left: 46px;
-}
-
-.bp5-tree-node-content-7 {
-    padding-left: 53px;
-}
-
-.bp5-tree-node-content-8 {
-    padding-left: 61px;
-}
-
-.bp5-tree-node-content-9 {
-    padding-left: 69px;
-}
-
-.bp5-tree-node-content-10 {
-    padding-left: 76px;
-}
-
-.bp5-tree-node-content-11 {
-    padding-left: 84px;
-}
-
-.bp5-tree-node-content-12 {
-    padding-left: 92px;
-}
-
-.bp5-tree-node-content-13 {
-    padding-left: 99px;
-}
-
-.bp5-tree-node-content-14 {
-    padding-left: 107px;
-}
-
-.bp5-tree-node-content-15 {
-    padding-left: 115px;
-}
-
-.bp5-tree-node-content-16 {
-    padding-left: 122px;
-}
-
-.bp5-tree-node-content-17 {
-    padding-left: 130px;
-}
-
-.bp5-tree-node-content-18 {
-    padding-left: 138px;
-}
-
-.bp5-tree-node-content-19 {
-    padding-left: 145px;
-}
-
-.bp5-tree-node-content-20 {
-    padding-left: 153px;
 }
