@@ -18,8 +18,8 @@ function BillVersionsBreadcrumb({ bill }) {
             )}
             items={lodash.map(legislation_versions, (vers, ind) => {
                 return {
-                    text: versionToFull[vers.legislation_version.toLowerCase()],
-                    link: `/bill/${bill.congress}/${bill.chamber}/${bill.number}/${vers.legislation_version}`,
+                    text: versionToFull[vers.toLowerCase()],
+                    link: `/bill/${bill.congress}/${bill.chamber}/${bill.number}/${vers}`,
                 };
             })}
         />

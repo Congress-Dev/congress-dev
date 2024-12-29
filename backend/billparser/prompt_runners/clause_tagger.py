@@ -1,3 +1,4 @@
+from typing import List
 from billparser.db.models import (
     LegislationContentTag,
     PromptBatch,
@@ -26,6 +27,18 @@ SCHEMA = {
     },
 }
 
+def normalize_tags(tags: List[str]) -> List[str]:
+    # Convert everything to title case
+    # Replace underscores with spaces
+    # Remove any leading or trailing whitespace
+    return list(
+        set(
+            [
+                tag.replace("_", " ").replace(" and ", " & ").strip().title()
+                for tag in tags
+            ]
+        )
+    )
 
 def clause_tagger(legis_version_id: int, prompt_id: int):
     session = Session()
@@ -48,7 +61,12 @@ def clause_tagger(legis_version_id: int, prompt_id: int):
     )
     session.add(prompt_batch)
     session.commit()
+    full_tags = set()
+    legis_body = None
     for lc in legis_content:
+        if lc.content_type == "legis-body":
+            legis_body = lc
+            continue
         if lc.content_str and "amended" in lc.content_str:
             prompt_batch.attempted += 1
             try:
@@ -59,7 +77,8 @@ def clause_tagger(legis_version_id: int, prompt_id: int):
                 response = run_query(query)
                 resp_dict = json.loads(response.choices[0].message.content)
                 jsonschema.validate(resp_dict, SCHEMA)
-                tags = resp_dict["tags"]
+                tags = normalize_tags(resp_dict["tags"])
+                full_tags = full_tags.update(tags)
                 tag_obj = LegislationContentTag(
                     prompt_batch_id=prompt_batch.prompt_batch_id,
                     legislation_content_id=lc.legislation_content_id,
@@ -74,6 +93,13 @@ def clause_tagger(legis_version_id: int, prompt_id: int):
                 continue
         else:
             prompt_batch.skipped += 1
+    # Create the full set of tags for the legis body
+    tag_obj = LegislationContentTag(
+        prompt_batch_id=prompt_batch.prompt_batch_id,
+        legislation_content_id=legis_body.legislation_content_id,
+        tags=list(full_tags),
+    )
+    session.add(tag_obj)
     prompt_batch.completed_at = datetime.now()
     # Store the prompt batch
     session.add(prompt_batch)

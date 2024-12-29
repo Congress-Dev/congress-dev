@@ -5,6 +5,13 @@ import { Callout, Button, Tag } from "@blueprintjs/core";
 import { chamberLookup } from "common/lookups";
 import { BillVersionsBreadcrumb } from "components";
 
+const USDollar = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+    minimumFractionDigits: 0,
+});
+
 function BillCard({ bill }) {
     function genTitle() {
         const { legislation_versions = [] } = bill;
@@ -16,6 +23,19 @@ function BillCard({ bill }) {
                 >
                     {`${chamberLookup[bill.chamber]} ${bill.number}`}
                 </Link>
+            </>
+        );
+    }
+
+    function renderTags() {
+        return (
+            <>
+                {bill.tags.map((tag) => (
+                    <>
+                        <Tag>{tag}</Tag>
+                        {"  "}
+                    </>
+                ))}
             </>
         );
     }
@@ -40,13 +60,18 @@ function BillCard({ bill }) {
             <br />
             <span className="bill-card-introduced-date">
                 <span style={{ fontWeight: "bold" }}>Introduced:</span>{" "}
-                {bill.legislation_versions[0].effective_date}
+                {bill.effective_date}
             </span>
             <br />
             <span style={{ fontWeight: "bold" }}>Tags:</span>
-            {/* {(bill.tags.forEach((tag) => {
-                <Tag>{tag}</Tag>
-            }))}<br /> */}
+            {renderTags()}
+            <br />
+            {bill.appropriations ? (
+                <>
+                    <span style={{ fontWeight: "bold" }}>Appropriations:</span>{" "}
+                    {USDollar.format(bill.appropriations)}{" "}
+                </>
+            ) : null}
         </Callout>
     );
 }

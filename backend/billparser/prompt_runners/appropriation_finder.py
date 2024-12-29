@@ -93,6 +93,7 @@ def appropriation_finder(
                     legislation_content_id=content.legislation_content_id,
                     legislation_version_id=legislation_version_id,
                     parent_id=parent_id,
+                    prompt_batch_id=prompt_batch.prompt_batch_id,
                     purpose=a.get("brief_purpose", ""),
                 )
                 session.add(approp)
@@ -145,6 +146,7 @@ def appropriation_finder(
                     legislation_content_id=content.legislation_content_id,
                     legislation_version_id=legislation_version_id,
                     parent_id=parent_id,
+                    prompt_batch_id=prompt_batch.prompt_batch_id,
                     purpose=a.get("brief_purpose", ""),
                 )
                 session.add(approp)
