@@ -28,14 +28,20 @@ function BillCard({ bill }) {
     }
 
     function renderTags() {
+        if(bill.tags == null || bill.tags.length == 0) {
+            return;
+        }
+
         return (
             <>
-                {bill.tags.map((tag) => (
-                    <>
-                        <Tag>{tag}</Tag>
-                        {"  "}
-                    </>
-                ))}
+                <span style={{ fontWeight: "bold" }}>Tags:</span>
+                    {bill.tags.map((tag) => (
+                        <>
+                            <Tag>{tag}</Tag>
+                            {"  "}
+                        </>
+                    ))}
+                <br />
             </>
         );
     }
@@ -55,24 +61,25 @@ function BillCard({ bill }) {
             <h2 style={{ marginTop: "0px", marginBottom: "0px" }}>
                 {genTitle()} - {bill.title}
             </h2>
+
+            <span className="bill-card-introduced-date">
+                <span style={{ fontWeight: "bold" }}>Introduced:</span>{" "}
+                {bill.effective_date}
+            </span>
+            <br />
             {bill.sponsor != null ? (
                 <>
                     <span style={{ fontWeight: "bold" }}>Sponsor:</span>{" "}
-                    Rep. {bill.sponsor.firstName} {bill.sponsor.lastName} [{partyLookup[bill.sponsor.party] != null ? partyLookup[bill.sponsor.party] : bill.sponsor.party}]
+                    Rep. {bill.sponsor.lastName}, {bill.sponsor.firstName} [{partyLookup[bill.sponsor.party] != null ? partyLookup[bill.sponsor.party] : bill.sponsor.party}]
                     <br />
                 </>
             ) : ("")}
             <span style={{ fontWeight: "bold" }}>Versions:</span>{" "}
             <BillVersionsBreadcrumb bill={bill} />
             <br />
-            <span className="bill-card-introduced-date">
-                <span style={{ fontWeight: "bold" }}>Introduced:</span>{" "}
-                {bill.effective_date}
-            </span>
-            <br />
-            <span style={{ fontWeight: "bold" }}>Tags:</span>
+
             {renderTags()}
-            <br />
+
             {bill.appropriations ? (
                 <>
                     <span style={{ fontWeight: "bold" }}>Appropriations:</span>{" "}

@@ -226,10 +226,17 @@ function BillViewer(props) {
                 {`${chamberLookup[bill.chamber]} ${bill.number}`} - {bill.title}
             </h1>
 
+            <span className="bill-card-introduced-date">
+                <span style={{ fontWeight: "bold" }}>Introduced:</span>{" "}
+                {bill.legislation_versions != null
+                    ? bill.legislation_versions[0].effective_date
+                    : ""}
+            </span>
+            <br/>
             {bill2.sponsor != null ? (
                 <>
                     <span style={{ fontWeight: "bold" }}>Sponsor:</span>{" "}
-                    Rep. {bill2.sponsor.firstName} {bill2.sponsor.lastName} [{partyLookup[bill2.sponsor.party] != null ? partyLookup[bill2.sponsor.party] : bill2.sponsor.party}]
+                    Rep. {bill2.sponsor.lastName}, {bill2.sponsor.firstName} [{partyLookup[bill2.sponsor.party] != null ? partyLookup[bill2.sponsor.party] : bill2.sponsor.party}]
                     <br />
                 </>
             ) : ("")}
@@ -237,12 +244,6 @@ function BillViewer(props) {
             <span style={{ fontWeight: "bold" }}>Versions:</span>{" "}
             <BillVersionsBreadcrumb bill={bill} />
             <br />
-            <span className="bill-card-introduced-date">
-                <span style={{ fontWeight: "bold" }}>Introduced:</span>{" "}
-                {bill.legislation_versions != null
-                    ? bill.legislation_versions[0].effective_date
-                    : ""}
-            </span>
             {billSummary != null && billSummary[0] != null ? (
                 <p>
                     <span style={{ fontWeight: "bold" }}>Summary:</span>{" "}
