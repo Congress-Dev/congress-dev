@@ -4,31 +4,33 @@ import { CompoundTag, Drawer, DrawerSize } from "@blueprintjs/core";
 import { ThemeContext } from "context/theme";
 import { partyLookup } from "common/lookups";
 
-function LegislatorChip({ bill }) {
+function LegislatorChip({ sponsor }) {
     const [drawerOpen, setDrawerOpen] = useState(false);
     const { isDarkMode, setIsDarkMode } = useContext(ThemeContext);
 
-    return bill.sponsor != null ? (
+    console.log(sponsor)
+
+    return sponsor != null ? (
         <>
             <span style={{ fontWeight: "bold" }}>Sponsor:</span>{" "}
             <CompoundTag
                 intent={
-                    bill.sponsor.party == "Republican"
+                    sponsor.party == "Republican"
                         ? "danger"
-                        : bill.sponsor.party == "Democrat"
+                        : sponsor.party == "Democrat"
                           ? "primary"
                           : "none"
                 }
                 leftContent={
-                    partyLookup[bill.sponsor.party] != null
-                        ? partyLookup[bill.sponsor.party]
-                        : bill.sponsor.party
+                    partyLookup[sponsor.party] != null
+                        ? partyLookup[sponsor.party]
+                        : sponsor.party
                 }
                 onClick={() => {
                     setDrawerOpen(!drawerOpen);
                 }}
             >
-                &nbsp;{bill.sponsor.lastName}, {bill.sponsor.firstName}&nbsp;
+                &nbsp;{sponsor.lastName}, {sponsor.firstName}&nbsp;
             </CompoundTag>
             <Drawer
                 size={DrawerSize.SMALL}
@@ -36,13 +38,13 @@ function LegislatorChip({ bill }) {
                 isOpen={drawerOpen}
                 onClose={() => setDrawerOpen(false)}
                 isCloseButtonShown={true}
-                title={`${bill.sponsor.firstName} ${bill.sponsor.lastName}`}
+                title={`${sponsor.firstName} ${sponsor.lastName}`}
             >
                 <div class="center">
-                    <img src={bill.sponsor.imageUrl} alt="No Member Photo" />
-                    <i dangerouslySetInnerHTML={{ __html: bill.sponsor.imageSource }} />
+                    <img src={sponsor.imageUrl} alt="No Member Photo" />
+                    <i dangerouslySetInnerHTML={{ __html: sponsor.imageSource }} />
                 </div>
-                <p dangerouslySetInnerHTML={{ __html: bill.sponsor.profile }} />
+                <p dangerouslySetInnerHTML={{ __html: sponsor.profile }} />
             </Drawer>
             <br />
         </>

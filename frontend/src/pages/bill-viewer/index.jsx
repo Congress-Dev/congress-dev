@@ -235,7 +235,7 @@ function BillViewer(props) {
                     : ""}
             </span>
             <br/>
-            <LegislatorChip bill={bill2} />
+            <LegislatorChip sponsor={bill2.sponsor} />
 
             <span style={{ fontWeight: "bold" }}>Versions:</span>{" "}
             <BillVersionsBreadcrumb bill={bill} />

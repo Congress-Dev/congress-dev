@@ -67,7 +67,7 @@ function BillCard({ bill }) {
                 {bill.effective_date}
             </span>
             <br />
-            <LegislatorChip bill={bill} />
+            <LegislatorChip sponsor={bill.sponsor} />
             <span style={{ fontWeight: "bold" }}>Versions:</span>{" "}
             <BillVersionsBreadcrumb bill={bill} />
             <br />
