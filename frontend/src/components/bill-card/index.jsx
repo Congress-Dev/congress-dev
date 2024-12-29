@@ -12,7 +12,7 @@ function BillCard({ bill }) {
         return (
             <>
                 <Link
-                    to={`/bill/${bill.congress}/${bill.chamber}/${bill.number}/${legislation_versions[legislation_versions.length - 1].legislation_version}`}
+                    to={`/bill/${bill.congress}/${bill.chamber}/${bill.number}/${legislation_versions[legislation_versions.length - 1]}`}
                 >
                     {`${chamberLookup[bill.chamber]} ${bill.number}`}
                 </Link>
@@ -20,11 +20,6 @@ function BillCard({ bill }) {
         );
     }
 
-    function getFirstEffectiveDate() {
-        const { legislation_versions = [] } = bill;
-        const dateStr = legislation_versions[0].effective_date;
-        return `${dateStr}`;
-    }
 
     function renderVersions() {
         const { legislation_versions = [] } = bill;
@@ -40,9 +35,9 @@ function BillCard({ bill }) {
                 items={lodash.map(legislation_versions, (vers, ind) => {
                     return {
                         text: versionToFull[
-                            vers.legislation_version.toLowerCase()
+                            vers.toLowerCase()
                         ],
-                        link: `/bill/${bill.congress}/${bill.chamber}/${bill.number}/${vers.legislation_version}`,
+                        link: `/bill/${bill.congress}/${bill.chamber}/${bill.number}/${vers}`,
                     };
                 })}
             />
@@ -66,7 +61,7 @@ function BillCard({ bill }) {
             </h2>
             <span className="bill-card-introduced-date">
                 <span style={{ fontWeight: "bold" }}>Introduced:</span>{" "}
-                {getFirstEffectiveDate()}
+                {bill.effective_date}
             </span>
             <br />
             <span style={{ fontWeight: "bold" }}>Tags:</span> <br />
