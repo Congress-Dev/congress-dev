@@ -40,3 +40,8 @@ export const initialVersionToFull = {
     "Referred w/Amendments": true,
     Enrolled: true,
 };
+
+export const partyLookup = {
+    "Republican": "R",
+    "Democrat": "D",
+}

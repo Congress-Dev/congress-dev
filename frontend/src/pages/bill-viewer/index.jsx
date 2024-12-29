@@ -16,7 +16,7 @@ import {
 
 import { ThemeContext } from "context";
 
-import { chamberLookup } from "common/lookups";
+import { chamberLookup, partyLookup } from "common/lookups";
 import {
     getBill,
     getBill2,
@@ -225,7 +225,15 @@ function BillViewer(props) {
             <h1>
                 {`${chamberLookup[bill.chamber]} ${bill.number}`} - {bill.title}
             </h1>
-            <span style={{ fontWeight: "bold" }}>Legislators:</span> <br />
+
+            {bill2.sponsor != null ? (
+                <>
+                    <span style={{ fontWeight: "bold" }}>Sponsor:</span>{" "}
+                    Rep. {bill2.sponsor.firstName} {bill2.sponsor.lastName} [{partyLookup[bill2.sponsor.party] != null ? partyLookup[bill2.sponsor.party] : bill2.sponsor.party}]
+                    <br />
+                </>
+            ) : ("")}
+
             <span style={{ fontWeight: "bold" }}>Versions:</span>{" "}
             <BillVersionsBreadcrumb bill={bill} />
             <br />
