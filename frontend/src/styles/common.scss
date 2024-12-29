@@ -145,6 +145,12 @@
     display: none;
 }
 
+.faq {
+    li {
+        margin-bottom: 10px;
+    }
+}
+
 @media (min-device-width: 768px) and (max-device-width: 1200px) {
     .page {
         width: 100%;

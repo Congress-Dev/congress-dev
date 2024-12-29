@@ -68,8 +68,9 @@ function AboutUs() {
                         target="_blank"
                         rel="noopener noreferrer"
                     >
-                        Bill Text/Statuses
+                        https://www.govinfo.gov/bulkdata
                     </a>
+                    &nbsp;(Bill Text/Statuses)
                 </li>
                 <li>
                     <a
@@ -77,15 +78,16 @@ function AboutUs() {
                         target="_blank"
                         rel="noopener noreferrer"
                     >
-                        USCode Text
+                        https://uscode.house.gov/download/priorreleasepoints.htm
                     </a>
+                    &nbsp;(USCode Text)
                 </li>
             </ul>
 
             <h3 className="bp5-heading">Frequently Asked Questions (FAQs)</h3>
-            <ol>
+            <ol className="faq">
                 <li>
-                    <strong>How often is the data updated?</strong>
+                    <b>How often is the data updated?</b>
                     <br />
                     We update our data regularly to ensure the most current
                     information is available. Most updates occur in real time or
@@ -93,14 +95,14 @@ function AboutUs() {
                     government sources.
                 </li>
                 <li>
-                    <strong>Who can use Congress.dev?</strong>
+                    <b>Who can use Congress.dev?</b>
                     <br />
                     Congress.dev is designed for everyone—from policy analysts,
                     journalists, and developers to everyday citizens who want to
                     stay informed about federal legislation.
                 </li>
                 <li>
-                    <strong>Is there an API available for developers?</strong>
+                    <b>Is there an API available for developers?</b>
                     <br />
                     Yes! Congress.dev provides a robust API for developers to
                     access legislative data programmatically. You can integrate
@@ -108,21 +110,19 @@ function AboutUs() {
                     conduct detailed analysis.
                 </li>
                 <li>
-                    <strong>Is Congress.dev free to use?</strong>
+                    <b>Is Congress.dev free to use?</b>
                     <br />
-                    Our core platform is free to use for general users. For
-                    advanced features, such as API access or premium tools, we
-                    may offer paid plans.
+                    Our core platform is free to use for general users.
                 </li>
                 <li>
-                    <strong>How can I track specific bills or topics?</strong>
+                    <b>How can I track specific bills or topics?</b>
                     <br />
                     You can use our search and filtering tools to track specific
                     bills, topics, or keywords. Additionally, users can sign up
                     for alerts to receive updates on legislation of interest.
                 </li>
                 <li>
-                    <strong>How accurate is the information provided?</strong>
+                    <b>How accurate is the information provided?</b>
                     <br />
                     We rely on official government sources for all our data,
                     ensuring a high degree of accuracy. However, we recommend
@@ -130,23 +130,23 @@ function AboutUs() {
                     decisions.
                 </li>
                 <li>
-                    <strong>Can I contribute or report an issue?</strong>
+                    <b>Can I contribute or report an issue?</b>
                     <br />
                     Absolutely! We value feedback from our users. If you spot an
-                    issue or have suggestions, please use our Contact Us page to
+                    issue or have suggestions, please  <a href="mailto:admin@congress.dev">contact us</a> to
                     reach out.
                 </li>
                 <li>
-                    <strong>Does Congress.dev provide legal advice?</strong>
+                    <b>Does Congress.dev provide legal advice?</b>
                     <br />
                     No, Congress.dev is an informational tool and does not
                     provide legal advice. For legal guidance, consult a
                     qualified attorney or legal expert.
                 </li>
                 <li>
-                    <strong>
+                    <b>
                         How can I stay updated about new features or updates?
-                    </strong>
+                    </b>
                     <br />
                     You can follow us on{" "}
                     <a target="_blank" href="https://x.com/congress_dev">
@@ -155,9 +155,9 @@ function AboutUs() {
                     for the latest news, updates, and feature releases.
                 </li>
                 <li>
-                    <strong>
+                    <b>
                         Can I use the data for my own projects or research?
-                    </strong>
+                    </b>
                     <br />
                     Yes, all data on Congress.dev is sourced from public domain
                     datasets and can be freely used under applicable laws. Be
@@ -165,13 +165,6 @@ function AboutUs() {
                     sources as well.
                 </li>
             </ol>
-
-            <h3 className="bp5-heading">Contact Us</h3>
-            <ul>
-                <li>
-                    <a href="mailto:admin@congress.dev">Admin</a>
-                </li>
-            </ul>
         </Card>
     );
 }
