@@ -35,14 +35,19 @@ class BioGuideImporter:
 
     def run_import(self) -> List[BioGuideMember]:
         items = []
-        with self._download_zip() as z:
+        # with self._download_zip() as z:
+        with zipfile.ZipFile('BioguideProfiles.zip', 'r') as z:
             names = z.namelist()
             logging.debug(
                 f"Found {len(names)} files in zip", extra={"name_count": len(names)}
             )
             for filename in names:
                 with z.open(filename) as f:
-                    legis = BioGuideMember(**json.load(f))
+                    jdata = json.load(f)
+                    if jdata.get('data') is None:
+                        legis = BioGuideMember(**jdata)
+                    else:
+                        legis = BioGuideMember(**jdata.get('data'))
                     items.append(legis)
         return items
 
@@ -66,8 +71,8 @@ class BioGuideImporter:
 
                 try:
                     image_url = "https://bioguide.congress.gov/photo/"
-                    image_url += legislator.asset[-1].contentUrl.split("/")[-1]
-                    image_source = legislator.asset[-1].creditLine
+                    image_url += legislator.asset[-1]['contentUrl'].split("/")[-1]
+                    image_source = legislator.asset[-1]['creditLine']
                 except:
                     image_url = None
                     image_source = None
@@ -80,7 +85,7 @@ class BioGuideImporter:
                     party = party,
                     state = state,
                     image_url = image_url,
-                    image_credit = image_source,
+                    image_source = image_source,
                     profile = legislator.profileText
                 )
                 db_items.append(new_legislator)
