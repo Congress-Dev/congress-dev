@@ -154,6 +154,21 @@
     }
 }
 
+.legislator-profile {
+    .center {
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    img {
+        display: block;
+        width: 33%;
+        margin: 0 auto;
+    }
+
+    p { margin: 20px }
+}
+
 @media (min-device-width: 768px) and (max-device-width: 1200px) {
     .page {
         width: 100%;

@@ -44,6 +44,9 @@ class LegislatorMetadata(MappableBase):
     party: Annotated[str, Legislator.party]
     state: Annotated[Optional[str], Legislator.state]
     district: Annotated[Optional[str], Legislator.district]
+    image_url: Annotated[Optional[str], Legislator.image_url]
+    image_source: Annotated[Optional[str], Legislator.image_source]
+    profile: Annotated[Optional[str], Legislator.profile]
 
     cosponsor: Annotated[bool, LegislationSponsorship.cosponsor]
 
