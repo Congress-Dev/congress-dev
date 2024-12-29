@@ -19,7 +19,7 @@ function BillCard({ bill }) {
         return (
             <>
                 <Link
-                    to={`/bill/${bill.congress}/${bill.chamber}/${bill.number}/${legislation_versions[legislation_versions.length - 1].legislation_version}`}
+                    to={`/bill/${bill.congress}/${bill.chamber}/${bill.number}/${legislation_versions[legislation_versions.length - 1]}`}
                 >
                     {`${chamberLookup[bill.chamber]} ${bill.number}`}
                 </Link>
