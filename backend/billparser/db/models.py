@@ -755,7 +755,7 @@ class Legislator(Base):
     district = Column(Integer, index=True)
 
     image_url = Column(String, index=False, nullable=True)
-    image_credit = Column(String, index=False, nullable=True)
+    image_source = Column(String, index=False, nullable=True)
 
     profile = Column(String, index=False, nullable=True)
 

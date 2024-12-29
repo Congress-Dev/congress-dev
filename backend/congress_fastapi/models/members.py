@@ -17,6 +17,12 @@ class MemberInfo(MappableBase):
     first_name: Annotated[Optional[str], Legislator.first_name]
     last_name: Annotated[Optional[str], Legislator.last_name]
     middle_name: Annotated[Optional[str], Legislator.middle_name]
+    party: Annotated[Optional[str], Legislator.party]
+    state: Annotated[Optional[str], Legislator.state]
+
+    image_url: Annotated[Optional[str], Legislator.image_url]
+    image_source: Annotated[Optional[str], Legislator.image_source]
+    profile: Annotated[Optional[str], Legislator.profile]
 
 
 class LegislationSponsorshipInfo(MappableBase):

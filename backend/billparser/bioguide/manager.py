@@ -67,10 +67,10 @@ class BioGuideImporter:
                 try:
                     image_url = "https://bioguide.congress.gov/photo/"
                     image_url += legislator.asset[-1].contentUrl.split("/")[-1]
-                    image_credit = legislator.asset[-1].creditLine
+                    image_source = legislator.asset[-1].creditLine
                 except:
                     image_url = None
-                    image_credit = None
+                    image_source = None
 
                 new_legislator = Legislator(
                     bioguide_id = legislator.usCongressBioId,
@@ -80,7 +80,7 @@ class BioGuideImporter:
                     party = party,
                     state = state,
                     image_url = image_url,
-                    image_credit = image_credit,
+                    image_credit = image_source,
                     profile = legislator.profileText
                 )
                 db_items.append(new_legislator)
