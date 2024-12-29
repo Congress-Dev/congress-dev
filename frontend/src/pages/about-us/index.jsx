@@ -104,7 +104,7 @@ function AboutUs() {
                 <li>
                     <b>Is there an API available for developers?</b>
                     <br />
-                    Yes! Congress.dev provides a robust API for developers to
+                    Yes! Congress.dev provides a <a target="_blank" href="https://api.congress.dev/openapi.yaml">robust API</a> for developers to
                     access legislative data programmatically. You can integrate
                     it into your applications to create custom solutions or
                     conduct detailed analysis.
