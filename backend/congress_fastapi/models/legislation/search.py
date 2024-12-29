@@ -13,6 +13,7 @@ class SearchResult(BaseModel):
     number: int
     title: str
     legislation_id: int
+    congress: str
     effective_date: Optional[date]
     chamber: LegislationChamber
     legislation_versions: List[LegislationVersionEnum]

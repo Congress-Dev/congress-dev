@@ -6,7 +6,6 @@ import { versionToFull } from "common/lookups";
 
 function BillVersionsBreadcrumb({ bill }) {
     const { legislation_versions = [] } = bill;
-
     return (
         <Breadcrumbs
             minVisibleItems={1}
@@ -18,7 +17,7 @@ function BillVersionsBreadcrumb({ bill }) {
             )}
             items={lodash.map(legislation_versions, (vers, ind) => {
                 return {
-                    text: versionToFull[vers.toLowerCase()],
+                    text: versionToFull[typeof vers === 'string' ? vers.toLowerCase() : vers.legislation_version.toLowerCase()],
                     link: `/bill/${bill.congress}/${bill.chamber}/${bill.number}/${vers}`,
                 };
             })}

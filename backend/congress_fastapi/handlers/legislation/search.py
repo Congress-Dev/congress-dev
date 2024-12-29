@@ -6,6 +6,7 @@ from sqlalchemy.orm import aliased
 from congress_fastapi.db.postgres import get_database
 from billparser.db.models import (
     Appropriation,
+    Congress,
     Legislation,
     LegislationChamber,
     LegislationContent,
@@ -195,7 +196,7 @@ async def search_legislation(
             Legislation.legislation_id,
             Legislation.title,
             Legislation.number,
-            Legislation.congress_id,
+            Congress.session_number,
             Legislation.legislation_type,
             Legislation.chamber,
             func.array_agg(lv_alias.legislation_version).label("versions"),
@@ -206,11 +207,12 @@ async def search_legislation(
                 Legislation,
                 lv_alias,
                 Legislation.legislation_id == lv_alias.legislation_id,
-            )
+            ).join(Congress, Legislation.congress_id == Congress.congress_id)
         )
         .group_by(
             Legislation.legislation_id,
             Legislation.title,
+            Congress.session_number,
             Legislation.number,
             Legislation.congress_id,
             Legislation.legislation_type,
@@ -249,6 +251,7 @@ async def search_legislation(
             number=result["number"],
             title=result["title"],
             chamber=result["chamber"],
+            congress=str(result["session_number"]),
             legislation_versions=[
                 LegislationVersionEnum(x.upper()) for x in result["versions"]
             ],
