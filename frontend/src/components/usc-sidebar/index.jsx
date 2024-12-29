@@ -85,7 +85,7 @@ function USCSidebar(props) {
                     hasCaret: true,
                     icon: "th-list",
                     isExpanded: treeExpansion[0] === true,
-                    label: `Hmmst`,
+                    label: `USC`,
                     childNodes,
                     className: "link",
                 };
@@ -118,12 +118,16 @@ function USCSidebar(props) {
                             if (!usc_chapter_id) {
                                 return;
                             }
+                            const prettyDisplay =
+                                content_type == "section"
+                                    ? section_display.replace("SS", "§")
+                                    : section_display;
                             const nodeObj = {
                                 id: `${usc_chapter_id}.${usc_section_id}`,
                                 hasCaret: content_type !== "section",
                                 icon:
                                     content_type !== "section" ? "book" : "dot",
-                                label: `${section_display} ${heading}`,
+                                label: `${prettyDisplay} ${heading}`,
                                 className: "section-tree",
                                 short_title: props.title,
                                 usc_section_id,
@@ -224,11 +228,15 @@ function USCSidebar(props) {
                         content_type,
                         usc_chapter_id,
                     }) => {
+                        const prettyDisplay =
+                            content_type == "section"
+                                ? section_display.replace("SS", "§")
+                                : section_display;
                         const nodeObj = {
                             id: `${usc_chapter_id}.${usc_section_id}`,
                             hasCaret: content_type !== "section",
                             icon: content_type !== "section" ? "book" : "dot",
-                            label: `${section_display} ${heading}`,
+                            label: `${prettyDisplay} ${heading}`,
                             className: "section-tree",
                             short_title: node.short_title,
                             usc_section_id,

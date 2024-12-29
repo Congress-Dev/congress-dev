@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import lodash from "lodash";
-import qs from "query-string";
 import {
     Card,
     Elevation,
@@ -13,27 +13,41 @@ import {
     HTMLSelect,
     ButtonGroup,
 } from "@blueprintjs/core";
+import qs from "query-string";
 
 import { initialVersionToFull, versionToFull } from "common/lookups";
-import { BillSearchContent, CollapsibleSection } from "components";
+import { BillSearchContent, CollapsibleSection, Paginator } from "components";
 
 function BillSearch(props) {
+    const location = useLocation();
+    const searchParams = new URLSearchParams(location.search);
+
+    const decoded = decodeSelections(searchParams.get("selections"));
+
+    const [isFirstRender, setFirstRender] = useState(true);
     const [resPageSize, setResPageSize] = useState(5);
-    const [chamberButtons, setChamberButtons] = useState({
-        House: true,
-        Senate: true,
-    });
-    const [versionButtons, setVersionButtons] = useState(initialVersionToFull);
-    const [textBox, setTextBox] = useState("");
-    const [sortField, setSortField] = useState("number");
+    const [chamberButtons, setChamberButtons] = useState(decoded.chamber);
+    const [versionButtons, setVersionButtons] = useState(decoded.versions);
+    const [textBox, setTextBox] = useState(searchParams.get("text") || "");
     const [totalResults, setTotalResults] = useState(0);
+
     const [currentSearch, setCurrentSearch] = useState({
         congress: "118",
-        chamber: "House,Senate",
-        versions: Object.keys(versionToFull).join(","),
-        text: "",
-        sort: "number",
-        page: 1,
+        chamber: lodash
+            .keys(lodash.pickBy(chamberButtons, (value) => value))
+            .join(","),
+        versions: lodash
+            .keys(
+                lodash.pickBy(versionToFull, (value) =>
+                    lodash
+                        .keys(lodash.pickBy(versionButtons, (value) => value))
+                        .includes(value),
+                ),
+            )
+            .join(","),
+        text: searchParams.get("text") || "",
+        sort: searchParams.get("sort") || "number",
+        page: searchParams.get("page") || 1,
         pageSize: resPageSize,
     });
 
@@ -75,10 +89,6 @@ function BillSearch(props) {
     }
 
     function executeSearch() {
-        const versionKeys = lodash.keys(
-            lodash.pickBy(versionButtons, (value) => value),
-        );
-
         setCurrentSearch({
             ...currentSearch,
             page: 1,
@@ -88,114 +98,181 @@ function BillSearch(props) {
             versions: lodash
                 .keys(
                     lodash.pickBy(versionToFull, (value) =>
-                        versionKeys.includes(value),
+                        lodash
+                            .keys(
+                                lodash.pickBy(versionButtons, (value) => value),
+                            )
+                            .includes(value),
                     ),
                 )
                 .join(","),
             text: textBox,
-            sort: sortField,
+        });
+    }
+
+    function encodeSelections() {
+        let encoded = "1";
+        lodash.mapValues(chamberButtons, (v, k) => {
+            encoded += v ? "1" : "0";
+        });
+        lodash.mapValues(versionButtons, (v, k) => {
+            encoded += v ? "1" : "0";
+        });
+        return parseInt(encoded, 2);
+    }
+
+    function decodeSelections(selections) {
+        if (selections == null || selections == "") {
+            return {
+                chamber: {
+                    House: true,
+                    Senate: true,
+                },
+                versions: initialVersionToFull,
+            };
+        }
+
+        let bits = Number(selections).toString(2).split("");
+        let index = 1;
+
+        const chamber = lodash.mapValues(
+            { House: true, Senate: true },
+            (v, k) => {
+                const value = bits[index] == "1" ? true : false;
+                index++;
+                return value;
+            },
+        );
+        const versions = lodash.mapValues(initialVersionToFull, (v, k) => {
+            const value = bits[index] == "1" ? true : false;
+            index++;
+            return value;
+        });
+
+        return {
+            chamber,
+            versions,
+        };
+    }
+
+    useEffect(() => {
+        let updated = false;
+        const params = qs.parse(props.location.search);
+        let newSearch = {
+            ...currentSearch,
+        };
+        if (params.page != null && currentSearch.page != params.page) {
+            updated = true;
+            newSearch = {
+                ...newSearch,
+                page: params.page,
+            };
+        }
+        if (params.sort != null && currentSearch.sort != params.sort) {
+            updated = true;
+            newSearch = {
+                ...newSearch,
+                sort: params.sort,
+            };
+        }
+        if (params.text != null && currentSearch.text != params.text) {
+            updated = true;
+            newSearch = {
+                ...newSearch,
+                text: params.text,
+            };
+        }
+
+        const encoded = encodeSelections();
+        if (params.selection != null && encoded != params.selection) {
+            updated = true;
+
+            const decoded = decodeSelections(params.selection);
+            newSearch = {
+                ...newSearch,
+                chamber: decoded.chamber,
+                versions: decoded.versions,
+            };
+        }
+
+        if (updated) {
+            setCurrentSearch(newSearch);
+        }
+    }, [props.location.search]);
+
+    useEffect(() => {
+        let updated = false;
+        const params = qs.parse(props.location.search);
+        if (currentSearch.page != null && params.page != currentSearch.page) {
+            updated = true;
+            params.page = currentSearch.page;
+        }
+        if (currentSearch.sort != null && params.sort != currentSearch.sort) {
+            updated = true;
+            params.sort = currentSearch.sort;
+        }
+        if (currentSearch.text == "" && params.text != "") {
+            updated = true;
+            delete params.text;
+        } else if (
+            currentSearch.text != null &&
+            params.text != currentSearch.text
+        ) {
+            updated = true;
+            params.text = currentSearch.text;
+        }
+
+        const encoded = encodeSelections();
+        if (encoded != null && params.selections != encoded) {
+            updated = true;
+            params.selections = encoded;
+        }
+
+        if (updated) {
+            props.history.push({
+                pathname: props.location.pathname,
+                search: qs.stringify(params, { encode: false }),
+            });
+        }
+    }, [currentSearch]);
+
+    function setCurrentPage(page) {
+        setCurrentSearch({
+            ...currentSearch,
+            page: page,
         });
     }
 
     useEffect(() => {
-        executeSearch();
-    }, [versionButtons, chamberButtons, sortField]);
-
-    function innerPageRender(items) {
-        const curPage = parseInt(currentSearch.page);
-
-        return lodash.map(items, (n, i) => {
-            return (
-                <Button
-                    key={`item-${i}`}
-                    disabled={n === "..."}
-                    minimal={n === "..."}
-                    intent={n === curPage ? "primary" : ""}
-                    onClick={() => {
-                        setCurrentSearch({ ...currentSearch, page: n });
-                    }}
-                >
-                    {n}
-                </Button>
-            );
-        });
-    }
-
-    function renderPageList() {
-        const totalPages = Math.ceil(totalResults / currentSearch.pageSize);
-        const curPage = parseInt(currentSearch.page);
-        if (totalPages < 6) {
-            return (
-                <div className="search-pager">
-                    <div className="search-pager-buttons">
-                        {" Page: "}
-                        {innerPageRender(lodash.range(1, totalPages + 1))}
-                    </div>
-                </div>
-            );
-        } else {
-            let sectionOne = lodash.range(1, 4);
-            let sectionTwo = lodash.range(
-                Math.max(curPage - 2, 1),
-                Math.min(totalPages, curPage + 3),
-            );
-            let sectionThree = lodash.range(
-                Math.max(totalPages - 3, 1),
-                totalPages + 1,
-            );
-            sectionThree = lodash.filter(
-                sectionThree,
-                (i) => !sectionTwo.includes(i) && !sectionOne.includes(i),
-            );
-            sectionTwo = lodash.filter(
-                sectionTwo,
-                (i) => !sectionOne.includes(i),
-            );
-            let masterSection = [...sectionOne];
-            if (sectionTwo.length > 0) {
-                if (
-                    masterSection[masterSection.length - 1] + 1 ===
-                    sectionTwo[0]
-                ) {
-                    masterSection = [...masterSection, ...sectionTwo];
-                } else {
-                    masterSection = [...masterSection, "...", ...sectionTwo];
-                }
-            }
-            if (sectionThree.length > 0) {
-                if (
-                    masterSection[masterSection.length - 1] + 1 ===
-                    sectionThree[0]
-                ) {
-                    masterSection = [...masterSection, ...sectionThree];
-                } else {
-                    masterSection = [...masterSection, "...", ...sectionThree];
-                }
-            }
-            return (
-                <div className="search-pager">
-                    <div className="search-pager-buttons">
-                        {" Page: "}
-                        {innerPageRender(masterSection)}
-                    </div>
-                </div>
-            );
+        if (isFirstRender) {
+            setFirstRender(false);
+            return;
         }
+        executeSearch();
+    }, [versionButtons, chamberButtons]);
+
+    function setCurrentSort(sort) {
+        setCurrentSearch({
+            ...currentSearch,
+            page: 1,
+            sort: sort,
+        });
     }
 
     return (
         <Card className="page" elevation={Elevation.ONE}>
             <div className="sidebar">
-                <FormGroup labelFor="text-input">
+                <FormGroup labelFor="text-input" className="search-sort">
                     <ControlGroup fill={true}>
                         <HTMLSelect
+                            value={currentSearch.sort}
                             options={[
                                 { label: "Bill No.", value: "number" },
                                 { label: "Title", value: "title" },
                                 { label: "Date", value: "effective_date" },
                             ]}
                             onChange={(event) => {
-                                setSortField(event.currentTarget.value);
+                                setCurrentSort(event.currentTarget.value);
                             }}
                         />
                         <InputGroup
@@ -225,7 +302,11 @@ function BillSearch(props) {
                     ></Button>
                     <Button icon="add" onClick={toggleCheckAll}></Button>
                     <Button icon="remove" onClick={toggleUncheckAll}></Button>
-                    <Button icon="th-filtered" onClick={toggleEnrolled}>
+                    <Button
+                        className="enrolled-button"
+                        icon="th-filtered"
+                        onClick={toggleEnrolled}
+                    >
                         Enrolled
                     </Button>
                 </ButtonGroup>
@@ -290,10 +371,19 @@ function BillSearch(props) {
                     pageSize={currentSearch.pageSize}
                     setResults={setTotalResults}
                 />
-                <div className="search-count">
-                    Total Results: {totalResults}
-                </div>
-                {renderPageList()}
+                {totalResults > 0 ? (
+                    <Paginator
+                        currentPage={parseInt(currentSearch.page)}
+                        totalPages={Math.ceil(
+                            totalResults / currentSearch.pageSize,
+                        )}
+                        onPage={(page) => {
+                            setCurrentPage(page);
+                        }}
+                    />
+                ) : (
+                    ""
+                )}
             </div>
         </Card>
     );

@@ -1,11 +1,12 @@
 @import "~normalize.css";
 @import "~@blueprintjs/core/lib/css/blueprint.css";
 @import "~@blueprintjs/icons/lib/css/blueprint-icons.css";
+@import "blueprint.scss";
 
-:focus {
-    outline: none !important;
-    outline-offset: 0px !important;
-    -moz-outline-radius: 0px !important;
+.logo {
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
 }
 
 .usc-release-box {
@@ -96,10 +97,6 @@
     font-size: 14px;
 }
 
-.bp5-divider {
-    margin: 10px 0px;
-}
-
 .content-added {
     background-color: #cdffd8;
 }
@@ -118,7 +115,7 @@
     padding-left: 18px;
 }
 
-#root.bp5-dark {
+.bp5-dark {
     .content-added {
         background-color: #2f8842;
     }
@@ -129,5 +126,153 @@
 
     .content-hash {
         border-color: #fff;
+    }
+}
+
+.mobile-drawer {
+    display: none;
+}
+
+.bill-versions {
+    height: auto;
+}
+
+.mobile,
+.mobile-flex {
+    display: none;
+}
+
+.about-us {
+    .bp5-callout {
+        margin-top: 20px;
+    }
+
+    .faq {
+        li {
+            margin-bottom: 10px;
+        }
+    }
+}
+
+@media (min-device-width: 768px) and (max-device-width: 1200px) {
+    .page {
+        width: 100%;
+        margin: 0px;
+    }
+
+    .enrolled-button {
+        display: none;
+    }
+
+    .search-sort .bp5-control-group {
+        display: block;
+
+        .bp5-html-select,
+        .bp5-input-group {
+            display: block;
+        }
+
+        .bp5-html-select {
+            margin-bottom: 5px;
+        }
+    }
+}
+
+@media (max-device-width: 768px) {
+    .mobile {
+        display: block;
+    }
+    .mobile-flex {
+        display: inline-flex;
+    }
+
+    .no-mobile {
+        display: none !important;
+    }
+
+    .usc-release-box {
+        width: auto;
+    }
+
+    .bp5-drawer.bp5-position-right {
+        width: 95%;
+
+        & > .usc-content-section {
+            .usc-content-subsection,
+            .usc-content-paragraph,
+            .usc-content-subparagraph {
+                display: none;
+            }
+
+            .usc-content-subsection:has(.content-removed),
+            .usc-content-subsection:has(.content-added) {
+                display: block;
+            }
+
+            .usc-content-paragraph:has(.content-removed),
+            .usc-content-paragraph:has(.content-added) {
+                display: block;
+            }
+
+            .usc-content-subparagraph:has(.content-removed),
+            .usc-content-subparagraph:has(.content-added) {
+                display: block;
+            }
+        }
+    }
+
+    .mobile-drawer {
+        display: inline-block;
+        margin-left: 0px !important;
+    }
+
+    .mobile-nav {
+        .bp5-button {
+            justify-content: left;
+            margin-left: 10px;
+            margin-top: 10px;
+        }
+    }
+
+    .desktop-nav {
+        display: none;
+    }
+
+    .page {
+        width: 100%;
+        margin: 0px;
+
+        .sidebar {
+            display: block;
+            width: 100%;
+
+            .collapse-controls {
+                display: none;
+            }
+
+            .collapse-wrapper {
+                display: none;
+            }
+        }
+
+        .content {
+            display: block;
+            width: 100%;
+            padding: 0px;
+        }
+    }
+
+    .search-count,
+    .search-pager {
+        float: initial;
+        display: block;
+    }
+
+    .bill-content-section {
+        margin-left: 0px;
+    }
+
+    .bill-versions {
+        max-width: 200px;
     }
 }

@@ -10,7 +10,7 @@ import { md5 } from "common/other";
 
 import "styles/usc-view.scss";
 
-function USCView(props) {
+function USCView({ release, title, section, diffs = {}, interactive = true }) {
     const history = useHistory();
 
     const [contentTree, setContentTree] = useState({});
@@ -19,7 +19,6 @@ function USCView(props) {
     );
 
     const [renderedTarget, setRenderedTarget] = useState(false);
-    const { release, title, section, diffs = {} } = props;
 
     useEffect(() => {
         if (renderedTarget) {
@@ -125,7 +124,7 @@ function USCView(props) {
     }
 
     function changeUrl(event) {
-        if (event.target.tagName.toLowerCase() !== "a") {
+        if (interactive && event.target.tagName.toLowerCase() !== "a") {
             history.replace({ hash: `#${goUpParentChain(event.target)}` });
             event.preventDefault();
             event.stopPropagation();
@@ -167,9 +166,7 @@ function USCView(props) {
                             id={itemHash}
                             name={usc_content_id}
                             className={`usc-content-${correctedType} usc-content-section ${
-                                activeHash === itemHash
-                                    ? "usc-content-hash"
-                                    : ""
+                                activeHash === itemHash ? "content-hash" : ""
                             }`}
                             key={ind}
                             onClick={changeUrl}

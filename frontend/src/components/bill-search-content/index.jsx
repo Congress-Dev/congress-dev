@@ -1,6 +1,7 @@
 // Handles searching the API for bills matching the criteria
 import React, { useEffect, useState } from "react";
 import lodash from "lodash";
+import { Callout } from "@blueprintjs/core";
 
 import { BillCard } from "components";
 import { getCongressSearch } from "common/api";
@@ -21,8 +22,8 @@ function BillSearchContent(props) {
             props.page,
             props.pageSize,
         ).then((billList) => {
-            if(billList != null) {
-                setBillList(billList)
+            if (billList != null) {
+                setBillList(billList);
             }
         });
     }, [
@@ -43,7 +44,19 @@ function BillSearchContent(props) {
         return <BillCard bill={billItem} key={`bill-search-list-${ind}`} />;
     }
 
-    return <>{lodash.map(billList.legislation, renderCardList)}</>;
+    return (
+        <>
+            {billList.legislation.length > 0 ? (
+                lodash.map(billList.legislation, renderCardList)
+            ) : (
+                <Callout className="bill-card">
+                    <h2 style={{ marginTop: "0px", marginBottom: "0px" }}>
+                        No Results
+                    </h2>
+                </Callout>
+            )}
+        </>
+    );
 }
 
 export default BillSearchContent;
