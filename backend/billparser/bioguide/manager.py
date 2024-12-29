@@ -51,7 +51,6 @@ class BioGuideImporter:
         db_items = []
         with self.session.begin():
             for legislator in legislators:
-               
                 try:
                     # TODO: Make this look nicer, but not everybody has a party
                     # TODO: If we're modeling this for real, we'd want to have a table for the jobs
@@ -59,13 +58,30 @@ class BioGuideImporter:
                     party = legislator.jobPositions[-1].congressAffiliation.partyAffiliation[0].party.name
                 except:
                     party = None
-                 # TODO: Get state and region
+
+                try:
+                    state = legislator.jobPositions[-1].congressAffiliation.represents.regionCode
+                except:
+                    state = None
+
+                try:
+                    image_url = "https://bioguide.congress.gov/photo/"
+                    image_url += legislator.asset[-1].contentUrl.split("/")[-1]
+                    image_credit = legislator.asset[-1].creditLine
+                except:
+                    image_url = None
+                    image_credit = None
+
                 new_legislator = Legislator(
                     bioguide_id = legislator.usCongressBioId,
-                    first_name = legislator.unaccentedGivenName or legislator.givenName,
+                    first_name = legislator.nickName or legislator.unaccentedGivenName or legislator.givenName,
                     last_name = legislator.unaccentedFamilyName or legislator.familyName,
                     middle_name = legislator.unaccentedMiddleName or legislator.middleName,
                     party = party,
+                    state = state,
+                    image_url = image_url,
+                    image_credit = image_credit,
+                    profile = legislator.profileText
                 )
                 db_items.append(new_legislator)
             self.session.add_all(db_items)

@@ -136,7 +136,7 @@ async def get_legislation_metadata_by_legislation_id(
         legislation_versions=legis_versions,
         usc_release_id=usc_release_id,
         appropriations=appropriations,
-        sponsor=sponsor_objs[0],
-        cosponsors=sponsor_objs[1:],
+        sponsor=sponsor_objs[0] if len(sponsor_objs) > 0 else None,
+        cosponsors=sponsor_objs[1:] if len(sponsor_objs) > 0 else None,
         **result,
     )

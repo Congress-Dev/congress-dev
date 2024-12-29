@@ -731,6 +731,11 @@ class Legislator(Base):
     state = Column(String, index=True)
     district = Column(Integer, index=True)
 
+    image_url = Column(String, index=False, nullable=True)
+    image_credit = Column(String, index=False, nullable=True)
+
+    profile = Column(String, index=False, nullable=True)
+
 
 class LegislationSponsorship(Base):
     """

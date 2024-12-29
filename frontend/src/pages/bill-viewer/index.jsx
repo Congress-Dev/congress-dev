@@ -234,7 +234,7 @@ function BillViewer(props) {
                     : ""}
             </span>
             <br/>
-            {bill2.sponsor != null ? (
+            {bill2?.sponsor != null ? (
                 <>
                     <span style={{ fontWeight: "bold" }}>Sponsor:</span>{" "}
                     <CompoundTag
