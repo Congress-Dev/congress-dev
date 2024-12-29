@@ -16,7 +16,7 @@ router = APIRouter()
     "/legislation/search",
 )
 async def get_search_legislation(
-    query: str = Query(None),
+    text: str = Query(None),
     congress: str = Query(None),
     chamber: str = Query(None),
     versions: str = Query(None),
@@ -27,7 +27,7 @@ async def get_search_legislation(
 ) -> SearchResponse:
     """Returns a list of LegislationMetadata objects for a given query"""
     obj, total = await search_legislation(
-        congress, chamber, versions, query, sort, page, page_size
+        congress, chamber, versions, text, sort, page, page_size
     )
     if obj is None:
         raise HTTPException(

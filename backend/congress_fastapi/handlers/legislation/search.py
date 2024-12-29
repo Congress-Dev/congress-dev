@@ -218,7 +218,7 @@ async def search_legislation(
             Legislation.legislation_type,
             Legislation.chamber,
         )
-        .order_by(Legislation.number)
+        .order_by(sort)
         .limit(page_size)
         .offset((page - 1) * page_size)
     )
