@@ -49,7 +49,6 @@ function Paginator({ currentPage, totalPages, onPage }) {
         return (
             <div className="search-pager">
                 <div className="search-pager-buttons">
-                    {" Page: "}
                     <Button
                         icon="double-chevron-left"
                         key={`item-start}`}

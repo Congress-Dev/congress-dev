@@ -96,7 +96,7 @@ function AppBar() {
                         handleOpen();
                     }}
                 />
-                <img src="/favicon-32x32.png" />
+                <img className="logo" src="/favicon-32x32.png" />
                 <NavbarHeading>Congress.Dev</NavbarHeading>
                 <NavbarDivider />
                 <div className="desktop-nav">{navigationItems()}</div>

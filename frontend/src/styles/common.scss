@@ -3,6 +3,12 @@
 @import "~@blueprintjs/icons/lib/css/blueprint-icons.css";
 @import "blueprint.scss";
 
+.logo {
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+}
+
 .usc-release-box {
     width: 400px;
 }
@@ -136,9 +142,15 @@
     display: none;
 }
 
-.faq {
-    li {
-        margin-bottom: 10px;
+.about-us {
+    .bp5-callout {
+        margin-top: 20px;
+    }
+
+    .faq {
+        li {
+            margin-bottom: 10px;
+        }
     }
 }
 
