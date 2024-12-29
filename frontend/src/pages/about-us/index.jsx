@@ -104,10 +104,16 @@ function AboutUs() {
                 <li>
                     <b>Is there an API available for developers?</b>
                     <br />
-                    Yes! Congress.dev provides a <a target="_blank" href="https://api.congress.dev/openapi.yaml">robust API</a> for developers to
-                    access legislative data programmatically. You can integrate
-                    it into your applications to create custom solutions or
-                    conduct detailed analysis.
+                    Yes! Congress.dev provides a{" "}
+                    <a
+                        target="_blank"
+                        href="https://api.congress.dev/openapi.yaml"
+                    >
+                        robust API
+                    </a>{" "}
+                    for developers to access legislative data programmatically.
+                    You can integrate it into your applications to create custom
+                    solutions or conduct detailed analysis.
                 </li>
                 <li>
                     <b>Is Congress.dev free to use?</b>
@@ -133,8 +139,9 @@ function AboutUs() {
                     <b>Can I contribute or report an issue?</b>
                     <br />
                     Absolutely! We value feedback from our users. If you spot an
-                    issue or have suggestions, please  <a href="mailto:admin@congress.dev">contact us</a> to
-                    reach out.
+                    issue or have suggestions, please{" "}
+                    <a href="mailto:admin@congress.dev">contact us</a> to reach
+                    out.
                 </li>
                 <li>
                     <b>Does Congress.dev provide legal advice?</b>
@@ -144,9 +151,7 @@ function AboutUs() {
                     qualified attorney or legal expert.
                 </li>
                 <li>
-                    <b>
-                        How can I stay updated about new features or updates?
-                    </b>
+                    <b>How can I stay updated about new features or updates?</b>
                     <br />
                     You can follow us on{" "}
                     <a target="_blank" href="https://x.com/congress_dev">
@@ -155,9 +160,7 @@ function AboutUs() {
                     for the latest news, updates, and feature releases.
                 </li>
                 <li>
-                    <b>
-                        Can I use the data for my own projects or research?
-                    </b>
+                    <b>Can I use the data for my own projects or research?</b>
                     <br />
                     Yes, all data on Congress.dev is sourced from public domain
                     datasets and can be freely used under applicable laws. Be

@@ -302,7 +302,11 @@ function BillSearch(props) {
                     ></Button>
                     <Button icon="add" onClick={toggleCheckAll}></Button>
                     <Button icon="remove" onClick={toggleUncheckAll}></Button>
-                    <Button className="enrolled-button" icon="th-filtered" onClick={toggleEnrolled}>
+                    <Button
+                        className="enrolled-button"
+                        icon="th-filtered"
+                        onClick={toggleEnrolled}
+                    >
                         Enrolled
                     </Button>
                 </ButtonGroup>

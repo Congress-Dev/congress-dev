@@ -40,10 +40,12 @@ export const getBill2 = (legislationId, versionStr) => {
 };
 
 export const getBillSummary = (legislationVersionId) => {
-    return fetch(`${endPv2}/legislation_version/${legislationVersionId}/summaries`)
+    return fetch(
+        `${endPv2}/legislation_version/${legislationVersionId}/summaries`,
+    )
         .then(handleStatus)
         .catch(() => {});
-}
+};
 
 export const getBillVersionText = (
     congress,

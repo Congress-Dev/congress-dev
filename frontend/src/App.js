@@ -32,7 +32,11 @@ function App() {
                         path="/uscode/:uscReleaseId/:uscTitle?/:uscSection?"
                         component={USCodeViewer}
                     />
-                    <Route exact path="/uscode" component={USCodeRevisionList} />
+                    <Route
+                        exact
+                        path="/uscode"
+                        component={USCodeRevisionList}
+                    />
 
                     <Route
                         exact

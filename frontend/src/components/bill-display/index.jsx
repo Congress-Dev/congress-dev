@@ -186,9 +186,15 @@ function BillDisplay(props) {
                         },
                         ind,
                     ) => {
-                        let summaryContent = lodash.find(props.billSummary, (e) => {
-                            return e.legislationContentId === legislation_content_id
-                        });
+                        let summaryContent = lodash.find(
+                            props.billSummary,
+                            (e) => {
+                                return (
+                                    e.legislationContentId ===
+                                    legislation_content_id
+                                );
+                            },
+                        );
                         let summaryStr = summaryContent?.summary || "";
 
                         let actionStr = generateActionStr(action);
@@ -223,21 +229,39 @@ function BillDisplay(props) {
                                 >
                                     <Tooltip
                                         content={
-                                            <p style={{ 'maxWidth': '300px' }}>
+                                            <p style={{ maxWidth: "300px" }}>
                                                 {summaryStr != "" ? (
-                                                    <span><b>Summary:</b> {summaryStr}</span>
-                                                 ) : ''}
+                                                    <span>
+                                                        <b>Summary:</b>{" "}
+                                                        {summaryStr}
+                                                    </span>
+                                                ) : (
+                                                    ""
+                                                )}
 
-                                                {summaryStr != "" && actionStr != "" ? (
-                                                    <><br/><br/></>
-                                                ) : ''}
+                                                {summaryStr != "" &&
+                                                actionStr != "" ? (
+                                                    <>
+                                                        <br />
+                                                        <br />
+                                                    </>
+                                                ) : (
+                                                    ""
+                                                )}
 
                                                 {actionStr != "" ? (
-                                                    <span><b>Actions:</b> {actionStr}</span>
-                                                ) : ''}
-                                            </p>}
+                                                    <span>
+                                                        <b>Actions:</b>{" "}
+                                                        {actionStr}
+                                                    </span>
+                                                ) : (
+                                                    ""
+                                                )}
+                                            </p>
+                                        }
                                         disabled={
-                                            (actionStr === "" && summaryStr === "")
+                                            actionStr === "" &&
+                                            summaryStr === ""
                                         }
                                         isOpen={
                                             activeHash !== "" &&
@@ -271,22 +295,39 @@ function BillDisplay(props) {
                                 >
                                     <Tooltip
                                         content={
-                                            <p style={{ 'maxWidth': '300px' }}>
+                                            <p style={{ maxWidth: "300px" }}>
                                                 {summaryStr != "" ? (
-                                                    <span><b>Summary:</b> {summaryStr}</span>
-                                                 ) : ''}
+                                                    <span>
+                                                        <b>Summary:</b>{" "}
+                                                        {summaryStr}
+                                                    </span>
+                                                ) : (
+                                                    ""
+                                                )}
 
-                                                {summaryStr != "" && actionStr != "" ? (
-                                                    <><br/><br/></>
-                                                ) : ''}
+                                                {summaryStr != "" &&
+                                                actionStr != "" ? (
+                                                    <>
+                                                        <br />
+                                                        <br />
+                                                    </>
+                                                ) : (
+                                                    ""
+                                                )}
 
                                                 {actionStr != "" ? (
-                                                    <span><b>Actions:</b> {actionStr}</span>
-                                                ) : ''}
+                                                    <span>
+                                                        <b>Actions:</b>{" "}
+                                                        {actionStr}
+                                                    </span>
+                                                ) : (
+                                                    ""
+                                                )}
                                             </p>
                                         }
                                         disabled={
-                                            (actionStr === "" && summaryStr === "")
+                                            actionStr === "" &&
+                                            summaryStr === ""
                                         }
                                         isOpen={
                                             activeHash !== "" &&

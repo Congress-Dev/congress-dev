@@ -118,10 +118,10 @@ function USCSidebar(props) {
                             if (!usc_chapter_id) {
                                 return;
                             }
-                            const prettyDisplay = (content_type == "section" ?
-                                section_display.replace("SS", "§") :
-                                section_display
-                            )
+                            const prettyDisplay =
+                                content_type == "section"
+                                    ? section_display.replace("SS", "§")
+                                    : section_display;
                             const nodeObj = {
                                 id: `${usc_chapter_id}.${usc_section_id}`,
                                 hasCaret: content_type !== "section",
@@ -228,10 +228,10 @@ function USCSidebar(props) {
                         content_type,
                         usc_chapter_id,
                     }) => {
-                        const prettyDisplay = (content_type == "section" ?
-                            section_display.replace("SS", "§") :
-                            section_display
-                        )
+                        const prettyDisplay =
+                            content_type == "section"
+                                ? section_display.replace("SS", "§")
+                                : section_display;
                         const nodeObj = {
                             id: `${usc_chapter_id}.${usc_section_id}`,
                             hasCaret: content_type !== "section",
