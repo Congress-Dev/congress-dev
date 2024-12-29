@@ -1,3 +1,4 @@
+from typing import Optional
 from lxml import etree
 import re
 from billparser.translater import translate_paragraph
@@ -9,6 +10,30 @@ from unidecode import unidecode
 cite_regex = re.compile(r"^(\d+) [USC\.]+ (.*?)(\(.+\))?$", re.IGNORECASE)
 section_regex = re.compile(r"^Section (.*?)(\(.*?\))?$", re.IGNORECASE)
 part_regex = re.compile(r"\((.*?)\)", re.IGNORECASE)
+
+USC_CITE_REGEX = re.compile(
+    r"\(?(?P<title>\d+?) U\.S\.C\. (?P<section>.*)\)?",
+    re.IGNORECASE,
+)
+
+def _parse_usc_cite(cite_txt: str) -> Optional[str]:
+    cite_match = USC_CITE_REGEX.search(cite_txt)
+    if cite_match:
+        # We found a USC cite
+        #  - (22 U.S.C. 2671(b)(2)(A)(ii))
+        #  - (52 U.S.C. 20504)
+        cite = "/us/usc/t{}".format(cite_match["title"])
+        cite += "/s{}".format(cite_match["section"].split("(")[0])
+        if "(" in cite_match["section"]:
+            possibles = [
+                x.replace(")", "")
+                for x in cite_match["section"].split("(", 1)[1].split(")(")
+            ]
+            if len(possibles) > 0:
+                cite += "/" + "/".join(possibles)
+        return cite
+    return None
+
 # /us/usc/t7/s7333/e
 def convert_to_usc_id(xref):
     """
@@ -24,16 +49,10 @@ def convert_to_usc_id(xref):
         # doc = xref.attrib['legal-doc']
         cite = unidecode(xref.attrib["parsable-cite"])
         xref.text = unidecode(xref.text)
-        cite_match = cite_regex.match(xref.text)
         section_match = section_regex.match(xref.text)
+        cite_match = _parse_usc_cite(xref.text)
         if cite_match:
-            groups = cite_match.groups()
-            if groups[-1] is not None:
-                # print(groups[-1])
-                parts = part_regex.findall(groups[-1])
-            else:
-                parts = []
-            return "/us/usc/t{}/s{}/{}".format(groups[0], groups[1], groups[2])
+            return cite_match
         elif section_match:
             groups = section_match.groups()
             if groups[-1] is not None:

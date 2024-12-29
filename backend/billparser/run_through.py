@@ -180,7 +180,7 @@ def extract_actions(element: Element, path: str) -> List[dict]:
     return res
 
 
-def extract_single_action(element: Element, path: str, parent_action: dict) -> list:
+def extract_single_action(element: Element, path: str, parent_cite: str) -> list:
     """
     Takes in an element and a path (relative within the bill)
     returns a list of extracted actions.
@@ -233,6 +233,8 @@ def extract_single_action(element: Element, path: str, parent_action: dict) -> l
         logging.error("Uncaught exception", exc_info=e)
     if res != {}:
         res["parsed_cite"] = parse_action_for_cite(res).replace("//", "/")
+        if res["parsed_cite"] == "/us/usc/t42/s18071/None":
+            print("Failure", res)
         actions = determine_action2(res["text"])
         res["action"] = list(actions.keys())
         res["action1"] = list(actions.keys())
@@ -277,23 +279,24 @@ def find_or_create_bill(bill_obj: dict, title: str, session: "SQLAlchemy.session
 
 
 def recursive_bill_content(
-    content_id,
-    search_element,
-    order,
-    legis_version_id,
+    content_id: int,
+    search_element: Element,
+    order: int,
+    legis_version_id: int,
     parents: dict,
-    path,
+    path: str,
     vers_id: int,
     parent_cite: str = "",
     session: "SQLAlchemy.session" = None,
-) -> list:
+) -> List[LegislationContent]:
     # logging.debug(' '.join(search_element.itertext()).strip().replace('\n', ' '))
     # if it has an id it is probably a thingy
     extracted_action = []
-    res = []
+    res: List[LegislationContent] = []
     content = None
 
     if search_element.tag == "legis-body":
+        # Root node for us
         content = LegislationContent(
             content_type=search_element.tag,
             parent_id=content_id,
@@ -361,7 +364,7 @@ def recursive_bill_content(
             pass
         else:
             try:
-                temp_actions = [extract_single_action(search_element, path, {})]
+                temp_actions = [extract_single_action(search_element, path, parent_cite)]
                 new_acts = []
                 res.append(temp_actions[0])
                 path = temp_actions[0].get("enum", path)
@@ -484,7 +487,7 @@ def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object) -> Legi
                 logging.info(f"Skipping {archive_obj.get('file')}")
                 return []
 
-            root = etree.fromstring(f)
+            root: Element = etree.fromstring(f)
             try:
                 title = root.xpath("//dublinCore")[0][0].text
                 if ":" in title:
