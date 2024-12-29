@@ -1,6 +1,6 @@
 import React from "react";
 import { withRouter, Link } from "react-router-dom";
-import { Callout, Button, Tag } from "@blueprintjs/core";
+import { Callout, Button, Tag, CompoundTag } from "@blueprintjs/core";
 
 import { chamberLookup, partyLookup } from "common/lookups";
 import { BillVersionsBreadcrumb } from "components";
@@ -70,7 +70,12 @@ function BillCard({ bill }) {
             {bill.sponsor != null ? (
                 <>
                     <span style={{ fontWeight: "bold" }}>Sponsor:</span>{" "}
-                    Rep. {bill.sponsor.lastName}, {bill.sponsor.firstName} [{partyLookup[bill.sponsor.party] != null ? partyLookup[bill.sponsor.party] : bill.sponsor.party}]
+                    <CompoundTag
+                        intent={bill.sponsor.party == "Republican" ? "danger" : (bill.sponsor.party == "Democrat" ? 'primary' : 'none')}
+                        leftContent={partyLookup[bill.sponsor.party] != null ? partyLookup[bill.sponsor.party] : bill.sponsor.party}
+                    >
+                        &nbsp;{bill.sponsor.lastName}, {bill.sponsor.firstName}&nbsp;
+                    </CompoundTag>
                     <br />
                 </>
             ) : ("")}

@@ -12,6 +12,7 @@ import {
     Divider,
     Drawer,
     FormGroup,
+    CompoundTag,
 } from "@blueprintjs/core";
 
 import { ThemeContext } from "context";
@@ -236,7 +237,12 @@ function BillViewer(props) {
             {bill2.sponsor != null ? (
                 <>
                     <span style={{ fontWeight: "bold" }}>Sponsor:</span>{" "}
-                    Rep. {bill2.sponsor.lastName}, {bill2.sponsor.firstName} [{partyLookup[bill2.sponsor.party] != null ? partyLookup[bill2.sponsor.party] : bill2.sponsor.party}]
+                    <CompoundTag
+                        intent={bill2.sponsor.party == "Republican" ? "danger" : (bill2.sponsor.party == "Democrat" ? 'primary' : 'none')}
+                        leftContent={partyLookup[bill2.sponsor.party] != null ? partyLookup[bill2.sponsor.party] : bill2.sponsor.party}
+                    >
+                        &nbsp;{bill2.sponsor.lastName}, {bill2.sponsor.firstName}&nbsp;
+                    </CompoundTag>
                     <br />
                 </>
             ) : ("")}
