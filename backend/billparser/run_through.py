@@ -481,7 +481,7 @@ def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object) -> Legi
         res = []
         session = Session()
         try:
-            
+
             found = check_for_existing_legislation_version(bill_obj)
             if found:
                 logging.info(f"Skipping {archive_obj.get('file')}")
@@ -528,7 +528,7 @@ def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object) -> Legi
             form_element = root.xpath("//form")
             if len(form_element) > 0:
                 form_element = form_element[0]
-            # extract_sponsors_from_form(form_element, new_bill.legislation_id, session)
+            extract_sponsors_from_form(form_element, new_bill.legislation_id, session)
             legis = root.xpath("//legis-body")
             if len(legis) > 0:
                 legis = legis[0]

@@ -17,20 +17,24 @@ def extract_sponsors_from_form(
     sponsor_elements = form_element.findall(".//sponsor")
     cosponsor_elements = form_element.findall(".//cosponsor")
     for sponsor_element in sponsor_elements:
-        new_sponsor = LegislationSponsorship(
-            legislator_bioguide_id=sponsor_element.attrib["name-id"],
-            legislation_id=legislation_id,
-            cosponsor=False,
-        )
-        session.add(new_sponsor)
-        sponsors.append(new_sponsor)
+        parent = session.query(Legislator).filter_by(bioguide_id=sponsor_element.attrib["name-id"]).first()
+        if parent is not None:
+            new_sponsor = LegislationSponsorship(
+                legislator_bioguide_id=sponsor_element.attrib["name-id"],
+                legislation_id=legislation_id,
+                cosponsor=False,
+            )
+            session.add(new_sponsor)
+            sponsors.append(new_sponsor)
     for sponsor_element in cosponsor_elements:
-        new_sponsor = LegislationSponsorship(
-            legislator_bioguide_id=sponsor_element.attrib["name-id"],
-            legislation_id=legislation_id,
-            cosponsor=True,
-        )
-        session.add(new_sponsor)
-        sponsors.append(new_sponsor)
+        parent = session.query(Legislator).filter_by(bioguide_id=sponsor_element.attrib["name-id"]).first()
+        if parent is not None:
+            new_sponsor = LegislationSponsorship(
+                legislator_bioguide_id=sponsor_element.attrib["name-id"],
+                legislation_id=legislation_id,
+                cosponsor=True,
+            )
+            session.add(new_sponsor)
+            sponsors.append(new_sponsor)
     logging.info(f"Extracted {len(sponsors)} sponsors from form", extra={"num_sponsors": len(sponsors)})
     return sponsors
