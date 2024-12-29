@@ -1,7 +1,7 @@
 from collections import defaultdict
 from typing import Dict, List, Tuple
 
-from sqlalchemy import select, join, func, distinct
+from sqlalchemy import select, join, func, distinct, exists
 from sqlalchemy.orm import aliased
 from congress_fastapi.db.postgres import get_database
 from billparser.db.models import (
@@ -191,6 +191,14 @@ async def search_legislation(
 ) -> Tuple[List[SearchResult], int]:
     database = await get_database()
     lv_alias = aliased(LegislationVersion)
+    subquery = (
+            select([1])
+            .select_from(LegislationVersion)
+            .where(
+                (LegislationVersion.legislation_id == Legislation.legislation_id) &
+                (LegislationVersion.legislation_version.in_(versions.upper().split(",")))
+            )
+        )
     legis_query = (
         select(
             Legislation.legislation_id,
@@ -218,17 +226,13 @@ async def search_legislation(
             Legislation.legislation_type,
             Legislation.chamber,
         )
+        .having(exists(subquery))
         .order_by(sort, Legislation.legislation_id)
         .limit(page_size)
         .offset((page - 1) * page_size)
     )
     if chamber:
         legis_query = legis_query.where(Legislation.chamber.in_(chamber.split(",")))
-
-    if versions:
-        legis_query = legis_query.where(
-            lv_alias.legislation_version.in_(versions.upper().split(","))
-        )
 
     if text:
         legis_query = legis_query.where(Legislation.title.ilike(f"%{text}%"))
@@ -277,13 +281,9 @@ async def search_legislation(
         .group_by(
             Legislation.legislation_id,
         )
-    )
+    ).having(exists(subquery))
     if chamber:
         count_query = count_query.where(Legislation.chamber.in_(chamber.split(",")))
-    if versions:
-        count_query = count_query.where(
-            lv_alias.legislation_version.in_(versions.upper().split(","))
-        )
 
     if text:
         count_query = count_query.where(Legislation.title.ilike(f"%{text}%"))
