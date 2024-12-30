@@ -29,8 +29,6 @@ async def get_member_by_bioguide_id(bioguide_id: str) -> MemberInfo:
 
 async def get_member_sponsorships_by_bioguide_id(
     bioguide_id: str,
-    sponsored: bool = True,
-    cosponsored: bool = False,
 ) -> List[LegislationSponsorshipInfo]:
     """
     Returns a list of LegislationSponsorshipInfo objects for a given bioguide_id
@@ -41,27 +39,19 @@ async def get_member_sponsorships_by_bioguide_id(
         select(
             *LegislationSponsorshipInfo.sqlalchemy_columns(),
         )
-        .join(Congress, Legislation.congress_id == Congress.congress_id)
+        .select_from(LegislationSponsorship)
         .join(
-            LegislationSponsorship,
+            Legislation,
             Legislation.legislation_id == LegislationSponsorship.legislation_id,
         )
+        .join(Congress, Legislation.congress_id == Congress.congress_id)
         .join(
-            LegislationVersion,
-            and_(
-                Legislation.legislation_id == LegislationVersion.legislation_id,
-            ),
+            Legislator,
+            Legislator.bioguide_id == LegislationSponsorship.legislator_bioguide_id,
         )
         .where(LegislationSponsorship.legislator_bioguide_id == bioguide_id)
+        .where(LegislationSponsorship.cosponsor == False)
     )
-    conds = []
-    if sponsored:
-        conds.append(LegislationSponsorship.cosponsor.is_(False))
-    if cosponsored:
-        conds.append(LegislationSponsorship.cosponsor.is_(True))
-    # If we have both, we don't need to filter
-    if len(conds) == 1:
-        query = query.where(conds[0])
 
     result = await database.fetch_all(query)
     if result is None:
