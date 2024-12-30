@@ -30,18 +30,13 @@ async def get_member_by_bioguide_id(bioguide_id: str) -> MemberInfo:
 async def get_member_sponsorships_by_bioguide_id(
     bioguide_id: str,
     sponsored: bool = True,
-    cosponsored: bool = True,
+    cosponsored: bool = False,
 ) -> List[LegislationSponsorshipInfo]:
     """
     Returns a list of LegislationSponsorshipInfo objects for a given bioguide_id
     """
     database = await get_database()
-    print(*LegislationSponsorshipInfo.sqlalchemy_columns())
-    most_recent_version = (
-        select(LegislationVersion.legislation_id)
-        .order_by(LegislationVersion.created_at.desc())
-        .limit(1)
-    )
+
     query = (
         select(
             *LegislationSponsorshipInfo.sqlalchemy_columns(),
@@ -55,7 +50,6 @@ async def get_member_sponsorships_by_bioguide_id(
             LegislationVersion,
             and_(
                 Legislation.legislation_id == LegislationVersion.legislation_id,
-                LegislationVersion.legislation_id.in_(most_recent_version),
             ),
         )
         .where(LegislationSponsorship.legislator_bioguide_id == bioguide_id)
@@ -68,7 +62,7 @@ async def get_member_sponsorships_by_bioguide_id(
     # If we have both, we don't need to filter
     if len(conds) == 1:
         query = query.where(conds[0])
-    print(query)
+
     result = await database.fetch_all(query)
     if result is None:
         return None

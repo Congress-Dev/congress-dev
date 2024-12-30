@@ -1,5 +1,6 @@
 import React from "react";
-import { Card, Elevation, H5, H6, Divider } from "@blueprintjs/core";
+import { Link } from "react-router-dom";
+import { Divider } from "@blueprintjs/core";
 
 import { SponsoredLegislation } from "components";
 
@@ -8,7 +9,9 @@ const LegislatorProfile = ({
     firstName,
     middleName,
     lastName,
-    imageUrl,
+    imageUrl = "",
+    imageSource = "",
+    profile = "",
     sponsoredLegislation = [],
 }) => {
     // I will make an element that links to the real profile page at https://bioguide.congress.gov/search/bio/${bioguideId}
@@ -19,21 +22,90 @@ const LegislatorProfile = ({
         ));
     };
 
+    function parseBiography(text) {
+        const bioData = {};
+
+        // Split the string into sentences using semicolons and trim whitespace
+        const sentences = text
+            .split(";")
+            .map((sentence) => sentence.trim())
+            .filter(Boolean);
+
+        // Extract fields from sentences
+        sentences.forEach((sentence) => {
+            if (sentence.toLowerCase().includes("born")) {
+                bioData.birth = sentence.replace("born", "Born");
+            } else if (sentence.toLowerCase().includes("graduated")) {
+                bioData.education = bioData.education || [];
+                bioData.education.push(sentence);
+            } else if (sentence.toLowerCase().includes("attended")) {
+                bioData.education = bioData.education || [];
+                bioData.education.push(sentence);
+            } else if (sentence.toLowerCase().includes("staff")) {
+                bioData.career = bioData.career || [];
+                bioData.career.push(sentence);
+            } else if (sentence.toLowerCase().includes("appointed")) {
+                bioData.appointment = sentence;
+            } else if (sentence.toLowerCase().includes("chairman")) {
+                bioData.chairman = sentence;
+            } else if (sentence.toLowerCase().includes("vice chairman")) {
+                bioData.viceChairman = sentence;
+            } else if (sentence.toLowerCase().includes("elected")) {
+                bioData.elected = sentence;
+            }
+        });
+
+        // Generate HTML content
+        let htmlContent = "";
+        htmlContent += `<p><b>${bioData.birth}</b></p>`;
+
+        if (bioData.education) {
+            htmlContent += `<p><b>Education:</b></p><ul class="details">`;
+            bioData.education.forEach((item) => {
+                htmlContent += `<li>${item}</li>`;
+            });
+            htmlContent += `</ul>`;
+        }
+
+        if (bioData.career) {
+            htmlContent += `<p><b>Career:</b></p><ul class="details">`;
+            bioData.career.forEach((item) => {
+                htmlContent += `<li>${item}</li>`;
+            });
+            htmlContent += `</ul>`;
+        }
+
+        if (bioData.appointment) {
+            htmlContent += `<p><b>Appointment:</b> ${bioData.appointment}</p>`;
+        }
+
+        if (bioData.chairman) {
+            htmlContent += `<p><b>Chairman:</b> ${bioData.chairman}</p>`;
+        }
+
+        if (bioData.viceChairman) {
+            htmlContent += `<p><b>Vice Chairman:</b> ${bioData.viceChairman}</p>`;
+        }
+
+        if (bioData.elected) {
+            htmlContent += `<p><b>Political Career:</b> ${bioData.elected}</p>`;
+        }
+
+        return htmlContent;
+    }
+
     return (
-        <Card interactive={false} elevation={Elevation.TWO}>
-            <div style={{ textAlign: "center" }}>
-                <img
-                    src={imageUrl}
-                    alt={`${firstName} profile`}
-                    style={{
-                        width: "100px",
-                        height: "100px",
-                        borderRadius: "50%",
+        <div className="legislator-profile">
+            <div className="center">
+                <div className="image">
+                    <img src={imageUrl} alt="No Member Photo" />
+                </div>
+                <i
+                    dangerouslySetInnerHTML={{
+                        __html: imageSource,
                     }}
                 />
-                <H5>
-                    {firstName} {lastName}
-                </H5>
+                <br/>
                 <a
                     href={`https://bioguide.congress.gov/search/bio/${bioguideId}`}
                 >
@@ -41,9 +113,19 @@ const LegislatorProfile = ({
                 </a>
             </div>
             <Divider />
-            <p>More information about the legislator...</p>
+            <p
+                dangerouslySetInnerHTML={{
+                    __html: parseBiography(profile),
+                }}
+            />
+            <Divider />
+            {sponsoredLegislation.length == 0 ? (<p>
+                <Link to={`/member/${bioguideId}`}>
+                    More information about the legislator...
+                </Link>
+            </p>) : <></>}
             <div>{renderSponsoredLegislation()}</div>
-        </Card>
+        </div>
     );
 };
 

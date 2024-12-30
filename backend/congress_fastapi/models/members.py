@@ -38,8 +38,12 @@ class LegislationSponsorshipInfo(MappableBase):
     chamber: Annotated[str, Legislation.chamber]
     session: Annotated[int, Congress.session_number]
     number: Annotated[int, Legislation.number]
-    version: Annotated[int, LegislationVersion.legislation_version]
+    version: Annotated[str, LegislationVersion.legislation_version]
     title: Annotated[str, Legislation.title]
+
+    image_url: Annotated[Optional[str], Legislator.image_url]
+    image_source: Annotated[Optional[str], Legislator.image_source]
+    profile: Annotated[Optional[str], Legislator.profile]
 
 
 class LegislationSponsorshipList(MappableBase):
