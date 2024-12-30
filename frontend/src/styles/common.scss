@@ -177,12 +177,18 @@
         justify-content: center;
         align-items: center;
         margin: 0 auto;
-    }
+        background-color: #00000042;
 
-    img {
-        width: 100%; /* Makes the image cover the container width */
-        height: 100%; /* Makes the image cover the container height */
-        object-fit: cover; /* Ensures the image covers the area without stretching */
+        svg {
+            width: 150px;
+            height: 150px;
+        }
+
+        img {
+            width: 100%; /* Makes the image cover the container width */
+            height: 100%; /* Makes the image cover the container height */
+            object-fit: cover; /* Ensures the image covers the area without stretching */
+        }
     }
 
     p {

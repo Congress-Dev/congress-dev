@@ -1,8 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Divider } from "@blueprintjs/core";
+import { Divider, Icon } from "@blueprintjs/core";
 
-import { SponsoredLegislation, BillCard } from "components";
+import { BillCard } from "components";
 
 const LegislatorProfile = ({
     bioguideId,
@@ -102,7 +102,9 @@ const LegislatorProfile = ({
         <div className="legislator-profile">
             <div className="center">
                 <div className="image">
-                    <img src={imageUrl} alt="No Member Photo" />
+                    {imageUrl != null && imageUrl != "" ?
+                        <img src={imageUrl} /> :
+                        <Icon icon="user" />}
                 </div>
                 <i
                     dangerouslySetInnerHTML={{
