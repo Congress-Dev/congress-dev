@@ -77,18 +77,26 @@ class BioGuideImporter:
                     image_url = None
                     image_source = None
 
-                new_legislator = Legislator(
-                    bioguide_id = legislator.usCongressBioId,
-                    first_name = legislator.nickName or legislator.unaccentedGivenName or legislator.givenName,
-                    last_name = legislator.unaccentedFamilyName or legislator.familyName,
-                    middle_name = legislator.unaccentedMiddleName or legislator.middleName,
-                    party = party,
-                    state = state,
-                    image_url = image_url,
-                    image_source = image_source,
-                    profile = legislator.profileText
-                )
-                db_items.append(new_legislator)
+                record_data = {
+                    'bioguide_id': legislator.usCongressBioId,
+                    'first_name': legislator.nickName or legislator.unaccentedGivenName or legislator.givenName,
+                    'last_name': legislator.unaccentedFamilyName or legislator.familyName,
+                    'middle_name': legislator.unaccentedMiddleName or legislator.middleName,
+                    'party': party,
+                    'state': state,
+                    'image_url': image_url,
+                    'image_source': image_source,
+                    'profile': legislator.profileText
+                }
+
+                existing_record = self.session.query(Legislator).filter(Legislator.bioguide_id == legislator.usCongressBioId).first()
+                if existing_record is None:
+                    new_legislator = Legislator(**record_data)
+                    db_items.append(new_legislator)
+                else:
+                    for key, value in record_data.items():
+                        setattr(existing_record, key, value)
+
             self.session.add_all(db_items)
             self.session.commit()
         logging.debug("Finished adding legislators to database")
