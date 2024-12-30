@@ -1,4 +1,4 @@
-from typing import Optional, TypedDict, Any
+from typing import List, Optional, TypedDict, Any
 import re
 import logging
 
@@ -54,6 +54,7 @@ def extract_usc_cite(text: str) -> Optional[str]:
         return cite
     return None
 
+
 class ActionObject(TypedDict):
     parent: str
     enum: str
@@ -61,6 +62,15 @@ class ActionObject(TypedDict):
     text_element: Any
     amended: bool
     next: str
+
+
+class CiteObject(TypedDict):
+    text: str
+    cite: str
+
+
+def parse_text_for_cite(text: str) -> List[CiteObject]:
+    return []
 
 
 def parse_action_for_cite(action_object: ActionObject, parent_cite: str = "") -> str:
@@ -113,7 +123,11 @@ def parse_action_for_cite(action_object: ActionObject, parent_cite: str = "") ->
                 if parent_cite:
                     # This is a bit wrong, parent_cite will currently already have a section
                     # But I need to do something earlier in the parser to enable a better solution
-                    cite = "/".join(parent_cite.split("/")[:5]) + "/" + regex_match["section"]
+                    cite = (
+                        "/".join(parent_cite.split("/")[:5])
+                        + "/"
+                        + regex_match["section"]
+                    )
                 else:
                     cite = "/us/usc/t{}/s{}".format(
                         cite_contexts["last_title"], regex_match["section"]
