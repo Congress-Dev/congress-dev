@@ -167,6 +167,14 @@
     }
 
     p { margin: 20px }
+
+    ul {
+        margin-top: 0px;
+    }
+
+    p + ul {
+        margin-top: -20px;
+    }
 }
 
 @media (min-device-width: 768px) and (max-device-width: 1200px) {
