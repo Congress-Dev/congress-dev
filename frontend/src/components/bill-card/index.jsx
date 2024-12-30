@@ -62,15 +62,23 @@ function BillCard({ bill }) {
                 {genTitle()} - {bill.title}
             </h2>
 
-            <span className="bill-card-introduced-date">
-                <span style={{ fontWeight: "bold" }}>Introduced:</span>{" "}
-                {bill.effective_date}
-            </span>
-            <br />
+            {bill.effective_date != null ? (
+                <>
+                    <span className="bill-card-introduced-date">
+                        <span style={{ fontWeight: "bold" }}>Introduced:</span>{" "}
+                        {bill.effective_date}
+                    </span>
+                    <br />
+                </>
+            ): <></>}
             <LegislatorChip sponsor={bill.sponsor} />
-            <span style={{ fontWeight: "bold" }}>Versions:</span>{" "}
-            <BillVersionsBreadcrumb bill={bill} />
-            <br />
+            {bill.legislation_versions != null && bill.legislation_versions.length > 0 ? (
+                <>
+                    <span style={{ fontWeight: "bold" }}>Versions:</span>{" "}
+                    <BillVersionsBreadcrumb bill={bill} />
+                    <br />
+                </>
+            ): <></>}
 
             {renderTags()}
 

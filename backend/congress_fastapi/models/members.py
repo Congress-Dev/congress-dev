@@ -40,10 +40,6 @@ class LegislationSponsorshipInfo(MappableBase):
     number: Annotated[int, Legislation.number]
     title: Annotated[str, Legislation.title]
 
-    image_url: Annotated[Optional[str], Legislator.image_url]
-    image_source: Annotated[Optional[str], Legislator.image_source]
-    profile: Annotated[Optional[str], Legislator.profile]
-
 
 class LegislationSponsorshipList(MappableBase):
     legislation_sponsorships: List[LegislationSponsorshipInfo]

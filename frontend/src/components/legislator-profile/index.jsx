@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Divider } from "@blueprintjs/core";
 
-import { SponsoredLegislation } from "components";
+import { SponsoredLegislation, BillCard } from "components";
 
 const LegislatorProfile = ({
     bioguideId,
@@ -17,9 +17,13 @@ const LegislatorProfile = ({
     // I will make an element that links to the real profile page at https://bioguide.congress.gov/search/bio/${bioguideId}
 
     const renderSponsoredLegislation = () => {
-        return sponsoredLegislation.map((sponsorship) => (
-            <SponsoredLegislation {...sponsorship} />
-        ));
+        return <>
+            <h3>Sponsored Legislation:</h3>
+
+            {sponsoredLegislation.map((sponsorship) => (
+                <BillCard bill={sponsorship} />
+            ))}
+        </>
     };
 
     function parseBiography(text) {
@@ -113,18 +117,24 @@ const LegislatorProfile = ({
                 </a>
             </div>
             <Divider />
-            <p
-                dangerouslySetInnerHTML={{
-                    __html: parseBiography(profile),
-                }}
-            />
-            <Divider />
+            {profile != null && profile != "" ? (
+                <>
+                    <h3>Biography:</h3>
+                    <p
+                        dangerouslySetInnerHTML={{
+                            __html: parseBiography(profile),
+                        }}
+                    />
+                    <Divider />
+                </>
+            ): <></>}
             {sponsoredLegislation.length == 0 ? (<p>
                 <Link to={`/member/${bioguideId}`}>
                     More information about the legislator...
                 </Link>
-            </p>) : <></>}
-            <div>{renderSponsoredLegislation()}</div>
+            </p>) : <>
+                <div>{renderSponsoredLegislation()}</div>
+            </>}
         </div>
     );
 };
