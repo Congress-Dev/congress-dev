@@ -18,6 +18,7 @@ function MemberViewer(props) {
 
     return (
         <Card interactive={false} elevation={Elevation.TWO} className="page">
+            <h1 style={{"textAlign": "center"}}>Rep. {memberInfo.firstName} {memberInfo.lastName} - {memberInfo.party} ({memberInfo.state})</h1>
             <LegislatorProfile
                 {...memberInfo}
                 sponsoredLegislation={sponsoredLegislation}
