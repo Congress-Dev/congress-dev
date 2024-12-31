@@ -28,19 +28,19 @@ function BillCard({ bill }) {
     }
 
     function renderTags() {
-        if(bill.tags == null || bill.tags.length == 0) {
+        if (bill.tags == null || bill.tags.length == 0) {
             return;
         }
 
         return (
             <>
                 <span style={{ fontWeight: "bold" }}>Tags:</span>
-                    {bill.tags.map((tag) => (
-                        <>
-                            <Tag>{tag}</Tag>
-                            {"  "}
-                        </>
-                    ))}
+                {bill.tags.map((tag) => (
+                    <>
+                        <Tag>{tag}</Tag>
+                        {"  "}
+                    </>
+                ))}
                 <br />
             </>
         );
@@ -60,15 +60,27 @@ function BillCard({ bill }) {
                     </span>
                     <br />
                 </>
-            ): <></>}
-            <LegislatorChip sponsor={bill.sponsor} />
-            {bill.legislation_versions != null && bill.legislation_versions.length > 0 ? (
+            ) : (
+                <></>
+            )}
+            {bill.sponsor != null ? (
+                <>
+                    <span style={{ fontWeight: "bold" }}>Sponsor:</span>{" "}
+                    <LegislatorChip sponsor={bill.sponsor} />
+                </>
+            ) : (
+                ""
+            )}
+            {bill.legislation_versions != null &&
+            bill.legislation_versions.length > 0 ? (
                 <>
                     <span style={{ fontWeight: "bold" }}>Versions:</span>{" "}
                     <BillVersionsBreadcrumb bill={bill} />
                     <br />
                 </>
-            ): <></>}
+            ) : (
+                <></>
+            )}
 
             {renderTags()}
 

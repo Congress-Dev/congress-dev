@@ -2,22 +2,16 @@ import React, { useEffect, useState, useContext } from "react";
 import lodash from "lodash";
 import { useHistory } from "react-router-dom";
 import {
-    HTMLSelect,
-    Switch,
     Callout,
     Button,
-    Tabs,
-    Tab,
-    Card,
-    Divider,
     Drawer,
-    FormGroup,
-    CompoundTag,
+    Section,
+    SectionCard,
 } from "@blueprintjs/core";
 
 import { ThemeContext } from "context";
 
-import { chamberLookup, partyLookup } from "common/lookups";
+import { chamberLookup, versionToFull } from "common/lookups";
 import {
     getBill,
     getBill2,
@@ -25,12 +19,7 @@ import {
     getBillVersionText,
 } from "common/api";
 
-import {
-    BillDisplay,
-    BillViewSidebar,
-    BillVersionsBreadcrumb,
-} from "components";
-import { LegislatorChip } from "components/index";
+import { BillDisplay, BillViewSidebar } from "components";
 
 // Default bill versions to choose
 // TODO: These should be enums
@@ -56,6 +45,7 @@ function BillViewer(props) {
     const [billVers, setBillVers] = useState(
         billVersion || defaultVers[chamber.toLowerCase()],
     );
+    const [billEffective, setBillEffective] = useState(null);
 
     const [billSummary, setBillSummary] = useState([]);
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -90,6 +80,9 @@ function BillViewer(props) {
                     getBillSummary(matchingVersion.legislation_version_id).then(
                         setBillSummary,
                     );
+                    setBillEffective(matchingVersion.effective_date);
+                } else {
+                    setBillEffective(null)
                 }
 
                 return response;
@@ -206,104 +199,94 @@ function BillViewer(props) {
     };
 
     return (
-        <Card className="page">
-            <Button
-                className="congress-link"
-                icon="share"
-                onClick={() => {
-                    window.open(
-                        `https://congress.gov/bill/${bill.congress}-congress/${bill.chamber}-bill/${bill.number}`,
-                        "_blank",
-                    );
-                }}
-            />
-            <Button
-                className="bill-options mobile-flex"
-                icon="menu"
-                onClick={() => {
-                    setDrawerOpen(true);
-                }}
-            />
-            <h1>
-                {`${chamberLookup[bill.chamber]} ${bill.number}`} - {bill.title}
-            </h1>
-
-            <span className="bill-card-introduced-date">
-                <span style={{ fontWeight: "bold" }}>Introduced:</span>{" "}
-                {bill.legislation_versions != null
-                    ? bill.legislation_versions[0].effective_date
-                    : ""}
-            </span>
-            <br/>
-            <LegislatorChip sponsor={bill2.sponsor} />
-
-            <span style={{ fontWeight: "bold" }}>Versions:</span>{" "}
-            <BillVersionsBreadcrumb bill={bill} />
-            <br />
+        <Section
+            className="page"
+            title={bill.title}
+            subtitle={`${chamberLookup[bill.chamber]} ${bill.number}`}
+        >
             {billSummary != null && billSummary[0] != null ? (
-                <p>
-                    <span style={{ fontWeight: "bold" }}>Summary:</span>{" "}
-                    {billSummary[0].summary}
-                    <br />
-                    <br />
-                </p>
+                <SectionCard>
+                    <div className="section-detail">
+                        <span className="section-detail-label">Summary:</span>
+                        <span className="section-detail-value">
+                            {billSummary[0].summary}
+                        </span>
+                    </div>
+                </SectionCard>
             ) : (
                 ""
             )}
-            <Divider />
-            <div className="sidebar no-mobile">
-                <BillViewSidebar
-                    congress={congress}
-                    chamber={chamber}
-                    billNumber={billNumber}
-                    billVers={billVers}
-                    bill={bill}
-                    dateAnchors={dateAnchors}
-                    bill2={bill2}
-                    scrollContentIdIntoView={scrollContentIdIntoView}
-                    setActionParse={setActionParse}
-                    billVersion={billVersion}
-                    setBillVers={setBillVers}
-                    actionParse={actionParse}
-                />
-            </div>
-            <Drawer
-                className={isDarkMode ? "bp5-dark" : ""}
-                isOpen={drawerOpen}
-                onClose={() => setDrawerOpen(false)}
-                isCloseButtonShown={true}
-                title="Display Options"
-                lazy={false}
-            >
-                <BillViewSidebar
-                    congress={congress}
-                    chamber={chamber}
-                    billNumber={billNumber}
-                    billVers={billVers}
-                    bill={bill}
-                    dateAnchors={dateAnchors}
-                    bill2={bill2}
-                    scrollContentIdIntoView={scrollContentIdIntoView}
-                    setActionParse={setActionParse}
-                    billVersion={billVersion}
-                    setBillVers={setBillVers}
-                    actionParse={actionParse}
-                />
-            </Drawer>
-            <div className="content">
-                <Callout>
-                    <BillDisplay
+
+            <SectionCard>
+                <div className="sidebar no-mobile">
+                    <BillViewSidebar
                         congress={congress}
                         chamber={chamber}
                         billNumber={billNumber}
+                        billVers={billVers}
+                        bill={bill}
+                        dateAnchors={dateAnchors}
+                        bill2={bill2}
+                        scrollContentIdIntoView={scrollContentIdIntoView}
+                        setActionParse={setActionParse}
                         billVersion={billVersion}
-                        billSummary={billSummary}
-                        textTree={textTree}
-                        showActions={actionParse}
+                        setBillVers={setBillVers}
+                        actionParse={actionParse}
                     />
-                </Callout>
-            </div>
-        </Card>
+                </div>
+                <Drawer
+                    className={isDarkMode ? "bp5-dark" : ""}
+                    isOpen={drawerOpen}
+                    onClose={() => setDrawerOpen(false)}
+                    isCloseButtonShown={true}
+                    title="Display Options"
+                    lazy={false}
+                >
+                    <BillViewSidebar
+                        congress={congress}
+                        chamber={chamber}
+                        billNumber={billNumber}
+                        billVers={billVers}
+                        bill={bill}
+                        dateAnchors={dateAnchors}
+                        bill2={bill2}
+                        scrollContentIdIntoView={scrollContentIdIntoView}
+                        setActionParse={setActionParse}
+                        billVersion={billVersion}
+                        setBillVers={setBillVers}
+                        actionParse={actionParse}
+                    />
+                </Drawer>
+                <Section
+                    className="content"
+                    title={versionToFull[billVers.toLowerCase()]}
+                    subtitle={billEffective}
+                    compact={true}
+                    icon="drag-handle-vertical"
+                    rightElement={
+                        <Button
+                            className="bill-options mobile-flex"
+                            icon="cog"
+                            onClick={() => {
+                                setDrawerOpen(true);
+                            }}
+                        />
+                    }
+                >
+                    <Callout>
+                        <BillDisplay
+                            congress={congress}
+                            chamber={chamber}
+                            billNumber={billNumber}
+                            billVersion={billVersion}
+                            billSummary={billSummary}
+                            textTree={textTree}
+                            showActions={actionParse}
+                        />
+                    </Callout>
+                </Section>
+            </SectionCard>
+        </Section>
     );
 }
 

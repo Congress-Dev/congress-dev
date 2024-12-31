@@ -71,6 +71,11 @@
     margin-left: 1px;
 }
 
+.sidebar .bp5-section-card {
+    padding: 0 0 10px 0;
+    margin-bottom: 10px;
+}
+
 .sidebar .collapse-controls {
     margin-top: 10px;
     margin-bottom: 10px;
@@ -162,6 +167,48 @@
     }
 }
 
+.bp5-section.page {
+    & > .bp5-section-header {
+        .bp5-section-header-left {
+            padding: 25px 0 15px 0;
+
+            h6 {
+                font-size: 2em;
+                line-height: 1em;
+            }
+        }
+    }
+}
+
+.bp5-section.content {
+    padding-left: 0px;
+    margin-left: 20px;
+    width: calc(80% - 20px);
+}
+
+.section-detail {
+    margin-bottom: 5px;
+    white-space: nowrap;
+
+    .section-detail-label,
+    .section-detail-value {
+        display: inline-block;
+    }
+
+    .section-detail-label {
+        font-weight: bold;
+        margin-right: 5px;
+    }
+
+    .section-detail-value {
+        width: 70%;
+
+        .bp5-breadcrumbs {
+            width: 100%;
+        }
+    }
+}
+
 .legislator-profile {
     .center {
         text-align: center;
@@ -229,6 +276,11 @@
 }
 
 @media (max-device-width: 768px) {
+    .bp5-section.content {
+        margin-left: 0px;
+        width: 100%;
+    }
+
     .mobile {
         display: block;
     }

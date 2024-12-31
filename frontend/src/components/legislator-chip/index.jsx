@@ -11,7 +11,6 @@ function LegislatorChip({ sponsor }) {
 
     return sponsor != null ? (
         <>
-            <span style={{ fontWeight: "bold" }}>Sponsor:</span>{" "}
             <CompoundTag
                 intent={partyIntent[sponsor.party]}
                 leftContent={
