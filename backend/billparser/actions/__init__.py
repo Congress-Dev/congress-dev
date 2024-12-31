@@ -1,5 +1,5 @@
 import re
-from typing import Dict
+from typing import Dict, Optional, TypedDict
 from billparser.logger import log
 from unidecode import unidecode
 from enum import Enum
@@ -143,7 +143,36 @@ for action in regex_holder:
     regex_holder[action] = [re.compile(x, flags=re.I) for x in regex_holder[action]]
 
 
-def determine_action(text: str) -> Dict[ActionType, dict]:
+class Action(TypedDict):
+    action_type: ActionType
+
+    # Come from the regex groups
+    target: Optional[str]
+    within: Optional[str]
+    to_remove_text: Optional[str]
+    to_replace: Optional[str]
+    to_insert_text: Optional[str]
+    target_text: Optional[str]
+    target_section: Optional[str]
+    to_remove_section: Optional[str]
+    redesignation: Optional[str]
+    effective_date: Optional[str]
+    document_title: Optional[str]
+    term: Optional[str]
+    term_def: Optional[str]
+    month: Optional[str]
+    day: Optional[str]
+    year: Optional[str]
+    dollar: Optional[str]
+    from_budget: Optional[str]
+    to_budget: Optional[str]
+    amount: Optional[str]
+    fiscal_year: Optional[str]
+    available: Optional[str]
+    section: Optional[str]
+
+
+def determine_action(text: str) -> Dict[ActionType, Action]:
     """
     Parses the input string against all the regexes
     Searches each action's regexes until it finds one
@@ -167,6 +196,7 @@ def determine_action(text: str) -> Dict[ActionType, dict]:
             if res is not None:
                 gg = res.groupdict()
                 gg["REGEX"] = c
+                gg["action_type"] = action
                 actions[action] = gg
                 break
             elif action == ActionType.TRANSFER_FUNDS:
