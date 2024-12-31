@@ -11,7 +11,9 @@ SEC_TITLE_REGEX = re.compile(
     re.IGNORECASE,
 )
 
-SUB_SEC_REGEX = re.compile(r"subsection\s\((.)\)", re.IGNORECASE)
+SUB_SEC_REGEX = re.compile(
+    r"(?:section|subsection|paragraph|clause)\s(\d?\((?:.)\))", re.IGNORECASE
+)
 
 SUCH_TITLE_REGEX = re.compile(
     r"Section (?P<section>\d*)(?:\((?P<sub1>.*?)\)(?:\((?P<sub2>.*?)\)(?:\((?P<sub3>.*?)\))?)?)? of such (title|act)",
@@ -19,7 +21,7 @@ SUCH_TITLE_REGEX = re.compile(
 )
 
 USC_CITE_REGEX = re.compile(
-    r"\(?(?P<title>\d+?) U\.S\.C\. (?P<section>.*)\)?",
+    r"\((?P<title>\d+?) U\.S\.C\. (?P<section>.*)\)",
     re.IGNORECASE,
 )
 SUB_OF_REGEX = re.compile(r"sub(?:section)?\s\((.)\)", re.IGNORECASE)
@@ -68,9 +70,51 @@ class CiteObject(TypedDict):
     text: str
     cite: str
 
+    # If we believe the cite is entirely resolved
+    # /usc/t42/s18071 <- Fully resolved to a section
+    # /s18071 <- Partially resolved to a section
+    # /usc/t42 <- Fully resolved to a title
+    # /s18071/a <- Partially resolved to a subsection
+    # /a/1 <- Partially resolved to a subsubsection
+    # It's the expectation that whomever is consuming this data will be able to handle
+    # the partial resolution via combining it with the parent(s)
+    complete: bool = False
+
 
 def parse_text_for_cite(text: str) -> List[CiteObject]:
-    return []
+    cites_found: List[CiteObject] = []
+    cite = extract_usc_cite(text)
+    if cite:
+        # If we have a full cite, lets just check for "Clause (i) of" type references
+        extra_cite = find_extra_clause_references(text)
+        if len(extra_cite) > 0:
+            cite += "/" + "/".join(extra_cite)
+            cites_found.append({"text": text, "cite": cite, "complete": True})
+            return cites_found
+        else:
+            cites_found.append({"text": text, "cite": cite, "complete": True})
+            return cites_found
+    regex_match = SUCH_TITLE_REGEX.search(text)
+    if regex_match:
+        cites_found.append(
+            {
+                "text": text,
+                "cite": "/s{}".format(regex_match["section"]),
+                "complete": False,
+            }
+        )
+    else:
+        regex_match = SUB_SEC_REGEX.search(text)
+        if regex_match:
+            cites_found.append(
+                {
+                    "text": text,
+                    "cite": "/" + regex_match[1].replace("(", "").replace(")", ""),
+                    "complete": False,
+                }
+            )
+
+    return cites_found
 
 
 def parse_action_for_cite(action_object: ActionObject, parent_cite: str = "") -> str:
