@@ -2,7 +2,7 @@ import React, { useState, useContext } from "react";
 import { CompoundTag, Drawer, DrawerSize } from "@blueprintjs/core";
 
 import { ThemeContext } from "context/theme";
-import { partyLookup } from "common/lookups";
+import { partyLookup, partyIntent } from "common/lookups";
 import { LegislatorProfile } from "..";
 
 function LegislatorChip({ sponsor }) {
@@ -13,13 +13,7 @@ function LegislatorChip({ sponsor }) {
         <>
             <span style={{ fontWeight: "bold" }}>Sponsor:</span>{" "}
             <CompoundTag
-                intent={
-                    sponsor.party == "Republican"
-                        ? "danger"
-                        : sponsor.party == "Democrat"
-                          ? "primary"
-                          : "none"
-                }
+                intent={partyIntent[sponsor.party]}
                 leftContent={
                     partyLookup[sponsor.party] != null
                         ? partyLookup[sponsor.party]

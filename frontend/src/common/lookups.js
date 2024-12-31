@@ -44,4 +44,11 @@ export const initialVersionToFull = {
 export const partyLookup = {
     "Republican": "R",
     "Democrat": "D",
+    "Independent": "I",
+}
+
+export const partyIntent = {
+    "Republican": "danger",
+    "Democrat": "primary",
+    "Independent": "warning",
 }
