@@ -43,7 +43,7 @@ from billparser.db.models import (
     USCRelease,
     Congress,
 )
-from billparser.metadata.sponsors import extract_sponsors_from_form
+from billparser.metadata.sponsors import extract_sponsors_from_form, extract_sponsors_from_api
 
 from billparser.utils.logger import LogContext
 from billparser.utils.cite_parser import parse_action_for_cite
@@ -468,6 +468,7 @@ def retrieve_existing_legislations(session) -> List[dict]:
 
 
 def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object) -> LegislationVersion:
+    global BASE_VERSION, CURRENT_CONGRESS
     init_session()
     with LogContext(
         {
@@ -528,7 +529,8 @@ def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object) -> Legi
             form_element = root.xpath("//form")
             if len(form_element) > 0:
                 form_element = form_element[0]
-            extract_sponsors_from_form(form_element, new_bill.legislation_id, session)
+            #extract_sponsors_from_form(form_element, new_bill.legislation_id, session)
+            extract_sponsors_from_api(CURRENT_CONGRESS, bill_obj, new_bill.legislation_id, session)
             legis = root.xpath("//legis-body")
             if len(legis) > 0:
                 legis = legis[0]
