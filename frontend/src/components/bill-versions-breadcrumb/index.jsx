@@ -8,19 +8,13 @@ function BillVersionsBreadcrumb({ bill }) {
     const history = useHistory();
     const { legislation_versions = [] } = bill;
 
-    legislation_versions.sort(
-        (a, b) =>
-            versionSort[
-                typeof a === "string"
-                    ? a.toLowerCase()
-                    : a.legislation_version.toLowerCase()
-            ] -
-            versionSort[
-                typeof b === "string"
-                    ? b.toLowerCase()
-                    : b.legislation_version.toLowerCase()
-            ],
-    );
+    const versionsNormalized = legislation_versions.map((vers) => {
+        return typeof vers === "string"
+            ? vers.toLowerCase()
+            : vers.legislation_version.toLowerCase();
+    });
+
+    versionsNormalized.sort((a, b) => versionSort[a] - versionSort[b]);
 
     return (
         <Breadcrumbs
@@ -29,17 +23,13 @@ function BillVersionsBreadcrumb({ bill }) {
             breadcrumbRenderer={({ text, link }) => (
                 <Link to={link}>{text}</Link>
             )}
-            items={lodash.map(legislation_versions, (vers) => {
+            items={lodash.map(versionsNormalized, (vers) => {
                 return {
-                    text: versionToFull[
-                        typeof vers === "string"
-                            ? vers.toLowerCase()
-                            : vers.legislation_version.toLowerCase()
-                    ],
-                    link: `/bill/${bill.congress}/${bill.chamber}/${bill.number}/${vers}`,
+                    text: versionToFull[vers],
+                    link: `/bill/${bill.congress}/${bill.chamber}/${bill.number}/${vers.toUpperCase()}`,
                     onClick: (e) => {
                         history.push(
-                            `/bill/${bill.congress}/${bill.chamber}/${bill.number}/${vers}`,
+                            `/bill/${bill.congress}/${bill.chamber}/${bill.number}/${vers.toUpperCase()}`,
                         );
                     },
                 };
