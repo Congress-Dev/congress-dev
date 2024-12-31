@@ -48,16 +48,6 @@ function BillCard({ bill }) {
 
     return (
         <Callout className="bill-card">
-            <Button
-                className="congress-link"
-                icon="share"
-                onClick={() => {
-                    window.open(
-                        `https://congress.gov/bill/${bill.congress}-congress/${bill.chamber}-bill/${bill.number}`,
-                        "_blank",
-                    );
-                }}
-            />
             <h2 style={{ marginTop: "0px", marginBottom: "0px" }}>
                 {genTitle()} - {bill.title}
             </h2>
