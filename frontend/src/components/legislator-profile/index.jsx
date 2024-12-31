@@ -113,6 +113,7 @@ const LegislatorProfile = ({
                 />
                 <br/>
                 <a
+                    target="_blank"
                     href={`https://bioguide.congress.gov/search/bio/${bioguideId}`}
                 >
                     <span>Profile on congress.gov</span>
