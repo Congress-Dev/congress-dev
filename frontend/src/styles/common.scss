@@ -276,6 +276,16 @@
 }
 
 @media (max-device-width: 768px) {
+    .bp5-navbar {
+        .logo {
+            display: none;
+        }
+
+        .bp5-navbar-divider {
+            display: none;
+        }
+    }
+
     .bp5-section.content {
         margin-left: 0px;
         width: 100%;
