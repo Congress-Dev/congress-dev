@@ -5,7 +5,6 @@ export { default as BillDiffSidebar } from "./bill-diff-sidebar";
 export { default as BillDisplay } from "./bill-display";
 export { default as BillSearchContent } from "./bill-search-content";
 export { default as BillVersionsBreadcrumb } from "./bill-versions-breadcrumb";
-export { default as BillViewAnchorList } from "./bill-view-anchor-list";
 export { default as BillViewSidebar } from "./bill-view-sidebar";
 export { default as BillViewToolbar } from "./bill-view-toolbar";
 export { default as CollapsibleSection } from "./collapsible-section";

@@ -3,10 +3,6 @@
 @import "~@blueprintjs/icons/lib/css/blueprint-icons.css";
 @import "blueprint.scss";
 
-html, body, #root {
-
-}
-
 .logo {
     width: 24px;
     height: 24px;
@@ -52,7 +48,8 @@ html, body, #root {
 }
 
 .bill-content {
-
+    max-height: calc(100vh - var(--bill-content-y-position));
+    overflow-y: scroll;
 }
 
 .section-tree div {

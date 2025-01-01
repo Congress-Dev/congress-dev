@@ -384,8 +384,6 @@ function BillDisplay() {
         return <Spinner className="loading-spinner" intent="primary" />;
     }
 
-    console.log(props.textTree)
-
     // TODO: Convert this to recursive components to speed up rerenders
     return <>{renderRecursive(props.textTree)}</>;
 }

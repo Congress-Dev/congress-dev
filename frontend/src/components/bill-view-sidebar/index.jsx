@@ -5,7 +5,6 @@ import { BillContext } from "context";
 
 import {
     BillDiffSidebar,
-    BillViewAnchorList,
     BillVersionsBreadcrumb,
     AppropriationTree,
     LegislatorChip,
@@ -76,19 +75,6 @@ function BillViewSidebar(props) {
                             billNumber={billNumber}
                             billVersion={billVers || billVersion}
                             bill={bill}
-                        />
-                    }
-                />
-                <Tab
-                    id="datelist"
-                    title="Dates"
-                    panel={
-                        <BillViewAnchorList
-                            anchors={dateAnchors}
-                            congress={congress}
-                            chamber={chamber}
-                            billNumber={billNumber}
-                            billVersion={billVersion}
                         />
                     }
                 />

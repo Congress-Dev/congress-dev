@@ -102,7 +102,7 @@ function AppBar() {
                     }}
                 />
                 <img className="logo" src="/favicon-32x32.png" />
-                <NavbarHeading>Congress.Dev</NavbarHeading>
+                <NavbarHeading onClick={() => { history.push('/') }}>Congress.Dev</NavbarHeading>
                 <NavbarDivider />
                 <div className="desktop-nav">{navigationItems()}</div>
 

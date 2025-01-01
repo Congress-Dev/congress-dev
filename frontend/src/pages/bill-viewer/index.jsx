@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useContext, useRef } from "react";
 import lodash from "lodash";
 import { useHistory } from "react-router-dom";
 import { Callout, Section, SectionCard } from "@blueprintjs/core";
@@ -23,6 +23,8 @@ const defaultVers = {
 };
 
 function BillViewer(props) {
+    const elementRef = useRef();
+
     // TODO: Add sidebar for viewing the differences that a bill will generate
     // TODO: Option for comparing two versions of the same bill and highlighting differences
     const [bill, setBill] = useState({});
@@ -46,6 +48,16 @@ function BillViewer(props) {
     const [billSummary, setBillSummary] = useState([]);
     const [drawerOpen, setDrawerOpen] = useState(false);
     const { isDarkMode, setIsDarkMode } = useContext(ThemeContext);
+
+
+    useEffect(() => {
+      // Get the Y position of the element
+      const element = elementRef.current;
+      if (element) {
+        const yPosition = element.getBoundingClientRect().top + 135;
+        document.documentElement.style.setProperty('--bill-content-y-position', `${yPosition}px`);
+      }
+    }, []);
 
     useEffect(() => {
         // If we didn't get a bill version, default to the introduced one.
@@ -236,8 +248,10 @@ function BillViewer(props) {
                         icon="drag-handle-vertical"
                         rightElement={<BillViewToolbar />}
                     >
-                        <Callout className="bill-content">
-                            <BillDisplay />
+                        <Callout>
+                            <div className="bill-content" ref={elementRef}>
+                                <BillDisplay />
+                            </div>
                         </Callout>
                     </Section>
                 </SectionCard>
