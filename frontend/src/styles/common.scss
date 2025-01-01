@@ -52,8 +52,9 @@
     overflow-y: scroll;
 }
 
-.section-tree div {
+.section-tree div.bp5-tree-node-content {
     height: auto;
+    min-height: 30px;
 }
 .section-tree div span {
     white-space: normal;
@@ -126,7 +127,7 @@
 }
 
 .content-date {
-    background-color: #FBB360;
+    background-color: #68C1EE;
 }
 
 .content-dollar {
@@ -147,7 +148,7 @@
     }
 
     .content-date {
-        background-color: #77450D;
+        background-color: #0C5174;
     }
 
     .content-dollar {

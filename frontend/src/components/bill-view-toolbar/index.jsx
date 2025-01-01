@@ -56,7 +56,16 @@ function BillViewToolbar() {
 
     return (
         <>
-            <Button icon="exclude-row" />
+            <Button
+                className="congress-link"
+                icon="share"
+                onClick={() => {
+                    window.open(
+                        `https://congress.gov/bill/${billContext.bill.congress}-congress/${billContext.bill.chamber}-bill/${billContext.bill.number}`,
+                        "_blank",
+                    );
+                }}
+            />
 
             <Popover
                 content={

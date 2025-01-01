@@ -21,6 +21,10 @@ code {
         monospace;
 }
 
+html {
+    background-color: #E5E8EB;
+}
+
 html:has(#root.bp5-dark) {
     background-color: #1a232b;
 }

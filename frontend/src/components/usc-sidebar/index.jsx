@@ -198,6 +198,10 @@ function USCSidebar(props) {
     }
 
     function navigateToSection(node) {
+        if(node.icon != "dot") {
+            return;
+        }
+
         if (node.number) {
             navigate(
                 `/uscode/${props.release}/${node.short_title}/${node.number}`,

@@ -17,7 +17,7 @@ function BillDiffSidebar({ congress, chamber, billNumber, billVersion, bill }) {
     const [diffs, setDiffs] = useState({});
     const [diffLocation, setDiffLocation] = useState(null);
     const [results, setResults] = useState(false);
-    const { isDarkMode, setIsDarkMode } = useContext(ThemeContext);
+    const { isDarkMode } = useContext(ThemeContext);
 
     function navigateToSection(node) {
         if (node.diffLocation == null) {
@@ -74,7 +74,6 @@ function BillDiffSidebar({ congress, chamber, billNumber, billVersion, bill }) {
                                 n += 1;
                                 return {
                                     id: n,
-                                    icon: "wrench",
                                     label: `${obj.display.replace(/SS/g, "§")} ${obj.heading}`,
                                     className: "section-tree",
                                     diffLocation: { ...obj, short_title },
