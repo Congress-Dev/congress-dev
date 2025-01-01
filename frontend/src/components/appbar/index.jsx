@@ -17,14 +17,10 @@ import { ThemeContext } from "context";
 function AppBar() {
     const history = useHistory();
     const [isOpen, setIsOpen] = useState(false);
-    const { isDarkMode, setIsDarkMode } = useContext(ThemeContext);
+    const { isDarkMode, setDarkMode } = useContext(ThemeContext);
 
     const toggleDarkMode = () => {
-        setIsDarkMode((prevState) => {
-            const newState = !prevState;
-            localStorage.setItem("dark-mode", JSON.stringify(newState));
-            return newState;
-        });
+        setDarkMode(!isDarkMode);
     };
 
     useEffect(() => {

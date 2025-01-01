@@ -1,7 +1,7 @@
 import React from "react";
 import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
 
-import { ThemeProvider } from "context";
+import { ThemeProvider, PreferenceProvider } from "context";
 import { AppBar } from "components";
 import {
     AboutUs,
@@ -17,38 +17,40 @@ import "styles/common.scss";
 
 function App() {
     return (
-        <ThemeProvider>
-            <Router>
-                <AppBar />
-                <Switch>
-                    <Route
-                        exact
-                        path="/bill/:congress/:chamber/:billNumber/:billVersion?"
-                        component={BillViewer}
-                    />
-                    <Route exact path="/bills" component={BillSearch} />
+        <PreferenceProvider>
+            <ThemeProvider>
+                <Router>
+                    <AppBar />
+                    <Switch>
+                        <Route
+                            exact
+                            path="/bill/:congress/:chamber/:billNumber/:billVersion?"
+                            component={BillViewer}
+                        />
+                        <Route exact path="/bills" component={BillSearch} />
 
-                    <Route
-                        path="/uscode/:uscReleaseId/:uscTitle?/:uscSection?"
-                        component={USCodeViewer}
-                    />
-                    <Route
-                        exact
-                        path="/uscode"
-                        component={USCodeRevisionList}
-                    />
+                        <Route
+                            path="/uscode/:uscReleaseId/:uscTitle?/:uscSection?"
+                            component={USCodeViewer}
+                        />
+                        <Route
+                            exact
+                            path="/uscode"
+                            component={USCodeRevisionList}
+                        />
 
-                    <Route
-                        exact
-                        path="/member/:bioguideId"
-                        component={MemberViewer}
-                    />
+                        <Route
+                            exact
+                            path="/member/:bioguideId"
+                            component={MemberViewer}
+                        />
 
-                    <Route exact path="/about" component={AboutUs} />
-                    <Route path={["/", "/home"]} component={Home} />
-                </Switch>
-            </Router>
-        </ThemeProvider>
+                        <Route exact path="/about" component={AboutUs} />
+                        <Route path={["/", "/home"]} component={Home} />
+                    </Switch>
+                </Router>
+            </ThemeProvider>
+        </PreferenceProvider>
     );
 }
 

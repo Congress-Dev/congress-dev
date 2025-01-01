@@ -9,8 +9,10 @@ import {
 } from "@blueprintjs/core";
 
 import { versionToFull } from "common/lookups";
-import { BillContext } from "context";
+import { BillContext, PreferenceContext, PreferenceEnum } from "context";
+
 function BillViewToolbar() {
+    const { preferences, setPreference } = useContext(PreferenceContext);
     const billContext = useContext(BillContext);
     const history = useHistory();
 
@@ -28,10 +30,7 @@ function BillViewToolbar() {
             }
         });
 
-
-
-        return (
-            billContext.dateAnchors?.length > 0 ?
+        return billContext.dateAnchors?.length > 0 ? (
             <>
                 {Object.keys(yearMap).map((key, ind) => (
                     <MenuItem key={ind} text={key}>
@@ -49,7 +48,9 @@ function BillViewToolbar() {
                         ))}
                     </MenuItem>
                 ))}
-            </> : <MenuItem text={"No Dates Found"} disabled={true} />
+            </>
+        ) : (
+            <MenuItem text={"No Dates Found"} disabled={true} />
         );
     }
 
@@ -87,7 +88,12 @@ function BillViewToolbar() {
                                             v.legislation_version,
                                         )
                                     }
-                                    intent={billContext.billVers == v.legislation_version ? "primary" : ""}
+                                    intent={
+                                        billContext.billVers ==
+                                        v.legislation_version
+                                            ? "primary"
+                                            : ""
+                                    }
                                 />
                             ),
                         )}
@@ -96,37 +102,48 @@ function BillViewToolbar() {
                         <MenuItem
                             text="Highlight dates"
                             icon={
-                                billContext.dateParse
+                                preferences[PreferenceEnum.HIGHLIGHT_DATES]
                                     ? "small-tick"
                                     : "small-cross"
                             }
                             onClick={() =>
-                                billContext.setDateParse(!billContext.dateParse)
+                                setPreference(
+                                    PreferenceEnum.HIGHLIGHT_DATES,
+                                    !preferences[
+                                        PreferenceEnum.HIGHLIGHT_DATES
+                                    ],
+                                )
                             }
                         />
                         <MenuItem
                             text="Highlight dollars"
                             icon={
-                                billContext.dollarParse
+                                preferences[PreferenceEnum.HIGHLIGHT_DOLLARS]
                                     ? "small-tick"
                                     : "small-cross"
                             }
                             onClick={() =>
-                                billContext.setDollarParse(
-                                    !billContext.dollarParse,
+                                setPreference(
+                                    PreferenceEnum.HIGHLIGHT_DOLLARS,
+                                    !preferences[
+                                        PreferenceEnum.HIGHLIGHT_DOLLARS
+                                    ],
                                 )
                             }
                         />
                         <MenuItem
                             text="Highlight actions"
                             icon={
-                                billContext.actionParse
+                                preferences[PreferenceEnum.HIGHLIGHT_ACTIONS]
                                     ? "small-tick"
                                     : "small-cross"
                             }
                             onClick={() =>
-                                billContext.setActionParse(
-                                    !billContext.actionParse,
+                                setPreference(
+                                    PreferenceEnum.HIGHLIGHT_ACTIONS,
+                                    !preferences[
+                                        PreferenceEnum.HIGHLIGHT_ACTIONS
+                                    ],
                                 )
                             }
                         />

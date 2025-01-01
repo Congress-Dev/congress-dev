@@ -3,7 +3,7 @@ import lodash from "lodash";
 import { useHistory } from "react-router-dom";
 import { Callout, Section, SectionCard } from "@blueprintjs/core";
 
-import { ThemeContext, BillContext } from "context";
+import { BillContext } from "context";
 
 import { chamberLookup, versionToFull } from "common/lookups";
 import {
@@ -23,40 +23,35 @@ const defaultVers = {
 };
 
 function BillViewer(props) {
+    const { congress, chamber, billNumber, billVersion, uscTitle, uscSection } =
+        props.match.params;
+
     const elementRef = useRef();
+    const history = useHistory();
 
     // TODO: Add sidebar for viewing the differences that a bill will generate
     // TODO: Option for comparing two versions of the same bill and highlighting differences
     const [bill, setBill] = useState({});
     const [bill2, setBill2] = useState({});
-    const [textTree, setTextTree] = useState({});
-    const [actionParse, setActionParse] = useState(false);
-    const [dateParse, setDateParse] = useState(false);
-    const [dollarParse, setDollarParse] = useState(false);
-
-    const [dateAnchors, setDateAnchors] = useState([]);
-    const [treeLookup, setTreeLookup] = useState({});
-    const history = useHistory();
-    const { congress, chamber, billNumber, billVersion, uscTitle, uscSection } =
-        props.match.params;
-
+    const [billSummary, setBillSummary] = useState([]);
+    const [billEffective, setBillEffective] = useState(null);
     const [billVers, setBillVers] = useState(
         billVersion || defaultVers[chamber.toLowerCase()],
     );
-    const [billEffective, setBillEffective] = useState(null);
 
-    const [billSummary, setBillSummary] = useState([]);
-    const [drawerOpen, setDrawerOpen] = useState(false);
-    const { isDarkMode, setIsDarkMode } = useContext(ThemeContext);
-
+    const [textTree, setTextTree] = useState({});
+    const [treeLookup, setTreeLookup] = useState({});
+    const [dateAnchors, setDateAnchors] = useState([]);
 
     useEffect(() => {
-      // Get the Y position of the element
-      const element = elementRef.current;
-      if (element) {
-        const yPosition = element.getBoundingClientRect().top + 135;
-        document.documentElement.style.setProperty('--bill-content-y-position', `${yPosition}px`);
-      }
+        const element = elementRef.current;
+        if (element) {
+            const yPosition = element.getBoundingClientRect().top + 135;
+            document.documentElement.style.setProperty(
+                "--bill-content-y-position",
+                `${yPosition}px`,
+            );
+        }
     }, []);
 
     useEffect(() => {
@@ -209,7 +204,6 @@ function BillViewer(props) {
     return (
         <BillContext.Provider
             value={{
-                actionParse,
                 bill,
                 bill2,
                 billEffective,
@@ -220,13 +214,8 @@ function BillViewer(props) {
                 chamber,
                 congress,
                 dateAnchors,
-                dateParse,
-                dollarParse,
                 scrollContentIdIntoView,
-                setActionParse,
                 setBillVers,
-                setDateParse,
-                setDollarParse,
                 textTree,
             }}
         >

@@ -7,13 +7,18 @@ import { md5 } from "common/other";
 import { VALID_ACTIONS } from "common/enums";
 import { getLongestString } from "common/utils";
 
-import { BillContext } from "context";
+import { BillContext, PreferenceContext, PreferenceEnum } from "context";
 
 import "styles/actions.scss";
 import "styles/bill-view.scss";
 
 function BillDisplay() {
     const props = useContext(BillContext);
+    const { preferences } = useContext(PreferenceContext);
+
+    const actionParse = preferences[PreferenceEnum.HIGHLIGHT_ACTIONS];
+    const dateParse = preferences[PreferenceEnum.HIGHLIGHT_DATES];
+    const dollarParse = preferences[PreferenceEnum.HIGHLIGHT_DOLLARS];
 
     // TODO: Add minimap scrollbar
     // *TODO*: Start using the action list to render a list of parsed actions
@@ -122,7 +127,7 @@ function BillDisplay() {
     }
 
     function generateActionHighlighting(contentStr, action) {
-        if (props.actionParse === false) {
+        if (actionParse === false) {
             return contentStr;
         }
         // We are looking at the action objects for items within it that represent the captured regex
@@ -216,14 +221,14 @@ function BillDisplay() {
 
                         let innerClass = "";
 
-                        if(props.dateParse) {
+                        if(dateParse) {
                             const dateRegex = /\b((?:January|February|March|April|May|June|July|August|September|October|November|December)|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec))\s*(\d{1,2})(?:st|nd|rd|th)?,?\s*(\d{4})\b/;
                             if(dateRegex.test(content_str)) {
                                 innerClass += " content-date"
                             }
                         }
 
-                        if(props.dollarParse) {
+                        if(dollarParse) {
                             const dollarRegex = /\$\d{1,3}(,\d{3})*(\.\d{2})?/;
                             if(dollarRegex.test(content_str)) {
                                 innerClass += " content-dollar"

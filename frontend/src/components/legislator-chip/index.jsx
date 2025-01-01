@@ -7,7 +7,7 @@ import { LegislatorProfile } from "..";
 
 function LegislatorChip({ sponsor }) {
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const { isDarkMode, setIsDarkMode } = useContext(ThemeContext);
+    const { isDarkMode } = useContext(ThemeContext);
 
     return sponsor != null ? (
         <>
