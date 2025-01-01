@@ -12,7 +12,12 @@ export const ThemeProvider = ({ children }) => {
     }
 
     return (
-        <ThemeContext.Provider value={{ isDarkMode: preferences[PreferenceEnum.DARK_MODE], setDarkMode }}>
+        <ThemeContext.Provider
+            value={{
+                isDarkMode: preferences[PreferenceEnum.DARK_MODE],
+                setDarkMode,
+            }}
+        >
             {children}
         </ThemeContext.Provider>
     );

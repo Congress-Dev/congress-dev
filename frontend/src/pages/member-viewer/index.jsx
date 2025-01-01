@@ -13,12 +13,17 @@ function MemberViewer(props) {
     useEffect(() => {
         // Grab the info from the rest API
         getMemberInfo(bioguideId).then(setMemberInfo);
-        getMemberSponsoredLegislation(bioguideId).then((response) => { setSponsoredLegislation(response.legislationSponsorships) });
+        getMemberSponsoredLegislation(bioguideId).then((response) => {
+            setSponsoredLegislation(response.legislationSponsorships);
+        });
     }, [bioguideId]);
 
     return (
         <Card interactive={false} elevation={Elevation.TWO} className="page">
-            <h1 style={{"textAlign": "center"}}>Rep. {memberInfo.firstName} {memberInfo.lastName} - {memberInfo.party} ({memberInfo.state})</h1>
+            <h1 style={{ textAlign: "center" }}>
+                Rep. {memberInfo.firstName} {memberInfo.lastName} -{" "}
+                {memberInfo.party} ({memberInfo.state})
+            </h1>
             <LegislatorProfile
                 {...memberInfo}
                 sponsoredLegislation={sponsoredLegislation}

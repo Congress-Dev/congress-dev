@@ -22,7 +22,7 @@ code {
 }
 
 html {
-    background-color: #E5E8EB;
+    background-color: #e5e8eb;
 }
 
 html:has(#root.bp5-dark) {

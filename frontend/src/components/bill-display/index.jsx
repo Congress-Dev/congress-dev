@@ -221,17 +221,18 @@ function BillDisplay() {
 
                         let innerClass = "";
 
-                        if(dateParse) {
-                            const dateRegex = /\b((?:January|February|March|April|May|June|July|August|September|October|November|December)|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec))\s*(\d{1,2})(?:st|nd|rd|th)?,?\s*(\d{4})\b/;
-                            if(dateRegex.test(content_str)) {
-                                innerClass += " content-date"
+                        if (dateParse) {
+                            const dateRegex =
+                                /\b((?:January|February|March|April|May|June|July|August|September|October|November|December)|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec))\s*(\d{1,2})(?:st|nd|rd|th)?,?\s*(\d{4})\b/;
+                            if (dateRegex.test(content_str)) {
+                                innerClass += " content-date";
                             }
                         }
 
-                        if(dollarParse) {
+                        if (dollarParse) {
                             const dollarRegex = /\$\d{1,3}(,\d{3})*(\.\d{2})?/;
-                            if(dollarRegex.test(content_str)) {
-                                innerClass += " content-dollar"
+                            if (dollarRegex.test(content_str)) {
+                                innerClass += " content-dollar";
                             }
                         }
 
@@ -300,7 +301,8 @@ function BillDisplay() {
                                             </b>
                                             <p
                                                 className={
-                                                    "bill-content-continue" + innerClass
+                                                    "bill-content-continue" +
+                                                    innerClass
                                                 }
                                             >
                                                 {content_str}
@@ -368,7 +370,9 @@ function BillDisplay() {
                                             >
                                                 {section_display}
                                             </span>{" "}
-                                            <span className={innerClass}>{content_str}</span>
+                                            <span className={innerClass}>
+                                                {content_str}
+                                            </span>
                                         </span>
                                     </Tooltip>
                                     {renderRecursive({ children })}

@@ -100,6 +100,25 @@
     float: right;
 }
 
+.learn-list {
+    width: 80%;
+    margin: 0 auto;
+
+    .bp5-card {
+        justify-content: space-between;
+    }
+}
+
+.learn-content {
+    padding-left: 40px !important;
+    padding-right: 40px !important;
+
+    h2 {
+        margin-bottom: 5px;
+        margin-top: 30px;
+    }
+}
+
 .bill-versions {
     display: inline-flex;
 }
@@ -127,11 +146,11 @@
 }
 
 .content-date {
-    background-color: #68C1EE;
+    background-color: #68c1ee;
 }
 
 .content-dollar {
-    background-color: #D69FD6;
+    background-color: #d69fd6;
 }
 
 .bp5-dark {
@@ -148,11 +167,11 @@
     }
 
     .content-date {
-        background-color: #0C5174;
+        background-color: #0c5174;
     }
 
     .content-dollar {
-        background-color: #5C255C;
+        background-color: #5c255c;
     }
 }
 
@@ -298,6 +317,11 @@
 }
 
 @media (max-device-width: 768px) {
+    .learn-list {
+        width: 100%;
+        margin: initial;
+    }
+
     .bp5-navbar {
         .logo {
             display: none;

@@ -1,13 +1,14 @@
 import React from "react";
 import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
 
-import { ThemeProvider, PreferenceProvider } from "context";
 import { AppBar } from "components";
+import { PreferenceProvider, ThemeProvider } from "context";
 import {
     AboutUs,
     BillSearch,
     BillViewer,
     Home,
+    Learn,
     MemberViewer,
     USCodeRevisionList,
     USCodeViewer,
@@ -44,6 +45,9 @@ function App() {
                             path="/member/:bioguideId"
                             component={MemberViewer}
                         />
+
+                        <Route exact path="/learn/:section" component={Learn} />
+                        <Route exact path="/learn" component={Learn} />
 
                         <Route exact path="/about" component={AboutUs} />
                         <Route path={["/", "/home"]} component={Home} />

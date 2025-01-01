@@ -60,7 +60,7 @@ function USCView({ release, title, section, diffs = {}, interactive = true }) {
         if (!str) {
             return str;
         }
-        let index=0;
+        let index = 0;
         if (str.includes("<") && str.includes(">")) {
             const parsed = new xmldoc.XmlDocument(`<str>${str}</str>`);
             return lodash.reduce(

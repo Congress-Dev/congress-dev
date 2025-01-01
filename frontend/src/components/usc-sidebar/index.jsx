@@ -198,7 +198,7 @@ function USCSidebar(props) {
     }
 
     function navigateToSection(node) {
-        if(node.icon != "dot") {
+        if (node.icon != "dot") {
             return;
         }
 

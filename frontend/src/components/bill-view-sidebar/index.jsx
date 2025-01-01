@@ -54,10 +54,11 @@ function BillViewSidebar(props) {
             </SectionCard>
 
             <SectionCard>
-                {billSummary != null && billSummary[0] != null ?
-                    <i>{billSummary[0].summary}</i> :
+                {billSummary != null && billSummary[0] != null ? (
+                    <i>{billSummary[0].summary}</i>
+                ) : (
                     <i>No summary for this bill.</i>
-                }
+                )}
             </SectionCard>
 
             <Tabs

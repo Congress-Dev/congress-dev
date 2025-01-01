@@ -55,6 +55,10 @@ function AppBar() {
                     className={Classes.MINIMAL}
                     icon="learning"
                     text="Learn"
+                    onClick={() => {
+                        handleClose();
+                        history.push("/learn");
+                    }}
                 />
                 <Button
                     className={Classes.MINIMAL}
@@ -98,7 +102,13 @@ function AppBar() {
                     }}
                 />
                 <img className="logo" src="/favicon-32x32.png" />
-                <NavbarHeading onClick={() => { history.push('/') }}>Congress.Dev</NavbarHeading>
+                <NavbarHeading
+                    onClick={() => {
+                        history.push("/");
+                    }}
+                >
+                    Congress.Dev
+                </NavbarHeading>
                 <NavbarDivider />
                 <div className="desktop-nav">{navigationItems()}</div>
 

@@ -26,7 +26,7 @@ function LegislatorChip({ sponsor }) {
             </CompoundTag>
             <Drawer
                 size={DrawerSize.SMALL}
-                className={(isDarkMode ? "bp5-dark" : "")}
+                className={isDarkMode ? "bp5-dark" : ""}
                 isOpen={drawerOpen}
                 onClose={() => setDrawerOpen(false)}
                 isCloseButtonShown={true}
