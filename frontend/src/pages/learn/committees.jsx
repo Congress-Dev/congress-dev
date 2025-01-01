@@ -3,7 +3,7 @@ import { SectionCard, Section, Divider } from "@blueprintjs/core";
 function LearnCommittees() {
     return (
         <Section
-            className="page learn-content"
+            className="page"
             title="The Role of Committees in Congress"
             subtitle="Shaping, Revising, and Reviewing Bills"
         >

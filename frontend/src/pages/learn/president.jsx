@@ -3,7 +3,7 @@ import { SectionCard, Section, Divider } from "@blueprintjs/core";
 function LearnPresident() {
     return (
         <Section
-            className="page learn-content"
+            className="page"
             title="The Role of the President and Veto Power"
             subtitle="How the President Influences the Legislative Process"
         >

@@ -6,6 +6,7 @@ import {
     Section,
     SectionCard,
     Icon,
+    Button,
 } from "@blueprintjs/core";
 
 import LearnProcess from "./process";
@@ -19,7 +20,7 @@ function Learn(props) {
     const { section } = props.match.params;
     const history = useHistory();
 
-    if (section != null) {
+    function getPageContent() {
         switch (section) {
             case "process":
                 return <LearnProcess />;
@@ -34,6 +35,24 @@ function Learn(props) {
             case "president":
                 return <LearnPresident />;
         }
+    }
+
+    if (section != null) {
+        return (
+            <>
+                <div className="page learn-nav">
+                    <Button
+                        icon="chevron-left"
+                        onClick={() => {
+                            history.push("/learn");
+                        }}
+                    >
+                        Back to Knowledge Base
+                    </Button>
+                </div>
+                {getPageContent()}
+            </>
+        );
     }
 
     return (

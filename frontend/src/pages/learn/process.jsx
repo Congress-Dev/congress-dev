@@ -3,7 +3,7 @@ import { SectionCard, Section, Divider } from "@blueprintjs/core";
 function LearnProcess() {
     return (
         <Section
-            className="page learn-content"
+            className="page"
             title="The Legislative Process: How a Bill Becomes a Law"
             subtitle="Understanding the Path of Legislation"
         >

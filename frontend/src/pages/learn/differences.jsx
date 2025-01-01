@@ -3,7 +3,7 @@ import { SectionCard, Section, Divider } from "@blueprintjs/core";
 function LearnDifferences() {
     return (
         <Section
-            className="page learn-content"
+            className="page"
             title="Key Differences Between the House and Senate"
             subtitle="Comparing the Two Chambers: Roles, Structure, and Procedures"
         >

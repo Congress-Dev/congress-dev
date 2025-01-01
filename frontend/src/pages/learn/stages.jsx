@@ -3,7 +3,7 @@ import { SectionCard, Section, Divider } from "@blueprintjs/core";
 function LearnStages() {
     return (
         <Section
-            className="page learn-content"
+            className="page"
             title="Understanding the Stages of a Bill in the House and Senate"
             subtitle="Key Stages in the House and Senate"
         >
