@@ -3,6 +3,10 @@
 @import "~@blueprintjs/icons/lib/css/blueprint-icons.css";
 @import "blueprint.scss";
 
+html, body, #root {
+
+}
+
 .logo {
     width: 24px;
     height: 24px;
@@ -45,6 +49,10 @@
 
 .bill-card {
     margin-bottom: 10px;
+}
+
+.bill-content {
+
 }
 
 .section-tree div {
@@ -120,6 +128,14 @@
     padding-left: 18px;
 }
 
+.content-date {
+    background-color: #FBB360;
+}
+
+.content-dollar {
+    background-color: #D69FD6;
+}
+
 .bp5-dark {
     .content-added {
         background-color: #2f8842;
@@ -131,6 +147,14 @@
 
     .content-hash {
         border-color: #fff;
+    }
+
+    .content-date {
+        background-color: #77450D;
+    }
+
+    .content-dollar {
+        background-color: #5C255C;
     }
 }
 

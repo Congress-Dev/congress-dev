@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useHistory, Link } from "react-router-dom";
 import lodash, { sum } from "lodash";
 import { Tooltip, Spinner } from "@blueprintjs/core";
@@ -7,10 +7,14 @@ import { md5 } from "common/other";
 import { VALID_ACTIONS } from "common/enums";
 import { getLongestString } from "common/utils";
 
+import { BillContext } from "context";
+
 import "styles/actions.scss";
 import "styles/bill-view.scss";
 
-function BillDisplay(props) {
+function BillDisplay() {
+    const props = useContext(BillContext);
+
     // TODO: Add minimap scrollbar
     // *TODO*: Start using the action list to render a list of parsed actions
     // TODO: Add permalink feature
@@ -118,7 +122,7 @@ function BillDisplay(props) {
     }
 
     function generateActionHighlighting(contentStr, action) {
-        if (props.showActions === false) {
+        if (props.actionParse === false) {
             return contentStr;
         }
         // We are looking at the action objects for items within it that represent the captured regex
@@ -209,6 +213,23 @@ function BillDisplay(props) {
                                 ? "content-hash"
                                 : ""
                         }`;
+
+                        let innerClass = "";
+
+                        if(props.dateParse) {
+                            const dateRegex = /\b((?:January|February|March|April|May|June|July|August|September|October|November|December)|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec))\s*(\d{1,2})(?:st|nd|rd|th)?,?\s*(\d{4})\b/;
+                            if(dateRegex.test(content_str)) {
+                                innerClass += " content-date"
+                            }
+                        }
+
+                        if(props.dollarParse) {
+                            const dollarRegex = /\$\d{1,3}(,\d{3})*(\.\d{2})?/;
+                            if(dollarRegex.test(content_str)) {
+                                innerClass += " content-dollar"
+                            }
+                        }
+
                         if (
                             !renderedTarget &&
                             itemHash &&
@@ -274,7 +295,7 @@ function BillDisplay(props) {
                                             </b>
                                             <p
                                                 className={
-                                                    "bill-content-continue"
+                                                    "bill-content-continue" + innerClass
                                                 }
                                             >
                                                 {content_str}
@@ -342,7 +363,7 @@ function BillDisplay(props) {
                                             >
                                                 {section_display}
                                             </span>{" "}
-                                            <span>{content_str}</span>
+                                            <span className={innerClass}>{content_str}</span>
                                         </span>
                                     </Tooltip>
                                     {renderRecursive({ children })}
@@ -362,6 +383,8 @@ function BillDisplay(props) {
     ) {
         return <Spinner className="loading-spinner" intent="primary" />;
     }
+
+    console.log(props.textTree)
 
     // TODO: Convert this to recursive components to speed up rerenders
     return <>{renderRecursive(props.textTree)}</>;

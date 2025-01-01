@@ -57,6 +57,11 @@ function AppBar() {
                 />
                 <Button
                     className={Classes.MINIMAL}
+                    icon="learning"
+                    text="Learn"
+                />
+                <Button
+                    className={Classes.MINIMAL}
                     icon="book"
                     text="U.S. Code"
                     onClick={() => {

@@ -1,30 +1,31 @@
-import React, { useState } from "react";
-import { Tabs, Tab, FormGroup, HTMLSelect, Switch, Divider, SectionCard } from "@blueprintjs/core";
-import lodash from "lodash";
+import React, { useState, useContext } from "react";
+import { Tabs, Tab, SectionCard } from "@blueprintjs/core";
+
+import { BillContext } from "context";
 
 import {
     BillDiffSidebar,
     BillViewAnchorList,
     BillVersionsBreadcrumb,
     AppropriationTree,
-    LegislatorChip
+    LegislatorChip,
 } from "components";
 
-function BillViewSidebar({
-    congress,
-    chamber,
-    billVersion,
-    setBillVers,
-    billNumber,
-    billVers,
-    bill,
-    dateAnchors,
-    bill2,
-    scrollContentIdIntoView,
-    actionParse,
-    setActionParse,
-}) {
-    const [selectedTab, setSelectedTab] = useState("bill");
+function BillViewSidebar(props) {
+    const [selectedTab, setSelectedTab] = useState("uscode");
+
+    const {
+        congress,
+        chamber,
+        billNumber,
+        billSummary,
+        billVers,
+        bill,
+        dateAnchors,
+        bill2,
+        scrollContentIdIntoView,
+        billVersion,
+    } = useContext(BillContext);
 
     return (
         <>
@@ -53,62 +54,20 @@ function BillViewSidebar({
                 </div>
             </SectionCard>
 
+            <SectionCard>
+                {billSummary != null && billSummary[0] != null ?
+                    <i>{billSummary[0].summary}</i> :
+                    <i>No summary for this bill.</i>
+                }
+            </SectionCard>
+
             <Tabs
                 id="sidebar-tabs"
                 selectedTabId={selectedTab}
                 onChange={setSelectedTab}
             >
                 <Tab
-                    id="bill"
-                    title="Bill"
-                    panel={
-                        <>
-                            <FormGroup
-                                label="Version:"
-                                labelFor="bill-version-select"
-                            >
-                                <HTMLSelect
-                                    id="bill-version-select"
-                                    value={(billVers || "").toUpperCase()}
-                                    onChange={(e) =>
-                                        setBillVers(e.currentTarget.value)
-                                    }
-                                    className="bp3"
-                                    options={lodash.map(
-                                        bill.legislation_versions,
-                                        (
-                                            {
-                                                legislation_version,
-                                                effective_date,
-                                            },
-                                            ind,
-                                        ) => {
-                                            return {
-                                                label: `${legislation_version} ${effective_date !== "None" ? ` - ${effective_date}` : ""}`,
-                                                value: legislation_version,
-                                            };
-                                        },
-                                    )}
-                                />
-                            </FormGroup>
-
-                            <FormGroup label="Display Options:">
-                                <Switch label="Highlight dates" />
-                                <Switch label="Highlight spending" />
-                                <Switch label="Highlight tags" />
-                                <Switch
-                                    label="Action parsing details"
-                                    checked={actionParse}
-                                    onChange={() =>
-                                        setActionParse(!actionParse)
-                                    }
-                                />
-                            </FormGroup>
-                        </>
-                    }
-                />
-                <Tab
-                    id="ud"
+                    id="uscode"
                     title="USCode"
                     panel={
                         <BillDiffSidebar
