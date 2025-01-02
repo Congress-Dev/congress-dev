@@ -358,9 +358,9 @@ def check_for_action_parses(legislation_version_id: List[int]) -> Dict[int, int]
     return {x[0]: x[1] for x in results}
 
 
-def get_legislation_version_ids() -> List[int]:
+def get_legislation_versions() -> List[LegislationVersion]:
     """
     Returns a list of all legislation_version_ids
     """
-    results = current_session.query(LegislationVersion.legislation_version_id).all()
+    results = current_session.query(LegislationVersion).all()
     return [x[0] for x in results]
