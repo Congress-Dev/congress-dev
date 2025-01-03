@@ -21,7 +21,7 @@ import {
     getBill,
     getBill2,
     getBillSummary,
-    getBillVersionText,
+    getBillVersionTextv2,
 } from "common/api";
 
 import {
@@ -112,7 +112,7 @@ function BillViewer(props) {
                 props.history.push(url);
             }
             // Make sure to push the search and hash onto the url
-            getBillVersionText(congress, chamber, billNumber, billVers).then(
+            getBillVersionTextv2(12088).then(
                 setTextTree,
             );
         }

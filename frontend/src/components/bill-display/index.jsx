@@ -93,7 +93,7 @@ function BillDisplay(props) {
             if (keys.length > 0) {
                 actionStr.push(<span>{keys[0]}</span>);
                 actionStr.push(<br />);
-                lodash.forEach(actionP[keys[0]], (value, key) => {
+                lodash.forEach(actionP, (value, key) => {
                     if (key !== "REGEX") {
                         actionStr.push(
                             <span style={{ marginLeft: "5px" }}>
@@ -135,28 +135,20 @@ function BillDisplay(props) {
       "parsed_cite": "/us/usc/t52/s21083/b/1/A"
     }
     */
+   
         // Within each one we are using the VALID_ACTIONS list to pull out the action key "AMEND-MULTIPLE" in this case
         // And then these correspond to the regex groups we identify, except for the REGEX key, which we ignore
         // Using those substrings, we then highlight the next
-        const strings = lodash
+        let strings = lodash
             .chain(action)
             .map(lodash.toPairs)
             .flatten()
-            .filter((x) => VALID_ACTIONS.includes(x[0]))
-            .map((x) => x[1])
-            .map(lodash.toPairs)
-            .flatten()
-            .filter((x) => x[0] !== "REGEX")
-            .map((x) => {
-                return { [x[0]]: x[1] };
-            })
-            .reduce((s, x) => Object.assign(x, s), {})
             .value();
         let tempStr = contentStr;
-        lodash.forEach(strings, (value, key) => {
+        lodash.forEach(strings, (value) => {
             tempStr = tempStr.replace(
-                value,
-                `<span class="action-${key}">${value}</span>`,
+                value[1],
+                `<span class="action-${value[0]}">${value[1]}</span>`,
             );
         });
         return (
@@ -181,11 +173,13 @@ function BillDisplay(props) {
                             content_type,
                             section_display,
                             heading,
-                            action,
+                            actions,
                             children = [],
                         },
                         ind,
                     ) => {
+                      
+                      const action = actions[0]?.actions[0] || {};
                         let summaryContent = lodash.find(
                             props.billSummary,
                             (e) => {
@@ -196,7 +190,6 @@ function BillDisplay(props) {
                             },
                         );
                         let summaryStr = summaryContent?.summary || "";
-
                         let actionStr = generateActionStr(action);
                         content_str = generateActionHighlighting(
                             content_str,
