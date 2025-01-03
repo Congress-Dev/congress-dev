@@ -170,20 +170,21 @@ def recursively_extract_actions(
         # For our purposes, the quote insertion happens on the tag that the quote is attached to
         return
     new_action = None
-
+    new_parents = []
     if content.content_str is not None and content.content_str.strip() != "":
         # If it has content, then we can extract actions from it
         action_dict = determine_action(content.content_str)
         cite_list = parse_text_for_cite(content.content_str)
-        new_action = LegislationActionParse(
-            legislation_content_id=content.legislation_content_id,
-            legislation_version_id=content.legislation_version_id,
-            actions=[action_dict],
-            citations=cite_list,
-        )
-        PARSER_SESSION.add(new_action)
-        apply_action(content_by_parent_id, new_action, parent_actions, version_id)
-        new_parents = [*parent_actions] + [new_action]
+        if action_dict != {} or cite_list != []:
+            new_action = LegislationActionParse(
+                legislation_content_id=content.legislation_content_id,
+                legislation_version_id=content.legislation_version_id,
+                actions=[action_dict],
+                citations=cite_list,
+            )
+            PARSER_SESSION.add(new_action)
+            apply_action(content_by_parent_id, new_action, parent_actions, version_id)
+            new_parents = [*parent_actions] + [new_action]
     else:
         new_parents = parent_actions
 
