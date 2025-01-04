@@ -70,15 +70,14 @@ def get_chapter_id(chapter: str) -> int:
 def strike_text(
     action: ActionObject, citation: str, session: "Session"
 ) -> List[USCContentDiff]:
-    print("Searching for", citation)
     query = select(USCContent).where(USCContent.usc_ident == citation)
     results = session.execute(query).all()
+
     if len(results) == 0:
         logging.debug("Could not find content", extra={"usc_ident": citation})
         return []
+
     content = results[0][0]
-    print(results)
-    print(action)
     to_strike: Optional[str] = action.get("to_remove_text")
     to_replace: Optional[str] = action.get("to_replace")
     if to_strike is None:
@@ -107,6 +106,39 @@ def strike_text(
 
     if diff.content_str or diff.heading:
         return [diff]
+    return []
+
+
+def insert_text_end(
+    action: ActionObject, citation: str, session: "Session"
+) -> List[USCContentDiff]:
+    query = select(USCContent).where(USCContent.usc_ident == citation)
+    results = session.execute(query).all()
+
+    if len(results) == 0:
+        logging.debug("Could not find content", extra={"usc_ident": citation})
+        return []
+
+    content = results[0][0]
+    to_insert_text: Optional[str] = action.get("to_insert_text")
+    if to_insert_text is None:
+        logging.debug("No insert text")
+        return []
+
+    diff = USCContentDiff(
+        usc_content_id=content.usc_content_id,
+        usc_section_id=content.usc_section_id,
+        usc_chapter_id=get_chapter_id(citation.split("/")[3].replace("t", "")),
+    )
+    if content.heading:
+        # We're modifying the heading
+        diff.heading = f"{content.heading} {to_insert_text}"
+    elif content.content_str:
+        diff.content_str = f"{content.content_str} {to_insert_text}"
+
+    if diff.content_str or diff.heading:
+        return [diff]
+    return []
 
 
 def apply_action(
@@ -143,15 +175,16 @@ def apply_action(
     logging.info(f"Applying action to {computed_citation=}")
     actions = action.actions
     diffs: List[USCContentDiff] = []
-    print(actions[0])
     for act, act_obj in actions[0].items():
         if act != ActionType.AMEND_MULTIPLE:
-            print(act)
             if act == ActionType.STRIKE_TEXT:
-                print("striking")
                 diffs.extend(strike_text(act_obj, computed_citation, PARSER_SESSION))
-            print(act_obj)
-            print(computed_citation)
+            elif act == ActionType.INSERT_TEXT_END:
+                diffs.extend(
+                    insert_text_end(act_obj, computed_citation, PARSER_SESSION)
+                )
+            # print(act_obj)
+            # print(computed_citation)
     for diff in diffs:
         diff.legislation_content_id = action.legislation_content_id
         diff.version_id = version_id
