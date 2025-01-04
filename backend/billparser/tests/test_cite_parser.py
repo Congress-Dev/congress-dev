@@ -1,6 +1,10 @@
 from unittest import TestCase
 from lxml import etree
-from billparser.utils.cite_parser import parse_action_for_cite, parse_text_for_cite, extract_usc_cite
+from billparser.utils.cite_parser import (
+    parse_action_for_cite,
+    parse_text_for_cite,
+    extract_usc_cite,
+)
 
 
 class TestParseActionForCite(TestCase):
@@ -111,8 +115,15 @@ class TestParseActionForCite(TestCase):
         res = parse_action_for_cite(cite, parent_cite="/us/usc/t42/s18071")
         self.assertEqual(res, "/us/usc/t42/s18071/1402")
 
+
 class TestExtractUSCCite(TestCase):
     def test_118_hr_5__is_amended(self):
         text = "Section 1111(g)(2) of the Elementary and Secondary Education Act of 1965 (20 U.S.C. 6311(g)(2)) is amended-"
         cite = extract_usc_cite(text)
         self.assertEqual(cite, "/us/usc/t20/s6311/g/2")
+
+    def test_118_hr_5__multi_paren(self):
+        # The double parens are annoying af, had to switch to a non greedy regex and use the end of sentence matcher
+        text = """Section 444(f) of the General Education Provisions Act (20 U.S.C. 1232g) (also known as the "Family Educational Rights and Privacy Act of 1974") (20 U.S.C. 1232g(f)) is amended by adding at the end the following: "The Secretary shall comply with the reporting requirement under section 445(e)(2)(C)(ii) with respect to the enforcement actions taken under this subsection to ensure compliance with this section."."""
+        cite = extract_usc_cite(text)
+        self.assertEqual(cite, "/us/usc/t20/s1232g")
