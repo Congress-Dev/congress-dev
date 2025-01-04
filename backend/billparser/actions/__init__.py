@@ -81,7 +81,7 @@ regex_holder = {
     ],
     ActionType.INSERT_END: [
         r"At the end of (?P<target>.+?) of (?P<within>.+?),? insert the following:",
-        r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended by adding at the end the following:",
+        r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended by adding at the end the following:$",
         r"in (?P<target>.*), by adding at the end the following new (?:sub)?paragraph:",
         r"by adding at the end the following new (?:sub)?paragraph:",
     ],
@@ -94,7 +94,8 @@ regex_holder = {
         r"(?:(?P<target>.+?) of (?P<within>.+?) is amended )?by inserting \"(?P<to_insert_text>.+?)\" before \"(?P<target_text>.+?)\".?"
     ],
     ActionType.INSERT_TEXT_END: [
-        r"in (?P<target>.+?), by adding \"(?P<to_replace>.+?)\" at the end;"
+        r"in (?P<target>.+?), by adding \"(?P<to_replace>.+?)\" at the end;",
+        r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended.? by adding at the end the following: \"(?P<to_insert_text>.+?)\"(?:; and|\.)"
     ],
     ActionType.STRIKE_SECTION_INSERT: [
         r"by striking (?P<target>(?:sub)?(?:section|paragraph) .+?) and inserting the following:"

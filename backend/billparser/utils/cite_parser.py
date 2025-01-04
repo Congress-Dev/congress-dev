@@ -21,7 +21,7 @@ SUCH_TITLE_REGEX = re.compile(
 )
 
 USC_CITE_REGEX = re.compile(
-    r"\((?P<title>\d+?) U\.S\.C\. (?P<section>.*)\)",
+    r"\((?P<title>\d+?) U\.S\.C\. (?P<section>.*?)\)\s",
     re.IGNORECASE,
 )
 SUB_OF_REGEX = re.compile(r"sub(?:section)?\s\((.)\)", re.IGNORECASE)
