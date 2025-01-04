@@ -7,7 +7,7 @@ import { LegislatorProfile } from "..";
 
 function LegislatorChip({ sponsor }) {
     const [drawerOpen, setDrawerOpen] = useState(false);
-    const { isDarkMode, setIsDarkMode } = useContext(ThemeContext);
+    const { isDarkMode } = useContext(ThemeContext);
 
     return sponsor != null ? (
         <>
@@ -26,7 +26,7 @@ function LegislatorChip({ sponsor }) {
             </CompoundTag>
             <Drawer
                 size={DrawerSize.SMALL}
-                className={(isDarkMode ? "bp5-dark" : "")}
+                className={isDarkMode ? "bp5-dark" : ""}
                 isOpen={drawerOpen}
                 onClose={() => setDrawerOpen(false)}
                 isCloseButtonShown={true}

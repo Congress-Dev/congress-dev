@@ -17,13 +17,15 @@ const LegislatorProfile = ({
     // I will make an element that links to the real profile page at https://bioguide.congress.gov/search/bio/${bioguideId}
 
     const renderSponsoredLegislation = () => {
-        return <>
-            <h3>Sponsored Legislation:</h3>
+        return (
+            <>
+                <h3>Sponsored Legislation:</h3>
 
-            {sponsoredLegislation.map((sponsorship) => (
-                <BillCard bill={sponsorship} />
-            ))}
-        </>
+                {sponsoredLegislation.map((sponsorship) => (
+                    <BillCard bill={sponsorship} />
+                ))}
+            </>
+        );
     };
 
     function parseBiography(text) {
@@ -102,16 +104,18 @@ const LegislatorProfile = ({
         <div className="legislator-profile">
             <div className="center">
                 <div className="image">
-                    {imageUrl != null && imageUrl != "" ?
-                        <img src={imageUrl} /> :
-                        <Icon icon="user" />}
+                    {imageUrl != null && imageUrl != "" ? (
+                        <img src={imageUrl} />
+                    ) : (
+                        <Icon icon="user" />
+                    )}
                 </div>
                 <i
                     dangerouslySetInnerHTML={{
                         __html: imageSource,
                     }}
                 />
-                <br/>
+                <br />
                 <a
                     target="_blank"
                     href={`https://bioguide.congress.gov/search/bio/${bioguideId}`}
@@ -130,14 +134,20 @@ const LegislatorProfile = ({
                     />
                     <Divider />
                 </>
-            ): <></>}
-            {sponsoredLegislation.length == 0 ? (<p>
-                <Link to={`/member/${bioguideId}`}>
-                    More information about the legislator...
-                </Link>
-            </p>) : <>
-                <div>{renderSponsoredLegislation()}</div>
-            </>}
+            ) : (
+                <></>
+            )}
+            {sponsoredLegislation.length == 0 ? (
+                <p>
+                    <Link to={`/member/${bioguideId}`}>
+                        More information about the legislator...
+                    </Link>
+                </p>
+            ) : (
+                <>
+                    <div>{renderSponsoredLegislation()}</div>
+                </>
+            )}
         </div>
     );
 };

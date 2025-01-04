@@ -17,14 +17,10 @@ import { ThemeContext } from "context";
 function AppBar() {
     const history = useHistory();
     const [isOpen, setIsOpen] = useState(false);
-    const { isDarkMode, setIsDarkMode } = useContext(ThemeContext);
+    const { isDarkMode, setDarkMode } = useContext(ThemeContext);
 
     const toggleDarkMode = () => {
-        setIsDarkMode((prevState) => {
-            const newState = !prevState;
-            localStorage.setItem("dark-mode", JSON.stringify(newState));
-            return newState;
-        });
+        setDarkMode(!isDarkMode);
     };
 
     useEffect(() => {
@@ -53,6 +49,15 @@ function AppBar() {
                     onClick={() => {
                         handleClose();
                         history.push("/home");
+                    }}
+                />
+                <Button
+                    className={Classes.MINIMAL}
+                    icon="learning"
+                    text="Learn"
+                    onClick={() => {
+                        handleClose();
+                        history.push("/learn");
                     }}
                 />
                 <Button
@@ -97,7 +102,13 @@ function AppBar() {
                     }}
                 />
                 <img className="logo" src="/favicon-32x32.png" />
-                <NavbarHeading>Congress.Dev</NavbarHeading>
+                <NavbarHeading
+                    onClick={() => {
+                        history.push("/");
+                    }}
+                >
+                    Congress.Dev
+                </NavbarHeading>
                 <NavbarDivider />
                 <div className="desktop-nav">{navigationItems()}</div>
 

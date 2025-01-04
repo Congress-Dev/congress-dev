@@ -12,6 +12,8 @@ import {
     ControlGroup,
     HTMLSelect,
     ButtonGroup,
+    Section,
+    Icon,
 } from "@blueprintjs/core";
 import qs from "query-string";
 
@@ -264,22 +266,13 @@ function BillSearch(props) {
             <div className="sidebar">
                 <FormGroup labelFor="text-input" className="search-sort">
                     <ControlGroup fill={true}>
-                        <HTMLSelect
-                            value={currentSearch.sort}
-                            options={[
-                                { label: "Bill No.", value: "number" },
-                                { label: "Title", value: "title" },
-                                { label: "Date", value: "effective_date" },
-                            ]}
-                            onChange={(event) => {
-                                setCurrentSort(event.currentTarget.value);
-                            }}
-                        />
                         <InputGroup
                             value={textBox}
+                            leftIcon="search"
                             onChange={(event) => {
                                 setTextBox(event.target.value);
                             }}
+                            placeholder="Search"
                             rightElement={
                                 <Button
                                     icon="arrow-right"
@@ -290,7 +283,6 @@ function BillSearch(props) {
                         />
                     </ControlGroup>
                 </FormGroup>
-                <Divider />
                 <ButtonGroup className="collapse-controls" fill={true}>
                     <Button
                         icon="collapse-all"
@@ -313,7 +305,13 @@ function BillSearch(props) {
                 <CollapsibleSection
                     title="Session of Congress"
                     collapsed={collapsed}
-                ></CollapsibleSection>
+                >
+                    <Checkbox
+                        checked={true}
+                        label="118th Congress"
+                        disabled={true}
+                    />
+                </CollapsibleSection>
                 <CollapsibleSection
                     title="Chamber of Origin"
                     collapsed={collapsed}
@@ -360,7 +358,28 @@ function BillSearch(props) {
                     })}
                 </CollapsibleSection>
             </div>
-            <div className="content">
+            <Section
+                title="Results"
+                subtitle={`${totalResults.toLocaleString()} Bills`}
+                className="content"
+                icon="inbox-search"
+                rightElement={
+                    <>
+                        <Icon icon="sort-alphabetical" /> Sort:
+                        <HTMLSelect
+                            value={currentSearch.sort}
+                            options={[
+                                { label: "Bill No.", value: "number" },
+                                { label: "Title", value: "title" },
+                                { label: "Date", value: "effective_date" },
+                            ]}
+                            onChange={(event) => {
+                                setCurrentSort(event.currentTarget.value);
+                            }}
+                        />
+                    </>
+                }
+            >
                 <BillSearchContent
                     congress={currentSearch.congress}
                     chamber={currentSearch.chamber}
@@ -384,7 +403,7 @@ function BillSearch(props) {
                 ) : (
                     ""
                 )}
-            </div>
+            </Section>
         </Card>
     );
 }
