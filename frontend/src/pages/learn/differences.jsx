@@ -1,4 +1,4 @@
-import { SectionCard, Section, Divider } from "@blueprintjs/core";
+import { SectionCard, Section, Divider, Breadcrumbs } from "@blueprintjs/core";
 
 function LearnDifferences() {
     return (
@@ -7,6 +7,15 @@ function LearnDifferences() {
             title="Key Differences Between the House and Senate"
             subtitle="Comparing the Two Chambers: Roles, Structure, and Procedures"
         >
+            <SectionCard className="learn-nav">
+                <Breadcrumbs
+                    items={[
+                        { icon: "home" },
+                        { text: "Knowledge Base", href: "/learn" },
+                        { text: "Differences" },
+                    ]}
+                />
+            </SectionCard>
             <SectionCard className="learn-content">
                 <p>
                     The United States Congress is a bicameral legislature,

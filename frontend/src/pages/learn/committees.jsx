@@ -1,4 +1,4 @@
-import { SectionCard, Section, Divider } from "@blueprintjs/core";
+import { SectionCard, Section, Divider, Breadcrumbs } from "@blueprintjs/core";
 
 function LearnCommittees() {
     return (
@@ -7,6 +7,15 @@ function LearnCommittees() {
             title="The Role of Committees in Congress"
             subtitle="Shaping, Revising, and Reviewing Bills"
         >
+            <SectionCard className="learn-nav">
+                <Breadcrumbs
+                    items={[
+                        { icon: "home" },
+                        { text: "Knowledge Base", href: "/learn" },
+                        { text: "Committees" },
+                    ]}
+                />
+            </SectionCard>
             <SectionCard className="learn-content">
                 <p>
                     Committees play a crucial role in the legislative process,

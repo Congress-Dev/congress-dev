@@ -43,10 +43,6 @@
     margin-left: 10%;
 }
 
-.bill-card {
-    margin-bottom: 10px;
-}
-
 .bill-content {
     max-height: calc(100vh - var(--bill-content-y-position));
     overflow-y: scroll;
@@ -71,6 +67,7 @@
 
 .search-pager {
     float: right;
+    margin: 10px;
 }
 
 .search-pager-buttons button {
@@ -116,11 +113,16 @@
     h2 {
         margin-bottom: 5px;
         margin-top: 30px;
+        color: #4c90f0;
+    }
+
+    b {
+        color: #8f99a8;
     }
 }
 
 .learn-nav {
-    margin-bottom: 10px;
+    padding: 10px 20px !important;
 }
 
 .bill-versions {
@@ -322,8 +324,8 @@
 
 @media (max-device-width: 768px) {
     .learn-list {
-        width: 100%;
-        margin: initial;
+        width: 100% !important;
+        margin: initial !important;
     }
 
     .bp5-navbar {
@@ -348,8 +350,8 @@
         display: inline-flex;
     }
 
-    .no-mobile {
-        display: none !important;
+    .mobile-nav .bp5-button {
+        height: 40px;
     }
 
     .usc-release-box {

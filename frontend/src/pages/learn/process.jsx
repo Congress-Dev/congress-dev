@@ -1,4 +1,4 @@
-import { SectionCard, Section, Divider } from "@blueprintjs/core";
+import { SectionCard, Section, Divider, Breadcrumbs } from "@blueprintjs/core";
 
 function LearnProcess() {
     return (
@@ -7,15 +7,31 @@ function LearnProcess() {
             title="The Legislative Process: How a Bill Becomes a Law"
             subtitle="Understanding the Path of Legislation"
         >
+            <SectionCard className="learn-nav">
+                <Breadcrumbs
+                    items={[
+                        { icon: "home" },
+                        { text: "Knowledge Base", href: "/learn" },
+                        { text: "Process" },
+                    ]}
+                />
+            </SectionCard>
             <SectionCard className="learn-content">
                 <p>
                     Understanding how a bill becomes a law is crucial to
                     navigating the legislative system. The process is long and
                     involves multiple stages in both the House of
                     Representatives and the Senate, with opportunities for
-                    revision, debate, and approval at each step. Here’s a
-                    detailed step-by-step guide to help you understand how a
-                    bill moves from introduction to law:
+                    revision, debate, and approval at each step. The legislative
+                    process may seem complex, but it ensures that bills are
+                    thoroughly reviewed, debated, and refined before becoming
+                    law. Each stage is designed to allow for scrutiny,
+                    compromise, and input from both sides of the political
+                    aisle. While the process is challenging, it is a vital part
+                    of how laws are created and how the government responds to
+                    the needs of the people.Here’s a detailed step-by-step guide
+                    to help you understand how a bill moves from introduction to
+                    law:
                 </p>
 
                 <h2>1. Introduction of the Bill</h2>
@@ -105,17 +121,6 @@ function LearnProcess() {
                     veto, the bill becomes law. It is then assigned a public law
                     number and is officially incorporated into the U.S. Code,
                     the system that organizes the laws of the United States.
-                </p>
-
-                <Divider />
-                <p>
-                    The legislative process may seem complex, but it ensures
-                    that bills are thoroughly reviewed, debated, and refined
-                    before becoming law. Each stage is designed to allow for
-                    scrutiny, compromise, and input from both sides of the
-                    political aisle. While the process is challenging, it is a
-                    vital part of how laws are created and how the government
-                    responds to the needs of the people.
                 </p>
             </SectionCard>
         </Section>

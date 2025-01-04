@@ -38,21 +38,7 @@ function Learn(props) {
     }
 
     if (section != null) {
-        return (
-            <>
-                <div className="page learn-nav">
-                    <Button
-                        icon="chevron-left"
-                        onClick={() => {
-                            history.push("/learn");
-                        }}
-                    >
-                        Back to Knowledge Base
-                    </Button>
-                </div>
-                {getPageContent()}
-            </>
-        );
+        return <>{getPageContent()}</>;
     }
 
     return (
