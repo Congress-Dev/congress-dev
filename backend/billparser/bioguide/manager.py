@@ -35,14 +35,19 @@ class BioGuideImporter:
 
     def run_import(self) -> List[BioGuideMember]:
         items = []
-        with self._download_zip() as z:
+        # with self._download_zip() as z:
+        with zipfile.ZipFile('BioguideProfiles.zip', 'r') as z:
             names = z.namelist()
             logging.debug(
                 f"Found {len(names)} files in zip", extra={"name_count": len(names)}
             )
             for filename in names:
                 with z.open(filename) as f:
-                    legis = BioGuideMember(**json.load(f))
+                    jdata = json.load(f)
+                    if jdata.get('data') is None:
+                        legis = BioGuideMember(**jdata)
+                    else:
+                        legis = BioGuideMember(**jdata.get('data'))
                     items.append(legis)
         return items
 
@@ -51,7 +56,6 @@ class BioGuideImporter:
         db_items = []
         with self.session.begin():
             for legislator in legislators:
-               
                 try:
                     # TODO: Make this look nicer, but not everybody has a party
                     # TODO: If we're modeling this for real, we'd want to have a table for the jobs
@@ -59,15 +63,40 @@ class BioGuideImporter:
                     party = legislator.jobPositions[-1].congressAffiliation.partyAffiliation[0].party.name
                 except:
                     party = None
-                 # TODO: Get state and region
-                new_legislator = Legislator(
-                    bioguide_id = legislator.usCongressBioId,
-                    first_name = legislator.unaccentedGivenName or legislator.givenName,
-                    last_name = legislator.unaccentedFamilyName or legislator.familyName,
-                    middle_name = legislator.unaccentedMiddleName or legislator.middleName,
-                    party = party,
-                )
-                db_items.append(new_legislator)
+
+                try:
+                    state = legislator.jobPositions[-1].congressAffiliation.represents.regionCode
+                except:
+                    state = None
+
+                try:
+                    image_url = "https://bioguide.congress.gov/photo/"
+                    image_url += legislator.asset[-1]['contentUrl'].split("/")[-1]
+                    image_source = legislator.asset[-1]['creditLine']
+                except:
+                    image_url = None
+                    image_source = None
+
+                record_data = {
+                    'bioguide_id': legislator.usCongressBioId,
+                    'first_name': legislator.nickName or legislator.unaccentedGivenName or legislator.givenName,
+                    'last_name': legislator.unaccentedFamilyName or legislator.familyName,
+                    'middle_name': legislator.unaccentedMiddleName or legislator.middleName,
+                    'party': party,
+                    'state': state,
+                    'image_url': image_url,
+                    'image_source': image_source,
+                    'profile': legislator.profileText
+                }
+
+                existing_record = self.session.query(Legislator).filter(Legislator.bioguide_id == legislator.usCongressBioId).first()
+                if existing_record is None:
+                    new_legislator = Legislator(**record_data)
+                    db_items.append(new_legislator)
+                else:
+                    for key, value in record_data.items():
+                        setattr(existing_record, key, value)
+
             self.session.add_all(db_items)
             self.session.commit()
         logging.debug("Finished adding legislators to database")

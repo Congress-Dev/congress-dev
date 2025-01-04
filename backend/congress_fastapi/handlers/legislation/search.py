@@ -12,8 +12,13 @@ from billparser.db.models import (
     LegislationContent,
     LegislationContentSummary,
     LegislationContentTag,
+    LegislationSponsorship,
     LegislationVersion,
     LegislationVersionEnum,
+    Legislator,
+)
+from congress_fastapi.models.legislation.metadata import (
+    LegislatorMetadata,
 )
 from congress_fastapi.models.legislation.search import SearchResult
 
@@ -179,6 +184,34 @@ async def get_bill_appropriations(legislation_ids: List[int]) -> Dict[int, float
     results = await database.fetch_all(query)
     return {result["legislation_id"]: int(result["amount"]) for result in results}
 
+async def get_bill_sponsor(legislation_ids: List[int]):
+    database = await get_database()
+
+    query = (
+        select(
+            *LegislatorMetadata.sqlalchemy_columns(),
+            LegislationSponsorship.cosponsor,
+            LegislationSponsorship.legislation_id,
+        )
+        .join(
+            LegislationSponsorship,
+            LegislationSponsorship.legislator_bioguide_id == Legislator.bioguide_id
+        )
+        .where(
+            LegislationSponsorship.legislation_id.in_(legislation_ids),
+            LegislationSponsorship.cosponsor == False
+        )
+        .group_by(
+            LegislationSponsorship.legislation_id,
+            Legislator.legislator_id,
+            Legislator.bioguide_id,
+            LegislationSponsorship.cosponsor
+        )
+        .order_by(LegislationSponsorship.cosponsor, Legislator.bioguide_id)
+    )
+
+    results = await database.fetch_all(query)
+    return {result["legislation_id"]: dict(result) for result in results}
 
 async def search_legislation(
     congress: str,
@@ -238,15 +271,13 @@ async def search_legislation(
         legis_query = legis_query.where(Legislation.title.ilike(f"%{text}%"))
     results = await database.fetch_all(legis_query)
     results = [dict(result) for result in results]
-    tags_by_id = await get_distinct_tags(
-        [result["legislation_id"] for result in results]
-    )
-    summaries_by_id = await get_bill_summaries(
-        [result["legislation_id"] for result in results]
-    )
-    appropriations_by_id = await get_bill_appropriations(
-        [result["legislation_id"] for result in results]
-    )
+
+    legislation_ids = [result["legislation_id"] for result in results]
+
+    tags_by_id = await get_distinct_tags(legislation_ids)
+    summaries_by_id = await get_bill_summaries(legislation_ids)
+    appropriations_by_id = await get_bill_appropriations(legislation_ids)
+    sponsors_by_id = await get_bill_sponsor(legislation_ids)
 
     objs = [
         SearchResult(
@@ -262,6 +293,7 @@ async def search_legislation(
             tags=sorted(tags_by_id.get(result["legislation_id"], [])),
             summary=summaries_by_id.get(result["legislation_id"], None),
             appropriations=appropriations_by_id.get(result["legislation_id"], None),
+            sponsor=sponsors_by_id.get(result["legislation_id"], None),
             effective_date=result.get("effective_date")[0],
         )
         for result in results

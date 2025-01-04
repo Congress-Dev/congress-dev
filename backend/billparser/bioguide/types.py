@@ -143,7 +143,7 @@ class ResearchRecordItem(BaseModel):
 
 class ImageItem(BaseModel):
     contentUrl: Optional[str] = None
-    caption: str
+    caption: Optional[str] = None
 
 
 class NameHistoryItem(BaseModel):
