@@ -84,6 +84,7 @@ regex_holder = {
         r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended by adding at the end the following:$",
         r"in (?P<target>.*), by adding at the end the following new (?:sub)?paragraph:",
         r"by adding at the end the following new (?:sub)?paragraph:",
+        r"by adding at the end the following:$",
     ],
     ActionType.INSERT_TEXT_AFTER: [
         r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended.? by inserting \"(?P<to_insert_text>.+?)\" after \"(?P<to_remove_text>.+?)\"(?:; and|\.)",
