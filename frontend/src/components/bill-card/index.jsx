@@ -21,11 +21,15 @@ const USDollar = new Intl.NumberFormat("en-US", {
 function BillCard({ bill }) {
     function genTitle() {
         const { legislation_versions = [] } = bill;
+        let version = ''
+        if(legislation_versions.length > 0) {
+            version = `/${legislation_versions[legislation_versions.length - 1]}`
+        }
 
         return (
             <>
                 <Link
-                    to={`/bill/${bill.congress}/${bill.chamber}/${bill.number}/${legislation_versions[legislation_versions.length - 1]}`}
+                    to={`/bill/${bill.congress}/${bill.chamber}/${bill.number}${version}`}
                 >
                     {`${chamberLookup[bill.chamber]} ${bill.number}`}
                 </Link>

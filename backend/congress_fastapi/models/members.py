@@ -9,7 +9,11 @@ from billparser.db.models import (
     LegislationVersion,
     Congress,
 )
+from congress_fastapi.models.legislation import (
+    LegislationVersionMetadata
+)
 from congress_fastapi.models.abstract import MappableBase
+
 
 
 class MemberInfo(MappableBase):
@@ -36,7 +40,7 @@ class LegislationSponsorshipInfo(MappableBase):
 
     # Bill info
     chamber: Annotated[str, Legislation.chamber]
-    session: Annotated[int, Congress.session_number]
+    congress: Annotated[int, Congress.session_number]
     number: Annotated[int, Legislation.number]
     title: Annotated[str, Legislation.title]
 
