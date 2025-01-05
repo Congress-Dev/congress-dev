@@ -23,14 +23,6 @@ function AppBar() {
         setDarkMode(!isDarkMode);
     };
 
-    useEffect(() => {
-        if (isDarkMode) {
-            window.root.classList.add("bp5-dark");
-        } else {
-            window.root.classList.remove("bp5-dark");
-        }
-    }, [isDarkMode]);
-
     function handleOpen() {
         setIsOpen(true);
     }

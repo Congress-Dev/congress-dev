@@ -1,7 +1,12 @@
 // Handles searching the API for bills matching the criteria
 import React, { useEffect, useState } from "react";
 import lodash from "lodash";
-import { Callout, SectionCard, NonIdealState, NonIdealStateIconSize } from "@blueprintjs/core";
+import {
+    Callout,
+    SectionCard,
+    NonIdealState,
+    NonIdealStateIconSize,
+} from "@blueprintjs/core";
 
 import { BillCard } from "components";
 import { getCongressSearch } from "common/api";
@@ -54,7 +59,14 @@ function BillSearchContent(props) {
                         icon="search"
                         iconSize={NonIdealStateIconSize.STANDARD}
                         title="No search results"
-                        description={<>Your search didn't match any bills.<br/>Try searching for something else, or select more filters.</>}
+                        description={
+                            <>
+                                Your search didn't match any bills.
+                                <br />
+                                Try searching for something else, or select more
+                                filters.
+                            </>
+                        }
                         layout="vertical"
                     />
                 </SectionCard>
