@@ -1,14 +1,8 @@
 import React from "react";
 import { withRouter, Link } from "react-router-dom";
-import {
-    Callout,
-    Button,
-    Tag,
-    CompoundTag,
-    SectionCard,
-} from "@blueprintjs/core";
+import { Callout, Tag, SectionCard } from "@blueprintjs/core";
 
-import { chamberLookup, partyLookup } from "common/lookups";
+import { chamberLookup } from "common/lookups";
 import { BillVersionsBreadcrumb, LegislatorChip } from "components";
 
 const USDollar = new Intl.NumberFormat("en-US", {

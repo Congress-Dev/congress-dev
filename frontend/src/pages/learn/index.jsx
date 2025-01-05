@@ -6,7 +6,6 @@ import {
     Section,
     SectionCard,
     Icon,
-    Button,
 } from "@blueprintjs/core";
 
 import LearnProcess from "./process";

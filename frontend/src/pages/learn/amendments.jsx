@@ -1,10 +1,4 @@
-import {
-    SectionCard,
-    Section,
-    Divider,
-    Navbar,
-    Breadcrumbs,
-} from "@blueprintjs/core";
+import { SectionCard, Section, Breadcrumbs } from "@blueprintjs/core";
 
 function LearnAmendments() {
     return (

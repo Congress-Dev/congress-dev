@@ -1,4 +1,4 @@
-import { SectionCard, Section, Divider, Breadcrumbs } from "@blueprintjs/core";
+import { SectionCard, Section, Breadcrumbs } from "@blueprintjs/core";
 
 function LearnPresident() {
     return (

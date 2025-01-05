@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from "react";
 import { useHistory, Link } from "react-router-dom";
-import lodash, { sum } from "lodash";
+import lodash from "lodash";
 import { Tooltip, Spinner } from "@blueprintjs/core";
 
 import { md5 } from "common/other";
