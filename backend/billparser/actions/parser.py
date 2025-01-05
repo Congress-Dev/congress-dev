@@ -12,7 +12,7 @@ from sqlalchemy import select
 import logging
 
 from collections import defaultdict
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 from billparser.db.models import (
     LegislationContent,
     LegislationActionParse,
@@ -141,6 +141,125 @@ def insert_text_end(
     return []
 
 
+def _recursively_insert_content(
+    sibling_content: Optional[USCContent],
+    parent_content: USCContent,
+    content_to_insert: LegislationContent,
+    content_by_parent_id: Dict[int, List[LegislationContent]],
+    action_parse: LegislationActionParse,
+    version_id: int,
+    session: "Session",
+) -> Tuple[List[USCContent], List[USCContentDiff]]:
+    new_content: List[USCContent] = []
+    new_diffs: List[USCContentDiff] = []
+    # Create the content for ourselves
+    # then recursively insert the children, extending the new_content and new_diffs
+    new_ident = ""
+    non_alpha = r"\W"
+    if sibling_content:
+        # If the sibling is given, use it's ident, and swap the last part with the new content
+        new_ident = f"{sibling_content.usc_ident.rsplit('/', 1)[0]}/{content_to_insert.section_display.replace(non_alpha, '')}"
+    else:
+        # If there is no sibling, then we are the first child
+        new_ident = f"{parent_content.usc_ident}/{content_to_insert.section_display.replace(non_alpha, '')}"
+
+    # Use empty heading/content for now
+    # When we create the diffs we add all the content, so the frontend will highlight it correctly
+    my_content = USCContent(
+        usc_ident=new_ident,
+        usc_section_id=parent_content.usc_section_id,
+        content_type=content_to_insert.content_type,
+        parent_id=parent_content.usc_content_id,
+        order_number=0 if sibling_content is None else sibling_content.order_number + 1,
+        heading=None,
+        content_str=None,
+        version_id=version_id,
+    )
+    session.add(my_content)
+    session.flush()
+    my_diff = USCContentDiff(
+        usc_content_id=my_content.usc_content_id,
+        usc_section_id=my_content.usc_section_id,
+        heading=content_to_insert.heading,
+        content_str=content_to_insert.content_str,
+        version_id=version_id,
+        section_display=content_to_insert.section_display,
+    )
+    new_content.append(my_content)
+    new_diffs.append(my_diff)
+
+    # Now we need to insert the children
+    for child in content_by_parent_id[content_to_insert.legislation_content_id]:
+        child_content, child_diffs = _recursively_insert_content(
+            None,
+            my_content,
+            child,
+            content_by_parent_id,
+            action_parse,
+            version_id,
+            session,
+        )
+        new_content.extend(child_content)
+        new_diffs.extend(child_diffs)
+
+    return new_content, new_diffs
+
+
+def insert_section_after(
+    target_content: USCContent,
+    parent_content: USCContent,
+    action: ActionObject,
+    action_parse: LegislationActionParse,
+    citation: str,
+    content_by_parent_id: Dict[int, List[LegislationContent]],
+    version_id: int,
+    session: "Session",
+) -> List[USCContentDiff]:
+    """
+    Inserts a section after the target content
+    It comes from the action object, and the action_parse object
+    """
+    created_diffs: List[USCContentDiff] = []
+    # TODO: Manage multiple versions
+    query = select(USCContent).where(USCContent.usc_ident == citation)
+    results = session.execute(query).all()
+
+    if len(results) == 0:
+        logging.debug("Could not find content", extra={"usc_ident": citation})
+        return []
+    current_sibling = results[0][0]
+
+    # First we need to find the quote-block, it should be the singular child
+    quote_block = content_by_parent_id[action_parse.legislation_content_id]
+    assert len(quote_block) == 1, "Should be singular child"
+    quote_block = quote_block[0]
+    assert quote_block.content_type == "quoted-block", f"Should actually be a quote block; {quote_block.content_type}"
+
+    # Iterate over all of it's children and generate the USCContent/USCContentDiff for them
+    # The first level children are going to need to be children of target_content's parent
+    # so we'll do them here
+    for child in content_by_parent_id[quote_block.legislation_content_id]:
+        contents, diffs = _recursively_insert_content(current_sibling, parent_content, child, content_by_parent_id, action_parse, version_id, session)
+        # Update the sibling since we have just inserted a new content
+        current_sibling = contents[0]
+        created_diffs.extend(diffs)
+    return created_diffs
+
+def insert_section_end(    action: ActionObject,
+    action_parse: LegislationActionParse,
+    citation: str,
+    content_by_parent_id: Dict[int, List[LegislationContent]],
+    version_id: int,
+    session: "Session"):
+    # We assume our target citation is the parent section, so to insert at the end we need to find the last child
+    query = select(USCContent).where(USCContent.usc_ident == citation)
+    results = session.execute(query).all()
+    target_section = results[0][0]
+    query = select(USCContent).where(USCContent.parent_id == target_section.usc_content_id).order_by(USCContent.order_number.desc()).limit(1)
+    results = session.execute(query).all()
+    last_content = results[0][0]
+    return insert_section_after(last_content, target_section, action, action_parse, last_content.usc_ident, content_by_parent_id, version_id, session)
+
 def apply_action(
     content_by_parent_id: Dict[int, List[LegislationContent]],
     action: LegislationActionParse,
@@ -166,6 +285,14 @@ def apply_action(
                         # Merge the citations
                         computed_citation = parent_cite["cite"] + cite["cite"]
                         break
+    else:
+        for parent_action in parent_actions:
+            if parent_action.citations:
+                parent_cite = parent_action.citations[0]
+                if parent_cite["complete"]:
+                    # Merge the citations
+                    computed_citation = parent_cite["cite"]
+                    break
     if computed_citation is None:
         logging.error("No citation found for action")
         return
@@ -183,6 +310,8 @@ def apply_action(
                 diffs.extend(
                     insert_text_end(act_obj, computed_citation, PARSER_SESSION)
                 )
+            elif act == ActionType.INSERT_END:
+                diffs.extend(insert_section_end(act_obj, action, computed_citation, content_by_parent_id,version_id, PARSER_SESSION))
             # print(act_obj)
             # print(computed_citation)
     for diff in diffs:
@@ -198,7 +327,7 @@ def recursively_extract_actions(
     version_id: int = 0,
 ):
     # Check if the content is a quote block
-    if content.content_type == "quote-block":
+    if content.content_type == "quoted-block":
         # Quotes are separate entities than the action that they come from
         # For our purposes, the quote insertion happens on the tag that the quote is attached to
         return
