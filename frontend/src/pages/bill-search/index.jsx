@@ -264,25 +264,33 @@ function BillSearch(props) {
     return (
         <Card className="page" elevation={Elevation.ONE}>
             <div className="sidebar">
-                <FormGroup labelFor="text-input" className="search-sort">
-                    <ControlGroup fill={true}>
-                        <InputGroup
-                            value={textBox}
-                            leftIcon="search"
-                            onChange={(event) => {
-                                setTextBox(event.target.value);
-                            }}
-                            placeholder="Search"
-                            rightElement={
-                                <Button
-                                    icon="arrow-right"
-                                    intent="primary"
-                                    onClick={executeSearch}
-                                />
-                            }
-                        />
-                    </ControlGroup>
-                </FormGroup>
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        executeSearch();
+                    }}
+                >
+                    <FormGroup labelFor="text-input" className="search-sort">
+                        <ControlGroup fill={true}>
+                            <InputGroup
+                                value={textBox}
+                                leftIcon="search"
+                                onChange={(event) => {
+                                    setTextBox(event.target.value);
+                                }}
+                                placeholder="Search"
+                                rightElement={
+                                    <Button
+                                        type="submit"
+                                        icon="arrow-right"
+                                        intent="primary"
+                                        onClick={executeSearch}
+                                    />
+                                }
+                            />
+                        </ControlGroup>
+                    </FormGroup>
+                </form>
                 <ButtonGroup className="collapse-controls" fill={true}>
                     <Button
                         icon="collapse-all"
