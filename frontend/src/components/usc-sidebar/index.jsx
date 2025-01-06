@@ -120,7 +120,7 @@ function USCSidebar(props) {
                             }
                             const prettyDisplay =
                                 content_type == "section"
-                                    ? section_display.replace("SS", "§")
+                                    ? section_display.replace(/SS/g, "§")
                                     : section_display;
                             const nodeObj = {
                                 id: `${usc_chapter_id}.${usc_section_id}`,
@@ -230,7 +230,7 @@ function USCSidebar(props) {
                     }) => {
                         const prettyDisplay =
                             content_type == "section"
-                                ? section_display.replace("SS", "§")
+                                ? section_display.replace(/SS/g, "§")
                                 : section_display;
                         const nodeObj = {
                             id: `${usc_chapter_id}.${usc_section_id}`,

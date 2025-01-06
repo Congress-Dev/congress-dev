@@ -1,9 +1,9 @@
 import React from "react";
 import { withRouter, Link } from "react-router-dom";
-import { Callout, Button, Tag } from "@blueprintjs/core";
+import { Callout, Button, Tag, CompoundTag } from "@blueprintjs/core";
 
-import { chamberLookup } from "common/lookups";
-import { BillVersionsBreadcrumb } from "components";
+import { chamberLookup, partyLookup } from "common/lookups";
+import { BillVersionsBreadcrumb, LegislatorChip } from "components";
 
 const USDollar = new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -28,44 +28,62 @@ function BillCard({ bill }) {
     }
 
     function renderTags() {
+        if (bill.tags == null || bill.tags.length == 0) {
+            return;
+        }
+
         return (
             <>
+                <span style={{ fontWeight: "bold" }}>Tags:</span>
                 {bill.tags.map((tag) => (
                     <>
                         <Tag>{tag}</Tag>
                         {"  "}
                     </>
                 ))}
+                <br />
             </>
         );
     }
 
     return (
         <Callout className="bill-card">
-            <Button
-                className="congress-link"
-                icon="share"
-                onClick={() => {
-                    window.open(
-                        `https://congress.gov/bill/${bill.congress}-congress/${bill.chamber}-bill/${bill.number}`,
-                        "_blank",
-                    );
-                }}
-            />
             <h2 style={{ marginTop: "0px", marginBottom: "0px" }}>
                 {genTitle()} - {bill.title}
             </h2>
-            <span style={{ fontWeight: "bold" }}>Versions:</span>{" "}
-            <BillVersionsBreadcrumb bill={bill} />
-            <br />
-            <span className="bill-card-introduced-date">
-                <span style={{ fontWeight: "bold" }}>Introduced:</span>{" "}
-                {bill.effective_date}
-            </span>
-            <br />
-            <span style={{ fontWeight: "bold" }}>Tags:</span>
+
+            {bill.effective_date != null ? (
+                <>
+                    <span className="bill-card-introduced-date">
+                        <span style={{ fontWeight: "bold" }}>Introduced:</span>{" "}
+                        {bill.effective_date}
+                    </span>
+                    <br />
+                </>
+            ) : (
+                <></>
+            )}
+            {bill.sponsor != null ? (
+                <>
+                    <span style={{ fontWeight: "bold" }}>Sponsor:</span>{" "}
+                    <LegislatorChip sponsor={bill.sponsor} />
+                </>
+            ) : (
+                ""
+            )}
+            {bill.legislation_versions != null &&
+            bill.legislation_versions.length > 0 ? (
+                <>
+                    <span style={{ fontWeight: "bold" }}>Versions:</span>{" "}
+                    <BillVersionsBreadcrumb bill={bill} />
+                    <br />
+                </>
+            ) : (
+                <></>
+            )}
+
             {renderTags()}
-            <br />
+
             {bill.appropriations ? (
                 <>
                     <span style={{ fontWeight: "bold" }}>Appropriations:</span>{" "}

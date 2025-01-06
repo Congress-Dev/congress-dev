@@ -43,7 +43,7 @@ from billparser.db.models import (
     USCRelease,
     Congress,
 )
-from billparser.metadata.sponsors import extract_sponsors_from_form
+from billparser.metadata.sponsors import extract_sponsors_from_form, extract_sponsors_from_api
 
 from billparser.utils.logger import LogContext
 from billparser.utils.cite_parser import parse_action_for_cite, ActionObject
@@ -466,8 +466,8 @@ def retrieve_existing_legislations(session) -> List[dict]:
         for x in existing_legis
     ]
 
-
-def load_bill(f: str, path: str, bill_obj: object, archive_obj: object) -> LegislationVersion:
+def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object) -> LegislationVersion:
+    global BASE_VERSION, CURRENT_CONGRESS
     init_session()
     with LogContext(
         {
@@ -481,7 +481,7 @@ def load_bill(f: str, path: str, bill_obj: object, archive_obj: object) -> Legis
         res = []
         session = Session()
         try:
-            
+
             found = check_for_existing_legislation_version(bill_obj)
             if found:
                 logging.info(f"Skipping {archive_obj.get('file')}")
@@ -528,7 +528,8 @@ def load_bill(f: str, path: str, bill_obj: object, archive_obj: object) -> Legis
             form_element = root.xpath("//form")
             if len(form_element) > 0:
                 form_element = form_element[0]
-            # extract_sponsors_from_form(form_element, new_bill.legislation_id, session)
+            #extract_sponsors_from_form(form_element, new_bill.legislation_id, session)
+            extract_sponsors_from_api(CURRENT_CONGRESS, bill_obj, new_bill.legislation_id, session)
             legis = root.xpath("//legis-body")
             if len(legis) > 0:
                 legis = legis[0]

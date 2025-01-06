@@ -75,7 +75,7 @@ function BillDiffSidebar({ congress, chamber, billNumber, billVersion, bill }) {
                                 return {
                                     id: n,
                                     icon: "wrench",
-                                    label: `${obj.display.replace("SS", "§")} ${obj.heading}`,
+                                    label: `${obj.display.replace(/SS/g, "§")} ${obj.heading}`,
                                     className: "section-tree",
                                     diffLocation: { ...obj, short_title },
                                 };

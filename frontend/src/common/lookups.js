@@ -3,6 +3,31 @@ export const chamberLookup = {
     House: "H.R.",
     Senate: "S.",
 };
+
+export const versionSort = {
+    ih: 1,
+    is: 1,
+    rfh: 2,
+    rfs: 2,
+    rds: 3,
+    rhs: 3,
+    rcs: 4,
+    rch: 4,
+    rs: 5,
+    rh: 5,
+    pcs: 6,
+    pch: 6,
+    cps: 7,
+    cph: 7,
+    eas: 8,
+    eah: 8,
+    es: 9,
+    eh: 9,
+    ras: 10,
+    rah: 10,
+    enr: 11,
+};
+
 export const versionToFull = {
     ih: "Introduced",
     is: "Introduced",
@@ -40,3 +65,15 @@ export const initialVersionToFull = {
     "Referred w/Amendments": true,
     Enrolled: true,
 };
+
+export const partyLookup = {
+    "Republican": "R",
+    "Democrat": "D",
+    "Independent": "I",
+}
+
+export const partyIntent = {
+    "Republican": "danger",
+    "Democrat": "primary",
+    "Independent": "warning",
+}

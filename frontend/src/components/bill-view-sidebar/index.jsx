@@ -1,11 +1,13 @@
 import React, { useState } from "react";
-import { Tabs, Tab, FormGroup, HTMLSelect, Switch } from "@blueprintjs/core";
+import { Tabs, Tab, FormGroup, HTMLSelect, Switch, Divider, SectionCard } from "@blueprintjs/core";
 import lodash from "lodash";
 
 import {
     BillDiffSidebar,
     BillViewAnchorList,
+    BillVersionsBreadcrumb,
     AppropriationTree,
+    LegislatorChip
 } from "components";
 
 function BillViewSidebar({
@@ -24,99 +26,129 @@ function BillViewSidebar({
 }) {
     const [selectedTab, setSelectedTab] = useState("bill");
 
-    console.log(actionParse);
-
     return (
-        <Tabs
-            id="sidebar-tabs"
-            selectedTabId={selectedTab}
-            onChange={setSelectedTab}
-        >
-            <Tab
-                id="bill"
-                title="Bill"
-                panel={
-                    <>
-                        <FormGroup
-                            label="Version:"
-                            labelFor="bill-version-select"
-                        >
-                            <HTMLSelect
-                                id="bill-version-select"
-                                value={(billVers || "").toUpperCase()}
-                                onChange={(e) =>
-                                    setBillVers(e.currentTarget.value)
-                                }
-                                className="bp3"
-                                options={lodash.map(
-                                    bill.legislation_versions,
-                                    (
-                                        { legislation_version, effective_date },
-                                        ind,
-                                    ) => {
-                                        return {
-                                            label: `${legislation_version} ${effective_date !== "None" ? ` - ${effective_date}` : ""}`,
-                                            value: legislation_version,
-                                        };
-                                    },
-                                )}
-                            />
-                        </FormGroup>
+        <>
+            <SectionCard>
+                <div className="section-detail">
+                    <span className="section-detail-label">Introduced:</span>
+                    <span className="section-detail-value">
+                        {bill.legislation_versions != null
+                            ? bill.legislation_versions[0].effective_date
+                            : ""}
+                    </span>
+                </div>
 
-                        <FormGroup label="Display Options:">
-                            <Switch label="Highlight dates" />
-                            <Switch label="Highlight spending" />
-                            <Switch label="Highlight tags" />
-                            <Switch
-                                label="Action parsing details"
-                                checked={actionParse}
-                                onClick={() => setActionParse(!actionParse)}
-                            />
-                        </FormGroup>
-                    </>
-                }
-            />
-            <Tab
-                id="ud"
-                title="USCode"
-                panel={
-                    <BillDiffSidebar
-                        congress={congress}
-                        chamber={chamber}
-                        billNumber={billNumber}
-                        billVersion={billVers || billVersion}
-                        bill={bill}
-                    />
-                }
-            />
-            <Tab
-                id="datelist"
-                title="Dates"
-                panel={
-                    <BillViewAnchorList
-                        anchors={dateAnchors}
-                        congress={congress}
-                        chamber={chamber}
-                        billNumber={billNumber}
-                        billVersion={billVersion}
-                    />
-                }
-            />
-            {bill2 &&
-                bill2.appropriations &&
-                bill2.appropriations.length > 0 && (
-                    <Tab
-                        id="dollarlist"
-                        title="Dollars"
-                        panel={
-                            <AppropriationTree
-                                appropriations={bill2.appropriations}
-                                onNavigate={scrollContentIdIntoView}
-                            />
-                        }
-                    />
-                )}
-        </Tabs>
+                <div className="section-detail">
+                    <span className="section-detail-label">Sponsor:</span>
+                    <span className="section-detail-value">
+                        <LegislatorChip sponsor={bill2.sponsor} />
+                    </span>
+                </div>
+
+                <div className="section-detail">
+                    <span className="section-detail-label">Versions:</span>
+                    <span className="section-detail-value">
+                        <BillVersionsBreadcrumb bill={bill} />
+                    </span>
+                </div>
+            </SectionCard>
+
+            <Tabs
+                id="sidebar-tabs"
+                selectedTabId={selectedTab}
+                onChange={setSelectedTab}
+            >
+                <Tab
+                    id="bill"
+                    title="Bill"
+                    panel={
+                        <>
+                            <FormGroup
+                                label="Version:"
+                                labelFor="bill-version-select"
+                            >
+                                <HTMLSelect
+                                    id="bill-version-select"
+                                    value={(billVers || "").toUpperCase()}
+                                    onChange={(e) =>
+                                        setBillVers(e.currentTarget.value)
+                                    }
+                                    className="bp3"
+                                    options={lodash.map(
+                                        bill.legislation_versions,
+                                        (
+                                            {
+                                                legislation_version,
+                                                effective_date,
+                                            },
+                                            ind,
+                                        ) => {
+                                            return {
+                                                label: `${legislation_version} ${effective_date !== "None" ? ` - ${effective_date}` : ""}`,
+                                                value: legislation_version,
+                                            };
+                                        },
+                                    )}
+                                />
+                            </FormGroup>
+
+                            <FormGroup label="Display Options:">
+                                <Switch label="Highlight dates" />
+                                <Switch label="Highlight spending" />
+                                <Switch label="Highlight tags" />
+                                <Switch
+                                    label="Action parsing details"
+                                    checked={actionParse}
+                                    onChange={() =>
+                                        setActionParse(!actionParse)
+                                    }
+                                />
+                            </FormGroup>
+                        </>
+                    }
+                />
+                <Tab
+                    id="ud"
+                    title="USCode"
+                    panel={
+                        <BillDiffSidebar
+                            congress={congress}
+                            chamber={chamber}
+                            billNumber={billNumber}
+                            billVersion={billVers || billVersion}
+                            bill={bill}
+                        />
+                    }
+                />
+                <Tab
+                    id="datelist"
+                    title="Dates"
+                    panel={
+                        <BillViewAnchorList
+                            anchors={dateAnchors}
+                            congress={congress}
+                            chamber={chamber}
+                            billNumber={billNumber}
+                            billVersion={billVersion}
+                        />
+                    }
+                />
+                {bill2 &&
+                    bill2.appropriations &&
+                    bill2.appropriations.length > 0 && (
+                        <Tab
+                            id="dollarlist"
+                            title="Dollars"
+                            panel={
+                                <AppropriationTree
+                                    appropriations={bill2.appropriations}
+                                    onNavigate={scrollContentIdIntoView}
+                                />
+                            }
+                        />
+                    )}
+            </Tabs>
+        </>
     );
 }
 

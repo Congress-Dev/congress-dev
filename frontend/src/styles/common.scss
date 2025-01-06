@@ -71,6 +71,11 @@
     margin-left: 1px;
 }
 
+.sidebar .bp5-section-card {
+    padding: 0 0 10px 0;
+    margin-bottom: 10px;
+}
+
 .sidebar .collapse-controls {
     margin-top: 10px;
     margin-bottom: 10px;
@@ -154,6 +159,98 @@
     }
 }
 
+.bp5-drawer {
+    .legislator-profile {
+        h3 {
+            margin-left: 20px;
+        }
+    }
+}
+
+.bp5-section.page {
+    & > .bp5-section-header {
+        .bp5-section-header-left {
+            padding: 25px 0 15px 0;
+
+            h6 {
+                font-size: 2em;
+                line-height: 1em;
+            }
+        }
+    }
+}
+
+.bp5-section.content {
+    padding-left: 0px;
+    margin-left: 20px;
+    width: calc(80% - 20px);
+}
+
+.section-detail {
+    margin-bottom: 5px;
+    white-space: nowrap;
+
+    .section-detail-label,
+    .section-detail-value {
+        display: inline-block;
+    }
+
+    .section-detail-label {
+        font-weight: bold;
+        margin-right: 5px;
+    }
+
+    .section-detail-value {
+        width: 70%;
+
+        .bp5-breadcrumbs {
+            width: 100%;
+        }
+    }
+}
+
+.legislator-profile {
+    .center {
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .image {
+        width: 200px; /* Set a fixed width */
+        height: 200px; /* Set a fixed height */
+        border-radius: 50%; /* Make it circular */
+        overflow: hidden; /* Hide anything outside the circle */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0 auto;
+        background-color: #00000042;
+
+        svg {
+            width: 150px;
+            height: 150px;
+        }
+
+        img {
+            width: 100%; /* Makes the image cover the container width */
+            height: 100%; /* Makes the image cover the container height */
+            object-fit: cover; /* Ensures the image covers the area without stretching */
+        }
+    }
+
+    p {
+        margin: 20px;
+    }
+
+    ul {
+        margin-top: 0px;
+    }
+
+    p + ul {
+        margin-top: -20px;
+    }
+}
+
 @media (min-device-width: 768px) and (max-device-width: 1200px) {
     .page {
         width: 100%;
@@ -179,6 +276,21 @@
 }
 
 @media (max-device-width: 768px) {
+    .bp5-navbar {
+        .logo {
+            display: none;
+        }
+
+        .bp5-navbar-divider {
+            display: none;
+        }
+    }
+
+    .bp5-section.content {
+        margin-left: 0px;
+        width: 100%;
+    }
+
     .mobile {
         display: block;
     }
@@ -195,7 +307,7 @@
     }
 
     .bp5-drawer.bp5-position-right {
-        width: 95%;
+        width: 95% !important;
 
         & > .usc-content-section {
             .usc-content-subsection,

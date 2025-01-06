@@ -3,17 +3,20 @@ from typing import List, Optional
 from sqlalchemy import select
 
 from billparser.db.models import (
+    Appropriation as AppropriationModel,
     Legislation,
+    LegislationSponsorship,
     LegislationVersion,
     LegislationVersionEnum,
+    Legislator,
     USCRelease,
     Version,
-    Appropriation as AppropriationModel,
 )
 from congress_fastapi.db.postgres import get_database
 from congress_fastapi.models.legislation import (
     LegislationMetadata,
     LegislationVersionMetadata,
+    LegislatorMetadata,
     Appropriation,
 )
 
@@ -98,10 +101,42 @@ async def get_legislation_metadata_by_legislation_id(
     )
     usc_res = await database.fetch_one(usc_query)
 
+    sponsor_query = (
+        select(
+            *LegislatorMetadata.sqlalchemy_columns(),
+            LegislationSponsorship.cosponsor,
+        )
+        .join(
+            LegislationSponsorship,
+            LegislationSponsorship.legislator_bioguide_id == Legislator.bioguide_id
+        )
+        .where(
+            LegislationSponsorship.legislation_id == legislation_id
+        )
+        .group_by(
+            Legislator.legislator_id,
+            Legislator.bioguide_id,
+            LegislationSponsorship.cosponsor
+        )
+        .order_by(LegislationSponsorship.cosponsor, Legislator.bioguide_id)
+    )
+
+    sponsor_result = (await database.fetch_all(sponsor_query));
+
+    sponsor_objs = []
+    for sponsor in sponsor_result:
+        try:
+            sponsor_objs.append(LegislatorMetadata(**sponsor))
+        except Exception as e:
+            print(result)
+            print(e)
+
     usc_release_id = (await database.fetch_one(usc_query)).usc_release_id
     return LegislationMetadata(
         legislation_versions=legis_versions,
         usc_release_id=usc_release_id,
         appropriations=appropriations,
+        sponsor=sponsor_objs[0] if len(sponsor_objs) > 0 else None,
+        cosponsors=sponsor_objs[1:] if len(sponsor_objs) > 0 else None,
         **result,
     )

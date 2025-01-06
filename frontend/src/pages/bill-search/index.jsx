@@ -211,11 +211,11 @@ function BillSearch(props) {
             updated = true;
             params.sort = currentSearch.sort;
         }
-        if (currentSearch.text == "" && params.text != "") {
+        if (currentSearch.text == "" && params.text != null) {
             updated = true;
             delete params.text;
         } else if (
-            currentSearch.text != null &&
+            currentSearch.text != "" &&
             params.text != currentSearch.text
         ) {
             updated = true;

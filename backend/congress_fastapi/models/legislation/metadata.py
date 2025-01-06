@@ -5,11 +5,13 @@ from datetime import datetime
 from billparser.db.models import (
     Legislation,
     LegislationVersion,
+    LegislationSponsorship,
     Appropriation as AppropriationModel,
     LegislationVersionEnum,
     USCRelease,
     LegislationContentTag,
     LegislationContentSummary,
+    Legislator
 )
 from congress_fastapi.models.abstract import MappableBase
 
@@ -31,6 +33,22 @@ class Appropriation(MappableBase):
     until_expended: Annotated[bool, AppropriationModel.until_expended]
     expiration_year: Annotated[Optional[int], AppropriationModel.expiration_year]
     brief_purpose: Annotated[Optional[str], AppropriationModel.purpose]
+
+
+class LegislatorMetadata(MappableBase):
+    legislator_id: Annotated[int, Legislator.legislator_id]
+    bioguide_id: Annotated[str, Legislator.bioguide_id]
+    first_name: Annotated[str, Legislator.first_name]
+    middle_name: Annotated[Optional[str], Legislator.middle_name]
+    last_name: Annotated[str, Legislator.last_name]
+    party: Annotated[str, Legislator.party]
+    state: Annotated[Optional[str], Legislator.state]
+    district: Annotated[Optional[str], Legislator.district]
+    image_url: Annotated[Optional[str], Legislator.image_url]
+    image_source: Annotated[Optional[str], Legislator.image_source]
+    profile: Annotated[Optional[str], Legislator.profile]
+
+    cosponsor: Annotated[bool, LegislationSponsorship.cosponsor]
 
 
 class LegislationVersionMetadata(MappableBase):
@@ -70,6 +88,9 @@ class LegislationMetadata(MappableBase):
     legislation_versions: List[LegislationVersionMetadata]
     appropriations: List[Appropriation]
 
+    sponsor: Optional[LegislatorMetadata]
+    cosponsors: Optional[List[LegislatorMetadata]]
+
 
 class LegislationClauseTag(MappableBase):
 
@@ -84,3 +105,5 @@ class LegislationClauseSummary(MappableBase):
     ]
     summary: Annotated[str, LegislationContentSummary.summary]
     prompt_batch_id: Annotated[Optional[int], LegislationContentSummary.prompt_batch_id]
+
+
