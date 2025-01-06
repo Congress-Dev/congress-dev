@@ -1,16 +1,25 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useHistory, Link } from "react-router-dom";
-import lodash, { sum } from "lodash";
+import lodash from "lodash";
 import { Tooltip, Spinner } from "@blueprintjs/core";
 
 import { md5 } from "common/other";
 import { VALID_ACTIONS } from "common/enums";
 import { getLongestString } from "common/utils";
 
+import { BillContext, PreferenceContext, PreferenceEnum } from "context";
+
 import "styles/actions.scss";
 import "styles/bill-view.scss";
 
-function BillDisplay(props) {
+function BillDisplay() {
+    const props = useContext(BillContext);
+    const { preferences } = useContext(PreferenceContext);
+
+    const actionParse = preferences[PreferenceEnum.HIGHLIGHT_ACTIONS];
+    const dateParse = preferences[PreferenceEnum.HIGHLIGHT_DATES];
+    const dollarParse = preferences[PreferenceEnum.HIGHLIGHT_DOLLARS];
+
     // TODO: Add minimap scrollbar
     // *TODO*: Start using the action list to render a list of parsed actions
     // TODO: Add permalink feature
@@ -93,7 +102,7 @@ function BillDisplay(props) {
             if (keys.length > 0) {
                 actionStr.push(<span>{keys[0]}</span>);
                 actionStr.push(<br />);
-                lodash.forEach(actionP[keys[0]], (value, key) => {
+                lodash.forEach(actionP, (value, key) => {
                     if (key !== "REGEX") {
                         actionStr.push(
                             <span style={{ marginLeft: "5px" }}>
@@ -118,7 +127,7 @@ function BillDisplay(props) {
     }
 
     function generateActionHighlighting(contentStr, action) {
-        if (props.showActions === false) {
+        if (actionParse === false) {
             return contentStr;
         }
         // We are looking at the action objects for items within it that represent the captured regex
@@ -135,28 +144,20 @@ function BillDisplay(props) {
       "parsed_cite": "/us/usc/t52/s21083/b/1/A"
     }
     */
+   
         // Within each one we are using the VALID_ACTIONS list to pull out the action key "AMEND-MULTIPLE" in this case
         // And then these correspond to the regex groups we identify, except for the REGEX key, which we ignore
         // Using those substrings, we then highlight the next
-        const strings = lodash
+        let strings = lodash
             .chain(action)
             .map(lodash.toPairs)
             .flatten()
-            .filter((x) => VALID_ACTIONS.includes(x[0]))
-            .map((x) => x[1])
-            .map(lodash.toPairs)
-            .flatten()
-            .filter((x) => x[0] !== "REGEX")
-            .map((x) => {
-                return { [x[0]]: x[1] };
-            })
-            .reduce((s, x) => Object.assign(x, s), {})
             .value();
         let tempStr = contentStr;
-        lodash.forEach(strings, (value, key) => {
+        lodash.forEach(strings, (value) => {
             tempStr = tempStr.replace(
-                value,
-                `<span class="action-${key}">${value}</span>`,
+                value[1],
+                `<span class="action-${value[0]}">${value[1]}</span>`,
             );
         });
         return (
@@ -181,11 +182,13 @@ function BillDisplay(props) {
                             content_type,
                             section_display,
                             heading,
-                            action,
+                            actions,
                             children = [],
                         },
                         ind,
                     ) => {
+                      
+                      const action = actions[0]?.actions[0] || {};
                         let summaryContent = lodash.find(
                             props.billSummary,
                             (e) => {
@@ -196,7 +199,6 @@ function BillDisplay(props) {
                             },
                         );
                         let summaryStr = summaryContent?.summary || "";
-
                         let actionStr = generateActionStr(action);
                         content_str = generateActionHighlighting(
                             content_str,
@@ -209,6 +211,24 @@ function BillDisplay(props) {
                                 ? "content-hash"
                                 : ""
                         }`;
+
+                        let innerClass = "";
+
+                        if (dateParse) {
+                            const dateRegex =
+                                /\b((?:January|February|March|April|May|June|July|August|September|October|November|December)|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec))\s*(\d{1,2})(?:st|nd|rd|th)?,?\s*(\d{4})\b/;
+                            if (dateRegex.test(content_str)) {
+                                innerClass += " content-date";
+                            }
+                        }
+
+                        if (dollarParse) {
+                            const dollarRegex = /\$\d{1,3}(,\d{3})*(\.\d{2})?/;
+                            if (dollarRegex.test(content_str)) {
+                                innerClass += " content-dollar";
+                            }
+                        }
+
                         if (
                             !renderedTarget &&
                             itemHash &&
@@ -274,7 +294,8 @@ function BillDisplay(props) {
                                             </b>
                                             <p
                                                 className={
-                                                    "bill-content-continue"
+                                                    "bill-content-continue" +
+                                                    innerClass
                                                 }
                                             >
                                                 {content_str}
@@ -342,7 +363,9 @@ function BillDisplay(props) {
                                             >
                                                 {section_display}
                                             </span>{" "}
-                                            <span>{content_str}</span>
+                                            <span className={innerClass}>
+                                                {content_str}
+                                            </span>
                                         </span>
                                     </Tooltip>
                                     {renderRecursive({ children })}

@@ -38,10 +38,6 @@ async def get_member_info(bioguide_id: str) -> MemberInfo:
 @router.get("/member/{bioguide_id}/sponsorships")
 async def get_member_sponsorships(
     bioguide_id: str,
-    cosponsored: bool = Query(
-        True, description="Should cosponsored bills be included?"
-    ),
-    sponsored: bool = Query(True, description="Should sponsored bills be included?"),
     responses={
         status.HTTP_404_NOT_FOUND: {
             "model": Error,
@@ -61,6 +57,6 @@ async def get_member_sponsorships(
             status_code=status.HTTP_404_NOT_FOUND, detail="Member not found"
         )
     sponsorships = await get_member_sponsorships_by_bioguide_id(
-        bioguide_id, sponsored, cosponsored
+        bioguide_id
     )
     return LegislationSponsorshipList(legislation_sponsorships=sponsorships)

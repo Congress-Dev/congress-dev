@@ -120,7 +120,7 @@ function USCSidebar(props) {
                             }
                             const prettyDisplay =
                                 content_type == "section"
-                                    ? section_display.replace("SS", "§")
+                                    ? section_display.replace(/SS/g, "§")
                                     : section_display;
                             const nodeObj = {
                                 id: `${usc_chapter_id}.${usc_section_id}`,
@@ -198,6 +198,10 @@ function USCSidebar(props) {
     }
 
     function navigateToSection(node) {
+        if (node.icon != "dot") {
+            return;
+        }
+
         if (node.number) {
             navigate(
                 `/uscode/${props.release}/${node.short_title}/${node.number}`,
@@ -230,7 +234,7 @@ function USCSidebar(props) {
                     }) => {
                         const prettyDisplay =
                             content_type == "section"
-                                ? section_display.replace("SS", "§")
+                                ? section_display.replace(/SS/g, "§")
                                 : section_display;
                         const nodeObj = {
                             id: `${usc_chapter_id}.${usc_section_id}`,

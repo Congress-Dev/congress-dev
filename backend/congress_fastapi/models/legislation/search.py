@@ -5,6 +5,7 @@ from datetime import date
 
 from congress_fastapi.models.legislation.metadata import (
     LegislationVersionMetadata,
+    LegislatorMetadata,
 )
 
 
@@ -22,6 +23,7 @@ class SearchResult(BaseModel):
     tags: List[str]
     summary: Optional[str]
     appropriations: Optional[float]
+    sponsor: Optional[LegislatorMetadata]
 
 
 class SearchResponse(BaseModel):

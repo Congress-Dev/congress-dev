@@ -1,7 +1,9 @@
 import re
+from typing import Dict, Optional, TypedDict
 from billparser.logger import log
 from unidecode import unidecode
 from enum import Enum
+
 
 class ActionType(str, Enum):
     SHORT_TITLE = "SHORT-TITLE"
@@ -18,6 +20,7 @@ class ActionType(str, Enum):
     INSERT_TEXT_AFTER = "INSERT-TEXT-AFTER"
     INSERT_TEXT = "INSERT-TEXT"
     INSERT_TEXT_END = "INSERT-TEXT-END"
+    STRIKE_INSERT_SECTION = "STRIKE-INSERT-SECTION"
     STRIKE_SECTION_INSERT = "STRIKE-SECTION-INSERT"
     STRIKE_SUBSECTION = "STRIKE-SUBSECTION"
     STRIKE_PARAGRAPHS_MULTIPLE = "STRIKE-PARAGRAPHS-MULTIPLE"
@@ -32,6 +35,7 @@ class ActionType(str, Enum):
     FINANCIAL = "FINANCIAL"
     TRANSFER_FUNDS = "TRANSFER-FUNDS"
 
+
 # TODO: This whole file is some honkin bullshit. It's entirely unsustainable, but at the same time, unless I can get them to follow standards, I'm not sure
 # I can actually do anything else but maintain a long ass list of regexes.
 
@@ -39,22 +43,22 @@ class ActionType(str, Enum):
 # These regexes all have named capture groups, because they are incredibly useful
 # The capture groups are typically consistent, especially when the same functions are used between different 'actions'
 regex_holder = {
-    "SHORT-TITLE": [
+    ActionType.SHORT_TITLE: [
         r"This (?P<context_type>(?:act|(?:sub)?title|part)) may be cited as the \"?(?P<title>.+?)\"?\.",
     ],
-    "PURPOSE": [r"The purpose of this Act is (?P<purpose>.+)\."],
-    "CONGRESS-FINDS": [r"Congress finds the following:"],
-    "REPLACE-SECTION": [
+    ActionType.PURPOSE: [r"The purpose of this Act is (?P<purpose>.+)\."],
+    ActionType.CONGRESS_FINDS: [r"Congress finds the following:"],
+    ActionType.REPLACE_SECTION: [
         r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended.?to read as follows:?",
         r"The (?P<target>.+?) is amended to read as follows:",
         r"by amending (?P<target>.+?) to read as follows:",
     ],
-    "IN-CONTEXT": [r"^in (?P<target>.*)-$"],
-    "AMEND-MULTIPLE": [
+    ActionType.IN_CONTEXT: [r"^in (?P<target>.*)-$"],
+    ActionType.AMEND_MULTIPLE: [
         r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended.?",
         r"(?P<target>.+?) of Public Law (?P<public_law_cite>.+?) \((?P<within>.+?)\) is amended-?",
     ],
-    "STRIKE-TEXT": [
+    ActionType.STRIKE_TEXT: [
         r"(?:(?P<target>.+?) of (?P<within>.+?) is amended )?by striking \"(?P<to_remove_text>.+?)\" and inserting \"(?P<to_replace>.+?)\"\.",
         r"(?:in (?P<target>.*),)?\s?by striking \"(?P<to_remove_text>.+?)\" and inserting \"(?P<to_replace>.+?)\"(?:\.|;)",
         r"(?:(?P<target>.+?) of (?P<within>.+?) is amended )?by striking \"(?P<to_remove_text>.+?)\"\.",
@@ -63,69 +67,73 @@ regex_holder = {
         r"by striking \"(?P<to_remove_text>.+?)\"(?:;|\.)",
         r"by striking \"(?P<to_remove_text>.+?)\" at the end of (?P<target>.+?)(?:;|\.)",
         r"in (?P<target>.*) by striking \"(?P<to_remove_text>.+?)\" and inserting \"(?P<to_replace>.+?)\"(?:, and)?",
-        r"in (?P<target>.*), by striking \"(?P<to_remove_text>.+?)\" and all that follows and inserting a (?P<to_replace>.+?); and"
+        r"in (?P<target>.*), by striking \"(?P<to_remove_text>.+?)\" and all that follows and inserting a (?P<to_replace>.+?); and",
     ],
-    "STRIKE-TEXT-MULTIPLE": [
+    ActionType.STRIKE_TEXT_MULTIPLE: [
         r"in (?P<target>.+?), by striking \"(?P<to_remove_text>.+?)\" and inserting \"(?P<to_replace>.+?)\" each place the term appears;",
     ],
-    "STRIKE-INSERT-SECTION": [
+    ActionType.STRIKE_INSERT_SECTION: [
         r"by striking \"(?P<to_remove_section>.+?)\" and inserting the following:"
     ],
-    "INSERT-SECTION-AFTER": [
+    ActionType.INSERT_SECTION_AFTER: [
         r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended by inserting after (?P<target_section>(?:sub)?(?:section|paragraph) .+?) the following(?: new (paragraph|section)s?)?:",
         r"by inserting after (?P<target>(?:sub)?(?:section|paragraph) .+?) the following(?: (?:new )?(?:sub)?(?:section|paragraph)s?)?:",
     ],
-    "INSERT-END": [
+    ActionType.INSERT_END: [
         r"At the end of (?P<target>.+?) of (?P<within>.+?),? insert the following:",
-        r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended by adding at the end the following:",
+        r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended by adding at the end the following:$",
         r"in (?P<target>.*), by adding at the end the following new (?:sub)?paragraph:",
         r"by adding at the end the following new (?:sub)?paragraph:",
+        r"by adding at the end the following:$",
     ],
-    "INSERT-TEXT-AFTER": [
+    ActionType.INSERT_TEXT_AFTER: [
         r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended.? by inserting \"(?P<to_insert_text>.+?)\" after \"(?P<to_remove_text>.+?)\"(?:; and|\.)",
         r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended.? by inserting after \"(?P<to_remove_text>.+?)\" the following: \"(?P<to_insert_text>.+?)\"(?:; and|\.)",
         r"^in (?P<target>.+?), by inserting \"(?P<to_insert_text>.+?)\" after \"(?P<to_remove_text>.+?)\";?",
     ],
-    "INSERT-TEXT": [
+    ActionType.INSERT_TEXT: [
         r"(?:(?P<target>.+?) of (?P<within>.+?) is amended )?by inserting \"(?P<to_insert_text>.+?)\" before \"(?P<target_text>.+?)\".?"
     ],
-    "INSERT-TEXT-END": [
-        r"in (?P<target>.+?), by adding \"(?P<to_replace>.+?)\" at the end;"
+    ActionType.INSERT_TEXT_END: [
+        r"in (?P<target>.+?), by adding \"(?P<to_replace>.+?)\" at the end;",
+        r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended.? by adding at the end the following: \"(?P<to_insert_text>.+?)\"(?:; and|\.)"
     ],
-    "STRIKE-SECTION-INSERT": [
+    ActionType.STRIKE_SECTION_INSERT: [
         r"by striking (?P<target>(?:sub)?(?:section|paragraph) .+?) and inserting the following:"
     ],
-    "STRIKE-SUBSECTION": [  # Done?
+    ActionType.STRIKE_SUBSECTION: [  # Done?
         r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended.? by striking (?P<to_remove_section>(?:sub)?(?:section|paragraph) .+?)(?:;|\.)",
         r"by striking (?P<to_remove_section>(?:sub)?(?:section|paragraph) .+?)(?:;|\.)",
     ],
-    "STRIKE-PARAGRAPHS-MULTIPLE": [
+    ActionType.STRIKE_PARAGRAPHS_MULTIPLE: [
         r"by striking paragraphs (?P<to_remove_sections>.+?)(?:;|\.)"
     ],
-    "REDESIGNATE": [  # Done
+    ActionType.REDESIGNATE: [  # Done
         r"by redesignating (?P<target>.+?) as (?P<redesignation>.+?)(;|\.)"
     ],
-    "REPEAL": [r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is repealed.?"],
-    "EFFECTIVE-DATE": [
+    ActionType.REPEAL: [r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is repealed.?"],
+    ActionType.EFFECTIVE_DATE: [
         r"The amendments made by this section shall apply to taxable years beginning after (?P<effective_date>.+?)\."
     ],
-    "TABLE-OF-CONTENTS": [r"The table of contents (for|of) this Act is as follows:"],
-    "TABLE-OF-CHAPTERS": [r"The table of chapters for title (?P<title>)"],
-    "INSERT-CHAPTER-AT-END": [
+    ActionType.TABLE_OF_CONTENTS: [
+        r"The table of contents (for|of) this Act is as follows:"
+    ],
+    ActionType.TABLE_OF_CHAPTERS: [r"The table of chapters for title (?P<title>)"],
+    ActionType.INSERT_CHAPTER_AT_END: [
         r"Title (?P<title>\d\d?A?), (?P<document_title>.+), is amended by adding at the end the following new chapter:?"
     ],
-    "TERM-DEFINITION": [
+    ActionType.TERM_DEFINITION: [
         r"The term \"(?P<term>.+?)\" means (?P<term_def>.+)\.?",
         r"The term (?P<term>.+?) means (?P<term_def>.+)\.?",
     ],
-    "DATE": [
+    ActionType.DATE: [
         r"(?:(?P<month>(?:Jan|Febr)uary|March|April|May|Ju(?:ne|ly)|August|(?:Septem|Octo|Novem|Decem)ber) (?P<day>\d\d?)\, (?P<year>\d\d\d\d))"
     ],
-    "FINANCIAL": [r"(?P<dollar>\$\s?(\d{1,3}\,?)(\d{3}\,?)*(\.\d\d)?)"],
-    "TRANSFER-FUNDS": [
+    ActionType.FINANCIAL: [r"(?P<dollar>\$\s?(\d{1,3}\,?)(\d{3}\,?)*(\.\d\d)?)"],
+    ActionType.TRANSFER_FUNDS: [
         r"Notwithstanding any other provision of law, amounts made available to carry out (?P<from_budget>.*) shall be made available to (?P<to_budget>.*) to carry out (?P<target>.*)",
-        r"There is appropriated to the (?P<to_budget>.*?), out of any money in the (?P<from_budget>(Treasury)) not otherwise appropriated, (?P<amount>\$[\d,]*) for (?:the )?fiscal year (?P<fiscal_year>\d{4}), to remain available (?P<available>.*)\."
-    ]
+        r"There is appropriated to the (?P<to_budget>.*?), out of any money in the (?P<from_budget>(Treasury)) not otherwise appropriated, (?P<amount>\$[\d,]*) for (?:the )?fiscal year (?P<fiscal_year>\d{4}), to remain available (?P<available>.*)\.",
+    ],
 }
 
 SuchCodeRegex = re.compile(r"(Section|paragraph) (?P<section>\d*)\(", re.IGNORECASE)
@@ -137,7 +145,36 @@ for action in regex_holder:
     regex_holder[action] = [re.compile(x, flags=re.I) for x in regex_holder[action]]
 
 
-def determine_action(text: str) -> dict:
+class Action(TypedDict):
+    action_type: ActionType
+
+    # Come from the regex groups
+    target: Optional[str]
+    within: Optional[str]
+    to_remove_text: Optional[str]
+    to_replace: Optional[str]
+    to_insert_text: Optional[str]
+    target_text: Optional[str]
+    target_section: Optional[str]
+    to_remove_section: Optional[str]
+    redesignation: Optional[str]
+    effective_date: Optional[str]
+    document_title: Optional[str]
+    term: Optional[str]
+    term_def: Optional[str]
+    month: Optional[str]
+    day: Optional[str]
+    year: Optional[str]
+    dollar: Optional[str]
+    from_budget: Optional[str]
+    to_budget: Optional[str]
+    amount: Optional[str]
+    fiscal_year: Optional[str]
+    available: Optional[str]
+    section: Optional[str]
+
+
+def determine_action(text: str) -> Dict[ActionType, Action]:
     """
     Parses the input string against all the regexes
     Searches each action's regexes until it finds one
@@ -161,9 +198,10 @@ def determine_action(text: str) -> dict:
             if res is not None:
                 gg = res.groupdict()
                 gg["REGEX"] = c
+                gg["action_type"] = action
                 actions[action] = gg
                 break
-            elif action == "TRANSFER-FUNDS":
+            elif action == ActionType.TRANSFER_FUNDS:
                 # print("No match for", action, text)
                 pass
     return actions
@@ -235,7 +273,7 @@ class ActionObject(object):
                 )
             # print(f"{self.parsed_cite=}")
         target_section = action.get("target_section", None)
-        
+
         if target_section is not None and len(self.parsed_cite.split("/")) < 5:
             # print("Add target section", self.parsed_cite.split("/"))
             self.parsed_cite = "/".join(

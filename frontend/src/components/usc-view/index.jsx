@@ -60,17 +60,20 @@ function USCView({ release, title, section, diffs = {}, interactive = true }) {
         if (!str) {
             return str;
         }
+        let index = 0;
         if (str.includes("<") && str.includes(">")) {
             const parsed = new xmldoc.XmlDocument(`<str>${str}</str>`);
             return lodash.reduce(
                 parsed.children,
                 (prev, cur) => {
+                    index++;
                     if (cur.text) {
                         return [...prev, cur.text];
                     } else if (cur.name === "usccite") {
                         return [
                             ...prev,
                             <Link
+                                key={index}
                                 to={`/uscode/${release}/${cur.attr.src.replace("/usc/", "")}`}
                             >
                                 {cur.val}

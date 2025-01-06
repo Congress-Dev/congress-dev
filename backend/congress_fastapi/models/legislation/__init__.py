@@ -4,4 +4,5 @@ from .metadata import (
     Appropriation,
     LegislationClauseTag,
     LegislationClauseSummary,
+    LegislatorMetadata,
 )

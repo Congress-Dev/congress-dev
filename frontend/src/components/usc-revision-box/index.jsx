@@ -22,7 +22,9 @@ function USCRevisionBox({
             <p style={{ fontStyle: "italic" }}>{long_title}</p>
             <p>Effective: {effective_date}</p>
             <Button>
-                <a href={url}>House.gov</a>
+                <a target="_blank" href={url}>
+                    House.gov
+                </a>
             </Button>
         </Callout>
     );

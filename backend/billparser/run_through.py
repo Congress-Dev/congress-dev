@@ -43,10 +43,10 @@ from billparser.db.models import (
     USCRelease,
     Congress,
 )
-from billparser.metadata.sponsors import extract_sponsors_from_form
+from billparser.metadata.sponsors import extract_sponsors_from_form, extract_sponsors_from_api
 
 from billparser.utils.logger import LogContext
-from billparser.utils.cite_parser import parse_action_for_cite
+from billparser.utils.cite_parser import parse_action_for_cite, ActionObject
 from billparser.db.handler import Session, init_session
 from billparser.translater import translate_paragraph
 
@@ -180,7 +180,7 @@ def extract_actions(element: Element, path: str) -> List[dict]:
     return res
 
 
-def extract_single_action(element: Element, path: str, parent_cite: str) -> list:
+def extract_single_action(element: Element, path: str, parent_cite: str) -> List[ActionObject]:
     """
     Takes in an element and a path (relative within the bill)
     returns a list of extracted actions.
@@ -466,8 +466,8 @@ def retrieve_existing_legislations(session) -> List[dict]:
         for x in existing_legis
     ]
 
-
 def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object) -> LegislationVersion:
+    global BASE_VERSION, CURRENT_CONGRESS
     init_session()
     with LogContext(
         {
@@ -481,7 +481,7 @@ def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object) -> Legi
         res = []
         session = Session()
         try:
-            
+
             found = check_for_existing_legislation_version(bill_obj)
             if found:
                 logging.info(f"Skipping {archive_obj.get('file')}")
@@ -528,7 +528,8 @@ def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object) -> Legi
             form_element = root.xpath("//form")
             if len(form_element) > 0:
                 form_element = form_element[0]
-            # extract_sponsors_from_form(form_element, new_bill.legislation_id, session)
+            #extract_sponsors_from_form(form_element, new_bill.legislation_id, session)
+            extract_sponsors_from_api(CURRENT_CONGRESS, bill_obj, new_bill.legislation_id, session)
             legis = root.xpath("//legis-body")
             if len(legis) > 0:
                 legis = legis[0]
@@ -797,7 +798,7 @@ def parse_archive(
 
     names = [x for x in names if filter_logic(x)]
     frec = Parallel(n_jobs=THREADS, backend="multiprocessing", verbose=5)(
-        delayed(parse_bill)(
+        delayed(load_bill)(
             archive.open(name["path"], "r").read().decode(),
             str(name["bill_number"]),
             name,
@@ -910,7 +911,7 @@ def parse_archives(
     print("New legislation", len(names))
 
     frec = Parallel(n_jobs=THREADS, backend="loky", verbose=5)(
-        delayed(parse_bill)(
+        delayed(load_bill)(
             open_archives[name["archive_index"]]
             .open(name["path"], "r")
             .read()

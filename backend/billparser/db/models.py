@@ -305,8 +305,6 @@ class LegislationContent(Base):
     content_str = Column(String)
     content_type = Column(String)
 
-    action_parse = Column(CastingArray(JSONB))
-
     legislation_version_id = Column(
         Integer,
         ForeignKey("legislation_version.legislation_version_id", ondelete="CASCADE"),
@@ -334,6 +332,40 @@ class LegislationContent(Base):
         }
         return {k: v for (k, v) in boi.items() if v is not None and v != {}}
 
+
+class LegislationActionParse(Base):
+    """
+    Represents a parsed action in a piece of legislation
+    """
+
+    __tablename__ = "legislation_action_parse"
+
+    legislation_action_parse_id = Column(Integer, primary_key=True)
+
+    legislation_version_id = Column(
+        Integer,
+        ForeignKey("legislation_version.legislation_version_id"),
+        index=True,
+    )
+
+    legislation_content_id = Column(
+        Integer,
+        ForeignKey("legislation_content.legislation_content_id", ondelete="CASCADE"),
+        index=True,
+    )
+
+    actions = Column(CastingArray(JSONB))
+    citations = Column(CastingArray(JSONB))
+
+    def  to_dict(self):
+        boi = {
+            "action_id": self.legislation_action_parse_id,
+            "version_id": self.legislation_version_id,
+            "content_id": self.legislation_content_id,
+            "actions": self.actions,
+            "citations": self.citations,
+        }
+        return {k: v for (k, v) in boi.items() if v is not None and v != {}}
 
 class LegislationContentTag(Base):
     """
@@ -730,6 +762,11 @@ class Legislator(Base):
     party = Column(String, index=True)
     state = Column(String, index=True)
     district = Column(Integer, index=True)
+
+    image_url = Column(String, index=False, nullable=True)
+    image_source = Column(String, index=False, nullable=True)
+
+    profile = Column(String, index=False, nullable=True)
 
 
 class LegislationSponsorship(Base):

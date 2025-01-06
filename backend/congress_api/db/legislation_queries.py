@@ -261,8 +261,8 @@ def get_legislation_version_text(
                 content_str=t.content_str,
                 content_type=t.content_type,
                 action=[
-                    {**x, "cite_link": diff_lookup.get(t.legislation_content_id)}
-                    for x in t.action_parse or []
+                    # {**x, "cite_link": diff_lookup.get(t.legislation_content_id)}
+                    # for x in t.action_parse or []
                 ]
                 if include_parsed
                 else [],
