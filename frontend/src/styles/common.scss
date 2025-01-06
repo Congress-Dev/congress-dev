@@ -43,12 +43,14 @@
     margin-left: 10%;
 }
 
-.bill-card {
-    margin-bottom: 10px;
+.bill-content {
+    max-height: calc(100vh - var(--bill-content-y-position));
+    overflow-y: scroll;
 }
 
-.section-tree div {
+.section-tree div.bp5-tree-node-content {
     height: auto;
+    min-height: 30px;
 }
 .section-tree div span {
     white-space: normal;
@@ -65,6 +67,7 @@
 
 .search-pager {
     float: right;
+    margin: 10px;
 }
 
 .search-pager-buttons button {
@@ -94,6 +97,34 @@
     float: right;
 }
 
+.learn-list {
+    width: 80% !important;
+    margin: 0 auto !important;
+
+    .bp5-card {
+        justify-content: space-between;
+    }
+}
+
+.learn-content {
+    padding-left: 40px !important;
+    padding-right: 40px !important;
+
+    h2 {
+        margin-bottom: 5px;
+        margin-top: 30px;
+        color: #4c90f0;
+    }
+
+    b {
+        color: #8f99a8;
+    }
+}
+
+.learn-nav {
+    padding: 10px 20px !important;
+}
+
 .bill-versions {
     display: inline-flex;
 }
@@ -120,6 +151,14 @@
     padding-left: 18px;
 }
 
+.content-date {
+    background-color: #68c1ee;
+}
+
+.content-dollar {
+    background-color: #d69fd6;
+}
+
 .bp5-dark {
     .content-added {
         background-color: #2f8842;
@@ -131,6 +170,14 @@
 
     .content-hash {
         border-color: #fff;
+    }
+
+    .content-date {
+        background-color: #0c5174;
+    }
+
+    .content-dollar {
+        background-color: #5c255c;
     }
 }
 
@@ -276,6 +323,11 @@
 }
 
 @media (max-device-width: 768px) {
+    .learn-list {
+        width: 100% !important;
+        margin: initial !important;
+    }
+
     .bp5-navbar {
         .logo {
             display: none;
@@ -298,8 +350,8 @@
         display: inline-flex;
     }
 
-    .no-mobile {
-        display: none !important;
+    .mobile-nav .bp5-button {
+        height: 40px;
     }
 
     .usc-release-box {

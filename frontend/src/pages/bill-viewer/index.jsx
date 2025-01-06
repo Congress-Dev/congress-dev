@@ -1,15 +1,9 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import lodash from "lodash";
 import { useHistory } from "react-router-dom";
-import {
-    Callout,
-    Button,
-    Drawer,
-    Section,
-    SectionCard,
-} from "@blueprintjs/core";
+import { Callout, Section, SectionCard } from "@blueprintjs/core";
 
-import { ThemeContext } from "context";
+import { BillContext } from "context";
 
 import { chamberLookup, versionToFull } from "common/lookups";
 import {
@@ -19,7 +13,7 @@ import {
     getBillVersionTextv2,
 } from "common/api";
 
-import { BillDisplay, BillViewSidebar } from "components";
+import { BillDisplay, BillViewSidebar, BillViewToolbar } from "components";
 
 // Default bill versions to choose
 // TODO: These should be enums
@@ -29,27 +23,36 @@ const defaultVers = {
 };
 
 function BillViewer(props) {
+    const { congress, chamber, billNumber, billVersion, uscTitle, uscSection } =
+        props.match.params;
+
+    const elementRef = useRef();
+    const history = useHistory();
+
     // TODO: Add sidebar for viewing the differences that a bill will generate
     // TODO: Option for comparing two versions of the same bill and highlighting differences
     const [bill, setBill] = useState({});
     const [bill2, setBill2] = useState({});
-    const [textTree, setTextTree] = useState({});
-    const [actionParse, setActionParse] = useState(false);
-
-    const [dateAnchors, setDateAnchors] = useState([]);
-    const [treeLookup, setTreeLookup] = useState({});
-    const history = useHistory();
-    const { congress, chamber, billNumber, billVersion, uscTitle, uscSection } =
-        props.match.params;
-
+    const [billSummary, setBillSummary] = useState([]);
+    const [billEffective, setBillEffective] = useState(null);
     const [billVers, setBillVers] = useState(
         billVersion || defaultVers[chamber.toLowerCase()],
     );
-    const [billEffective, setBillEffective] = useState(null);
 
-    const [billSummary, setBillSummary] = useState([]);
-    const [drawerOpen, setDrawerOpen] = useState(false);
-    const { isDarkMode, setIsDarkMode } = useContext(ThemeContext);
+    const [textTree, setTextTree] = useState({});
+    const [treeLookup, setTreeLookup] = useState({});
+    const [dateAnchors, setDateAnchors] = useState([]);
+
+    useEffect(() => {
+        const element = elementRef.current;
+        if (element) {
+            const yPosition = element.getBoundingClientRect().top + 135;
+            document.documentElement.style.setProperty(
+                "--bill-content-y-position",
+                `${yPosition}px`,
+            );
+        }
+    }, []);
 
     useEffect(() => {
         // If we didn't get a bill version, default to the introduced one.
@@ -82,7 +85,7 @@ function BillViewer(props) {
                     );
                     setBillEffective(matchingVersion.effective_date);
                 } else {
-                    setBillEffective(null)
+                    setBillEffective(null);
                 }
 
                 return response;
@@ -199,94 +202,50 @@ function BillViewer(props) {
     };
 
     return (
-        <Section
-            className="page"
-            title={bill.title}
-            subtitle={`${chamberLookup[bill.chamber]} ${bill.number}`}
+        <BillContext.Provider
+            value={{
+                bill,
+                bill2,
+                billEffective,
+                billNumber,
+                billSummary,
+                billVers,
+                billVersion,
+                chamber,
+                congress,
+                dateAnchors,
+                scrollContentIdIntoView,
+                setBillVers,
+                textTree,
+            }}
         >
-            {billSummary != null && billSummary[0] != null ? (
+            <Section
+                className="page"
+                title={bill.title}
+                subtitle={`${chamberLookup[bill.chamber]} ${bill.number}`}
+            >
                 <SectionCard>
-                    <div className="section-detail">
-                        <span className="section-detail-label">Summary:</span>
-                        <span className="section-detail-value">
-                            {billSummary[0].summary}
-                        </span>
+                    <div className="sidebar">
+                        <BillViewSidebar />
                     </div>
-                </SectionCard>
-            ) : (
-                ""
-            )}
 
-            <SectionCard>
-                <div className="sidebar no-mobile">
-                    <BillViewSidebar
-                        congress={congress}
-                        chamber={chamber}
-                        billNumber={billNumber}
-                        billVers={billVers}
-                        bill={bill}
-                        dateAnchors={dateAnchors}
-                        bill2={bill2}
-                        scrollContentIdIntoView={scrollContentIdIntoView}
-                        setActionParse={setActionParse}
-                        billVersion={billVersion}
-                        setBillVers={setBillVers}
-                        actionParse={actionParse}
-                    />
-                </div>
-                <Drawer
-                    className={isDarkMode ? "bp5-dark" : ""}
-                    isOpen={drawerOpen}
-                    onClose={() => setDrawerOpen(false)}
-                    isCloseButtonShown={true}
-                    title="Display Options"
-                    lazy={false}
-                >
-                    <BillViewSidebar
-                        congress={congress}
-                        chamber={chamber}
-                        billNumber={billNumber}
-                        billVers={billVers}
-                        bill={bill}
-                        dateAnchors={dateAnchors}
-                        bill2={bill2}
-                        scrollContentIdIntoView={scrollContentIdIntoView}
-                        setActionParse={setActionParse}
-                        billVersion={billVersion}
-                        setBillVers={setBillVers}
-                        actionParse={actionParse}
-                    />
-                </Drawer>
-                <Section
-                    className="content"
-                    title={versionToFull[billVers.toLowerCase()]}
-                    subtitle={billEffective}
-                    compact={true}
-                    icon="drag-handle-vertical"
-                    rightElement={
-                        <Button
-                            className="bill-options mobile-flex"
-                            icon="cog"
-                            onClick={() => {
-                                setDrawerOpen(true);
-                            }}
-                        />
-                    }
-                >
-                    <Callout>
-                        <BillDisplay
-                            congress={congress}
-                            chamber={chamber}
-                            billNumber={billNumber}
-                            billVersion={billVersion}
-                            billSummary={billSummary}
-                            textTree={textTree}
-                            showActions={actionParse}
-                        />
-                    </Callout>
-                </Section>
-            </SectionCard>
-        </Section>
+                    <Section
+                        compact={true}
+                        className="content"
+                        title={versionToFull[billVers.toLowerCase()]}
+                        subtitle={billEffective}
+                        icon="drag-handle-vertical"
+                        rightElement={<BillViewToolbar />}
+                    >
+                        <Callout>
+                            <div className="bill-content" ref={elementRef}>
+                                <BillDisplay />
+                            </div>
+                        </Callout>
+                    </Section>
+                </SectionCard>
+            </Section>
+        </BillContext.Provider>
     );
 }
 

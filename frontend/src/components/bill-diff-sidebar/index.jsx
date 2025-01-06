@@ -3,21 +3,24 @@ import lodash from "lodash";
 import { withRouter } from "react-router-dom";
 import { Tree, Drawer, Spinner } from "@blueprintjs/core";
 
-import { ThemeContext } from "context/theme";
+import { ThemeContext, BillContext } from "context";
 import {
     getBillVersionDiffSummary,
     getBillVersionDiffForSection,
 } from "common/api";
 import { USCView } from "components";
 
-function BillDiffSidebar({ congress, chamber, billNumber, billVersion, bill }) {
+function BillDiffSidebar() {
     const [tree, setTree] = useState([]);
     const [treeExpansion, setTreeExpansion] = useState({ 0: true });
     const [drawerOpen, setDrawerOpen] = useState(false);
     const [diffs, setDiffs] = useState({});
     const [diffLocation, setDiffLocation] = useState(null);
     const [results, setResults] = useState(false);
-    const { isDarkMode, setIsDarkMode } = useContext(ThemeContext);
+    const { isDarkMode } = useContext(ThemeContext);
+
+    const { congress, chamber, billNumber, bill, billVersion } =
+        useContext(BillContext);
 
     function navigateToSection(node) {
         if (node.diffLocation == null) {
@@ -74,7 +77,6 @@ function BillDiffSidebar({ congress, chamber, billNumber, billVersion, bill }) {
                                 n += 1;
                                 return {
                                     id: n,
-                                    icon: "wrench",
                                     label: `${obj.display.replace(/SS/g, "§")} ${obj.heading}`,
                                     className: "section-tree",
                                     diffLocation: { ...obj, short_title },

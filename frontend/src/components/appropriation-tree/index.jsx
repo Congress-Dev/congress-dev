@@ -1,73 +1,12 @@
+import React, { useContext } from "react";
 import lodash from "lodash";
-import { Callout, HTMLTable, Tag } from "@blueprintjs/core";
 
-const AppropriationItem = ({ appropriation, onNavigate }) => {
-    return (
-        <>
-            <Callout>
-                <h4
-                    className="appropriation-title"
-                    onClick={() =>
-                        onNavigate(appropriation.legislationContentId)
-                    }
-                >
-                    {appropriation.parentId ? "Sub " : ""}Appropriation #
-                    {appropriation.appropriationId}{" "}
-                    {appropriation.newSpending && (
-                        <Tag intent="warning">New Spending</Tag>
-                    )}
-                </h4>
-                <HTMLTable
-                    compact={true}
-                    striped={true}
-                    className="appropriation-item"
-                >
-                    <tbody>
-                        <tr>
-                            <td>
-                                <b>Purpose</b>
-                            </td>
-                            <td>{appropriation.briefPurpose}</td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <b>Amount</b>
-                            </td>
-                            <td>${appropriation.amount.toLocaleString()}</td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <b>Until Expended</b>
-                            </td>
-                            <td>
-                                {appropriation.untilExpended ? "Yes" : "No"}
-                            </td>
-                        </tr>
-                        {appropriation.fiscalYears.length > 0 && (
-                            <tr>
-                                <td>
-                                    <b>Fiscal Years</b>
-                                </td>
-                                <td>{appropriation.fiscalYears.join(", ")}</td>
-                            </tr>
-                        )}
-                        {appropriation.expirationYear && (
-                            <tr>
-                                <td>
-                                    <b>Expires</b>
-                                </td>
-                                <td>{appropriation.expirationYear}</td>
-                            </tr>
-                        )}
-                    </tbody>
-                </HTMLTable>
-            </Callout>
-            <br />
-        </>
-    );
-};
+import { AppropriationItem } from "components";
+import { BillContext } from "context";
 
-const AppropriationTree = ({ appropriations, onNavigate }) => {
+const AppropriationTree = () => {
+    const { bill2, scrollContentIdIntoView } = useContext(BillContext);
+
     function createNestedAppropriationTree(appropriations) {
         // Put all of them into a hashmap by parentId
         // then create a tuple of (parentId, children)
@@ -75,7 +14,6 @@ const AppropriationTree = ({ appropriations, onNavigate }) => {
         // sort them by their appropriationId
         // for each of them, render their children in a list under them
         let appropMap = {};
-        let appropTree = [];
         lodash.forEach(appropriations, (approp) => {
             if (approp.parentId in appropMap) {
                 appropMap[approp.parentId].push(approp);
@@ -92,7 +30,7 @@ const AppropriationTree = ({ appropriations, onNavigate }) => {
                 <AppropriationItem
                     key={rootApprop.parentId}
                     appropriation={rootApprop}
-                    onNavigate={onNavigate}
+                    onNavigate={scrollContentIdIntoView}
                 />,
             );
             if (children) {
@@ -106,7 +44,7 @@ const AppropriationTree = ({ appropriations, onNavigate }) => {
                             <AppropriationItem
                                 key={child.parentId}
                                 appropriation={child}
-                                onNavigate={onNavigate}
+                                onNavigate={scrollContentIdIntoView}
                             />
                         ))}
                     </div>,
@@ -116,7 +54,16 @@ const AppropriationTree = ({ appropriations, onNavigate }) => {
         return <>{results.map((x) => x)}</>;
     }
 
-    return createNestedAppropriationTree(appropriations);
+    return bill2 != null &&
+        bill2.appropriations != null &&
+        bill2.appropriations.length > 0 ? (
+        createNestedAppropriationTree(bill2.appropriations)
+    ) : (
+        <p>
+            There have been no appropriations parsed in the contents of this
+            bill.
+        </p>
+    );
 };
 
 export default AppropriationTree;
