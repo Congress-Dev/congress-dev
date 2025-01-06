@@ -5,4 +5,4 @@ if __name__ == "__main__":
     """
     Run the bioguide importer from the zip
     """
-    BioGuideImporter().run_import()
+    BioGuideImporter().download_to_database()
