@@ -5,26 +5,16 @@ import { BillContext } from "context";
 
 import {
     BillDiffSidebar,
+    BillTableOfContents,
     BillVersionsBreadcrumb,
     AppropriationTree,
     LegislatorChip,
 } from "components";
 
-function BillViewSidebar(props) {
-    const [selectedTab, setSelectedTab] = useState("uscode");
+function BillViewSidebar() {
+    const [selectedTab, setSelectedTab] = useState("toc");
 
-    const {
-        congress,
-        chamber,
-        billNumber,
-        billSummary,
-        billVers,
-        bill,
-        dateAnchors,
-        bill2,
-        scrollContentIdIntoView,
-        billVersion,
-    } = useContext(BillContext);
+    const { billSummary, bill, bill2 } = useContext(BillContext);
 
     return (
         <>
@@ -67,32 +57,17 @@ function BillViewSidebar(props) {
                 onChange={setSelectedTab}
             >
                 <Tab
-                    id="uscode"
-                    title="USCode"
-                    panel={
-                        <BillDiffSidebar
-                            congress={congress}
-                            chamber={chamber}
-                            billNumber={billNumber}
-                            billVersion={billVers || billVersion}
-                            bill={bill}
-                        />
-                    }
+                    id="toc"
+                    title="Contents"
+                    panel={<BillTableOfContents />}
                 />
-                {bill2 &&
-                    bill2.appropriations &&
-                    bill2.appropriations.length > 0 && (
-                        <Tab
-                            id="dollarlist"
-                            title="Dollars"
-                            panel={
-                                <AppropriationTree
-                                    appropriations={bill2.appropriations}
-                                    onNavigate={scrollContentIdIntoView}
-                                />
-                            }
-                        />
-                    )}
+                <Tab id="uscode" title="USCode" panel={<BillDiffSidebar />} />
+
+                <Tab
+                    id="dollarlist"
+                    title="Spending"
+                    panel={<AppropriationTree />}
+                />
             </Tabs>
         </>
     );

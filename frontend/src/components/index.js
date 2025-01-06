@@ -1,9 +1,11 @@
 export { default as AppBar } from "./appbar";
+export { default as AppropriationItem } from "./appropriation-item";
 export { default as AppropriationTree } from "./appropriation-tree";
 export { default as BillCard } from "./bill-card";
 export { default as BillDiffSidebar } from "./bill-diff-sidebar";
 export { default as BillDisplay } from "./bill-display";
 export { default as BillSearchContent } from "./bill-search-content";
+export { default as BillTableOfContents } from "./bill-table-of-contents";
 export { default as BillVersionsBreadcrumb } from "./bill-versions-breadcrumb";
 export { default as BillViewSidebar } from "./bill-view-sidebar";
 export { default as BillViewToolbar } from "./bill-view-toolbar";

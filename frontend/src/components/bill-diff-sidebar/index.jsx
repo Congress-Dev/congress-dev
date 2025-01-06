@@ -3,14 +3,14 @@ import lodash from "lodash";
 import { withRouter } from "react-router-dom";
 import { Tree, Drawer, Spinner } from "@blueprintjs/core";
 
-import { ThemeContext } from "context/theme";
+import { ThemeContext, BillContext } from "context";
 import {
     getBillVersionDiffSummary,
     getBillVersionDiffForSection,
 } from "common/api";
 import { USCView } from "components";
 
-function BillDiffSidebar({ congress, chamber, billNumber, billVersion, bill }) {
+function BillDiffSidebar() {
     const [tree, setTree] = useState([]);
     const [treeExpansion, setTreeExpansion] = useState({ 0: true });
     const [drawerOpen, setDrawerOpen] = useState(false);
@@ -18,6 +18,9 @@ function BillDiffSidebar({ congress, chamber, billNumber, billVersion, bill }) {
     const [diffLocation, setDiffLocation] = useState(null);
     const [results, setResults] = useState(false);
     const { isDarkMode } = useContext(ThemeContext);
+
+    const { congress, chamber, billNumber, bill, billVersion } =
+        useContext(BillContext);
 
     function navigateToSection(node) {
         if (node.diffLocation == null) {
