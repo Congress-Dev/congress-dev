@@ -9,16 +9,17 @@ from billparser.db.models import (
     LegislationContent,
     LegislationChamber,
     LegislationVersionEnum,
+    LegislationActionParse,
     Version,
 )
 from billparser.db.caching import FromCache
 from cachetools import cached, TTLCache
-from sqlalchemy import or_, String
+from sqlalchemy import or_, String, func
 from sqlalchemy.sql.expression import cast
 from sqlalchemy.sql import alias
 import re
 
-from typing import List
+from typing import Dict, List
 
 import platform
 
@@ -49,7 +50,9 @@ def get_chapters(version_id=DEFAULT_VERSION_ID) -> List[USCChapter]:
 
 
 @cached(cache=TTLCache(maxsize=512, ttl=CACHE_TIME))
-def get_bills(house: int, senate: int, query: str, incl: str, decl: str) -> List[Legislation]:
+def get_bills(
+    house: int, senate: int, query: str, incl: str, decl: str
+) -> List[Legislation]:
     """
     Gets the Bill rows according to the filters.
 
@@ -72,7 +75,9 @@ def get_bills(house: int, senate: int, query: str, incl: str, decl: str) -> List
         results = results.filter(
             or_(
                 Legislation.title.ilike(f"%{query}%"),
-                cast(Legislation.number, String).like(re.sub(r"[^0-9\s]", "", query).strip()),
+                cast(Legislation.number, String).like(
+                    re.sub(r"[^0-9\s]", "", query).strip()
+                ),
             )
         )
     if incl != "":
@@ -159,7 +164,9 @@ def get_sections(chapter_id: int, version_id: int) -> List[USCSection]:
     """
     results = (
         current_session.query(USCSection)
-        .filter(USCSection.usc_chapter_id == chapter_id, USCSection.version_id == version_id)
+        .filter(
+            USCSection.usc_chapter_id == chapter_id, USCSection.version_id == version_id
+        )
         .all()
     )
     return results
@@ -211,7 +218,9 @@ def get_content(section_id: int, version_id: int) -> List[USCContent]:
     """
     results = (
         current_session.query(USCContent)
-        .filter(USCContent.usc_section_id == section_id, USCContent.version_id == version_id)
+        .filter(
+            USCContent.usc_section_id == section_id, USCContent.version_id == version_id
+        )
         .order_by(USCContent.order_number.asc())
         .all()
     )
@@ -251,7 +260,11 @@ def get_diffs(bill_version_id: int) -> List[USCContentDiff]:
     Returns:
         List[USCContentDiff]: List of USCContentDiff for the bill version
     """
-    legis_vers = current_session.query(LegislationVersion).filter(LegislationVersion.legislation_version_id == bill_version_id).all()
+    legis_vers = (
+        current_session.query(LegislationVersion)
+        .filter(LegislationVersion.legislation_version_id == bill_version_id)
+        .all()
+    )
     if len(legis_vers) == 0:
         return []
     results = (
@@ -324,3 +337,30 @@ def get_latest_base() -> Version:
         return current_session.query(Version).filter(Version.base_id == None).all()[0]
     except Exception:
         return None
+
+
+def check_for_action_parses(legislation_version_id: List[int]) -> Dict[int, int]:
+    """
+    Return a dict of the number of action parses for each legislation_version_id
+    """
+
+    results = (
+        current_session.query(
+            LegislationActionParse.legislation_version_id,
+            func.count(LegislationActionParse.legislation_action_parse_id),
+        )
+        .filter(
+            LegislationActionParse.legislation_version_id.in_(legislation_version_id)
+        )
+        .group_by(LegislationActionParse.legislation_version_id)
+        .all()
+    )
+    return {x[0]: x[1] for x in results}
+
+
+def get_legislation_versions() -> List[LegislationVersion]:
+    """
+    Returns a list of all legislation_version_ids
+    """
+    results = current_session.query(LegislationVersion).all()
+    return [x[0] for x in results]

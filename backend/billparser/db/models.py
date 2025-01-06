@@ -357,6 +357,15 @@ class LegislationActionParse(Base):
     actions = Column(CastingArray(JSONB))
     citations = Column(CastingArray(JSONB))
 
+    def  to_dict(self):
+        boi = {
+            "action_id": self.legislation_action_parse_id,
+            "version_id": self.legislation_version_id,
+            "content_id": self.legislation_content_id,
+            "actions": self.actions,
+            "citations": self.citations,
+        }
+        return {k: v for (k, v) in boi.items() if v is not None and v != {}}
 
 class LegislationContentTag(Base):
     """
