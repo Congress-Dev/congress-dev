@@ -61,7 +61,7 @@ function BillViewSidebar() {
                     title="Contents"
                     panel={<BillTableOfContents />}
                 />
-                <Tab id="uscode" title="USCode" panel={<BillDiffSidebar />} />
+                <Tab id="uscode" title="Diffs" panel={<BillDiffSidebar />} />
 
                 <Tab
                     id="dollarlist"
