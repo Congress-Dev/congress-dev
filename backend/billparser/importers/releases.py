@@ -21,7 +21,8 @@ def download_path(url: str):
 
 
 if __name__ == "__main__":
-    release_points = json.load(open(sys.argv[1], "rt"))
+    file_location = "rp.json" if len(sys.argv) < 2 else sys.argv[1]
+    release_points = json.load(open(file_location, "rt"))
     session = Session()
     for rp in release_points:
         print("=" * 5)
