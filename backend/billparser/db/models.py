@@ -180,7 +180,7 @@ class Legislation(Base):
 
     __tablename__ = "legislation"
     __table_args__ = (
-        UniqueConstraint("chamber", "number", "legislation_type", name="unq_bill"),
+        UniqueConstraint("chamber", "number", "legislation_type", "congress_id", name="unq_bill"),
     )
     legislation_id = Column(Integer, primary_key=True)
 

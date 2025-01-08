@@ -43,7 +43,10 @@ from billparser.db.models import (
     USCRelease,
     Congress,
 )
-from billparser.metadata.sponsors import extract_sponsors_from_form, extract_sponsors_from_api
+from billparser.metadata.sponsors import (
+    extract_sponsors_from_form,
+    extract_sponsors_from_api,
+)
 
 from billparser.utils.logger import LogContext
 from billparser.utils.cite_parser import parse_action_for_cite, ActionObject
@@ -180,7 +183,9 @@ def extract_actions(element: Element, path: str) -> List[dict]:
     return res
 
 
-def extract_single_action(element: Element, path: str, parent_cite: str) -> List[ActionObject]:
+def extract_single_action(
+    element: Element, path: str, parent_cite: str
+) -> List[ActionObject]:
     """
     Takes in an element and a path (relative within the bill)
     returns a list of extracted actions.
@@ -243,7 +248,6 @@ def extract_single_action(element: Element, path: str, parent_cite: str) -> List
 
 
 def find_or_create_bill(bill_obj: dict, title: str, session: "SQLAlchemy.session"):
-    global BASE_VERSION, CURRENT_CONGRESS
     new_version = Version(base_id=BASE_VERSION)
     session.add(new_version)
     session.commit()
@@ -251,6 +255,10 @@ def find_or_create_bill(bill_obj: dict, title: str, session: "SQLAlchemy.session
         session.query(Legislation)
         .filter(Legislation.number == bill_obj["bill_number"])
         .filter(Legislation.chamber == LegislationChamber(bill_obj["chamber"]))
+        .filter(
+            Legislation.congress_id
+            == EXISTING_CONGRESS[int(bill_obj["congress_session"])]
+        )
         .all()
     )
     if len(existing_bill) > 0:
@@ -262,7 +270,9 @@ def find_or_create_bill(bill_obj: dict, title: str, session: "SQLAlchemy.session
             chamber=LegislationChamber(bill_obj["chamber"]),
             legislation_type=LegislationType.Bill,
             version_id=new_version.version_id,
-            congress_id=CURRENT_CONGRESS,  # CURRENT_CONGRESS is set by the ensure_congress function
+            congress_id=EXISTING_CONGRESS[
+                int(bill_obj["congress_session"])
+            ],  # CURRENT_CONGRESS is set by the ensure_congress function
         )
         session.add(new_bill)
         session.commit()
@@ -397,6 +407,8 @@ def check_for_existing_legislation_version(bill_obj: object) -> bool:
         .filter(
             Legislation.number == bill_obj["bill_number"],
             Legislation.chamber == LegislationChamber(bill_obj["chamber"]),
+            Legislation.congress_id
+            == EXISTING_CONGRESS[int(bill_obj["congress_session"])],
         )
         .all()
     )
@@ -439,8 +451,10 @@ def retrieve_existing_legislations(session) -> List[dict]:
         for x in existing_legis
     ]
 
-def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object) -> LegislationVersion:
-    global BASE_VERSION, CURRENT_CONGRESS
+
+def parse_bill(
+    f: str, path: str, bill_obj: object, archive_obj: object
+) -> LegislationVersion:
     init_session()
     with LogContext(
         {
@@ -501,8 +515,13 @@ def parse_bill(f: str, path: str, bill_obj: object, archive_obj: object) -> Legi
             form_element = root.xpath("//form")
             if len(form_element) > 0:
                 form_element = form_element[0]
-            #extract_sponsors_from_form(form_element, new_bill.legislation_id, session)
-            extract_sponsors_from_api(CURRENT_CONGRESS, bill_obj, new_bill.legislation_id, session)
+            # extract_sponsors_from_form(form_element, new_bill.legislation_id, session)
+            extract_sponsors_from_api(
+                EXISTING_CONGRESS[int(bill_obj["congress_session"])],
+                bill_obj,
+                new_bill.legislation_id,
+                session,
+            )
             legis = root.xpath("//legis-body")
             if len(legis) > 0:
                 legis = legis[0]
@@ -827,7 +846,9 @@ def parse_archives(
                 congress_session = parsed.group("session")
                 bill_number = int(parsed.group("bill_number"))
                 bill_version = parsed.group("bill_version")
-                file_title = f"{congress_session} - {house}{bill_number} - {bill_version}"
+                file_title = (
+                    f"{congress_session} - {house}{bill_number} - {bill_version}"
+                )
                 names.append(
                     {
                         "title": file_title,
@@ -838,6 +859,7 @@ def parse_archives(
                         ),
                         "chamber": LegislationChamber.from_string(chamb[house]),
                         "archive_index": arch_ind,
+                        "congress_session": congress_session,
                     }
                 )
             except Exception as e:
