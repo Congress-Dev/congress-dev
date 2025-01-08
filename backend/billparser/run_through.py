@@ -362,33 +362,6 @@ def recursive_bill_content(
         elif "quote" in root_path:
             # print("Within quote")
             pass
-        else:
-            try:
-                temp_actions = [extract_single_action(search_element, path, parent_cite)]
-                new_acts = []
-                res.append(temp_actions[0])
-                path = temp_actions[0].get("enum", path)
-                for act in temp_actions:
-                    act["legislation_content"] = content
-                    if act.get("parsed_cite") is not None:
-                        parent_cite = str(act.get("parsed_cite"))
-                    chg, act2 = run_action2(act, None, vers_id, session)
-                    for e in act2:
-                        e["changed"] = chg
-                    new_acts.extend(act2)
-
-                for e in new_acts:
-                    if isinstance(
-                        e.get("action", {}).get("text_element"), etree._Element
-                    ):
-                        e["action"]["text_element"] = e["action"]["text_element"].tag
-                    if isinstance(e.get("action", {}).get("next"), etree._Element):
-                        e["action"]["next"] = e["action"]["next"].tag
-                    extracted_action.append(e)
-                # res.extend(extracted_action)
-            except Exception as e:
-                traceback.print_exc()
-                pass
     if (search_element.tag == "legis-body" or "id" in search_element.attrib) and len(
         search_element
     ) > 0:
@@ -911,7 +884,7 @@ def parse_archives(
     print("New legislation", len(names))
 
     frec = Parallel(n_jobs=THREADS, backend="loky", verbose=5)(
-        delayed(load_bill)(
+        delayed(parse_bill)(
             open_archives[name["archive_index"]]
             .open(name["path"], "r")
             .read()
