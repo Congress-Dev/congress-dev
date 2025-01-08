@@ -125,6 +125,23 @@ class LegislationVersionEnum(str, enum.Enum):
         else:
             raise ValueError(f"Invalid version: {string}")
 
+class User(Base):
+    """
+    Holds the relationships for the website user
+    """
+
+    ___tablename__ = "user"
+
+    user_id = Column(Integer, primary_key=True)
+    user_first_name = Column(String, nullable=False)
+    user_last_name = Column(String, nullable=False)
+    user_email = Column(String, nullable=False)
+
+    user_auth_password = Column(String, nullable=True)
+    user_auth_google = Column(String, nullable=True)
+
+    user_cookie = Column(String, nullable=True)
+
 
 class Congress(Base):
     """

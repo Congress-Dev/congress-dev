@@ -1,10 +1,17 @@
 import React, { useState, useContext } from "react";
 import { useHistory } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
+
 import {
     Alignment,
     Button,
     Classes,
+    Dialog,
+    Popover,
+    Menu,
+    MenuItem,
     Drawer,
+    Icon,
     Navbar,
     NavbarDivider,
     NavbarGroup,
@@ -12,12 +19,13 @@ import {
     Position,
 } from "@blueprintjs/core";
 
-import { ThemeContext } from "context";
+import { LoginContext, ThemeContext } from "context";
 
 function AppBar() {
     const history = useHistory();
     const [isOpen, setIsOpen] = useState(false);
     const { isDarkMode, setDarkMode } = useContext(ThemeContext);
+    const { user, handleLogin, handleLogout } = useContext(LoginContext);
 
     const toggleDarkMode = () => {
         setDarkMode(!isDarkMode);
@@ -103,28 +111,61 @@ function AppBar() {
                 </NavbarHeading>
                 <NavbarDivider />
                 <div className="desktop-nav">{navigationItems()}</div>
-
+            </NavbarGroup>
+            <NavbarGroup className="options-group" align={Alignment.RIGHT}>
                 <Button
-                    className={Classes.MINIMAL + " button-right"}
+                    className={Classes.MINIMAL}
                     icon={isDarkMode ? "flash" : "moon"}
                     onClick={toggleDarkMode}
                 />
-
-                <Drawer
-                    isOpen={isOpen}
-                    className={"mobile-nav " + (isDarkMode ? "bp5-dark" : "")}
-                    onClose={handleClose}
-                    position={Position.LEFT}
-                    canOutsideClickClose={true}
-                    autoFocus={true}
-                    canEscapeKeyClose={true}
-                    enforceFocus={true}
-                    hasBackdrop={true}
-                    usePortal={true}
+                <Popover
+                    content={
+                        <Menu>
+                            {user != null && (
+                                <MenuItem
+                                    text="Logout"
+                                    onClick={handleLogout}
+                                />
+                            )}
+                            {user == null && (
+                                <MenuItem text="Login" onClick={handleLogin} />
+                            )}
+                        </Menu>
+                    }
+                    placement="bottom"
                 >
-                    {navigationItems()}
-                </Drawer>
+                    <Button className={Classes.MINIMAL}>
+                        {user != null ? (
+                            <img
+                                src={user.picture}
+                                alt="Profile"
+                                style={{
+                                    width: "30px",
+                                    height: "30px",
+                                    borderRadius: "50%",
+                                }}
+                            />
+                        ) : (
+                            <Icon icon="user" />
+                        )}
+                    </Button>
+                </Popover>
             </NavbarGroup>
+
+            <Drawer
+                isOpen={isOpen}
+                className={"mobile-nav " + (isDarkMode ? "bp5-dark" : "")}
+                onClose={handleClose}
+                position={Position.LEFT}
+                canOutsideClickClose={true}
+                autoFocus={true}
+                canEscapeKeyClose={true}
+                enforceFocus={true}
+                hasBackdrop={true}
+                usePortal={true}
+            >
+                {navigationItems()}
+            </Drawer>
         </Navbar>
     );
 }
