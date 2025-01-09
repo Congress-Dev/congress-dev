@@ -125,22 +125,60 @@ class LegislationVersionEnum(str, enum.Enum):
         else:
             raise ValueError(f"Invalid version: {string}")
 
+
 class User(Base):
     """
     Holds the relationships for the website user
     """
 
-    ___tablename__ = "user"
+    __tablename__ = "user_ident"
 
-    user_id = Column(Integer, primary_key=True)
+    user_id = Column(String, primary_key=True)
     user_first_name = Column(String, nullable=False)
     user_last_name = Column(String, nullable=False)
-    user_email = Column(String, nullable=False)
+    user_state = Column(String, nullable=True)
+    user_image = Column(String, nullable=True)
 
     user_auth_password = Column(String, nullable=True)
     user_auth_google = Column(String, nullable=True)
+    user_auth_expiration = Column(DateTime(timezone=False), nullable=True)
+    user_auth_cookie = Column(String, nullable=True)
 
-    user_cookie = Column(String, nullable=True)
+
+class UserLegislation(Base):
+    """
+    Holds the relationship between User and favorited Legislation
+    """
+
+    __tablename__  = "user_legislation"
+
+    user_legislation_id = Column(Integer, primary_key=True)
+
+    user_id = Column(
+        Integer, ForeignKey("user.user_id", ondelete="CASCADE"), index=True
+    )
+
+    legislation_id = Column(
+        Integer, ForeignKey("legislation.legislation_id", ondelete="CASCADE"), index=True
+    )
+
+
+class UserLegislator(Base):
+    """
+    Holds the relationship between User and favorited Legislator
+    """
+
+    __tablename__  = "user_legislator"
+
+    user_legislator_id = Column(Integer, primary_key=True)
+
+    user_id = Column(
+        Integer, ForeignKey("user.user_id", ondelete="CASCADE"), index=True
+    )
+
+    legislator_id = Column(
+        Integer, ForeignKey("legislator.legislator_id", ondelete="CASCADE"), index=True
+    )
 
 
 class Congress(Base):

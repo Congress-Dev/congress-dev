@@ -137,7 +137,7 @@ function AppBar() {
                     <Button className={Classes.MINIMAL}>
                         {user != null ? (
                             <img
-                                src={user.picture}
+                                src={`data:image/png;base64, ${user.userImage}`}
                                 alt="Profile"
                                 style={{
                                     width: "30px",

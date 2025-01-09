@@ -9,6 +9,7 @@ from congress_fastapi.routes.legislation_version import (
     router as legislation_version_router,
 )
 from congress_fastapi.routes.search import router as search_router
+from congress_fastapi.routes.user import router as user_router
 
 origins = [
     "http://localhost:3000",
@@ -42,4 +43,5 @@ app.include_router(members_router)
 app.include_router(legislation_router)
 app.include_router(legislation_version_router)
 app.include_router(search_router)
+app.include_router(user_router)
 print("Loaded")

@@ -1,42 +1,40 @@
-import React, { createContext, useState } from "react";
-import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
-import jwtDecode from "jwt-decode";
+import React, { createContext, useState, useEffect } from "react";
+import { useGoogleLogin } from "@react-oauth/google";
+
+import { userLogin, userLogout, userGet } from "common/api";
 
 export const LoginContext = createContext();
 
 export const LoginProvider = ({ children }) => {
-    const [user, setUser] = useState(null); // State to store user info
+    const [user, setUser] = useState(null);
 
-    const handleLoginSuccess = (credentialResponse) => {
-        const decoded = jwtDecode(credentialResponse.credential); // Decode the JWT
-        setUser({
-            name: decoded.name,
-            email: decoded.email,
-            picture: decoded.picture, // User's profile picture
+    useEffect(() => {
+        userGet().then((response) => {
+            setUser(response);
         });
-        console.log("User Info:", decoded); // Log the user info for debugging
-    }
+    }, []);
+
+    const handleLoginSuccess = (authObject) => {
+        userLogin(authObject.access_token, authObject.expires_in).then(
+            (response) => {
+                setUser(response);
+            },
+        );
+    };
 
     function handleLoginFailure() {
         console.error("Login Failed");
     }
 
     const handleLogin = useGoogleLogin({
-        onSuccess: (credentialResponse) => {
-            console.log(credentialResponse)
-            const decoded = jwtDecode(credentialResponse.credential); // Decode the JWT
-            setUser({
-                name: decoded.name,
-                email: decoded.email,
-                picture: decoded.picture, // User's profile picture
-            });
-            console.log("User Info:", decoded);
-        },
+        onSuccess: handleLoginSuccess,
         onError: handleLoginFailure,
     });
 
     function handleLogout() {
-        setUser(null); // Clear user info on logout
+        userLogout().then(() => {
+            setUser(null);
+        });
     }
 
     return (
