@@ -19,13 +19,15 @@ async def user(request: Request) -> Optional[UserLoginResponse]:
         user = await handle_get_user(
             cookie=cookie
         )
+
     except InvalidTokenException:
         return None
     except Exception as e:
         print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
-    return UserLoginResponse(**user)
+    if user is not None:
+        return UserLoginResponse(**user)
 
 
 @router.post(

@@ -132,6 +132,7 @@ class User(Base):
     """
 
     __tablename__ = "user_ident"
+    __table_args__ = {"schema": "sensitive"}
 
     user_id = Column(String, primary_key=True)
     user_first_name = Column(String, nullable=False)
@@ -151,11 +152,12 @@ class UserLegislation(Base):
     """
 
     __tablename__  = "user_legislation"
+    __table_args__ = {"schema": "sensitive"}
 
     user_legislation_id = Column(Integer, primary_key=True)
 
     user_id = Column(
-        Integer, ForeignKey("user.user_id", ondelete="CASCADE"), index=True
+        String, ForeignKey("sensitive.user_ident.user_id", ondelete="CASCADE"), index=True
     )
 
     legislation_id = Column(
@@ -169,11 +171,12 @@ class UserLegislator(Base):
     """
 
     __tablename__  = "user_legislator"
+    __table_args__ = {"schema": "sensitive"}
 
     user_legislator_id = Column(Integer, primary_key=True)
 
     user_id = Column(
-        Integer, ForeignKey("user.user_id", ondelete="CASCADE"), index=True
+        String, ForeignKey("sensitive.user_ident.user_id", ondelete="CASCADE"), index=True
     )
 
     legislator_id = Column(

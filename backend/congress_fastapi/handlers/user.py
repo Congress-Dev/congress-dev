@@ -26,7 +26,10 @@ async def handle_get_user(cookie):
     query = select(User).where(User.user_auth_cookie == cookie)
     result = await database.fetch_all(query)
 
-    return result[0]
+    if len(result) > 0:
+        return result[0]
+    else:
+        return None
 
 async def handle_update_user_auth(user):
     database = await get_database()
