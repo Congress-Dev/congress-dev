@@ -23,6 +23,38 @@ if (window.location.href.includes("congress.dev")) {
 }
 export const endpoint = endP;
 
+export const userGet = () => {
+    return fetch(`${endPv2}/user`, {
+        credentials: "include",
+    })
+        .then(handleStatus)
+        .catch(toastError);
+};
+
+export const userLogin = (accessToken, expiresIn) => {
+    return fetch(`${endPv2}/user/login`, {
+        method: "POST",
+        body: JSON.stringify({
+            access_token: accessToken,
+            expires_in: expiresIn,
+        }),
+        credentials: "include",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    })
+        .then(handleStatus)
+        .catch(toastError);
+};
+
+export const userLogout = () => {
+    return fetch(`${endPv2}/user/logout`, {
+        credentials: "include",
+    })
+        .then(handleStatus)
+        .catch(toastError);
+};
+
 export const getBill = (congress, chamber, billNumber) => {
     return fetch(
         `${endpoint}/congress/${congress}/${capFirstLetter(
@@ -90,44 +122,42 @@ export const getBillVersionText = (
         .catch(toastError);
 };
 
-export const getBillVersionTextv2 = (
-  legislationVersionId
-) => {
-  // Grab the bill text, and then put it into the nested format
-  // TODO: Move this treeification to the server?
-  return fetch(
-    `${endPv2}/legislation_version/${legislationVersionId}/text?include_parsed=true`,
-  )
-      .then(handleStatus)
-      .then((flatJson) => {
-          if (flatJson) {
-              let looped = {};
-              const sorted = lodash.sortBy(
-                  flatJson,
-                  ({ legislation_content_id, order_number }) =>
-                      `${legislation_content_id
-                          .toString()
-                          .padStart(
-                              10,
-                              "0",
-                          )}.${order_number.toString().padStart(3, "0")}`,
-              );
-              if (sorted.length === 0) {
-                  return {};
-              }
-              lodash.forEach(sorted, (obj) => {
-                  let copyObj = { ...obj, children: [] };
-                  looped[copyObj.legislation_content_id] = copyObj;
-                  if (copyObj.parent_id) {
-                      looped[copyObj.parent_id].children.push(copyObj);
-                  }
-              });
-              return looped[sorted[0].legislation_content_id];
-          } else {
-              return {};
-          }
-      })
-      .catch(toastError);
+export const getBillVersionTextv2 = (legislationVersionId) => {
+    // Grab the bill text, and then put it into the nested format
+    // TODO: Move this treeification to the server?
+    return fetch(
+        `${endPv2}/legislation_version/${legislationVersionId}/text?include_parsed=true`,
+    )
+        .then(handleStatus)
+        .then((flatJson) => {
+            if (flatJson) {
+                let looped = {};
+                const sorted = lodash.sortBy(
+                    flatJson,
+                    ({ legislation_content_id, order_number }) =>
+                        `${legislation_content_id
+                            .toString()
+                            .padStart(
+                                10,
+                                "0",
+                            )}.${order_number.toString().padStart(3, "0")}`,
+                );
+                if (sorted.length === 0) {
+                    return {};
+                }
+                lodash.forEach(sorted, (obj) => {
+                    let copyObj = { ...obj, children: [] };
+                    looped[copyObj.legislation_content_id] = copyObj;
+                    if (copyObj.parent_id) {
+                        looped[copyObj.parent_id].children.push(copyObj);
+                    }
+                });
+                return looped[sorted[0].legislation_content_id];
+            } else {
+                return {};
+            }
+        })
+        .catch(toastError);
 };
 export const getUSCRevisions = () => {
     // Grab the list of USCode revision points from the server
@@ -231,14 +261,12 @@ export const getCongressSearch = (
         .then(handleStatus)
         .catch(toastError);
 };
-export const getBillActionsv2 = (
-  legislationVersionId
-) => {
-  return fetch(
-      `${endPv2}/legislation_version/${legislationVersionId}/actions`,
-  )
-      .then(handleStatus)
-      .catch(toastError);
+export const getBillActionsv2 = (legislationVersionId) => {
+    return fetch(
+        `${endPv2}/legislation_version/${legislationVersionId}/actions`,
+    )
+        .then(handleStatus)
+        .catch(toastError);
 };
 export const getBillVersionDiffSummary = (session, chamber, bill, version) => {
     return fetch(

@@ -4,6 +4,7 @@
     "private": true,
     "dependencies": {
         "@blueprintjs/core": "^5.0.0",
+        "@react-oauth/google": "^0.12.1",
         "@testing-library/jest-dom": "^5.17.0",
         "@testing-library/react": "^13.4.0",
         "@testing-library/user-event": "^13.5.0",
@@ -12,6 +13,7 @@
         "crypto-browserify": "^3.12.0",
         "diff": "^4.0.2",
         "env-cmd": "^10.1.0",
+        "jwt-decode": "^3.1.2",
         "process": "^0.11.10",
         "query-string": "^6.11.0",
         "react": "^18.2.0",
@@ -46,7 +48,7 @@
         ]
     },
     "devDependencies": {
-        "react-app-rewired": "^2.2.1",
-        "prettier": "^3.4.2"
+        "prettier": "^3.4.2",
+        "react-app-rewired": "^2.2.1"
     }
 }

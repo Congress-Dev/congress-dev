@@ -23,13 +23,12 @@ function BillTableOfContents(props) {
         if (textTree == null || textTree.children == null) {
             return [];
         }
-        // console.log(textTree)
 
         const headings = [];
         let idx = 0;
 
         for (const child of textTree?.children) {
-            if (child.content_type != "title") {
+            if (child.content_type != "title" && child.content_type != "division") {
                 continue;
             }
 
@@ -37,8 +36,8 @@ function BillTableOfContents(props) {
 
             for (const subchild of child.children) {
                 if (
-                    subchild.content_type != "section" ||
-                    subchild.heading == null
+                    subchild.content_type != "section" &&
+                    subchild.content_type != "title"
                 ) {
                     continue;
                 }

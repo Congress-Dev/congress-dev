@@ -22,7 +22,7 @@ function BillViewSidebar() {
                 <div className="section-detail">
                     <span className="section-detail-label">Introduced:</span>
                     <span className="section-detail-value">
-                        {bill.legislation_versions != null
+                        {bill?.legislation_versions != null
                             ? bill.legislation_versions[0].effective_date
                             : ""}
                     </span>
@@ -31,7 +31,7 @@ function BillViewSidebar() {
                 <div className="section-detail">
                     <span className="section-detail-label">Sponsor:</span>
                     <span className="section-detail-value">
-                        <LegislatorChip sponsor={bill2.sponsor} />
+                        <LegislatorChip sponsor={bill2?.sponsor} />
                     </span>
                 </div>
 
