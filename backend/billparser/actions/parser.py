@@ -6,7 +6,7 @@ from billparser.utils.cite_parser import (
     parse_action_for_cite,
     parse_text_for_cite,
 )
-from billparser.db.handler import Session
+from billparser.db.handler import Session, init_session
 
 from sqlalchemy import select
 import logging
@@ -358,28 +358,36 @@ def recursively_extract_actions(
 
 
 def parse_bill_for_actions(legislation_version: LegislationVersion):
+    
     # Inside a transaction, we will generate all of the actions for a bill
+    global PARSER_SESSION
+    if PARSER_SESSION is None:
+        init_session()
+        PARSER_SESSION = Session()
+    try:
+        with PARSER_SESSION.begin():
+            # Retrieve all the content for the legislation version
+            contents = get_bill_contents(legislation_version.legislation_version_id)
 
-    with PARSER_SESSION.begin():
-        # Retrieve all the content for the legislation version
-        contents = get_bill_contents(legislation_version.legislation_version_id)
+            # Put into a dict by parent
+            # This will constitute our traversal of the tree
+            content_by_parent_id: Dict[int, List[LegislationContent]] = defaultdict(list)
+            for content in contents:
+                content_by_parent_id[content.parent_id].append(content)
 
-        # Put into a dict by parent
-        # This will constitute our traversal of the tree
-        content_by_parent_id: Dict[int, List[LegislationContent]] = defaultdict(list)
-        for content in contents:
-            content_by_parent_id[content.parent_id].append(content)
+            # Sort the lists now so we can proceed in a depth first manner
+            for parent_id, content_list in content_by_parent_id.items():
+                content_list.sort(key=lambda x: x.legislation_content_id)
 
-        # Sort the lists now so we can proceed in a depth first manner
-        for parent_id, content_list in content_by_parent_id.items():
-            content_list.sort(key=lambda x: x.legislation_content_id)
+            root_content = content_by_parent_id[None]
 
-        root_content = content_by_parent_id[None]
-
-        # Iterate over the root children
-        for content in root_content:
-            recursively_extract_actions(
-                content_by_parent_id, content, [], legislation_version.version_id
-            )
-        PARSER_SESSION.flush()
-        PARSER_SESSION.commit()
+            # Iterate over the root children
+            for content in root_content:
+                recursively_extract_actions(
+                    content_by_parent_id, content, [], legislation_version.version_id
+                )
+            PARSER_SESSION.flush()
+            PARSER_SESSION.commit()
+    except:
+        pass
+            

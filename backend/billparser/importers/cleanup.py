@@ -8,7 +8,8 @@ FROM   (SELECT legislation.legislation_id,
                chamber,
                "number",
                lv.legislation_version,
-               Count(lc.legislation_content_id) AS items
+               Count(lc.legislation_content_id) AS items,
+               congress_id
         FROM   PUBLIC.legislation
                LEFT JOIN legislation_version AS lv
                       ON lv.legislation_id = legislation.legislation_id
@@ -17,7 +18,8 @@ FROM   (SELECT legislation.legislation_id,
         GROUP  BY legislation.legislation_id,
                   chamber,
                   "number",
-                  legislation_version) AS t
+                  legislation_version,
+                  congress_id) AS t
 WHERE  t.items = 0; 
 """
 
