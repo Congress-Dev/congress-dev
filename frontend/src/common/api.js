@@ -220,7 +220,13 @@ export const getUSCSectionContent = (
         .then(handleStatus)
         .then((flatJson) => {
             if (flatJson) {
-                let looped = {};
+                // Create a fake root
+                let looped = {[null]: {
+                  content_type: '{}section',
+                  usc_content_id: 0,
+                  usc_ident: '/',
+                  children: []
+                }};
                 const sorted = lodash.sortBy(
                     flatJson.content,
                     ({ usc_content_id, order_number }) =>
@@ -232,11 +238,14 @@ export const getUSCSectionContent = (
                 lodash.forEach(sorted, (obj) => {
                     let copyObj = { ...obj, children: [] };
                     looped[copyObj.usc_content_id] = copyObj;
-                    if (copyObj.parent_id) {
+                    if (copyObj.parent_id && looped[copyObj.parent_id]) {
                         looped[copyObj.parent_id].children.push(copyObj);
+                    } else {
+                      // If we can't find it, add it to the root
+                      looped[null].children.push(copyObj);
                     }
                 });
-                return { children: [looped[sorted[0].usc_content_id]] };
+                return { children: [looped[null]] };
             } else {
                 return {};
             }

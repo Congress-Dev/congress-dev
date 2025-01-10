@@ -9,6 +9,9 @@ from billparser.utils.cite_parser import (
 from billparser.db.handler import Session, init_session
 
 from sqlalchemy import select
+from sqlalchemy.orm import aliased
+from sqlalchemy.sql import func
+
 import logging
 
 from collections import defaultdict
@@ -233,32 +236,101 @@ def insert_section_after(
     quote_block = content_by_parent_id[action_parse.legislation_content_id]
     assert len(quote_block) == 1, "Should be singular child"
     quote_block = quote_block[0]
-    assert quote_block.content_type == "quoted-block", f"Should actually be a quote block; {quote_block.content_type}"
+    assert (
+        quote_block.content_type == "quoted-block"
+    ), f"Should actually be a quote block; {quote_block.content_type}"
 
     # Iterate over all of it's children and generate the USCContent/USCContentDiff for them
     # The first level children are going to need to be children of target_content's parent
     # so we'll do them here
     for child in content_by_parent_id[quote_block.legislation_content_id]:
-        contents, diffs = _recursively_insert_content(current_sibling, parent_content, child, content_by_parent_id, action_parse, version_id, session)
+        contents, diffs = _recursively_insert_content(
+            current_sibling,
+            parent_content,
+            child,
+            content_by_parent_id,
+            action_parse,
+            version_id,
+            session,
+        )
         # Update the sibling since we have just inserted a new content
         current_sibling = contents[0]
         created_diffs.extend(diffs)
     return created_diffs
 
-def insert_section_end(    action: ActionObject,
+
+def insert_section_end(
+    action: ActionObject,
     action_parse: LegislationActionParse,
     citation: str,
     content_by_parent_id: Dict[int, List[LegislationContent]],
     version_id: int,
-    session: "Session"):
+    session: "Session",
+):
     # We assume our target citation is the parent section, so to insert at the end we need to find the last child
     query = select(USCContent).where(USCContent.usc_ident == citation)
     results = session.execute(query).all()
     target_section = results[0][0]
-    query = select(USCContent).where(USCContent.parent_id == target_section.usc_content_id).order_by(USCContent.order_number.desc()).limit(1)
+    query = (
+        select(USCContent)
+        .where(USCContent.parent_id == target_section.usc_content_id)
+        .order_by(USCContent.order_number.desc())
+        .limit(1)
+    )
     results = session.execute(query).all()
     last_content = results[0][0]
-    return insert_section_after(last_content, target_section, action, action_parse, last_content.usc_ident, content_by_parent_id, version_id, session)
+    return insert_section_after(
+        last_content,
+        target_section,
+        action,
+        action_parse,
+        last_content.usc_ident,
+        content_by_parent_id,
+        version_id,
+        session,
+    )
+
+
+def strike_section(
+    action: ActionObject, citation: str, session: "Session"
+) -> List[USCContentDiff]:
+    # Create USCContentDiffs with the content_str and heading set to ""
+    query = select(USCContent).where(USCContent.usc_ident == citation)
+    target_section = session.execute(query).first()[0]
+    parent = aliased(USCContent)
+    child = aliased(USCContent)
+
+    # Recursive CTE to get all descendants
+    cte = (
+        select(parent.usc_content_id)
+        .where(
+            parent.usc_content_id == target_section.usc_content_id
+        )  # Replace target_id with the starting USCContent ID
+        .cte(name="descendants", recursive=True)
+    )
+
+    cte = cte.union_all(
+        select(child.usc_content_id).where(child.parent_id == cte.c.usc_content_id)
+    )
+
+    # Query to get all descendant IDs
+    query = select(cte.c.usc_content_id)
+    results = session.execute(query).scalars().all()
+
+    query = select(USCContent).where(USCContent.usc_content_id.in_(results))
+    contents = session.execute(query).all()
+
+    return [
+        USCContentDiff(
+            usc_content_id=x[0].usc_content_id,
+            usc_section_id=x[0].usc_section_id,
+            content_str="",
+            heading="",
+            section_display="",
+        )
+        for x in contents
+    ]
+
 
 def apply_action(
     content_by_parent_id: Dict[int, List[LegislationContent]],
@@ -311,7 +383,18 @@ def apply_action(
                     insert_text_end(act_obj, computed_citation, PARSER_SESSION)
                 )
             elif act == ActionType.INSERT_END:
-                diffs.extend(insert_section_end(act_obj, action, computed_citation, content_by_parent_id,version_id, PARSER_SESSION))
+                diffs.extend(
+                    insert_section_end(
+                        act_obj,
+                        action,
+                        computed_citation,
+                        content_by_parent_id,
+                        version_id,
+                        PARSER_SESSION,
+                    )
+                )
+            elif act == ActionType.STRIKE_SUBSECTION:
+                diffs.extend(strike_section(act_obj, computed_citation, PARSER_SESSION))
             # print(act_obj)
             # print(computed_citation)
     for diff in diffs:
@@ -358,7 +441,7 @@ def recursively_extract_actions(
 
 
 def parse_bill_for_actions(legislation_version: LegislationVersion):
-    
+
     # Inside a transaction, we will generate all of the actions for a bill
     global PARSER_SESSION
     if PARSER_SESSION is None:
@@ -371,7 +454,9 @@ def parse_bill_for_actions(legislation_version: LegislationVersion):
 
             # Put into a dict by parent
             # This will constitute our traversal of the tree
-            content_by_parent_id: Dict[int, List[LegislationContent]] = defaultdict(list)
+            content_by_parent_id: Dict[int, List[LegislationContent]] = defaultdict(
+                list
+            )
             for content in contents:
                 content_by_parent_id[content.parent_id].append(content)
 
@@ -390,4 +475,3 @@ def parse_bill_for_actions(legislation_version: LegislationVersion):
             PARSER_SESSION.commit()
     except:
         pass
-            

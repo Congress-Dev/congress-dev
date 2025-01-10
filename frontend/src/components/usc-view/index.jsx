@@ -206,10 +206,9 @@ function USCView({ release, title, section, diffs = {}, interactive = true }) {
         );
     }
 
-    if (contentTree.loading) {
+    if (contentTree === undefined || contentTree?.loading) {
         return <Spinner intent="primary" />;
     }
-
     return <>{renderRecursive(contentTree)}</>;
 }
 
