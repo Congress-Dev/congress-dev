@@ -3,10 +3,20 @@ import base64
 from datetime import datetime, timedelta
 import hashlib
 
-from sqlalchemy import select, update
+from sqlalchemy import select, update, join, delete
 from sqlalchemy.dialects.postgresql import insert
+from sqlalchemy.orm import aliased
 
-from billparser.db.models import User
+from billparser.db.models import (
+    User,
+    Legislation,
+    Legislator,
+    UserLegislation,
+    UserLegislator,
+    LegislationSponsorship,
+    LegislationVersion,
+    Congress
+)
 from congress_fastapi.db.postgres import get_database
 from congress_fastapi.models.user import UserLoginResponse, UserLogoutResponse
 
@@ -16,6 +26,149 @@ GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
 class InvalidTokenException(Exception):
     def __init__(self):
         self.name = ""
+
+async def handle_get_user_legislation_update(cookie, legislation_id, action):
+    legislation_id = int(legislation_id)
+
+    if cookie is None:
+        raise InvalidTokenException()
+
+    user = await handle_get_user(cookie=cookie)
+
+    database = await get_database()
+
+    if action == 'add':
+        query = insert(UserLegislation).values(legislation_id=legislation_id, user_id=user.user_id)
+    elif action == 'remove':
+        query = delete(UserLegislation).where(UserLegislation.legislation_id == legislation_id).where(UserLegislation.user_id == user.user_id)
+
+    await database.execute(query)
+    response = await handle_get_user_legislation(cookie)
+    return response
+
+
+async def handle_get_user_legislator_update(cookie, legislator_id, action):
+    legislator_id = int(legislator_id)
+
+    if cookie is None:
+        raise InvalidTokenException()
+
+    user = await handle_get_user(cookie=cookie)
+
+    database = await get_database()
+
+    if action == 'add':
+        query = insert(UserLegislator).values(legislator_id=legislator_id, user_id=user.user_id)
+    elif action == 'remove':
+        query = delete(UserLegislator).where(UserLegislator.legislator_id == legislator_id).where(UserLegislation.user_id == user.user_id)
+
+    await database.execute(query)
+    response = await handle_get_user_legislator_update(cookie)
+    return response
+
+
+async def handle_get_user_legislation(cookie):
+    if cookie is None:
+        raise InvalidTokenException()
+
+    database = await get_database()
+
+    now = datetime.utcnow()
+    seven_days_ago = now - timedelta(days=7)
+
+    query = (
+        select(
+            Legislation.legislation_id,
+            Legislation.title,
+            Legislation.number,
+            Congress.session_number,
+            Legislation.legislation_type,
+            Legislation.chamber,
+        )
+        .select_from(
+            join(
+                UserLegislation,
+                Legislation,
+                Legislation.legislation_id == UserLegislation.legislation_id,
+            ).join(
+                LegislationVersion,
+                LegislationVersion.legislation_id == Legislation.legislation_id
+            ).join(Congress, Congress.congress_id == Legislation.congress_id)
+        )
+        .group_by(
+            Legislation.legislation_id,
+            Legislation.title,
+            Congress.session_number,
+            Legislation.number,
+            Legislation.congress_id,
+            Legislation.legislation_type,
+            Legislation.chamber,
+        )
+        #.where(LegislationVersion.created_at >= seven_days_ago)
+    )
+
+    results = await database.fetch_all(query)
+    legislation = [dict(r) for r in results]
+
+    return {
+        'legislation': legislation
+    }
+
+
+async def handle_get_user_legislator(cookie):
+    if cookie is None:
+        raise InvalidTokenException()
+
+    database = await get_database()
+
+    now = datetime.utcnow()
+    seven_days_ago = now - timedelta(days=7)
+
+    query = (
+        select(
+            Legislation.legislation_id,
+            Legislation.title,
+            Legislation.number,
+            Congress.session_number,
+            Legislation.legislation_type,
+            Legislation.chamber,
+        ).select_from(
+            join(
+                UserLegislator,
+                Legislator,
+                Legislator.legislator_id == UserLegislator.legislator_id,
+            ).join(
+                LegislationSponsorship,
+                LegislationSponsorship.legislator_bioguide_id == Legislator.bioguide_id
+            ).join(
+                Legislation,
+                Legislation.legislation_id == LegislationSponsorship.legislation_id
+            ).join(
+                LegislationVersion,
+                LegislationVersion.legislation_id == Legislation.legislation_id
+            ).join(
+                Congress, Congress.congress_id == Legislation.congress_id
+            )
+        )
+        .group_by(
+            Legislation.legislation_id,
+            Legislation.title,
+            Congress.session_number,
+            Legislation.number,
+            Legislation.congress_id,
+            Legislation.legislation_type,
+            Legislation.chamber,
+        )
+        #.where(LegislationVersion.created_at >= seven_days_ago)
+    )
+
+    results = await database.fetch_all(query)
+    legislation = [dict(r) for r in results]
+
+    return {
+        'legislation': legislation
+    }
+
 
 async def handle_get_user(cookie):
     if cookie is None:
@@ -30,6 +183,7 @@ async def handle_get_user(cookie):
         return result[0]
     else:
         return None
+
 
 async def handle_update_user_auth(user):
     database = await get_database()

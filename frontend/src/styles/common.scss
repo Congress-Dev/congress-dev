@@ -113,6 +113,12 @@
     }
 }
 
+.home-page {
+    .bp5-section.bp5-card + .bp5-section.bp5-card {
+        margin-top: 20px;
+    }
+}
+
 .learn-nav {
     padding: 10px 20px !important;
 }

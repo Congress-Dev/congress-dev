@@ -8,13 +8,42 @@ import {
     MenuDivider,
 } from "@blueprintjs/core";
 
+import { userAddLegislation, userRemoveLegislation } from "common/api";
 import { versionToFull } from "common/lookups";
-import { BillContext, PreferenceContext, PreferenceEnum } from "context";
+import {
+    LoginContext,
+    BillContext,
+    PreferenceContext,
+    PreferenceEnum,
+} from "context";
 
 function BillViewToolbar() {
+    const { favoriteBillIds, setFavoriteBills } = useContext(LoginContext);
     const { preferences, setPreference } = useContext(PreferenceContext);
     const billContext = useContext(BillContext);
     const history = useHistory();
+
+    console.log(favoriteBillIds)
+
+    function handleBillFavorite() {
+        if (favoriteBillIds?.includes(billContext.bill.legislation_id)) {
+            userRemoveLegislation(billContext.bill.legislation_id).then(
+                (response) => {
+                    if (response.legislation != null) {
+                        setFavoriteBills(response.legislation);
+                    }
+                },
+            );
+        } else {
+            userAddLegislation(billContext.bill.legislation_id).then(
+                (response) => {
+                    if (response.legislation != null) {
+                        setFavoriteBills(response.legislation);
+                    }
+                },
+            );
+        }
+    }
 
     function renderDateTree() {
         const yearMap = {};
@@ -78,6 +107,16 @@ function BillViewToolbar() {
             >
                 <Button icon="bookmark" />
             </Popover>
+
+            <Button
+                icon="star"
+                intent={
+                    favoriteBillIds?.includes(billContext.bill.legislation_id)
+                        ? "primary"
+                        : ""
+                }
+                onClick={handleBillFavorite}
+            />
 
             <Popover
                 content={

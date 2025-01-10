@@ -6,7 +6,7 @@ function AboutUs() {
         <Section
             className="page about-us"
             title="About Us"
-            subtitle="Empowering Civic Engagement and Understanding"
+            subtitle="Understanding Congress, One Bill at a Time"
         >
             <SectionCard>
                 <p>
