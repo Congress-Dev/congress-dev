@@ -355,7 +355,7 @@ function BillDisplay() {
                                             activeHash === itemHash
                                         }
                                     >
-                                        <span>
+                                       {content_str != null && <span>
                                             <span
                                                 className={
                                                     "bill-content-section-display"
@@ -366,7 +366,7 @@ function BillDisplay() {
                                             <span className={innerClass}>
                                                 {content_str}
                                             </span>
-                                        </span>
+                                        </span>}
                                     </Tooltip>
                                     {renderRecursive({ children })}
                                 </div>
