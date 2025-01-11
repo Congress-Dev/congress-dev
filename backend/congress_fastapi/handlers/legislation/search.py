@@ -241,7 +241,7 @@ async def search_legislation(
             Legislation.legislation_type,
             Legislation.chamber,
             func.array_agg(lv_alias.legislation_version).label("versions"),
-            func.array_agg(lv_alias.effective_date).label("effective_date"),
+            func.min(lv_alias.effective_date).label("effective_date"),
         )
         .select_from(
             join(
@@ -296,7 +296,7 @@ async def search_legislation(
             summary=summaries_by_id.get(result["legislation_id"], None),
             appropriations=appropriations_by_id.get(result["legislation_id"], None),
             sponsor=sponsors_by_id.get(result["legislation_id"], None),
-            effective_date=result.get("effective_date")[0],
+            effective_date=result.get("effective_date"),
         )
         for result in results
     ]
