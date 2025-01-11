@@ -106,7 +106,7 @@ async def handle_get_user_legislation(cookie):
             Legislation.chamber,
         )
         .order_by(Legislation.number.desc())
-        #.where(LegislationVersion.created_at >= seven_days_ago)
+        .where(LegislationVersion.created_at >= seven_days_ago)
     )
 
     results = await database.fetch_all(query)
@@ -168,7 +168,7 @@ async def handle_get_user_legislator(cookie):
         )
         .order_by(Legislation.number.desc())
         .where(LegislationSponsorship.cosponsor == False)
-        #.where(LegislationVersion.created_at >= seven_days_ago)
+        .where(LegislationVersion.created_at >= seven_days_ago)
     )
 
     results = await database.fetch_all(query)
@@ -253,12 +253,13 @@ async def handle_user_logout(cookie) -> UserLogoutResponse:
 
     database = await get_database()
 
-    query = update(User)
-    query = query.values(user_auth_cookie=None, user_auth_google=None, user_auth_expiration=None)
-    query = query.where(User.user_auth_cookie == cookie)
+    try:
+        query = update(User)
+        query = query.values(user_auth_cookie=None, user_auth_google=None, user_auth_expiration=None)
+        query = query.where(User.user_auth_cookie == cookie)
 
-    print(query)
-
-    await database.execute(query)
+        await database.execute(query)
+    except Exception as e:
+        pass
 
     return { 'success': True }
