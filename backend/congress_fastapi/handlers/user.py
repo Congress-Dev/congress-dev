@@ -28,6 +28,38 @@ class InvalidTokenException(Exception):
     def __init__(self):
         self.name = ""
 
+async def handle_get_user_legislation(cookie):
+    if cookie is None:
+        raise InvalidTokenException()
+
+    user = await handle_get_user(cookie=cookie)
+
+    database = await get_database()
+
+    query = (
+        select(UserLegislation.legislation_id)
+        .where(UserLegislation.user_id == user.user_id)
+    )
+
+    results = await database.fetch_all(query)
+    return {'legislation': [dict(x)['legislation_id'] for x in results]}
+
+async def handle_get_user_legislator(cookie):
+    if cookie is None:
+        raise InvalidTokenException()
+
+    user = await handle_get_user(cookie=cookie)
+
+    database = await get_database()
+
+    query = (
+        select(UserLegislator.bioguide_id)
+        .where(UserLegislator.user_id == user.user_id)
+    )
+
+    results = await database.fetch_all(query)
+    return {'legislator': [dict(x)['bioguide_id'] for x in results]}
+
 async def handle_get_user_legislation_update(cookie, legislation_id, action):
     legislation_id = int(legislation_id)
 
@@ -66,7 +98,7 @@ async def handle_get_user_legislator_update(cookie, bioguide_id, action):
     return response
 
 
-async def handle_get_user_legislation(cookie):
+async def handle_get_user_legislation_feed(cookie):
     if cookie is None:
         raise InvalidTokenException()
 
@@ -124,7 +156,7 @@ async def handle_get_user_legislation(cookie):
     }
 
 
-async def handle_get_user_legislator(cookie):
+async def handle_get_user_legislator_feed(cookie):
     if cookie is None:
         raise InvalidTokenException()
 

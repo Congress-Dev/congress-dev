@@ -18,14 +18,14 @@ import {
 } from "context";
 
 function BillViewToolbar() {
-    const { user, favoriteBillIds, setFavoriteBills } =
+    const { user, favoriteBills, setFavoriteBills } =
         useContext(LoginContext);
     const { preferences, setPreference } = useContext(PreferenceContext);
     const billContext = useContext(BillContext);
     const history = useHistory();
 
     function handleBillFavorite() {
-        if (favoriteBillIds?.includes(billContext.bill.legislation_id)) {
+        if (favoriteBills?.includes(billContext.bill.legislation_id)) {
             userRemoveLegislation(billContext.bill.legislation_id).then(
                 (response) => {
                     if (response.legislation != null) {
@@ -110,13 +110,11 @@ function BillViewToolbar() {
             {user != null && (
                 <Button
                     icon="star"
-                    intent={
-                        favoriteBillIds?.includes(
+                    {...{
+                        ...(favoriteBills?.includes(
                             billContext.bill.legislation_id,
-                        )
-                            ? "primary"
-                            : ""
-                    }
+                        ) && { intent: "primary" }),
+                    }}
                     onClick={handleBillFavorite}
                 />
             )}

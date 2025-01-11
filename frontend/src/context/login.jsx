@@ -16,24 +16,6 @@ export const LoginProvider = ({ children }) => {
     const [favoriteBills, setFavoriteBills] = useState(null);
     const [favoriteSponsors, setFavoriteSponsors] = useState(null);
 
-    const favoriteBillIds = useMemo(() => {
-        if (favoriteBills == null) {
-            return [];
-        }
-
-        return favoriteBills.map((item) => item.legislation_id);
-    }, [favoriteBills]);
-
-    const favoriteSponsorIds = useMemo(() => {
-        if (favoriteSponsors == null) {
-            return [];
-        }
-
-        return Array.from(
-            new Set(favoriteSponsors.map((item) => item.sponsor.bioguideId)),
-        );
-    }, [favoriteSponsors]);
-
     useEffect(() => {
         userGet().then((response) => {
             setUser(response);
@@ -52,8 +34,8 @@ export const LoginProvider = ({ children }) => {
         });
 
         userGetLegislator().then((response) => {
-            if (response?.legislation != null) {
-                setFavoriteSponsors(response.legislation);
+            if (response?.legislator != null) {
+                setFavoriteSponsors(response.legislator);
             }
         });
     }, [user]);
@@ -88,10 +70,8 @@ export const LoginProvider = ({ children }) => {
                 handleLogin,
                 handleLogout,
                 favoriteBills,
-                favoriteBillIds,
                 setFavoriteBills,
                 favoriteSponsors,
-                favoriteSponsorIds,
                 setFavoriteSponsors,
             }}
         >

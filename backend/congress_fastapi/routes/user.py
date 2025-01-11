@@ -9,6 +9,8 @@ from congress_fastapi.handlers.user import (
     handle_get_user,
     handle_get_user_legislation,
     handle_get_user_legislator,
+    handle_get_user_legislation_feed,
+    handle_get_user_legislator_feed,
     handle_get_user_legislation_update,
     handle_get_user_legislator_update,
     InvalidTokenException
@@ -20,6 +22,8 @@ from congress_fastapi.models.user import (
     UserLogoutResponse,
     UserLegislationResponse,
     UserLegislatorResponse,
+    UserLegislationFeedResponse,
+    UserLegislatorFeedResponse,
     UserLegislationUpdateResponse,
     UserLegislatorUpdateResponse
 )
@@ -103,6 +107,27 @@ async def user_legislation(request: Request) -> Optional[UserLegislationResponse
     if user_legislation is not None:
         return UserLegislationResponse(**user_legislation)
 
+
+@router.get(
+    "/user/legislation/feed"
+)
+async def user_legislation_feed(request: Request) -> Optional[UserLegislationFeedResponse]:
+    try:
+        cookie = request.cookies.get("authentication")
+
+        user_legislation = await handle_get_user_legislation_feed(
+            cookie=cookie
+        )
+
+    except InvalidTokenException:
+        return None
+    except Exception as e:
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+
+    if user_legislation is not None:
+        return UserLegislationFeedResponse(**user_legislation)
+
 @router.get(
     "/user/legislation/update"
 )
@@ -146,6 +171,26 @@ async def user_legislator(request: Request) -> Optional[UserLegislatorResponse]:
 
     if user_legislator is not None:
         return UserLegislatorResponse(**user_legislator)
+
+@router.get(
+    "/user/legislator/feed"
+)
+async def user_legislator_feed(request: Request) -> Optional[UserLegislatorFeedResponse]:
+    try:
+        cookie = request.cookies.get("authentication")
+
+        user_legislator = await handle_get_user_legislator_feed(
+            cookie=cookie
+        )
+
+    except InvalidTokenException:
+        return None
+    except Exception as e:
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+
+    if user_legislator is not None:
+        return UserLegislatorFeedResponse(**user_legislator)
 
 @router.get(
     "/user/legislator/update"

@@ -15,7 +15,7 @@ function MemberViewer(props) {
     const { bioguideId } = props.match.params;
     const [memberInfo, setMemberInfo] = useState({});
     const [sponsoredLegislation, setSponsoredLegislation] = useState([]);
-    const { user, favoriteSponsorIds, setFavoriteSponsors } =
+    const { user, favoriteSponsors, setFavoriteSponsors } =
         useContext(LoginContext);
 
     useEffect(() => {
@@ -26,19 +26,17 @@ function MemberViewer(props) {
         });
     }, [bioguideId]);
 
-    console.log(favoriteSponsorIds);
-
     function handleSponsorFavorite() {
-        if (favoriteSponsorIds?.includes(bioguideId)) {
+        if (favoriteSponsors?.includes(bioguideId)) {
             userRemoveLegislator(bioguideId).then((response) => {
-                if (response.legislation != null) {
-                    setFavoriteSponsors(response.legislation);
+                if (response.legislator != null) {
+                    setFavoriteSponsors(response.legislator);
                 }
             });
         } else {
             userAddLegislator(bioguideId).then((response) => {
-                if (response.legislation != null) {
-                    setFavoriteSponsors(response.legislation);
+                if (response.legislator != null) {
+                    setFavoriteSponsors(response.legislator);
                 }
             });
         }
@@ -55,11 +53,11 @@ function MemberViewer(props) {
                     {user != null && (
                         <Button
                             icon="star"
-                            intent={
-                                favoriteSponsorIds?.includes(bioguideId)
-                                    ? "primary"
-                                    : ""
-                            }
+                            {...{
+                                ...(favoriteSponsors?.includes(
+                                    bioguideId,
+                                ) && { intent: "primary" }),
+                            }}
                             onClick={handleSponsorFavorite}
                         />
                     )}

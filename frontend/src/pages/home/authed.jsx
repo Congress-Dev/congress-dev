@@ -1,4 +1,4 @@
-import { useContext } from "react";
+import { useContext, useState, useEffect } from "react";
 import {
     Section,
     SectionCard,
@@ -6,11 +6,26 @@ import {
     NonIdealStateIconSize,
 } from "@blueprintjs/core";
 
+import { userGetLegislationFeed, userGetLegislatorFeed } from "common/api";
 import { BillTable } from "components";
 import { LoginContext } from "context";
 
 function AuthedHome() {
-    const { favoriteBills, favoriteSponsors } = useContext(LoginContext);
+    const { user } = useContext(LoginContext);
+    const [legislationFeed, setLegislationFeed] = useState([]);
+    const [legislatorFeed, setLegislatorFeed] = useState([]);
+
+    useEffect(() => {
+        if(user != null) {
+            userGetLegislationFeed().then((response) => {
+                setLegislationFeed(response.legislation)
+            })
+
+            userGetLegislatorFeed().then((response) => {
+                setLegislatorFeed(response.legislation);
+            })
+        }
+    }, [user])
 
     return (
         <SectionCard>
@@ -52,8 +67,8 @@ function AuthedHome() {
                     subtitle="Last 7 Days"
                     icon="drag-handle-vertical"
                 >
-                    {favoriteBills?.length > 0 ? (
-                        <BillTable bills={favoriteBills} />
+                    {legislationFeed?.length > 0 ? (
+                        <BillTable bills={legislationFeed} />
                     ) : (
                         <SectionCard>
                             <NonIdealState
@@ -79,8 +94,8 @@ function AuthedHome() {
                     subtitle="Last 7 Days"
                     icon="drag-handle-vertical"
                 >
-                    {favoriteSponsors?.length > 0 ? (
-                        <BillTable bills={favoriteSponsors} />
+                    {legislatorFeed?.length > 0 ? (
+                        <BillTable bills={legislatorFeed} />
                     ) : (
                         <SectionCard>
                             <NonIdealState

@@ -71,6 +71,23 @@ export const userGetLegislator = () => {
         .catch(toastError);
 };
 
+export const userGetLegislationFeed = () => {
+    return fetch(`${endPv2}/user/legislation/feed`, {
+        credentials: "include",
+    })
+        .then(handleStatus)
+        .catch(toastError);
+};
+
+export const userGetLegislatorFeed = () => {
+    return fetch(`${endPv2}/user/legislator/feed`, {
+        credentials: "include",
+    })
+        .then(handleStatus)
+        .catch(toastError);
+};
+
+
 export const userAddLegislation = (legislationId) => {
     return fetch(
         `${endPv2}/user/legislation/update?action=add&legislation_id=${legislationId}`,

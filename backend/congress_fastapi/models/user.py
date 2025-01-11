@@ -4,6 +4,8 @@ from datetime import date
 
 from billparser.db.models import (
     User,
+    Legislation,
+    Legislator,
     LegislationChamber
 )
 from congress_fastapi.models.legislation import LegislatorMetadata, LegislationMetadata
@@ -37,9 +39,15 @@ class UserLegislationMetadata(BaseModel):
     sponsor: Optional[LegislatorMetadata]
 
 class UserLegislationResponse(MappableBase):
-    legislation: List[UserLegislationMetadata]
+    legislation: List[Annotated[int, Legislation.legislation_id]]
 
 class UserLegislatorResponse(MappableBase):
+    legislator: List[Annotated[str, Legislator.bioguide_id]]
+
+class UserLegislationFeedResponse(MappableBase):
+    legislation: List[UserLegislationMetadata]
+
+class UserLegislatorFeedResponse(MappableBase):
     legislation: List[UserLegislationMetadata]
 
 class UserLegislationUpdateResponse(MappableBase):
