@@ -35,10 +35,9 @@ function BillSearch(props) {
     const [versionButtons, setVersionButtons] = useState(decoded.versions);
     const [textBox, setTextBox] = useState(searchParams.get("text") || "");
     const [totalResults, setTotalResults] = useState(0);
-    const [currentCongress, setCurrentCongress] = useState("119");
 
     const [currentSearch, setCurrentSearch] = useState({
-        congress: currentCongress,
+        congress: searchParams.get("congress") || "118,119",
         chamber: lodash
             .keys(lodash.pickBy(chamberButtons, (value) => value))
             .join(","),
@@ -98,7 +97,6 @@ function BillSearch(props) {
         setCurrentSearch({
             ...currentSearch,
             page: 1,
-            congress: currentCongress,
             chamber: lodash
                 .keys(lodash.pickBy(chamberButtons, (value) => value))
                 .join(","),
@@ -189,6 +187,13 @@ function BillSearch(props) {
                 text: params.text,
             };
         }
+        if(params.congress != null && currentSearch.congress != params.congress) {
+            updated = true;
+            newSearch = {
+                ...newSearch,
+                congress: params.congress
+            }
+        }
 
         const encoded = encodeSelections();
         if (params.selection != null && encoded != params.selection) {
@@ -228,6 +233,16 @@ function BillSearch(props) {
             updated = true;
             params.text = currentSearch.text;
         }
+        if (currentSearch.congress == "" && params.congress != null) {
+            updated = true;
+            delete params.congress;
+        } else if (
+            currentSearch.congress != "" &&
+            params.congress != currentSearch.congress
+        ) {
+            updated = true;
+            params.congress = currentSearch.congress;
+        }
 
         const encoded = encodeSelections();
         if (encoded != null && params.selections != encoded) {
@@ -256,7 +271,7 @@ function BillSearch(props) {
             return;
         }
         executeSearch();
-    }, [versionButtons, chamberButtons, currentCongress]);
+    }, [versionButtons, chamberButtons]);
 
     function setCurrentSort(sort) {
         setCurrentSearch({
@@ -264,10 +279,6 @@ function BillSearch(props) {
             page: 1,
             sort: sort,
         });
-    }
-
-    function handleCongressChange(e) {
-        setCurrentCongress(e.target.value);
     }
 
     return (
@@ -335,13 +346,48 @@ function BillSearch(props) {
                         title="Session of Congress"
                         collapsed={collapsed}
                     >
-                        <RadioGroup
-                            onChange={handleCongressChange}
-                            selectedValue={currentCongress}
-                        >
-                            <Radio label="119th" value="119" />
-                            <Radio label="118th" value="118" />
-                        </RadioGroup>
+                        <Checkbox
+                            checked={currentSearch.congress.includes("119")}
+                            label="119th"
+                            onChange={() => {
+                                const cong = currentSearch.congress.split(',').filter((value) => {
+                                    return value != ""
+                                })
+                                if(cong.includes("119")) {
+                                    setCurrentSearch({
+                                        ...currentSearch,
+                                        congress: cong.filter((value) => { return value != "119" && value != ""}).join(',')
+                                    })
+                                } else {
+                                    cong.push("119")
+                                    setCurrentSearch({
+                                        ...currentSearch,
+                                        congress: cong.join(',')
+                                    })
+                                }
+                            }}
+                        />
+                        <Checkbox
+                            checked={currentSearch.congress.includes("118")}
+                            label="118th"
+                            onChange={() => {
+                                const cong = currentSearch.congress.split(',').filter((value) => {
+                                    return value != ""
+                                })
+                                if(cong.includes("118")) {
+                                    setCurrentSearch({
+                                        ...currentSearch,
+                                        congress: cong.filter((value) => { return value != "118"}).join(',')
+                                    })
+                                } else {
+                                    cong.push("118")
+                                    setCurrentSearch({
+                                        ...currentSearch,
+                                        congress: cong.join(',')
+                                    })
+                                }
+                            }}
+                        />
                     </CollapsibleSection>
                     <CollapsibleSection
                         title="Chamber of Origin"

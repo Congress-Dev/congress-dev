@@ -222,6 +222,9 @@ async def search_legislation(
     page: int,
     page_size: int,
 ) -> Tuple[List[SearchResult], int]:
+    if congress:
+        congress = [int(c) for c in congress.split(",")]
+
     database = await get_database()
     lv_alias = aliased(LegislationVersion)
     subquery = (
@@ -265,7 +268,7 @@ async def search_legislation(
         .offset((page - 1) * page_size)
     )
     if congress:
-        legis_query = legis_query.where(Congress.session_number == int(congress))
+        legis_query = legis_query.where(Congress.session_number.in_(congress))
     if chamber:
         legis_query = legis_query.where(Legislation.chamber.in_(chamber.split(",")))
 
@@ -317,7 +320,7 @@ async def search_legislation(
         )
     ).having(exists(subquery))
     if congress:
-        count_query = count_query.where(Congress.session_number == int(congress))
+        count_query = count_query.where(Congress.session_number.in_(congress))
     if chamber:
         count_query = count_query.where(Legislation.chamber.in_(chamber.split(",")))
 

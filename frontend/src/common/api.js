@@ -314,7 +314,7 @@ export const getCongressSearch = (
     pageSize,
 ) => {
     return fetch(
-        `${endPv2}/legislation/search?congress=${congress || "None"}&chamber=${
+        `${endPv2}/legislation/search?${congress != "" ? `congress=${congress}`: ''}&chamber=${
             chamber || "None"
         }&versions=${versions || ""}&text=${text}&sort=${sort}&page=${page}&pageSize=${pageSize}`,
     )
