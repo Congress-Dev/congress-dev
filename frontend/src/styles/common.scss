@@ -9,8 +9,15 @@
     margin-right: 10px;
 }
 
+b {
+    color: #8f99a8;
+}
+
 .usc-release-box {
-    width: 400px;
+    width: calc(33% - 20px);
+    display: inline-block;
+    margin-right: 20px;
+    margin-bottom: 20px;
 }
 
 .sidebar {
@@ -50,7 +57,7 @@
         vertical-align: top;
         display: inline-block;
         margin-top: 20px;
-        width: calc(50% - 10px);
+        width: calc(33% - 10px);
 
         h3 {
             margin-top: 0px;
@@ -129,10 +136,6 @@
         margin-bottom: 5px;
         margin-top: 30px;
         color: #4c90f0;
-    }
-
-    b {
-        color: #8f99a8;
     }
 }
 
@@ -316,14 +319,12 @@
         }
     }
 
-    p {
-        b {
-            color: #4c90f0;
-        }
-    }
-
     ul {
         margin-top: 0px;
+    }
+
+    .bp5-button {
+        margin: 20px;
     }
 }
 

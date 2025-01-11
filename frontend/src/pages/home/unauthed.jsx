@@ -22,8 +22,7 @@ function UnauthedHome() {
 
             <SectionCard>
                 <div className="sidebar">
-                    <SectionCard>
-                        <h3>Key Features:</h3>
+                    <Section title="Key Features" icon="key">
                         <ul>
                             <li>
                                 <b>Search Bills & Laws</b>
@@ -46,7 +45,7 @@ function UnauthedHome() {
                                 progress through Congress."{" "}
                             </li>
                         </ul>
-                    </SectionCard>
+                    </Section>
                 </div>
 
                 <Section
@@ -91,8 +90,8 @@ function UnauthedHome() {
                         <Callout intent="primary" icon="series-configuration">
                             <h3>Sign Up to Customize Your Dashboard</h3>
                             <p>
-                                Create a personalized hub to track the
-                                legislation and lawmakers that matter to you.
+                                Track the legislation and lawmakers that matter
+                                to you.
                             </p>
                             <Button intent="primary" onClick={handleLogin}>
                                 Login

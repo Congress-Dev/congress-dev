@@ -9,8 +9,11 @@ import {
     Checkbox,
     Button,
     Divider,
+    SectionCard,
     ControlGroup,
     HTMLSelect,
+    RadioGroup,
+    Radio,
     ButtonGroup,
     Section,
     Icon,
@@ -32,9 +35,10 @@ function BillSearch(props) {
     const [versionButtons, setVersionButtons] = useState(decoded.versions);
     const [textBox, setTextBox] = useState(searchParams.get("text") || "");
     const [totalResults, setTotalResults] = useState(0);
+    const [currentCongress, setCurrentCongress] = useState("119");
 
     const [currentSearch, setCurrentSearch] = useState({
-        congress: "118",
+        congress: currentCongress,
         chamber: lodash
             .keys(lodash.pickBy(chamberButtons, (value) => value))
             .join(","),
@@ -94,6 +98,7 @@ function BillSearch(props) {
         setCurrentSearch({
             ...currentSearch,
             page: 1,
+            congress: currentCongress,
             chamber: lodash
                 .keys(lodash.pickBy(chamberButtons, (value) => value))
                 .join(","),
@@ -251,7 +256,7 @@ function BillSearch(props) {
             return;
         }
         executeSearch();
-    }, [versionButtons, chamberButtons]);
+    }, [versionButtons, chamberButtons, currentCongress]);
 
     function setCurrentSort(sort) {
         setCurrentSearch({
@@ -261,158 +266,177 @@ function BillSearch(props) {
         });
     }
 
+    function handleCongressChange(e) {
+        setCurrentCongress(e.target.value);
+    }
+
     return (
-        <Card className="page" elevation={Elevation.ONE}>
-            <div className="sidebar">
-                <form
-                    onSubmit={(e) => {
-                        e.preventDefault();
-                        executeSearch();
-                    }}
-                >
-                    <FormGroup labelFor="text-input" className="search-sort">
-                        <ControlGroup fill={true}>
-                            <InputGroup
-                                value={textBox}
-                                leftIcon="search"
-                                onChange={(event) => {
-                                    setTextBox(event.target.value);
-                                }}
-                                placeholder="Search"
-                                rightElement={
-                                    <Button
-                                        type="submit"
-                                        icon="arrow-right"
-                                        intent="primary"
-                                        onClick={executeSearch}
-                                    />
-                                }
-                            />
-                        </ControlGroup>
-                    </FormGroup>
-                </form>
-                <ButtonGroup className="collapse-controls" fill={true}>
-                    <Button
-                        icon="collapse-all"
-                        onClick={toggleCollapseAll}
-                    ></Button>
-                    <Button
-                        icon="expand-all"
-                        onClick={toggleExpandAll}
-                    ></Button>
-                    <Button icon="add" onClick={toggleCheckAll}></Button>
-                    <Button icon="remove" onClick={toggleUncheckAll}></Button>
-                    <Button
-                        className="enrolled-button"
-                        icon="th-filtered"
-                        onClick={toggleEnrolled}
+        <Section
+            className="page"
+            elevation={Elevation.ONE}
+            title="Legislation Search"
+            subtitle="Search for legislation by keyword, sponsor, or topic"
+        >
+            <SectionCard>
+                <div className="sidebar">
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            executeSearch();
+                        }}
                     >
-                        Enrolled
-                    </Button>
-                </ButtonGroup>
-                <CollapsibleSection
-                    title="Session of Congress"
-                    collapsed={collapsed}
-                >
-                    <Checkbox
-                        checked={true}
-                        label="118th Congress"
-                        disabled={true}
-                    />
-                </CollapsibleSection>
-                <CollapsibleSection
-                    title="Chamber of Origin"
-                    collapsed={collapsed}
-                >
-                    <Checkbox
-                        checked={chamberButtons.House === true}
-                        label="House"
-                        onChange={() => {
-                            setChamberButtons({
-                                ...chamberButtons,
-                                House: !chamberButtons.House,
-                            });
-                        }}
-                    />
-                    <Checkbox
-                        checked={chamberButtons.Senate === true}
-                        label="Senate"
-                        onChange={() => {
-                            setChamberButtons({
-                                ...chamberButtons,
-                                Senate: !chamberButtons.Senate,
-                            });
-                        }}
-                    />
-                </CollapsibleSection>
-                <CollapsibleSection
-                    title="Legislation Status"
-                    collapsed={collapsed}
-                >
-                    {lodash.map(initialVersionToFull, (value, key) => {
-                        return (
-                            <Checkbox
-                                key={`checkbox-${key}`}
-                                checked={versionButtons[key] === true}
-                                label={key}
-                                onChange={() => {
-                                    setVersionButtons({
-                                        ...versionButtons,
-                                        [key]: !versionButtons[key],
-                                    });
-                                }}
-                            />
-                        );
-                    })}
-                </CollapsibleSection>
-            </div>
-            <Section
-                title="Results"
-                subtitle={`${totalResults.toLocaleString()} Bills`}
-                className="content"
-                icon="inbox-search"
-                rightElement={
-                    <>
-                        <Icon icon="sort-alphabetical" /> Sort:
-                        <HTMLSelect
-                            value={currentSearch.sort}
-                            options={[
-                                { label: "Bill No.", value: "number" },
-                                { label: "Title", value: "title" },
-                                { label: "Date", value: "effective_date" },
-                            ]}
-                            onChange={(event) => {
-                                setCurrentSort(event.currentTarget.value);
+                        <FormGroup
+                            labelFor="text-input"
+                            className="search-sort"
+                        >
+                            <ControlGroup fill={true}>
+                                <InputGroup
+                                    value={textBox}
+                                    leftIcon="search"
+                                    onChange={(event) => {
+                                        setTextBox(event.target.value);
+                                    }}
+                                    placeholder="Search"
+                                    rightElement={
+                                        <Button
+                                            type="submit"
+                                            icon="arrow-right"
+                                            intent="primary"
+                                            onClick={executeSearch}
+                                        />
+                                    }
+                                />
+                            </ControlGroup>
+                        </FormGroup>
+                    </form>
+                    <ButtonGroup className="collapse-controls" fill={true}>
+                        <Button
+                            icon="collapse-all"
+                            onClick={toggleCollapseAll}
+                        ></Button>
+                        <Button
+                            icon="expand-all"
+                            onClick={toggleExpandAll}
+                        ></Button>
+                        <Button icon="add" onClick={toggleCheckAll}></Button>
+                        <Button
+                            icon="remove"
+                            onClick={toggleUncheckAll}
+                        ></Button>
+                        <Button
+                            className="enrolled-button"
+                            icon="th-filtered"
+                            onClick={toggleEnrolled}
+                        >
+                            Enrolled
+                        </Button>
+                    </ButtonGroup>
+                    <CollapsibleSection
+                        title="Session of Congress"
+                        collapsed={collapsed}
+                    >
+                        <RadioGroup
+                            onChange={handleCongressChange}
+                            selectedValue={currentCongress}
+                        >
+                            <Radio label="119th" value="119" />
+                            <Radio label="118th" value="118" />
+                        </RadioGroup>
+                    </CollapsibleSection>
+                    <CollapsibleSection
+                        title="Chamber of Origin"
+                        collapsed={collapsed}
+                    >
+                        <Checkbox
+                            checked={chamberButtons.House === true}
+                            label="House"
+                            onChange={() => {
+                                setChamberButtons({
+                                    ...chamberButtons,
+                                    House: !chamberButtons.House,
+                                });
                             }}
                         />
-                    </>
-                }
-            >
-                <BillSearchContent
-                    congress={currentSearch.congress}
-                    chamber={currentSearch.chamber}
-                    versions={currentSearch.versions}
-                    text={currentSearch.text}
-                    sort={currentSearch.sort}
-                    page={currentSearch.page}
-                    pageSize={currentSearch.pageSize}
-                    setResults={setTotalResults}
-                />
-                {totalResults > 0 ? (
-                    <Paginator
-                        currentPage={parseInt(currentSearch.page)}
-                        totalPages={Math.ceil(
-                            totalResults / currentSearch.pageSize,
-                        )}
-                        onPage={(page) => {
-                            setCurrentPage(page);
-                        }}
+                        <Checkbox
+                            checked={chamberButtons.Senate === true}
+                            label="Senate"
+                            onChange={() => {
+                                setChamberButtons({
+                                    ...chamberButtons,
+                                    Senate: !chamberButtons.Senate,
+                                });
+                            }}
+                        />
+                    </CollapsibleSection>
+                    <CollapsibleSection
+                        title="Legislation Status"
+                        collapsed={collapsed}
+                    >
+                        {lodash.map(initialVersionToFull, (value, key) => {
+                            return (
+                                <Checkbox
+                                    key={`checkbox-${key}`}
+                                    checked={versionButtons[key] === true}
+                                    label={key}
+                                    onChange={() => {
+                                        setVersionButtons({
+                                            ...versionButtons,
+                                            [key]: !versionButtons[key],
+                                        });
+                                    }}
+                                />
+                            );
+                        })}
+                    </CollapsibleSection>
+                </div>
+                <Section
+                    title="Results"
+                    subtitle={`${totalResults.toLocaleString()} Bills`}
+                    className="content"
+                    icon="inbox-search"
+                    rightElement={
+                        <>
+                            <Icon icon="sort-alphabetical" /> Sort:
+                            <HTMLSelect
+                                value={currentSearch.sort}
+                                options={[
+                                    { label: "Bill No.", value: "number" },
+                                    { label: "Title", value: "title" },
+                                    { label: "Date", value: "effective_date" },
+                                ]}
+                                onChange={(event) => {
+                                    setCurrentSort(event.currentTarget.value);
+                                }}
+                            />
+                        </>
+                    }
+                >
+                    <BillSearchContent
+                        congress={currentSearch.congress}
+                        chamber={currentSearch.chamber}
+                        versions={currentSearch.versions}
+                        text={currentSearch.text}
+                        sort={currentSearch.sort}
+                        page={currentSearch.page}
+                        pageSize={currentSearch.pageSize}
+                        setResults={setTotalResults}
                     />
-                ) : (
-                    ""
-                )}
-            </Section>
-        </Card>
+                    {totalResults > 0 ? (
+                        <Paginator
+                            currentPage={parseInt(currentSearch.page)}
+                            totalPages={Math.ceil(
+                                totalResults / currentSearch.pageSize,
+                            )}
+                            onPage={(page) => {
+                                setCurrentPage(page);
+                            }}
+                        />
+                    ) : (
+                        ""
+                    )}
+                </Section>
+            </SectionCard>
+        </Section>
     );
 }
 

@@ -41,7 +41,7 @@ const LegislatorProfile = ({
         // Extract fields from sentences
         sentences.forEach((sentence) => {
             if (sentence.toLowerCase().includes("born")) {
-                bioData.birth = sentence.replace("born", "Born");
+                bioData.birth = sentence.replace("born in", "");
             } else if (sentence.toLowerCase().includes("graduated")) {
                 bioData.education = bioData.education || [];
                 bioData.education.push(sentence);
@@ -64,7 +64,38 @@ const LegislatorProfile = ({
 
         // Generate HTML content
         let htmlContent = "";
-        htmlContent += `<p><b>${bioData.birth}</b></p>`;
+
+        if (bioData.birth) {
+            const dateRegex =
+                /\b((?:January|February|March|April|May|June|July|August|September|October|November|December)|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec))\s*(\d{1,2})(?:st|nd|rd|th)?,?\s*(\d{4})\b/;
+            const dateMatch = bioData.birth.match(dateRegex);
+
+            let birthPlace = bioData.birth;
+            let birthDay = null;
+            if (dateMatch != null && dateMatch[0] != null) {
+                birthDay = dateMatch[0];
+                birthPlace = birthPlace.replace(`, ${birthDay}`, "");
+            }
+
+            if (birthDay != null) {
+                const birthDate = new Date(birthDay); // Parse the date string
+                const today = new Date(); // Get today's date
+                let age = today.getFullYear() - birthDate.getFullYear(); // Calculate year difference
+                const monthDiff = today.getMonth() - birthDate.getMonth(); // Calculate month difference
+
+                // Adjust age if the current month/day is before the birth month/day
+                if (
+                    monthDiff < 0 ||
+                    (monthDiff === 0 && today.getDate() < birthDate.getDate())
+                ) {
+                    age--;
+                }
+
+                htmlContent += `<p><b>Age:</b> ${age} (${birthDay})`;
+            }
+
+            htmlContent += `<p><b>Birthplace:</b> ${birthPlace}</p>`;
+        }
 
         if (bioData.education) {
             htmlContent += `<p><b>Education:</b></p><ul class="details">`;

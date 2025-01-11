@@ -62,7 +62,7 @@ function AboutUs() {
                         </li>
                     </ul>
                 </Card>
-
+                <br />
                 <Card>
                     <h3 className="bp5-heading">
                         Frequently Asked Questions (FAQs):

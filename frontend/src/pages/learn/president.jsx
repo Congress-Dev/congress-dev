@@ -1,21 +1,13 @@
-import { SectionCard, Section, Breadcrumbs } from "@blueprintjs/core";
+import { SectionCard, Section } from "@blueprintjs/core";
 
-function LearnPresident() {
+function LearnPresident({ navigation }) {
     return (
         <Section
             className="page"
             title="The Role of the President and Veto Power"
             subtitle="How the President Influences the Legislative Process"
         >
-            <SectionCard className="learn-nav">
-                <Breadcrumbs
-                    items={[
-                        { icon: "home" },
-                        { text: "Knowledge Base", href: "/learn" },
-                        { text: "President" },
-                    ]}
-                />
-            </SectionCard>
+            {navigation}
             <SectionCard className="learn-content">
                 <p>
                     The President plays a pivotal role in the legislative

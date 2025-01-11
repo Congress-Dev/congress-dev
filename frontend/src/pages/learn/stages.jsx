@@ -1,21 +1,13 @@
-import { SectionCard, Section, Breadcrumbs } from "@blueprintjs/core";
+import { SectionCard, Section } from "@blueprintjs/core";
 
-function LearnStages() {
+function LearnStages({ navigation }) {
     return (
         <Section
             className="page"
             title="Understanding the Stages of a Bill in the House and Senate"
             subtitle="Key Stages in the House and Senate"
         >
-            <SectionCard className="learn-nav">
-                <Breadcrumbs
-                    items={[
-                        { icon: "home" },
-                        { text: "Knowledge Base", href: "/learn" },
-                        { text: "Stages" },
-                    ]}
-                />
-            </SectionCard>
+            {navigation}
             <SectionCard className="learn-content">
                 <p>
                     The journey of a bill from introduction to becoming law

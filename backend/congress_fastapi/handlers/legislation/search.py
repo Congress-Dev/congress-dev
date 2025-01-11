@@ -264,6 +264,8 @@ async def search_legislation(
         .limit(page_size)
         .offset((page - 1) * page_size)
     )
+    if congress:
+        legis_query = legis_query.where(Congress.session_number == int(congress))
     if chamber:
         legis_query = legis_query.where(Legislation.chamber.in_(chamber.split(",")))
 
@@ -314,6 +316,8 @@ async def search_legislation(
             Legislation.legislation_id,
         )
     ).having(exists(subquery))
+    if congress:
+        count_query = count_query.where(Congress.session_number == int(congress))
     if chamber:
         count_query = count_query.where(Legislation.chamber.in_(chamber.split(",")))
 
