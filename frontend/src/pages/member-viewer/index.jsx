@@ -1,14 +1,22 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 
-import { Card, Elevation } from "@blueprintjs/core";
+import { Section, SectionCard, Button } from "@blueprintjs/core";
 
-import { getMemberInfo, getMemberSponsoredLegislation } from "common/api";
+import {
+    getMemberInfo,
+    getMemberSponsoredLegislation,
+    userRemoveLegislator,
+    userAddLegislator,
+} from "common/api";
 import { LegislatorProfile } from "components";
+import { LoginContext } from "context";
 
 function MemberViewer(props) {
     const { bioguideId } = props.match.params;
     const [memberInfo, setMemberInfo] = useState({});
     const [sponsoredLegislation, setSponsoredLegislation] = useState([]);
+    const { user, favoriteSponsorIds, setFavoriteSponsors } =
+        useContext(LoginContext);
 
     useEffect(() => {
         // Grab the info from the rest API
@@ -18,17 +26,54 @@ function MemberViewer(props) {
         });
     }, [bioguideId]);
 
+    console.log(favoriteSponsorIds);
+
+    function handleSponsorFavorite() {
+        if (favoriteSponsorIds?.includes(bioguideId)) {
+            userRemoveLegislator(bioguideId).then((response) => {
+                if (response.legislation != null) {
+                    setFavoriteSponsors(response.legislation);
+                }
+            });
+        } else {
+            userAddLegislator(bioguideId).then((response) => {
+                if (response.legislation != null) {
+                    setFavoriteSponsors(response.legislation);
+                }
+            });
+        }
+    }
+
     return (
-        <Card interactive={false} elevation={Elevation.TWO} className="page">
-            <h1 style={{ textAlign: "center" }}>
-                Rep. {memberInfo.firstName} {memberInfo.lastName} -{" "}
-                {memberInfo.party} ({memberInfo.state})
-            </h1>
-            <LegislatorProfile
-                {...memberInfo}
-                sponsoredLegislation={sponsoredLegislation}
-            ></LegislatorProfile>
-        </Card>
+        <Section
+            interactive={false}
+            className="page"
+            title={`Rep. ${memberInfo.firstName} ${memberInfo.lastName}`}
+            subtitle={`${memberInfo.party} (${memberInfo.state})`}
+            rightElement={
+                <>
+                    {user != null && (
+                        <Button
+                            icon="star"
+                            intent={
+                                favoriteSponsorIds?.includes(bioguideId)
+                                    ? "primary"
+                                    : ""
+                            }
+                            onClick={handleSponsorFavorite}
+                        />
+                    )}
+                </>
+            }
+        >
+            <SectionCard>
+                <LegislatorProfile
+                    {...memberInfo}
+                    sponsoredLegislation={sponsoredLegislation}
+                    compact={false}
+                ></LegislatorProfile>
+            </SectionCard>
+        </Section>
     );
 }
 

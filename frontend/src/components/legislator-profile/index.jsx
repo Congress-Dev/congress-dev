@@ -1,8 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Divider, Icon } from "@blueprintjs/core";
+import { SectionCard, Button, Icon, Section } from "@blueprintjs/core";
 
-import { BillCard } from "components";
+import { BillCard, BillTable } from "components";
 
 const LegislatorProfile = ({
     bioguideId,
@@ -13,6 +13,7 @@ const LegislatorProfile = ({
     imageSource = "",
     profile = "",
     sponsoredLegislation = [],
+    compact = true,
 }) => {
     // I will make an element that links to the real profile page at https://bioguide.congress.gov/search/bio/${bioguideId}
 
@@ -100,9 +101,9 @@ const LegislatorProfile = ({
         return htmlContent;
     }
 
-    return (
-        <div className="legislator-profile">
-            <div className="center">
+    function renderBiopicture() {
+        return (
+            <>
                 <div className="image">
                     {imageUrl != null && imageUrl != "" ? (
                         <img src={imageUrl} />
@@ -122,34 +123,68 @@ const LegislatorProfile = ({
                 >
                     <span>Profile on congress.gov</span>
                 </a>
-            </div>
-            <Divider />
-            {profile != null && profile != "" ? (
-                <>
-                    <h3>Biography:</h3>
-                    <p
-                        dangerouslySetInnerHTML={{
-                            __html: parseBiography(profile),
-                        }}
-                    />
-                    <Divider />
-                </>
-            ) : (
-                <></>
-            )}
-            {sponsoredLegislation.length == 0 ? (
+            </>
+        );
+    }
+
+    function renderProfile() {
+        return (
+            <>
+                {profile != null && profile != "" ? (
+                    <>
+                        <p
+                            dangerouslySetInnerHTML={{
+                                __html: parseBiography(profile),
+                            }}
+                        />
+                    </>
+                ) : (
+                    <></>
+                )}
+            </>
+        );
+    }
+
+    if (compact) {
+        return (
+            <div className="legislator-profile">
+                <SectionCard>
+                    <div className="center">{renderBiopicture()}</div>
+                </SectionCard>
+                <SectionCard>{renderProfile()}</SectionCard>
                 <p>
                     <Link to={`/member/${bioguideId}`}>
-                        More information about the legislator...
+                        <Button intent="primary">View Full Profile</Button>
                     </Link>
                 </p>
-            ) : (
-                <>
-                    <div>{renderSponsoredLegislation()}</div>
-                </>
-            )}
-        </div>
-    );
+            </div>
+        );
+    } else {
+        return (
+            <div class="legislator-profile">
+                <div class="sidebar">
+                    <Section title="Biography" icon="manual" compact={true}>
+                        <SectionCard>
+                            <div className="center">{renderBiopicture()}</div>
+                        </SectionCard>
+                        <SectionCard>{renderProfile()}</SectionCard>
+                    </Section>
+                </div>
+
+                <div class="content">
+                    <Section
+                        title="Sponsored Legislation"
+                        subtitle="All Records"
+                        icon="drag-handle-vertical"
+                    >
+                        {sponsoredLegislation?.length > 0 && (
+                            <BillTable bills={sponsoredLegislation} />
+                        )}
+                    </Section>
+                </div>
+            </div>
+        );
+    }
 };
 
 export default LegislatorProfile;

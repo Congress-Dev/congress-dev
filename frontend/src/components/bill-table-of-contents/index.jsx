@@ -44,7 +44,7 @@ function BillTableOfContents(props) {
                 id: child.legislation_content_id,
                 label: child.heading,
                 depth: 1,
-                childNodes: (children.length > 0 ? children : null),
+                childNodes: children.length > 0 ? children : null,
                 isExpanded:
                     treeExpansion[child.legislation_content_id] === true,
             });

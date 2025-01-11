@@ -48,9 +48,7 @@ async def handle_get_user_legislation_update(cookie, legislation_id, action):
     return response
 
 
-async def handle_get_user_legislator_update(cookie, legislator_id, action):
-    legislator_id = int(legislator_id)
-
+async def handle_get_user_legislator_update(cookie, bioguide_id, action):
     if cookie is None:
         raise InvalidTokenException()
 
@@ -59,12 +57,12 @@ async def handle_get_user_legislator_update(cookie, legislator_id, action):
     database = await get_database()
 
     if action == 'add':
-        query = insert(UserLegislator).values(legislator_id=legislator_id, user_id=user.user_id)
+        query = insert(UserLegislator).values(bioguide_id=bioguide_id, user_id=user.user_id)
     elif action == 'remove':
-        query = delete(UserLegislator).where(UserLegislator.legislator_id == legislator_id).where(UserLegislation.user_id == user.user_id)
+        query = delete(UserLegislator).where(UserLegislator.bioguide_id == bioguide_id).where(UserLegislation.user_id == user.user_id)
 
     await database.execute(query)
-    response = await handle_get_user_legislator_update(cookie)
+    response = await handle_get_user_legislator(cookie)
     return response
 
 
@@ -147,11 +145,8 @@ async def handle_get_user_legislator(cookie):
         ).select_from(
             join(
                 UserLegislator,
-                Legislator,
-                Legislator.legislator_id == UserLegislator.legislator_id,
-            ).join(
                 LegislationSponsorship,
-                LegislationSponsorship.legislator_bioguide_id == Legislator.bioguide_id
+                LegislationSponsorship.legislator_bioguide_id == UserLegislator.bioguide_id
             ).join(
                 Legislation,
                 Legislation.legislation_id == LegislationSponsorship.legislation_id
@@ -172,6 +167,7 @@ async def handle_get_user_legislator(cookie):
             Legislation.chamber,
         )
         .order_by(Legislation.number.desc())
+        .where(LegislationSponsorship.cosponsor == False)
         #.where(LegislationVersion.created_at >= seven_days_ago)
     )
 

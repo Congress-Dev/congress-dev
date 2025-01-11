@@ -18,7 +18,8 @@ import {
 } from "context";
 
 function BillViewToolbar() {
-    const { user, favoriteBillIds, setFavoriteBills } = useContext(LoginContext);
+    const { user, favoriteBillIds, setFavoriteBills } =
+        useContext(LoginContext);
     const { preferences, setPreference } = useContext(PreferenceContext);
     const billContext = useContext(BillContext);
     const history = useHistory();
@@ -106,15 +107,19 @@ function BillViewToolbar() {
                 <Button icon="bookmark" />
             </Popover>
 
-            {user != null && <Button
-                icon="star"
-                intent={
-                    favoriteBillIds?.includes(billContext.bill.legislation_id)
-                        ? "primary"
-                        : ""
-                }
-                onClick={handleBillFavorite}
-            />}
+            {user != null && (
+                <Button
+                    icon="star"
+                    intent={
+                        favoriteBillIds?.includes(
+                            billContext.bill.legislation_id,
+                        )
+                            ? "primary"
+                            : ""
+                    }
+                    onClick={handleBillFavorite}
+                />
+            )}
 
             <Popover
                 content={

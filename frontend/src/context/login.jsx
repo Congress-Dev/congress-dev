@@ -29,7 +29,9 @@ export const LoginProvider = ({ children }) => {
             return [];
         }
 
-        return favoriteSponsors.map((item) => item.id);
+        return Array.from(
+            new Set(favoriteSponsors.map((item) => item.sponsor.bioguideId)),
+        );
     }, [favoriteSponsors]);
 
     useEffect(() => {

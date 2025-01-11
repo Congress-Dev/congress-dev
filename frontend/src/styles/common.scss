@@ -40,6 +40,29 @@
     overflow-y: scroll;
 }
 
+.home-page-unauthed {
+    .bp5-card {
+        h3 {
+            margin-top: 0px;
+        }
+    }
+    .bp5-callout {
+        vertical-align: top;
+        display: inline-block;
+        margin-top: 20px;
+        width: calc(50% - 10px);
+
+        h3 {
+            margin-top: 0px;
+            margin-bottom: 0px;
+        }
+
+        & + .bp5-callout {
+            margin-left: 20px;
+        }
+    }
+}
+
 .section-tree div.bp5-tree-node-content {
     height: auto;
     min-height: 30px;
@@ -123,16 +146,9 @@
     width: 100%;
     table-layout: fixed;
 
-    td:first-child, th:first-child {
-        width: 120px;
-    }
-
-    td:nth-child(2), th:nth-child(2) {
-        width: 120px;
-    }
-
-    td:last-child, th:last-child {
-        width: 200px;
+    th.fixed,
+    td.fixed {
+        width: 150px;
     }
 }
 
@@ -274,7 +290,6 @@
 .legislator-profile {
     .center {
         text-align: center;
-        margin-top: 20px;
     }
 
     .image {
@@ -287,6 +302,7 @@
         align-items: center;
         margin: 0 auto;
         background-color: #00000042;
+        margin-bottom: 10px;
 
         svg {
             width: 150px;
@@ -301,15 +317,13 @@
     }
 
     p {
-        margin: 20px;
+        b {
+            color: #4c90f0;
+        }
     }
 
     ul {
         margin-top: 0px;
-    }
-
-    p + ul {
-        margin-top: -20px;
     }
 }
 
@@ -337,25 +351,94 @@
     }
 }
 
-@media (max-device-width: 768px) {
-    .learn-list {
-        width: 100% !important;
-        margin: initial !important;
+@media (min-device-width: 768px) and (max-device-width: 1200px) and (orientation: portrait) {
+    .page {
+        .sidebar {
+            width: 30%;
+        }
+
+        .content {
+            width: 70%;
+        }
+
+        .bp5-section.content {
+            width: calc(70% - 20px);
+        }
     }
 
     .section-bill-table {
         width: 100%;
         table-layout: initial;
 
-        td:first-child, th:first-child {
-            width: 100px;
+        th.fixed,
+        td.fixed {
+            width: 80px;
         }
 
-        td:nth-child(2), th:nth-child(2) {
+        th:not(.critical),
+        td:not(.critical) {
             display: none;
         }
+    }
+}
 
-        td:last-child, th:last-child {
+@media (max-device-width: 812px) and (orientation: landscape) {
+    .page {
+        .sidebar {
+            width: 30%;
+        }
+
+        .content {
+            width: 70%;
+        }
+
+        .bp5-section.content {
+            width: calc(70% - 20px);
+        }
+    }
+
+    .section-bill-table {
+        width: 100%;
+        table-layout: initial;
+
+        th.fixed,
+        td.fixed {
+            width: 80px;
+        }
+
+        th:not(.critical),
+        td:not(.critical) {
+            display: none;
+        }
+    }
+}
+
+@media (max-device-width: 768px) {
+    .learn-list {
+        width: 100% !important;
+        margin: initial !important;
+    }
+
+    .home-page-unauthed {
+        .bp5-callout {
+            display: block;
+            margin-top: 20px;
+            margin-left: 0px !important;
+            width: auto;
+        }
+    }
+
+    .section-bill-table {
+        width: 100%;
+        table-layout: initial;
+
+        th.fixed,
+        td.fixed {
+            width: auto;
+        }
+
+        th:not(.critical),
+        td:not(.critical) {
             display: none;
         }
     }
@@ -452,6 +535,7 @@
         }
 
         .content {
+            margin-top: 20px;
             display: block;
             width: 100%;
             padding: 0px;

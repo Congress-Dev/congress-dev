@@ -144,7 +144,7 @@ function BillDisplay() {
       "parsed_cite": "/us/usc/t52/s21083/b/1/A"
     }
     */
-   
+
         // Within each one we are using the VALID_ACTIONS list to pull out the action key "AMEND-MULTIPLE" in this case
         // And then these correspond to the regex groups we identify, except for the REGEX key, which we ignore
         // Using those substrings, we then highlight the next
@@ -187,8 +187,7 @@ function BillDisplay() {
                         },
                         ind,
                     ) => {
-                      
-                      const action = actions[0]?.actions[0] || {};
+                        const action = actions[0]?.actions[0] || {};
                         let summaryContent = lodash.find(
                             props.billSummary,
                             (e) => {

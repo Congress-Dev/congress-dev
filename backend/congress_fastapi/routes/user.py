@@ -152,7 +152,7 @@ async def user_legislator(request: Request) -> Optional[UserLegislatorResponse]:
 )
 async def user_legislator_update(
     request: Request,
-    legislator_id: str = Query(None),
+    bioguide_id: str = Query(None),
     action: str = Query(None)
 ) -> UserLegislatorResponse:
     try:
@@ -160,7 +160,7 @@ async def user_legislator_update(
 
         user_legislator_update = await handle_get_user_legislator_update(
             cookie=cookie,
-            legislation_id=legislation_id,
+            bioguide_id=bioguide_id,
             action=action,
         )
     except InvalidTokenException:

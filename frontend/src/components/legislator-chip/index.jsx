@@ -28,6 +28,7 @@ function LegislatorChip({ sponsor }) {
                 size={DrawerSize.SMALL}
                 className={isDarkMode ? "bp5-dark" : ""}
                 isOpen={drawerOpen}
+                icon="id-number"
                 onClose={() => setDrawerOpen(false)}
                 isCloseButtonShown={true}
                 title={`${sponsor.firstName} ${sponsor.lastName}`}

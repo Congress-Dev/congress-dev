@@ -38,14 +38,12 @@ function BillViewer(props) {
     const [billVers, setBillVers] = useState(
         billVersion || defaultVers[chamber.toLowerCase()],
     );
-    const [billVersId, setBillVersId] = useState(
-      0
-    );
+    const [billVersId, setBillVersId] = useState(0);
     const [textTree, setTextTree] = useState({});
     const [treeLookup, setTreeLookup] = useState({});
     const [dateAnchors, setDateAnchors] = useState([]);
 
-    console.log(billVers)
+    console.log(billVers);
 
     useEffect(() => {
         const element = elementRef.current;
@@ -114,9 +112,7 @@ function BillViewer(props) {
                 props.history.push(url);
             }
             // Make sure to push the search and hash onto the url
-            getBillVersionTextv2(billVersId).then(
-                setTextTree,
-            );
+            getBillVersionTextv2(billVersId).then(setTextTree);
         }
     }, [billVersId, billVers]);
 
@@ -128,16 +124,18 @@ function BillViewer(props) {
         if (billVersion === undefined) {
             if (bill.legislation_versions !== undefined) {
                 setBillVers(bill.legislation_versions[0].legislation_version);
-                setBillVersId(bill.legislation_versions[0].legislation_version_id);
+                setBillVersId(
+                    bill.legislation_versions[0].legislation_version_id,
+                );
             } else {
                 setBillVers(defaultVers[chamber.toLowerCase()]);
             }
         } else {
-          lodash.forEach(bill.legislation_versions, (e) => {
-            if (e.legislation_version === billVersion) {
-              setBillVersId(e.legislation_version_id);
-            }
-          });
+            lodash.forEach(bill.legislation_versions, (e) => {
+                if (e.legislation_version === billVersion) {
+                    setBillVersId(e.legislation_version_id);
+                }
+            });
         }
     }, [bill.legislation_versions]);
 

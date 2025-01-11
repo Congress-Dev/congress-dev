@@ -41,7 +41,9 @@ function BillCard({ bill }) {
                 <span style={{ fontWeight: "bold" }}>Tags:</span>
                 {bill.tags.map((tag) => (
                     <>
-                        <Tag>{tag}</Tag>
+                        <Tag minimal={true} round={true}>
+                            {tag}
+                        </Tag>
                         {"  "}
                     </>
                 ))}

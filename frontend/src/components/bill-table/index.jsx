@@ -9,28 +9,36 @@ function BillTable({ bills }) {
         <HTMLTable compact={true} striped={true} className="section-bill-table">
             <thead>
                 <tr>
-                    <th>No.</th>
-                    <th>Effective Date</th>
-                    <th>Name</th>
-                    <th>Sponsor</th>
+                    <th className="fixed critical">No.</th>
+                    {"effective_date" in bills[0] && (
+                        <th className="fixed">Effective Date</th>
+                    )}
+                    <th className="critical">Name</th>
+                    {"sponsor" in bills[0] && (
+                        <th className="fixed">Sponsor</th>
+                    )}
                 </tr>
             </thead>
 
             <tbody>
                 {bills.map((bill, idx) => (
                     <tr key={idx}>
-                        <td>
+                        <td className="fixed critical">
                             <Link
                                 to={`/bill/${bill.congress || bill.session_number}/${bill.chamber}/${bill.number}`}
                             >
                                 {`${chamberLookup[bill.chamber]} ${bill.number}`}
                             </Link>
                         </td>
-                        <td>{bill.effective_date}</td>
-                        <td>{bill.title}</td>
-                        <td>
-                            <LegislatorChip sponsor={bill.sponsor} />
-                        </td>
+                        {"effective_date" in bills[0] && (
+                            <td className="fixed">{bill.effective_date}</td>
+                        )}
+                        <td className="critical">{bill.title}</td>
+                        {"sponsor" in bills[0] && (
+                            <td className="fixed">
+                                <LegislatorChip sponsor={bill.sponsor} />
+                            </td>
+                        )}
                     </tr>
                 ))}
             </tbody>

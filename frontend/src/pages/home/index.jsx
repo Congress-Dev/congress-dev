@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { Section, Elevation } from "@blueprintjs/core";
+import { Section, SectionCard } from "@blueprintjs/core";
 
 import { LoginContext } from "context";
 
@@ -12,11 +12,10 @@ function Home() {
     return (
         <Section
             className="page home-page"
-            elevation={Elevation.ONE}
             title="Welcome to Congress.dev"
-            subtitle="Empowering Civic Engagement and Understanding"
+            subtitle="Your Gateway to Understanding Federal Legislation."
         >
-            {user != null ? <AuthedHome /> : <UnauthedHome /> }
+            {user != null ? <AuthedHome /> : <UnauthedHome />}
         </Section>
     );
 }

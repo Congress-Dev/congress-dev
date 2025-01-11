@@ -60,48 +60,60 @@ export const userGetLegislation = () => {
         credentials: "include",
     })
         .then(handleStatus)
-        .catch(toastError)
-}
+        .catch(toastError);
+};
 
 export const userGetLegislator = () => {
     return fetch(`${endPv2}/user/legislator`, {
         credentials: "include",
     })
         .then(handleStatus)
-        .catch(toastError)
-}
+        .catch(toastError);
+};
 
 export const userAddLegislation = (legislationId) => {
-    return fetch(`${endPv2}/user/legislation/update?action=add&legislation_id=${legislationId}`, {
-        credentials: "include",
-    })
+    return fetch(
+        `${endPv2}/user/legislation/update?action=add&legislation_id=${legislationId}`,
+        {
+            credentials: "include",
+        },
+    )
         .then(handleStatus)
-        .catch(toastError)
-}
+        .catch(toastError);
+};
 
 export const userRemoveLegislation = (legislationId) => {
-    return fetch(`${endPv2}/user/legislation/update?action=remove&legislation_id=${legislationId}`, {
-        credentials: "include",
-    })
+    return fetch(
+        `${endPv2}/user/legislation/update?action=remove&legislation_id=${legislationId}`,
+        {
+            credentials: "include",
+        },
+    )
         .then(handleStatus)
-        .catch(toastError)
-}
+        .catch(toastError);
+};
 
-export const userAddLegislator = (legislatorId) => {
-    return fetch(`${endPv2}/user/legislator/update?action=add&legislator_id=${legislatorId}`, {
-        credentials: "include",
-    })
+export const userAddLegislator = (bioGuideId) => {
+    return fetch(
+        `${endPv2}/user/legislator/update?action=add&bioguide_id=${bioGuideId}`,
+        {
+            credentials: "include",
+        },
+    )
         .then(handleStatus)
-        .catch(toastError)
-}
+        .catch(toastError);
+};
 
-export const userRemoveLegislator = (legislatorId) => {
-    return fetch(`${endPv2}/user/legislator/update?action=remove&legislator_id=${legislatorId}`, {
-        credentials: "include",
-    })
+export const userRemoveLegislator = (bioGuideId) => {
+    return fetch(
+        `${endPv2}/user/legislator/update?action=remove&bioguide_id=${bioGuideId}`,
+        {
+            credentials: "include",
+        },
+    )
         .then(handleStatus)
-        .catch(toastError)
-}
+        .catch(toastError);
+};
 
 export const getBill = (congress, chamber, billNumber) => {
     return fetch(
