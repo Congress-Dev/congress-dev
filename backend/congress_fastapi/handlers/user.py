@@ -106,7 +106,7 @@ async def handle_get_user_legislation(cookie):
             Legislation.chamber,
         )
         .order_by(Legislation.number.desc())
-        .where(LegislationVersion.created_at >= seven_days_ago)
+        .where(LegislationVersion.effective_date >= seven_days_ago)
     )
 
     results = await database.fetch_all(query)
@@ -168,7 +168,7 @@ async def handle_get_user_legislator(cookie):
         )
         .order_by(Legislation.number.desc())
         .where(LegislationSponsorship.cosponsor == False)
-        .where(LegislationVersion.created_at >= seven_days_ago)
+        .where(LegislationVersion.effective_date >= seven_days_ago)
     )
 
     results = await database.fetch_all(query)
