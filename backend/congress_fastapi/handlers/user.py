@@ -233,7 +233,7 @@ async def handle_user_login(access_token: str, expires_in: int) -> UserLoginResp
             'user_last_name': response['family_name'],
             'user_image': image_encoded,
             'user_auth_google': access_token,
-            'user_auth_expiration': datetime.now() + timedelta(seconds=expires_in),
+            'user_auth_expiration': datetime.now() + timedelta(weeks=1),
             'user_auth_cookie': hash_result,
         }
 

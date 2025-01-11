@@ -57,7 +57,7 @@ async def user_login(request: UserLoginRequest, response: Response) -> UserLogin
             expires_in=request.expires_in
         )
 
-        response.set_cookie(key="authentication", value=user["user_auth_cookie"], max_age=request.expires_in)
+        response.set_cookie(key="authentication", value=user["user_auth_cookie"], max_age=604800)
     except InvalidTokenException:
         raise HTTPException(status_code=403, detail="Invalid or expired authentication token")
     except Exception as e:
