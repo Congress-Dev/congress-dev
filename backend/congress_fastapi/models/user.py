@@ -57,4 +57,6 @@ class UserLegislatorUpdateResponse(MappableBase):
     success: bool
 
 class UserStatsResponse(MappableBase):
-    yearlyLegislation: int
+    legislation: int
+    versions: int
+    legislators: int

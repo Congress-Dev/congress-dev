@@ -326,6 +326,31 @@ async def handle_get_user_stats(cookie):
         .group_by('grouper')
         .where(LegislationVersion.effective_date >= first_day_of_year))
 
+    version_count = await database.execute(
+        select(
+            func.count(LegislationVersion.legislation_version_id).label('count'),
+        )
+        .select_from(
+            join(Legislation, LegislationVersion, Legislation.legislation_id == LegislationVersion.legislation_id)
+            .join(Congress, Congress.congress_id == Legislation.congress_id)
+        )
+        .group_by(LegislationVersion.legislation_version_id)
+        .where(LegislationVersion.effective_date >= first_day_of_year))
+
+    bioguide_count = await database.fetch_all(
+        select(
+            func.count(LegislationSponsorship.legislator_bioguide_id).label('count'),
+        )
+        .select_from(
+            join(Legislation, LegislationVersion, Legislation.legislation_id == LegislationVersion.legislation_id)
+            .join(LegislationSponsorship, Legislation.legislation_id == LegislationSponsorship.legislation_id)
+            .join(Congress, Congress.congress_id == Legislation.congress_id)
+        )
+        .group_by(LegislationSponsorship.legislator_bioguide_id)
+        .where(LegislationVersion.effective_date >= first_day_of_year))
+
     return {
-        'yearlyLegislation': legislation_count or 0,
+        'legislation': legislation_count or 0,
+        'versions': version_count or 0,
+        'legislators': len(bioguide_count) or 0
     }
