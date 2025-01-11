@@ -3,7 +3,7 @@ import base64
 from datetime import datetime, timedelta
 import hashlib
 
-from sqlalchemy import select, update, join, delete, func
+from sqlalchemy import select, update, join, delete, func, literal
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import aliased
 
@@ -102,6 +102,8 @@ async def handle_get_user_legislation_feed(cookie):
     if cookie is None:
         raise InvalidTokenException()
 
+    user = await handle_get_user(cookie=cookie)
+
     database = await get_database()
 
     now = datetime.utcnow()
@@ -139,6 +141,7 @@ async def handle_get_user_legislation_feed(cookie):
         )
         .order_by(Legislation.number.desc())
         .where(LegislationVersion.effective_date >= seven_days_ago)
+        .where(UserLegislation.user_id == user.user_id)
     )
 
     results = await database.fetch_all(query)
@@ -159,6 +162,8 @@ async def handle_get_user_legislation_feed(cookie):
 async def handle_get_user_legislator_feed(cookie):
     if cookie is None:
         raise InvalidTokenException()
+
+    user = await handle_get_user(cookie=cookie)
 
     database = await get_database()
 
@@ -201,6 +206,7 @@ async def handle_get_user_legislator_feed(cookie):
         .order_by(Legislation.number.desc())
         .where(LegislationSponsorship.cosponsor == False)
         .where(LegislationVersion.effective_date >= seven_days_ago)
+        .where(UserLegislator.user_id == user.user_id)
     )
 
     results = await database.fetch_all(query)
@@ -295,3 +301,31 @@ async def handle_user_logout(cookie) -> UserLogoutResponse:
         pass
 
     return { 'success': True }
+
+
+async def handle_get_user_stats(cookie):
+    if cookie is None:
+        raise InvalidTokenException
+
+    user = await handle_get_user(cookie=cookie)
+
+    database = await get_database()
+
+    current_year = datetime.now().year
+    first_day_of_year = datetime(current_year, 1, 1)
+
+    legislation_count = await database.execute(
+        select(
+            func.count(Legislation.legislation_id).label('count'),
+            literal('grouper').label('grouper')
+        )
+        .select_from(
+            join(Legislation, LegislationVersion, Legislation.legislation_id == LegislationVersion.legislation_id)
+            .join(Congress, Congress.congress_id == Legislation.congress_id)
+        )
+        .group_by('grouper')
+        .where(LegislationVersion.effective_date >= first_day_of_year))
+
+    return {
+        'yearlyLegislation': legislation_count or 0,
+    }

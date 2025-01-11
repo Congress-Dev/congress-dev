@@ -13,6 +13,7 @@ from congress_fastapi.handlers.user import (
     handle_get_user_legislator_feed,
     handle_get_user_legislation_update,
     handle_get_user_legislator_update,
+    handle_get_user_stats,
     InvalidTokenException
 )
 from congress_fastapi.models.errors import Error
@@ -25,7 +26,8 @@ from congress_fastapi.models.user import (
     UserLegislationFeedResponse,
     UserLegislatorFeedResponse,
     UserLegislationUpdateResponse,
-    UserLegislatorUpdateResponse
+    UserLegislatorUpdateResponse,
+    UserStatsResponse,
 )
 
 router = APIRouter()
@@ -86,6 +88,26 @@ async def user_logout(request: Request, response: Response) -> UserLogoutRespons
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
     return UserLogoutResponse(**logout)
+
+@router.get(
+    "/user/stats"
+)
+async def user_stats(request: Request) -> Optional[UserStatsResponse]:
+    try:
+        cookie = request.cookies.get("authentication")
+
+        user_stats = await handle_get_user_stats(
+            cookie=cookie
+        )
+
+    except InvalidTokenException:
+        return None
+    except Exception as e:
+        print(traceback.format_exc())
+        raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
+
+    if user_legislation is not None:
+        return UserStatsResponse(**user_stats)
 
 @router.get(
     "/user/legislation"

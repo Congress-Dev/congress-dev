@@ -55,3 +55,6 @@ class UserLegislationUpdateResponse(MappableBase):
 
 class UserLegislatorUpdateResponse(MappableBase):
     success: bool
+
+class UserStatsResponse(MappableBase):
+    yearlyLegislation: int

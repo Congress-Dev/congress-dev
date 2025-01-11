@@ -6,7 +6,11 @@ import {
     NonIdealStateIconSize,
 } from "@blueprintjs/core";
 
-import { userGetLegislationFeed, userGetLegislatorFeed } from "common/api";
+import {
+    userGetLegislationFeed,
+    userGetLegislatorFeed,
+    userGetStats,
+} from "common/api";
 import { BillTable } from "components";
 import { LoginContext } from "context";
 
@@ -14,18 +18,23 @@ function AuthedHome() {
     const { user } = useContext(LoginContext);
     const [legislationFeed, setLegislationFeed] = useState([]);
     const [legislatorFeed, setLegislatorFeed] = useState([]);
+    const [stats, setStats] = useState(null);
 
     useEffect(() => {
-        if(user != null) {
+        if (user != null) {
             userGetLegislationFeed().then((response) => {
-                setLegislationFeed(response.legislation)
-            })
+                setLegislationFeed(response.legislation);
+            });
 
             userGetLegislatorFeed().then((response) => {
                 setLegislatorFeed(response.legislation);
-            })
+            });
+
+            userGetStats().then((response) => {
+                setStats(response);
+            });
         }
-    }, [user])
+    }, [user]);
 
     return (
         <SectionCard>
@@ -35,25 +44,18 @@ function AuthedHome() {
                         Your personalized dashboard is ready! Here’s a quick
                         glance at what’s happening in Congress right now:
                     </p>
-                    <ul>
-                        <li>
-                            📜 [X New Bills Introduced]: Stay updated with the
-                            latest proposals.
-                        </li>
-                        <li>
-                            🏛 [Y Votes This Week]: See which bills are
-                            progressing.
-                        </li>
-                        <li>
-                            ⭐ [Your Tracked Legislation]: Keep an eye on the
-                            bills you care about.
-                        </li>
-                    </ul>
+                    {stats != null && (
+                        <ul>
+                            <li>
+                                {stats.yearlyLegislation} bill{stats.yearlyLegislation != 1 ? 's' : ''} introduced
+                                this year.
+                            </li>
+                        </ul>
+                    )}
 
                     <b>What’s next?</b>
                     <ul>
-                        <li>Explore your customized recommendations.</li>
-                        <li>Review your tracked legislators or committees.</li>
+                        <li>Review your tracked legislators or sponsors.</li>
                         <li>
                             Stay informed and engaged in the democratic process!
                         </li>
