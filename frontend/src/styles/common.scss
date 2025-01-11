@@ -119,6 +119,23 @@
     }
 }
 
+.section-bill-table {
+    width: 100%;
+    table-layout: fixed;
+
+    td:first-child, th:first-child {
+        width: 120px;
+    }
+
+    td:nth-child(2), th:nth-child(2) {
+        width: 120px;
+    }
+
+    td:last-child, th:last-child {
+        width: 200px;
+    }
+}
+
 .learn-nav {
     padding: 10px 20px !important;
 }
@@ -324,6 +341,23 @@
     .learn-list {
         width: 100% !important;
         margin: initial !important;
+    }
+
+    .section-bill-table {
+        width: 100%;
+        table-layout: initial;
+
+        td:first-child, th:first-child {
+            width: 100px;
+        }
+
+        td:nth-child(2), th:nth-child(2) {
+            display: none;
+        }
+
+        td:last-child, th:last-child {
+            display: none;
+        }
     }
 
     .bp5-navbar {

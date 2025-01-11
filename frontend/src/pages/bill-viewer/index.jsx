@@ -45,6 +45,8 @@ function BillViewer(props) {
     const [treeLookup, setTreeLookup] = useState({});
     const [dateAnchors, setDateAnchors] = useState([]);
 
+    console.log(billVers)
+
     useEffect(() => {
         const element = elementRef.current;
         if (element) {
@@ -141,9 +143,9 @@ function BillViewer(props) {
 
     useEffect(() => {
         if (bill.legislation_id) {
-            getBill2(bill.legislation_id, billVersion).then(setBill2);
+            getBill2(bill.legislation_id, billVers).then(setBill2);
         }
-    }, [bill.legislation_id, billVersion]);
+    }, [bill.legislation_id, billVers]);
 
     useEffect(() => {
         if (textTree == null) {

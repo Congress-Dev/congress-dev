@@ -6,7 +6,7 @@ import {
     NonIdealStateIconSize,
 } from "@blueprintjs/core";
 
-import { BillCard } from "components";
+import { BillTable } from "components";
 import { LoginContext } from "context";
 
 function AuthedHome() {
@@ -41,7 +41,7 @@ function AuthedHome() {
                     icon="drag-handle-vertical"
                 >
                     {favoriteBills?.length > 0 ? (
-                        favoriteBills.map((bill) => <BillCard bill={bill} />)
+                        <BillTable bills={favoriteBills} />
                     ) : (
                         <NonIdealState
                             icon="inbox"
@@ -65,7 +65,7 @@ function AuthedHome() {
                     icon="drag-handle-vertical"
                 >
                     {favoriteSponsors?.length > 0 ? (
-                        favoriteSponsors.map((bill) => <BillCard bill={bill} />)
+                        <BillTable bills={favoriteSponsors} />
                     ) : (
                         <NonIdealState
                             icon="inbox"

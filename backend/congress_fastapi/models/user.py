@@ -1,6 +1,6 @@
 from typing import Annotated, List, Optional
-
 from pydantic import BaseModel, Field
+from datetime import date
 
 from billparser.db.models import (
     User,
@@ -32,7 +32,9 @@ class UserLegislationMetadata(BaseModel):
     title: str
     legislation_id: int
     session_number: int
+    effective_date: Optional[date]
     chamber: LegislationChamber
+    sponsor: Optional[LegislatorMetadata]
 
 class UserLegislationResponse(MappableBase):
     legislation: List[UserLegislationMetadata]

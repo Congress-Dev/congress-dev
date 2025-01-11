@@ -3,7 +3,7 @@ import base64
 from datetime import datetime, timedelta
 import hashlib
 
-from sqlalchemy import select, update, join, delete
+from sqlalchemy import select, update, join, delete, func
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import aliased
 
@@ -17,6 +17,7 @@ from billparser.db.models import (
     LegislationVersion,
     Congress
 )
+from congress_fastapi.handlers.legislation.search import get_bill_sponsor
 from congress_fastapi.db.postgres import get_database
 from congress_fastapi.models.user import UserLoginResponse, UserLogoutResponse
 
@@ -84,6 +85,7 @@ async def handle_get_user_legislation(cookie):
             Congress.session_number,
             Legislation.legislation_type,
             Legislation.chamber,
+            func.min(LegislationVersion.effective_date).label("effective_date")
         )
         .select_from(
             join(
@@ -93,7 +95,8 @@ async def handle_get_user_legislation(cookie):
             ).join(
                 LegislationVersion,
                 LegislationVersion.legislation_id == Legislation.legislation_id
-            ).join(Congress, Congress.congress_id == Legislation.congress_id)
+            )
+            .join(Congress, Congress.congress_id == Legislation.congress_id)
         )
         .group_by(
             Legislation.legislation_id,
@@ -104,11 +107,19 @@ async def handle_get_user_legislation(cookie):
             Legislation.legislation_type,
             Legislation.chamber,
         )
+        .order_by(Legislation.number.desc())
         #.where(LegislationVersion.created_at >= seven_days_ago)
     )
 
     results = await database.fetch_all(query)
-    legislation = [dict(r) for r in results]
+
+    legislation_ids = [result["legislation_id"] for result in results]
+    sponsors_by_id = await get_bill_sponsor(legislation_ids)
+
+    legislation = [{
+        **dict(r),
+        'sponsor': sponsors_by_id.get(r["legislation_id"], None)
+    } for r in results]
 
     return {
         'legislation': legislation
@@ -132,6 +143,7 @@ async def handle_get_user_legislator(cookie):
             Congress.session_number,
             Legislation.legislation_type,
             Legislation.chamber,
+            func.min(LegislationVersion.effective_date).label("effective_date")
         ).select_from(
             join(
                 UserLegislator,
@@ -159,11 +171,19 @@ async def handle_get_user_legislator(cookie):
             Legislation.legislation_type,
             Legislation.chamber,
         )
+        .order_by(Legislation.number.desc())
         #.where(LegislationVersion.created_at >= seven_days_ago)
     )
 
     results = await database.fetch_all(query)
-    legislation = [dict(r) for r in results]
+
+    legislation_ids = [result["legislation_id"] for result in results]
+    sponsors_by_id = await get_bill_sponsor(legislation_ids)
+
+    legislation = [{
+        **dict(r),
+        'sponsor': sponsors_by_id.get(r["legislation_id"], None)
+    } for r in results]
 
     return {
         'legislation': legislation
