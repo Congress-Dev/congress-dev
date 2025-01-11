@@ -43,8 +43,6 @@ function BillViewer(props) {
     const [treeLookup, setTreeLookup] = useState({});
     const [dateAnchors, setDateAnchors] = useState([]);
 
-    console.log(billVers);
-
     useEffect(() => {
         const element = elementRef.current;
         if (element) {

@@ -45,6 +45,10 @@ b {
 .bill-content {
     max-height: calc(100vh - var(--bill-content-y-position));
     overflow-y: scroll;
+
+    b {
+        color: inherit;
+    }
 }
 
 .home-page-unauthed {

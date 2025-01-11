@@ -236,8 +236,9 @@ function BillDisplay() {
                         ) {
                             setRenderedTarget(true);
                         }
+
                         // TODO: Get rid of this if statement, with better CSS
-                        if (heading !== undefined) {
+                        if (heading != null) {
                             return (
                                 <div
                                     id={itemHash}
