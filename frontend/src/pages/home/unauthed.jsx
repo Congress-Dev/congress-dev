@@ -34,15 +34,15 @@ function UnauthedHome() {
                             <li>
                                 <b>Track Your Interest</b>
                                 <br />
-                                "Follow specific bills, lawmakers, or committees
-                                to stay informed."
+                                Follow specific bills, lawmakers, or committees
+                                to stay informed.
                             </li>
 
                             <li>
                                 <b>Understand the Proces</b>
                                 <br />
-                                "Learn how laws are made and track their
-                                progress through Congress."{" "}
+                                Learn how laws are made and track their
+                                progress through Congress.
                             </li>
                         </ul>
                     </Section>

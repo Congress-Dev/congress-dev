@@ -73,6 +73,10 @@ b {
             margin-left: 20px;
         }
     }
+
+    ul {
+        margin-right: 20px
+    }
 }
 
 .section-tree div.bp5-tree-node-content {
@@ -437,6 +441,7 @@ b {
         th.fixed,
         td.fixed {
             width: auto;
+            min-width: 60px;
         }
 
         th:not(.critical),
