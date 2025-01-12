@@ -391,7 +391,7 @@ def apply_action(
                     computed_citation = parent_cite["cite"]
                     break
     if computed_citation is None:
-        logging.error("No citation found for action")
+        logging.debug("No citation found for action")
         return
     if not computed_citation.startswith("/us"):
         logging.error(f"Citation is not complete? {computed_citation=}")
