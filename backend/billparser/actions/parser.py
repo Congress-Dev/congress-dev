@@ -183,6 +183,7 @@ def _recursively_insert_content(
     my_diff = USCContentDiff(
         usc_content_id=my_content.usc_content_id,
         usc_section_id=my_content.usc_section_id,
+        usc_chapter_id=get_chapter_id(new_ident.split("/")[3].replace("t", "")),
         heading=content_to_insert.heading,
         content_str=content_to_insert.content_str,
         version_id=version_id,
@@ -320,6 +321,7 @@ def strike_section(
         USCContentDiff(
             usc_content_id=x[0].usc_content_id,
             usc_section_id=x[0].usc_section_id,
+            usc_chapter_id=get_chapter_id(citation.split("/")[3].replace("t", "")),
             content_str="",
             heading="",
             section_display="",
@@ -342,16 +344,17 @@ def replace_section(
     diffs.extend(strike_section(action, citation, session))
     query = select(USCContent).where(USCContent.usc_ident == citation)
     target_section = session.execute(query).first()[0]
-    diffs.extend(insert_section_after(
-        target_section,
-        action_parse,
-        citation,
-        content_by_parent_id,
-        version_id,
-        session,
-    ))
+    diffs.extend(
+        insert_section_after(
+            target_section,
+            action_parse,
+            citation,
+            content_by_parent_id,
+            version_id,
+            session,
+        )
+    )
     return diffs
-    
 
 
 def apply_action(
