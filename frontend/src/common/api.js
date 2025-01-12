@@ -230,7 +230,7 @@ export const getUSCSectionContent = (
                 const sorted = lodash.sortBy(
                     flatJson.content,
                     ({ usc_content_id, order_number }) =>
-                        `${usc_content_id}.${order_number.toString().padStart(3, "0")}`,
+                        usc_content_id,
                 );
                 if (sorted.length === 0) {
                     return {};
