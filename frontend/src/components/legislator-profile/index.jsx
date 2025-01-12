@@ -1,8 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Divider, Icon } from "@blueprintjs/core";
+import { SectionCard, Button, Icon, Section } from "@blueprintjs/core";
 
-import { BillCard } from "components";
+import { BillCard, BillTable } from "components";
 
 const LegislatorProfile = ({
     bioguideId,
@@ -13,6 +13,7 @@ const LegislatorProfile = ({
     imageSource = "",
     profile = "",
     sponsoredLegislation = [],
+    compact = true,
 }) => {
     // I will make an element that links to the real profile page at https://bioguide.congress.gov/search/bio/${bioguideId}
 
@@ -42,7 +43,7 @@ const LegislatorProfile = ({
         // Extract fields from sentences
         sentences.forEach((sentence) => {
             if (sentence.toLowerCase().includes("born")) {
-                bioData.birth = sentence.replace("born", "Born");
+                bioData.birth = sentence.replace("born in", "");
             } else if (sentence.toLowerCase().includes("graduated")) {
                 bioData.education = bioData.education || [];
                 bioData.education.push(sentence);
@@ -65,7 +66,38 @@ const LegislatorProfile = ({
 
         // Generate HTML content
         let htmlContent = "";
-        htmlContent += `<p><b>${bioData.birth}</b></p>`;
+
+        if (bioData.birth) {
+            const dateRegex =
+                /\b((?:January|February|March|April|May|June|July|August|September|October|November|December)|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec))\s*(\d{1,2})(?:st|nd|rd|th)?,?\s*(\d{4})\b/;
+            const dateMatch = bioData.birth.match(dateRegex);
+
+            let birthPlace = bioData.birth;
+            let birthDay = null;
+            if (dateMatch != null && dateMatch[0] != null) {
+                birthDay = dateMatch[0];
+                birthPlace = birthPlace.replace(`, ${birthDay}`, "");
+            }
+
+            if (birthDay != null) {
+                const birthDate = new Date(birthDay); // Parse the date string
+                const today = new Date(); // Get today's date
+                let age = today.getFullYear() - birthDate.getFullYear(); // Calculate year difference
+                const monthDiff = today.getMonth() - birthDate.getMonth(); // Calculate month difference
+
+                // Adjust age if the current month/day is before the birth month/day
+                if (
+                    monthDiff < 0 ||
+                    (monthDiff === 0 && today.getDate() < birthDate.getDate())
+                ) {
+                    age--;
+                }
+
+                htmlContent += `<p><b>Age:</b> ${age} (${birthDay})`;
+            }
+
+            htmlContent += `<p><b>Birthplace:</b> ${birthPlace}</p>`;
+        }
 
         if (bioData.education) {
             htmlContent += `<p><b>Education:</b></p><ul class="details">`;
@@ -102,9 +134,9 @@ const LegislatorProfile = ({
         return htmlContent;
     }
 
-    return (
-        <div className="legislator-profile">
-            <div className="center">
+    function renderBiopicture() {
+        return (
+            <>
                 <div className="image">
                     {imageUrl != null && imageUrl != "" ? (
                         <img src={imageUrl} />
@@ -124,34 +156,68 @@ const LegislatorProfile = ({
                 >
                     <span>Profile on congress.gov</span>
                 </a>
-            </div>
-            <Divider />
-            {profile != null && profile != "" ? (
-                <>
-                    <h3>Biography:</h3>
-                    <p
-                        dangerouslySetInnerHTML={{
-                            __html: parseBiography(profile),
-                        }}
-                    />
-                    <Divider />
-                </>
-            ) : (
-                <></>
-            )}
-            {sponsoredLegislation.length == 0 ? (
+            </>
+        );
+    }
+
+    function renderProfile() {
+        return (
+            <>
+                {profile != null && profile != "" ? (
+                    <>
+                        <p
+                            dangerouslySetInnerHTML={{
+                                __html: parseBiography(profile),
+                            }}
+                        />
+                    </>
+                ) : (
+                    <></>
+                )}
+            </>
+        );
+    }
+
+    if (compact) {
+        return (
+            <div className="legislator-profile">
+                <SectionCard>
+                    <div className="center">{renderBiopicture()}</div>
+                </SectionCard>
+                <SectionCard>{renderProfile()}</SectionCard>
                 <p>
                     <Link to={`/member/${bioguideId}`}>
-                        More information about the legislator...
+                        <Button intent="primary">View Full Profile</Button>
                     </Link>
                 </p>
-            ) : (
-                <>
-                    <div>{renderSponsoredLegislation()}</div>
-                </>
-            )}
-        </div>
-    );
+            </div>
+        );
+    } else {
+        return (
+            <div class="legislator-profile">
+                <div class="sidebar">
+                    <Section title="Biography" icon="manual" compact={true}>
+                        <SectionCard>
+                            <div className="center">{renderBiopicture()}</div>
+                        </SectionCard>
+                        <SectionCard>{renderProfile()}</SectionCard>
+                    </Section>
+                </div>
+
+                <div class="content">
+                    <Section
+                        title="Sponsored Legislation"
+                        subtitle="All Records"
+                        icon="drag-handle-vertical"
+                    >
+                        {sponsoredLegislation?.length > 0 && (
+                            <BillTable bills={sponsoredLegislation} />
+                        )}
+                    </Section>
+                </div>
+            </div>
+        );
+    }
 };
 
 export default LegislatorProfile;

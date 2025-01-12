@@ -1,21 +1,13 @@
-import { SectionCard, Section, Breadcrumbs } from "@blueprintjs/core";
+import { SectionCard, Section } from "@blueprintjs/core";
 
-function LearnAmendments() {
+function LearnAmendments({ navigation }) {
     return (
         <Section
             className="page"
             title="The Importance of Amendments and Reconciliation"
             subtitle="How Changes and Compromises Shape a Bill"
         >
-            <SectionCard className="learn-nav">
-                <Breadcrumbs
-                    items={[
-                        { icon: "home" },
-                        { text: "Knowledge Base", href: "/learn" },
-                        { text: "Amendments" },
-                    ]}
-                />
-            </SectionCard>
+            {navigation}
             <SectionCard className="learn-content">
                 <p>
                     Amendments are a crucial part of the legislative process,

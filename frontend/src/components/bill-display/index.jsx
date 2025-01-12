@@ -144,7 +144,7 @@ function BillDisplay() {
       "parsed_cite": "/us/usc/t52/s21083/b/1/A"
     }
     */
-   
+
         // Within each one we are using the VALID_ACTIONS list to pull out the action key "AMEND-MULTIPLE" in this case
         // And then these correspond to the regex groups we identify, except for the REGEX key, which we ignore
         // Using those substrings, we then highlight the next
@@ -187,8 +187,7 @@ function BillDisplay() {
                         },
                         ind,
                     ) => {
-                      
-                      const action = actions[0]?.actions[0] || {};
+                        const action = actions[0]?.actions[0] || {};
                         let summaryContent = lodash.find(
                             props.billSummary,
                             (e) => {
@@ -237,8 +236,9 @@ function BillDisplay() {
                         ) {
                             setRenderedTarget(true);
                         }
+
                         // TODO: Get rid of this if statement, with better CSS
-                        if (heading !== undefined) {
+                        if (heading != null) {
                             return (
                                 <div
                                     id={itemHash}
@@ -355,7 +355,7 @@ function BillDisplay() {
                                             activeHash === itemHash
                                         }
                                     >
-                                        <span>
+                                       {content_str != null && <span>
                                             <span
                                                 className={
                                                     "bill-content-section-display"
@@ -366,7 +366,7 @@ function BillDisplay() {
                                             <span className={innerClass}>
                                                 {content_str}
                                             </span>
-                                        </span>
+                                        </span>}
                                     </Tooltip>
                                     {renderRecursive({ children })}
                                 </div>

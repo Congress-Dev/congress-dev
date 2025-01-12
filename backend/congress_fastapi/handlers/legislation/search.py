@@ -222,6 +222,9 @@ async def search_legislation(
     page: int,
     page_size: int,
 ) -> Tuple[List[SearchResult], int]:
+    if congress:
+        congress = [int(c) for c in congress.split(",")]
+
     database = await get_database()
     lv_alias = aliased(LegislationVersion)
     subquery = (
@@ -241,7 +244,7 @@ async def search_legislation(
             Legislation.legislation_type,
             Legislation.chamber,
             func.array_agg(lv_alias.legislation_version).label("versions"),
-            func.array_agg(lv_alias.effective_date).label("effective_date"),
+            func.min(lv_alias.effective_date).label("effective_date"),
         )
         .select_from(
             join(
@@ -264,6 +267,8 @@ async def search_legislation(
         .limit(page_size)
         .offset((page - 1) * page_size)
     )
+    if congress:
+        legis_query = legis_query.where(Congress.session_number.in_(congress))
     if chamber:
         legis_query = legis_query.where(Legislation.chamber.in_(chamber.split(",")))
 
@@ -294,7 +299,7 @@ async def search_legislation(
             summary=summaries_by_id.get(result["legislation_id"], None),
             appropriations=appropriations_by_id.get(result["legislation_id"], None),
             sponsor=sponsors_by_id.get(result["legislation_id"], None),
-            effective_date=result.get("effective_date")[0],
+            effective_date=result.get("effective_date"),
         )
         for result in results
     ]
@@ -314,6 +319,8 @@ async def search_legislation(
             Legislation.legislation_id,
         )
     ).having(exists(subquery))
+    if congress:
+        count_query = count_query.where(Congress.session_number.in_(congress))
     if chamber:
         count_query = count_query.where(Legislation.chamber.in_(chamber.split(",")))
 

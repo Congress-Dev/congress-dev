@@ -1,21 +1,13 @@
-import { SectionCard, Section, Breadcrumbs } from "@blueprintjs/core";
+import { SectionCard, Section } from "@blueprintjs/core";
 
-function LearnCommittees() {
+function LearnCommittees({ navigation }) {
     return (
         <Section
             className="page"
             title="The Role of Committees in Congress"
             subtitle="Shaping, Revising, and Reviewing Bills"
         >
-            <SectionCard className="learn-nav">
-                <Breadcrumbs
-                    items={[
-                        { icon: "home" },
-                        { text: "Knowledge Base", href: "/learn" },
-                        { text: "Committees" },
-                    ]}
-                />
-            </SectionCard>
+            {navigation}
             <SectionCard className="learn-content">
                 <p>
                     Committees play a crucial role in the legislative process,

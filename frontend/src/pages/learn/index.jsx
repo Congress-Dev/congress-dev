@@ -1,5 +1,6 @@
-import { useHistory } from "react-router-dom";
+import { useHistory, Link } from "react-router-dom";
 import {
+    Breadcrumbs,
     Callout,
     Card,
     CardList,
@@ -19,20 +20,38 @@ function Learn(props) {
     const { section } = props.match.params;
     const history = useHistory();
 
+    const navigation = (
+        <SectionCard className="learn-nav">
+            <Breadcrumbs
+                breadcrumbRenderer={({ icon, text, link }) => (
+                    <>
+                        {icon != null && <Icon icon={icon} />}
+                        {link != null ? <Link to={link}>{text}</Link> : text}
+                    </>
+                )}
+                items={[
+                    { icon: "home" },
+                    { text: "Knowledge Base", link: "/learn" },
+                    { text: "Amendments" },
+                ]}
+            />
+        </SectionCard>
+    );
+
     function getPageContent() {
         switch (section) {
             case "process":
-                return <LearnProcess />;
+                return <LearnProcess navigation={navigation} />;
             case "differences":
-                return <LearnDifferences />;
+                return <LearnDifferences navigation={navigation} />;
             case "committees":
-                return <LearnCommittees />;
+                return <LearnCommittees navigation={navigation} />;
             case "stages":
-                return <LearnStages />;
+                return <LearnStages navigation={navigation} />;
             case "amendments":
-                return <LearnAmendments />;
+                return <LearnAmendments navigation={navigation} />;
             case "president":
-                return <LearnPresident />;
+                return <LearnPresident navigation={navigation} />;
         }
     }
 
@@ -69,7 +88,7 @@ function Learn(props) {
                             history.push("/learn/process");
                         }}
                     >
-                        <b>The Legislative Process: How a Bill Becomes a Law</b>
+                        The Legislative Process: How a Bill Becomes a Law
                         <Icon icon="chevron-right" />
                     </Card>
 
@@ -79,7 +98,7 @@ function Learn(props) {
                             history.push("/learn/differences");
                         }}
                     >
-                        <b>Key Differences Between the House and Senate</b>
+                        Key Differences Between the House and Senate
                         <Icon icon="chevron-right" />
                     </Card>
 
@@ -89,7 +108,7 @@ function Learn(props) {
                             history.push("/learn/committees");
                         }}
                     >
-                        <b>The Role of Committees in Congress</b>
+                        The Role of Committees in Congress
                         <Icon icon="chevron-right" />
                     </Card>
 
@@ -99,10 +118,8 @@ function Learn(props) {
                             history.push("/learn/stages");
                         }}
                     >
-                        <b>
-                            Understanding the Stages of a Bill in the House and
-                            Senate
-                        </b>
+                        Understanding the Stages of a Bill in the House and
+                        Senate
                         <Icon icon="chevron-right" />
                     </Card>
 
@@ -112,7 +129,7 @@ function Learn(props) {
                             history.push("/learn/amendments");
                         }}
                     >
-                        <b>The Importance of Amendments and Reconciliation</b>
+                        The Importance of Amendments and Reconciliation
                         <Icon icon="chevron-right" />
                     </Card>
 
@@ -122,7 +139,7 @@ function Learn(props) {
                             history.push("/learn/president");
                         }}
                     >
-                        <b>The Role of the President and Veto Power</b>
+                        The Role of the President and Veto Power
                         <Icon icon="chevron-right" />
                     </Card>
                 </CardList>

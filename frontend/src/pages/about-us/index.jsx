@@ -1,5 +1,5 @@
 import React from "react";
-import { Section, SectionCard, Callout } from "@blueprintjs/core";
+import { Card, Section, SectionCard, Callout } from "@blueprintjs/core";
 
 function AboutUs() {
     return (
@@ -9,37 +9,19 @@ function AboutUs() {
             subtitle="Empowering Civic Engagement and Understanding"
         >
             <SectionCard>
-                <p>
-                    Welcome to <b>Congress.dev</b>, your trusted tool for
-                    exploring and understanding federal legislation. In a world
-                    where legislative processes can seem opaque and
-                    overwhelming, our platform provides clarity by offering an
-                    intuitive and powerful way to track, parse, and analyze
-                    federal bills and resolutions in real time. Whether you're a
-                    policy analyst, developer, journalist, or simply a curious
-                    citizen, we empower you with the tools to stay informed and
-                    engaged with the lawmaking process.
-                </p>
-                <p>
-                    At its core, the platform bridges the gap between raw
-                    legislative data and actionable insights. It collects and
-                    organizes information from official government sources,
-                    presenting it in an easily digestible and searchable format.
-                    From bill summaries to voting records, sponsor details, and
-                    legislative histories, we ensure you have the full context
-                    you need at your fingertips. For developers, the robust API
-                    enables seamless integration of legislative data into
-                    projects, fostering innovation and deeper analysis.
-                </p>
-                <p>
-                    Transparency and accessibility are at the heart of what we
-                    do. By demystifying federal legislation and making it
-                    available to everyone, we contribute to a more informed and
-                    engaged public. Join us in exploring the policies that shape
-                    our nation and discover how this resource can keep you
-                    connected to the legislative process.
-                </p>
+                <b>Congress.dev</b> was created to empower everyday people with
+                easy access to the workings of Congress. We believe that
+                democracy thrives when citizens are informed and engaged, but
+                navigating the legislative process can feel overwhelming and
+                opaque. By providing clear, comprehensive tools to track bills,
+                understand their impact, and follow lawmakers' actions, this
+                project seeks to bridge the gap between the public and
+                policymaking. Our mission is to make federal legislation more
+                transparent, accessible, and relevant to everyone—because an
+                informed public is a stronger democracy.
+            </SectionCard>
 
+            <SectionCard>
                 <Callout>
                     <h3 className="bp5-heading">Our Data Sources:</h3>
                     <p>
@@ -93,7 +75,7 @@ function AboutUs() {
                         </li>
                     </ul>
                 </Callout>
-
+                <br />
                 <Callout>
                     <h3 className="bp5-heading">
                         Frequently Asked Questions (FAQs):

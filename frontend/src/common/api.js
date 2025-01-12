@@ -55,6 +55,90 @@ export const userLogout = () => {
         .catch(toastError);
 };
 
+export const userGetLegislation = () => {
+    return fetch(`${endPv2}/user/legislation`, {
+        credentials: "include",
+    })
+        .then(handleStatus)
+        .catch(toastError);
+};
+
+export const userGetLegislator = () => {
+    return fetch(`${endPv2}/user/legislator`, {
+        credentials: "include",
+    })
+        .then(handleStatus)
+        .catch(toastError);
+};
+
+export const userGetLegislationFeed = () => {
+    return fetch(`${endPv2}/user/legislation/feed`, {
+        credentials: "include",
+    })
+        .then(handleStatus)
+        .catch(toastError);
+};
+
+export const userGetLegislatorFeed = () => {
+    return fetch(`${endPv2}/user/legislator/feed`, {
+        credentials: "include",
+    })
+        .then(handleStatus)
+        .catch(toastError);
+};
+
+export const userGetStats = () => {
+    return fetch(`${endPv2}/user/stats`, {
+        credentials: "include",
+    })
+        .then(handleStatus)
+        .catch(toastError);
+};
+
+export const userAddLegislation = (legislationId) => {
+    return fetch(
+        `${endPv2}/user/legislation/update?action=add&legislation_id=${legislationId}`,
+        {
+            credentials: "include",
+        },
+    )
+        .then(handleStatus)
+        .catch(toastError);
+};
+
+export const userRemoveLegislation = (legislationId) => {
+    return fetch(
+        `${endPv2}/user/legislation/update?action=remove&legislation_id=${legislationId}`,
+        {
+            credentials: "include",
+        },
+    )
+        .then(handleStatus)
+        .catch(toastError);
+};
+
+export const userAddLegislator = (bioGuideId) => {
+    return fetch(
+        `${endPv2}/user/legislator/update?action=add&bioguide_id=${bioGuideId}`,
+        {
+            credentials: "include",
+        },
+    )
+        .then(handleStatus)
+        .catch(toastError);
+};
+
+export const userRemoveLegislator = (bioGuideId) => {
+    return fetch(
+        `${endPv2}/user/legislator/update?action=remove&bioguide_id=${bioGuideId}`,
+        {
+            credentials: "include",
+        },
+    )
+        .then(handleStatus)
+        .catch(toastError);
+};
+
 export const getBill = (congress, chamber, billNumber) => {
     return fetch(
         `${endpoint}/congress/${congress}/${capFirstLetter(
@@ -263,7 +347,7 @@ export const getCongressSearch = (
     pageSize,
 ) => {
     return fetch(
-        `${endPv2}/legislation/search?congress=${congress || "None"}&chamber=${
+        `${endPv2}/legislation/search?${congress != "" ? `congress=${congress}`: ''}&chamber=${
             chamber || "None"
         }&versions=${versions || ""}&text=${text}&sort=${sort}&page=${page}&pageSize=${pageSize}`,
     )
