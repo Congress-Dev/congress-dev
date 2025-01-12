@@ -209,9 +209,7 @@ def _recursively_insert_content(
 
 
 def insert_section_after(
-    target_content: USCContent,
     parent_content: USCContent,
-    action: ActionObject,
     action_parse: LegislationActionParse,
     citation: str,
     content_by_parent_id: Dict[int, List[LegislationContent]],
@@ -280,9 +278,7 @@ def insert_section_end(
     results = session.execute(query).all()
     last_content = results[0][0]
     return insert_section_after(
-        last_content,
         target_section,
-        action,
         action_parse,
         last_content.usc_ident,
         content_by_parent_id,
@@ -332,6 +328,32 @@ def strike_section(
     ]
 
 
+def replace_section(
+    action: ActionObject,
+    action_parse: LegislationActionParse,
+    citation: str,
+    content_by_parent_id: Dict[int, List[LegislationContent]],
+    version_id: int,
+    session: "Session",
+) -> List[USCContentDiff]:
+    # Strike the existing section, then basically call insert_section_after on it
+    # This should create a red x blob, and then a new content blob in the diff view
+    diffs: List[USCContentDiff] = []
+    diffs.extend(strike_section(action, citation, session))
+    query = select(USCContent).where(USCContent.usc_ident == citation)
+    target_section = session.execute(query).first()[0]
+    diffs.extend(insert_section_after(
+        target_section,
+        action_parse,
+        citation,
+        content_by_parent_id,
+        version_id,
+        session,
+    ))
+    return diffs
+    
+
+
 def apply_action(
     content_by_parent_id: Dict[int, List[LegislationContent]],
     action: LegislationActionParse,
@@ -375,28 +397,46 @@ def apply_action(
     actions = action.actions
     diffs: List[USCContentDiff] = []
     for act, act_obj in actions[0].items():
-        if act != ActionType.AMEND_MULTIPLE:
-            if act == ActionType.STRIKE_TEXT:
-                diffs.extend(strike_text(act_obj, computed_citation, PARSER_SESSION))
-            elif act == ActionType.INSERT_TEXT_END:
-                diffs.extend(
-                    insert_text_end(act_obj, computed_citation, PARSER_SESSION)
-                )
-            elif act == ActionType.INSERT_END:
-                diffs.extend(
-                    insert_section_end(
-                        act_obj,
-                        action,
-                        computed_citation,
-                        content_by_parent_id,
-                        version_id,
-                        PARSER_SESSION,
+        try:
+            if act != ActionType.AMEND_MULTIPLE:
+                if act == ActionType.STRIKE_TEXT:
+                    diffs.extend(
+                        strike_text(act_obj, computed_citation, PARSER_SESSION)
                     )
-                )
-            elif act == ActionType.STRIKE_SUBSECTION:
-                diffs.extend(strike_section(act_obj, computed_citation, PARSER_SESSION))
-            # print(act_obj)
-            # print(computed_citation)
+                elif act == ActionType.INSERT_TEXT_END:
+                    diffs.extend(
+                        insert_text_end(act_obj, computed_citation, PARSER_SESSION)
+                    )
+                elif act == ActionType.INSERT_END:
+                    diffs.extend(
+                        insert_section_end(
+                            act_obj,
+                            action,
+                            computed_citation,
+                            content_by_parent_id,
+                            version_id,
+                            PARSER_SESSION,
+                        )
+                    )
+                elif act == ActionType.STRIKE_SUBSECTION:
+                    diffs.extend(
+                        strike_section(act_obj, computed_citation, PARSER_SESSION)
+                    )
+                elif act == ActionType.REPLACE_SECTION:
+                    diffs.extend(
+                        replace_section(
+                            act_obj,
+                            action,
+                            computed_citation,
+                            content_by_parent_id,
+                            version_id,
+                            PARSER_SESSION,
+                        )
+                    )
+                # print(act_obj)
+                # print(computed_citation)
+        except:
+            logging.error(f"Unexpected failure while parsing action {act_obj}")
     for diff in diffs:
         diff.legislation_content_id = action.legislation_content_id
         diff.version_id = version_id
@@ -441,37 +481,28 @@ def recursively_extract_actions(
 
 
 def parse_bill_for_actions(legislation_version: LegislationVersion):
-
     # Inside a transaction, we will generate all of the actions for a bill
-    global PARSER_SESSION
-    if PARSER_SESSION is None:
-        init_session()
-        PARSER_SESSION = Session()
-    try:
-        with PARSER_SESSION.begin():
-            # Retrieve all the content for the legislation version
-            contents = get_bill_contents(legislation_version.legislation_version_id)
 
-            # Put into a dict by parent
-            # This will constitute our traversal of the tree
-            content_by_parent_id: Dict[int, List[LegislationContent]] = defaultdict(
-                list
+    with PARSER_SESSION.begin():
+        # Retrieve all the content for the legislation version
+        contents = get_bill_contents(legislation_version.legislation_version_id)
+
+        # Put into a dict by parent
+        # This will constitute our traversal of the tree
+        content_by_parent_id: Dict[int, List[LegislationContent]] = defaultdict(list)
+        for content in contents:
+            content_by_parent_id[content.parent_id].append(content)
+
+        # Sort the lists now so we can proceed in a depth first manner
+        for parent_id, content_list in content_by_parent_id.items():
+            content_list.sort(key=lambda x: x.legislation_content_id)
+
+        root_content = content_by_parent_id[None]
+
+        # Iterate over the root children
+        for content in root_content:
+            recursively_extract_actions(
+                content_by_parent_id, content, [], legislation_version.version_id
             )
-            for content in contents:
-                content_by_parent_id[content.parent_id].append(content)
-
-            # Sort the lists now so we can proceed in a depth first manner
-            for parent_id, content_list in content_by_parent_id.items():
-                content_list.sort(key=lambda x: x.legislation_content_id)
-
-            root_content = content_by_parent_id[None]
-
-            # Iterate over the root children
-            for content in root_content:
-                recursively_extract_actions(
-                    content_by_parent_id, content, [], legislation_version.version_id
-                )
-            PARSER_SESSION.flush()
-            PARSER_SESSION.commit()
-    except:
-        pass
+        PARSER_SESSION.flush()
+        PARSER_SESSION.commit()
