@@ -5,6 +5,7 @@ export { default as BillCard } from "./bill-card";
 export { default as BillDiffSidebar } from "./bill-diff-sidebar";
 export { default as BillDisplay } from "./bill-display";
 export { default as BillSearchContent } from "./bill-search-content";
+export { default as BillTable } from "./bill-table";
 export { default as BillTableOfContents } from "./bill-table-of-contents";
 export { default as BillVersionsBreadcrumb } from "./bill-versions-breadcrumb";
 export { default as BillViewSidebar } from "./bill-view-sidebar";

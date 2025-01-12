@@ -179,8 +179,8 @@ class UserLegislator(Base):
         String, ForeignKey("sensitive.user_ident.user_id", ondelete="CASCADE"), index=True
     )
 
-    legislator_id = Column(
-        Integer, ForeignKey("legislator.legislator_id", ondelete="CASCADE"), index=True
+    bioguide_id = Column(
+        String, ForeignKey("legislator.bioguide_id", ondelete="CASCADE"), index=True
     )
 
 

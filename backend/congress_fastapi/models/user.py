@@ -1,10 +1,14 @@
 from typing import Annotated, List, Optional
-
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from datetime import date
 
 from billparser.db.models import (
-    User
+    User,
+    Legislation,
+    Legislator,
+    LegislationChamber
 )
+from congress_fastapi.models.legislation import LegislatorMetadata, LegislationMetadata
 from congress_fastapi.models.abstract import MappableBase
 
 
@@ -23,3 +27,36 @@ class UserLoginResponse(MappableBase):
 
 class UserLogoutResponse(MappableBase):
     success: bool
+
+class UserLegislationMetadata(BaseModel):
+    legislation_type: str
+    number: int
+    title: str
+    legislation_id: int
+    session_number: int
+    effective_date: Optional[date]
+    chamber: LegislationChamber
+    sponsor: Optional[LegislatorMetadata]
+
+class UserLegislationResponse(MappableBase):
+    legislation: List[Annotated[int, Legislation.legislation_id]]
+
+class UserLegislatorResponse(MappableBase):
+    legislator: List[Annotated[str, Legislator.bioguide_id]]
+
+class UserLegislationFeedResponse(MappableBase):
+    legislation: List[UserLegislationMetadata]
+
+class UserLegislatorFeedResponse(MappableBase):
+    legislation: List[UserLegislationMetadata]
+
+class UserLegislationUpdateResponse(MappableBase):
+    success: bool
+
+class UserLegislatorUpdateResponse(MappableBase):
+    success: bool
+
+class UserStatsResponse(MappableBase):
+    legislation: int
+    versions: int
+    legislators: int

@@ -28,20 +28,13 @@ function BillTableOfContents(props) {
         let idx = 0;
 
         for (const child of textTree?.children) {
-            if (child.content_type != "title" && child.content_type != "division") {
-                continue;
-            }
-
             const children = [];
 
-            for (const subchild of child.children) {
-                if (
-                    subchild.content_type != "section" &&
-                    subchild.content_type != "title"
-                ) {
-                    continue;
-                }
+            if(child.heading === 'Short title') {
+                continue
+            }
 
+            for (const subchild of child.children) {
                 children.push({
                     key: subchild.legislation_content_id,
                     id: subchild.legislation_content_id,
@@ -55,7 +48,7 @@ function BillTableOfContents(props) {
                 id: child.legislation_content_id,
                 label: child.heading,
                 depth: 1,
-                childNodes: children,
+                childNodes: children.length > 0 ? children : null,
                 isExpanded:
                     treeExpansion[child.legislation_content_id] === true,
             });
