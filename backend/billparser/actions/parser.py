@@ -6,7 +6,7 @@ from billparser.utils.cite_parser import (
     parse_action_for_cite,
     parse_text_for_cite,
 )
-from billparser.db.handler import Session, init_session
+from billparser.db.handler import Session, get_scoped_session, init_session
 
 from sqlalchemy import select
 from sqlalchemy.orm import aliased
@@ -485,6 +485,10 @@ def recursively_extract_actions(
 
 def parse_bill_for_actions(legislation_version: LegislationVersion):
     # Inside a transaction, we will generate all of the actions for a bill
+    global PARSER_SESSION
+    if PARSER_SESSION is None:
+        PARSER_SESSION = get_scoped_session()
+    PARSER_SESSION.rollback()
 
     with PARSER_SESSION.begin():
         # Retrieve all the content for the legislation version

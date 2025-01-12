@@ -20,26 +20,43 @@ table = os.environ.get("db_table", "uscode")
 db_host = os.environ.get("db_host", "localhost:5401")
 DATABASE_URI = f"postgresql://{username}:{password}@{db_host}/{table}"
 print(DATABASE_URI)
-engine = create_engine(DATABASE_URI, poolclass=NullPool, connect_args={'sslmode': "disable"})
+engine = create_engine(
+    DATABASE_URI, poolclass=NullPool, connect_args={"sslmode": "disable"}
+)
 
 Base.metadata.create_all(engine)
 
 ribber = string.ascii_letters + string.digits
 Session = scoped_session(sessionmaker(bind=engine, query_cls=query_callable(regions)))
 
+
 def init_session():
     """Initialize the Session object in the current process."""
     global Session
-    engine = create_engine(DATABASE_URI, poolclass=NullPool, connect_args={'sslmode': "disable"})
+    engine = create_engine(
+        DATABASE_URI, poolclass=NullPool, connect_args={"sslmode": "disable"}
+    )
+    engine.dispose()
     Session = scoped_session(sessionmaker(bind=engine))
-    
+
+
+def get_scoped_session():
+    """Initialize the Session object in the current process."""
+    global Session
+    engine = create_engine(
+        DATABASE_URI, poolclass=NullPool, connect_args={"sslmode": "disable"}
+    )
+    Session = scoped_session(sessionmaker(bind=engine))
+    return Session()
+
+
 def unidecode_str(input_str: str) -> str:
     return unidecode(input_str or "").replace("--", "-")
 
 
 def open_usc(file_str):
     """
-        Pulls out all elements that have an identifier attribute
+    Pulls out all elements that have an identifier attribute
     """
     lookup = {}
     usc_root = etree.fromstring(file_str)
@@ -89,7 +106,7 @@ def get_number(ident: str) -> float:
 
 def import_title(chapter_file, chapter_number, version_string, release: USCRelease):
     """
-        chapter_file: file pointer to an xml file
+    chapter_file: file pointer to an xml file
     """
     session = Session()
     release_id = release["usc_release_id"]

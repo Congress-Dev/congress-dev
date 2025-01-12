@@ -6,7 +6,7 @@ from joblib import Parallel, delayed
 from sqlalchemy import func
 from billparser.actions.parser import parse_bill_for_actions
 from billparser.db.queries import get_legislation_versions, check_for_action_parses
-from billparser.db.handler import Session
+from billparser.db.handler import Session, init_session
 
 THREADS = int(os.environ.get("PARSE_THREADS", -4))
 
@@ -17,6 +17,7 @@ def get_legislation_versions() -> List[LegislationVersion]:
     """
     session = Session()
     results = session.query(LegislationVersion).all()
+    session.expunge_all()
     return results
 
 
@@ -59,9 +60,9 @@ if __name__ == "__main__":
     session = Session()
     session.commit()
     time.sleep(5)
-    # Parallel(n_jobs=THREADS)(delayed(parse_bill_for_actions)(x) for x in valid_versions)
-    for version in valid_versions:
-        try:
-            parse_bill_for_actions(version)
-        except:
-            pass
+    Parallel(n_jobs=THREADS, verbose=5)(delayed(parse_bill_for_actions)(x) for x in valid_versions)
+    # for version in valid_versions:
+    #     try:
+    #         parse_bill_for_actions(version)
+    #     except:
+    #         pass
