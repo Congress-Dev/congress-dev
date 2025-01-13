@@ -305,16 +305,17 @@ export const getUSCSectionContent = (
         .then((flatJson) => {
             if (flatJson) {
                 // Create a fake root
-                let looped = {[null]: {
-                  content_type: '{}section',
-                  usc_content_id: 0,
-                  usc_ident: '/',
-                  children: []
-                }};
+                let looped = {
+                    [null]: {
+                        content_type: "{}section",
+                        usc_content_id: 0,
+                        usc_ident: "/",
+                        children: [],
+                    },
+                };
                 const sorted = lodash.sortBy(
                     flatJson.content,
-                    ({ usc_content_id, order_number }) =>
-                        usc_content_id,
+                    ({ usc_content_id, order_number }) => usc_content_id,
                 );
                 if (sorted.length === 0) {
                     return {};
@@ -325,8 +326,8 @@ export const getUSCSectionContent = (
                     if (copyObj.parent_id && looped[copyObj.parent_id]) {
                         looped[copyObj.parent_id].children.push(copyObj);
                     } else {
-                      // If we can't find it, add it to the root
-                      looped[null].children.push(copyObj);
+                        // If we can't find it, add it to the root
+                        looped[null].children.push(copyObj);
                     }
                 });
                 return { children: [looped[null]] };
@@ -347,7 +348,7 @@ export const getCongressSearch = (
     pageSize,
 ) => {
     return fetch(
-        `${endPv2}/legislation/search?${congress != "" ? `congress=${congress}`: ''}&chamber=${
+        `${endPv2}/legislation/search?${congress != "" ? `congress=${congress}` : ""}&chamber=${
             chamber || "None"
         }&versions=${versions || ""}&text=${text}&sort=${sort}&page=${page}&pageSize=${pageSize}`,
     )
