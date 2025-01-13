@@ -125,6 +125,38 @@ function BillDisplay() {
         }
         return "";
     }
+    function generateCitationStr(citation) {
+        let actionStr = [];
+        if (props.showActions === false) {
+            return "";
+        }
+        const keys = lodash
+            .chain(citation)
+            .keys()
+            .filter((e) => {
+                return !["changed", "parsed_cite", "cite_link"].includes(e);
+            })
+            .value();
+        if (keys.length > 0) {
+            actionStr.push(<span>{keys[0]}</span>);
+            actionStr.push(<br />);
+            lodash.forEach(citation, (value, key) => {
+                if (key !== "REGEX") {
+                    actionStr.push(
+                        <span style={{ marginLeft: "5px" }}>
+                            {" - "}
+                            {key} = |{JSON.stringify(value)}|
+                        </span>,
+                    );
+                    actionStr.push(<br />);
+                }
+            });
+        }
+        if (actionStr.length > 0) {
+            return <>{actionStr}</>;
+        }
+        return "";
+    }
 
     function generateActionHighlighting(contentStr, action) {
         if (actionParse === false) {
@@ -188,6 +220,7 @@ function BillDisplay() {
                         ind,
                     ) => {
                         const action = actions[0]?.actions[0] || {};
+                        const citation = actions[0]?.citations[0] || {};
                         let summaryContent = lodash.find(
                             props.billSummary,
                             (e) => {
@@ -199,6 +232,7 @@ function BillDisplay() {
                         );
                         let summaryStr = summaryContent?.summary || "";
                         let actionStr = generateActionStr(action);
+                        let citationStr = generateCitationStr(citation);
                         content_str = generateActionHighlighting(
                             content_str,
                             action,
@@ -273,6 +307,15 @@ function BillDisplay() {
                                                     <span>
                                                         <b>Actions:</b>{" "}
                                                         {actionStr}
+                                                    </span>
+                                                ) : (
+                                                    ""
+                                                )}
+
+                                                {citationStr != "" ? (
+                                                    <span>
+                                                        <b>Citations:</b>{" "}
+                                                        {citationStr}
                                                     </span>
                                                 ) : (
                                                     ""
@@ -355,18 +398,20 @@ function BillDisplay() {
                                             activeHash === itemHash
                                         }
                                     >
-                                       {content_str != null && <span>
-                                            <span
-                                                className={
-                                                    "bill-content-section-display"
-                                                }
-                                            >
-                                                {section_display}
-                                            </span>{" "}
-                                            <span className={innerClass}>
-                                                {content_str}
+                                        {content_str != null && (
+                                            <span>
+                                                <span
+                                                    className={
+                                                        "bill-content-section-display"
+                                                    }
+                                                >
+                                                    {section_display}
+                                                </span>{" "}
+                                                <span className={innerClass}>
+                                                    {content_str}
+                                                </span>
                                             </span>
-                                        </span>}
+                                        )}
                                     </Tooltip>
                                     {renderRecursive({ children })}
                                 </div>
