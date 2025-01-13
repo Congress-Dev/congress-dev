@@ -19,6 +19,7 @@ docker run --name congress-bill-parser --entrypoint "python3" \
  -v /home/mustyoshi/Github/congress-dev/backend/bills:/bills \
  congress_parser_api -m billparser.importers.bills
 
+docker rm congress-bill-parser && true
 # Run prompts
 docker run --name congress-bill-parser --entrypoint "python3" \
  --env db_host=10.0.0.248 --env db_user=parser --env db_pass=parser \
@@ -33,7 +34,7 @@ docker run --name congress-bill-parser --entrypoint "python3" \
 #  --env DISCORD_WEBHOOK=https://discord.com/api/webhooks/817897502442913822/M-6FpliQvtba68dSnL6AqviGkRgSZb5Jan0Hte841WrIxmJiWFWoEN5caWSxahf0Ydha \
 #  -v /home/mustyoshi/Github/congress-dev/backend/bills:/bills \
 #  congress_parser_api -m billparser.importers.bioguide
-
+docker rm congress-bill-parser && true
 # Grab sponsors
 docker run --name congress-bill-parser --entrypoint "python3" \
  --env db_host=10.0.0.248 --env db_user=parser --env db_pass=parser \
@@ -50,7 +51,7 @@ docker run --name congress-bill-parser --entrypoint "python3" \
 #  --env DISCORD_WEBHOOK=https://discord.com/api/webhooks/817897502442913822/M-6FpliQvtba68dSnL6AqviGkRgSZb5Jan0Hte841WrIxmJiWFWoEN5caWSxahf0Ydha \
 #  -v /home/mustyoshi/Github/congress-dev/backend/bills:/bills \
 #  congress_parser_api -m billparser.importers.releases
-
+docker rm congress-bill-parser && true
 # Run action importer
 docker run --name congress-bill-parser --entrypoint "python3" \
  --env db_host=10.0.0.248 --env db_user=parser --env db_pass=parser \
