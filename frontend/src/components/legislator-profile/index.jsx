@@ -28,7 +28,9 @@ const LegislatorProfile = ({
             </>
         );
     };
-
+    function capitalizeFirstLetter(string) {
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
     function parseBiography(text) {
         const bioData = {};
 
@@ -100,7 +102,7 @@ const LegislatorProfile = ({
         if (bioData.education) {
             htmlContent += `<p><b>Education:</b></p><ul class="details">`;
             bioData.education.forEach((item) => {
-                htmlContent += `<li>${item}</li>`;
+                htmlContent += `<li>${capitalizeFirstLetter(item)}</li>`;
             });
             htmlContent += `</ul>`;
         }
@@ -108,7 +110,7 @@ const LegislatorProfile = ({
         if (bioData.career) {
             htmlContent += `<p><b>Career:</b></p><ul class="details">`;
             bioData.career.forEach((item) => {
-                htmlContent += `<li>${item}</li>`;
+                htmlContent += `<li>${capitalizeFirstLetter(item)}</li>`;
             });
             htmlContent += `</ul>`;
         }

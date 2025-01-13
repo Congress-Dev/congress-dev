@@ -127,3 +127,8 @@ class TestExtractUSCCite(TestCase):
         text = """Section 444(f) of the General Education Provisions Act (20 U.S.C. 1232g) (also known as the "Family Educational Rights and Privacy Act of 1974") (20 U.S.C. 1232g(f)) is amended by adding at the end the following: "The Secretary shall comply with the reporting requirement under section 445(e)(2)(C)(ii) with respect to the enforcement actions taken under this subsection to ensure compliance with this section."."""
         cite = extract_usc_cite(text)
         self.assertEqual(cite, "/us/usc/t20/s1232g")
+
+    def test_118_hr_5568__weird(self):
+        text = """Section 2107(e)(1)(J) of the Social Security Act (42 U.S.C. 1397gg(e)(1)(J)), as inserted by section 9822 of the American Rescue Plan Act of 2021 (Public Law 117-2), is amended to read as follows:"""
+        cite = extract_usc_cite(text)
+        self.assertEqual(cite, "/us/usc/t42/s1397gg/e/1/J")
