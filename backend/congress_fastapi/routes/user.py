@@ -1,9 +1,20 @@
 import traceback
 from typing import List, Optional
 from billparser.db.models import User
-from fastapi import APIRouter, HTTPException, Query, status, Response, Request
+from fastapi import (
+    APIRouter,
+    HTTPException,
+    Path,
+    Query,
+    status,
+    Response,
+    Request,
+    Cookie,
+    Depends,
+)
 
 from congress_fastapi.handlers.user import (
+    handle_get_usc_tracking_results,
     handle_user_login,
     handle_user_logout,
     handle_get_user,
@@ -14,7 +25,8 @@ from congress_fastapi.handlers.user import (
     handle_get_user_legislation_update,
     handle_get_user_legislator_update,
     handle_get_user_stats,
-    InvalidTokenException
+    InvalidTokenException,
+    handle_get_usc_tracking_folders
 )
 from congress_fastapi.models.errors import Error
 from congress_fastapi.models.user import (
@@ -28,13 +40,17 @@ from congress_fastapi.models.user import (
     UserLegislationUpdateResponse,
     UserLegislatorUpdateResponse,
     UserStatsResponse,
+    UserUSCContentFolder,
 )
 
 router = APIRouter()
 
-@router.get(
-    "/user"
-)
+
+async def user_from_cookie(authentication: Optional[str] = Cookie()) -> Optional[User]:
+    return await handle_get_user(authentication)
+
+
+@router.get("/user")
 async def user(request: Request) -> Optional[UserLoginResponse]:
     try:
         cookie = request.cookies.get("authentication")
@@ -237,3 +253,27 @@ async def user_legislator_update(
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
 
     return UserLegislatorResponse(**user_legislator_update)
+
+
+@router.get("/user/usc_tracking/folders")
+async def user_usc_tracking_folders(
+    user: User = Depends(user_from_cookie),
+) -> List[UserUSCContentFolder]:
+    if user is None:
+        raise HTTPException(
+            status_code=403, detail="Invalid or expired authentication token"
+        )
+
+    return await handle_get_usc_tracking_folders(user.user_id)
+
+@router.get("/user/usc_tracking/folder/{folder_id}")
+async def user_usc_tracking_folder_results(
+    user: User = Depends(user_from_cookie),
+    folder_id: int = Path(...),
+)-> UserLegislationFeedResponse:
+    if user is None:
+        raise HTTPException(
+            status_code=403, detail="Invalid or expired authentication token"
+        )
+
+    return await handle_get_usc_tracking_results(user.user_id, folder_id)
