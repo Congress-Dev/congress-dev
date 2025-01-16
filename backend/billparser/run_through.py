@@ -449,8 +449,13 @@ def retrieve_existing_legislations(session) -> List[dict]:
             Legislation.chamber,
             Legislation.number,
             LegislationVersion.legislation_version,
+            Congress.session_number,
         )
-        .join(LegislationVersion)
+        .join(
+            LegislationVersion,
+            Legislation.legislation_id == LegislationVersion.legislation_id,
+        )
+        .join(Congress, Legislation.congress_id == Congress.congress_id)
         .all()
     )
     return [
@@ -458,6 +463,7 @@ def retrieve_existing_legislations(session) -> List[dict]:
             "chamber": x[0],
             "bill_number": x[1],
             "bill_version": x[2],
+            "congress_session": x[3],
         }
         for x in existing_legis
     ]
@@ -763,6 +769,7 @@ def parse_archive(
     )
     BASE_VERSION = release_point[0].version_id
     print("Base version is", BASE_VERSION)
+    print("reee")
     archive = ZipFile(path)
     names = []
     rec = []
@@ -783,10 +790,12 @@ def parse_archive(
                     "chamber": chamb[house],
                 }
             )
-        except:
+        except Exception as e:
+            raise e
             pass
 
     names = sorted(names, key=lambda x: x["bill_number"])
+    print(names)
     # names = names[50:55]
     # names = [x for x in names if (x.get('bill_version') == 'enr')]
 
@@ -851,6 +860,7 @@ def parse_archives(
         archive = ZipFile(path)
         open_archives.append(archive)
         for file in archive.namelist():
+            print(file)
             try:
                 parsed = filename_regex.search(file)
                 if parsed is None:
@@ -882,6 +892,7 @@ def parse_archives(
         arch_ind += 1
 
     names = sorted(names, key=lambda x: x["bill_number"])
+    print(names)
     # names = names[50:55]
     # names = [x for x in names if (x.get('bill_version') == 'enr')]
 
@@ -900,18 +911,18 @@ def parse_archives(
     existing_legislation = retrieve_existing_legislations(session)
     print("Existing legislation", len(existing_legislation))
     legis_lookup: Dict[LegislationChamber, List[LegislationVersionEnum]] = defaultdict(
-        lambda: defaultdict(list)
+        lambda: defaultdict(lambda: defaultdict(list))
     )
     for leg in existing_legislation:
-        legis_lookup[LegislationChamber(leg["chamber"])][leg["bill_number"]].append(
-            LegislationVersionEnum(leg["bill_version"])
-        )
+        legis_lookup[LegislationChamber(leg["chamber"])][leg["bill_number"]][
+            leg["congress_session"]
+        ].append(LegislationVersionEnum(leg["bill_version"]))
 
     def filter_existing_legislation(x):
         if x["chamber"] in legis_lookup:
             if (
                 LegislationVersionEnum(x["bill_version"])
-                in legis_lookup[x["chamber"]][x["bill_number"]]
+                in legis_lookup[x["chamber"]][x["bill_number"]][x["congress_session"]]
             ):
                 return False
         return True
