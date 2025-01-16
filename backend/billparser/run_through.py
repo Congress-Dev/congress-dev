@@ -860,7 +860,6 @@ def parse_archives(
         archive = ZipFile(path)
         open_archives.append(archive)
         for file in archive.namelist():
-            print(file)
             try:
                 parsed = filename_regex.search(file)
                 if parsed is None:
@@ -892,7 +891,6 @@ def parse_archives(
         arch_ind += 1
 
     names = sorted(names, key=lambda x: x["bill_number"])
-    print(names)
     # names = names[50:55]
     # names = [x for x in names if (x.get('bill_version') == 'enr')]
 
