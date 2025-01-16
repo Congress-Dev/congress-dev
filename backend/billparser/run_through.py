@@ -478,6 +478,9 @@ def parse_bill(
         start_time = time.time()
         res = []
         session = Session()
+        congress_id = get_congress_from_session_number(
+            int(bill_obj["congress_session"]), session
+        )
         try:
 
             found = check_for_existing_legislation_version(bill_obj)
@@ -528,7 +531,7 @@ def parse_bill(
                 form_element = form_element[0]
             # extract_sponsors_from_form(form_element, new_bill.legislation_id, session)
             extract_sponsors_from_api(
-                EXISTING_CONGRESS[int(bill_obj["congress_session"])],
+                congress_id,
                 bill_obj,
                 new_bill.legislation_id,
                 session,
