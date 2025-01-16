@@ -55,6 +55,7 @@ from billparser.translater import translate_paragraph
 
 from joblib import Parallel, delayed
 from typing import Any, Dict, List
+from functools import lru_cache
 
 text_paths = ["legis-body/section/subsection/text", "legis-body/section/text"]
 filename_regex = re.compile(
@@ -247,18 +248,28 @@ def extract_single_action(
     return res
 
 
+@lru_cache(maxsize=20)
+def get_congress_from_session_number(session_number: int, session) -> int:
+    congress = (
+        session.query(Congress)
+        .filter(Congress.session_number == session_number)
+        .first()
+    )
+    if congress is None:
+        return None
+    return congress.congress_id
+
+
 def find_or_create_bill(bill_obj: dict, title: str, session: "SQLAlchemy.session"):
     new_version = Version(base_id=BASE_VERSION)
     session.add(new_version)
     session.commit()
     existing_bill = (
         session.query(Legislation)
+        .join(Congress, Legislation.congress_id == Congress.congress_id)
         .filter(Legislation.number == bill_obj["bill_number"])
         .filter(Legislation.chamber == LegislationChamber(bill_obj["chamber"]))
-        .filter(
-            Legislation.congress_id
-            == EXISTING_CONGRESS[int(bill_obj["congress_session"])]
-        )
+        .filter(Congress.session_number == int(bill_obj["congress_session"]))
         .all()
     )
     if len(existing_bill) > 0:
@@ -270,9 +281,9 @@ def find_or_create_bill(bill_obj: dict, title: str, session: "SQLAlchemy.session
             chamber=LegislationChamber(bill_obj["chamber"]),
             legislation_type=LegislationType.Bill,
             version_id=new_version.version_id,
-            congress_id=EXISTING_CONGRESS[
-                int(bill_obj["congress_session"])
-            ],  # CURRENT_CONGRESS is set by the ensure_congress function
+            congress_id=get_congress_from_session_number(
+                int(bill_obj["congress_session"]), session
+            ),  # CURRENT_CONGRESS is set by the ensure_congress function
         )
         session.add(new_bill)
         session.commit()
@@ -404,11 +415,11 @@ def check_for_existing_legislation_version(bill_obj: object) -> bool:
     # Check to see if we've already ingested this bill
     existing_legis = (
         session.query(Legislation)
+        .join(Congress, Legislation.congress_id == Congress.congress_id)
         .filter(
             Legislation.number == bill_obj["bill_number"],
             Legislation.chamber == LegislationChamber(bill_obj["chamber"]),
-            Legislation.congress_id
-            == EXISTING_CONGRESS[int(bill_obj["congress_session"])],
+            Congress.session_number == int(bill_obj["congress_session"]),
         )
         .all()
     )
