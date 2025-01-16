@@ -314,6 +314,7 @@ async def search_legislation(
                 lv_alias,
                 Legislation.legislation_id == lv_alias.legislation_id,
             )
+            .join(Congress, Legislation.congress_id == Congress.congress_id)
         )
         .group_by(
             Legislation.legislation_id,
