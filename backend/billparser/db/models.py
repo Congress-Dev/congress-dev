@@ -33,6 +33,12 @@ class CastingArray(ARRAY):
         return sa.cast(bindvalue, self)
 
 
+class LegislatorVoteType(str, enum.Enum):
+    yay = "yay"
+    nay = "nay"
+    present = "present"
+    abstain = "abstain"
+
 class LegislationType(str, enum.Enum):
     Bill = "Bill"
     CRes = "Continuing Resolution"
@@ -124,6 +130,42 @@ class LegislationVersionEnum(str, enum.Enum):
             return cls.ENR
         else:
             raise ValueError(f"Invalid version: {string}")
+
+
+class LegislationVote(Base):
+    __tablename__ = "legislation_vote"
+
+    id = Column(Integer, primary_key=True, index=True)
+    number = Column(Integer, index=True, nullable=False)
+    date = Column(Date)
+
+    legislation_id = Column(
+        Integer, ForeignKey("legislation.legislation_id", ondelete="CASCADE"), index=True
+    )
+
+    question = Column(String, index=True)
+    independent = Column(JSONB)
+    republican = Column(JSONB)
+    democrat = Column(JSONB)
+    total = Column(JSONB)
+
+    passed = Column(Boolean)
+
+
+class LegislatorVote(Base):
+    __tablename__ = "legislator_vote"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    legislation_vote_id = Column(
+        Integer, ForeignKey("legislation_vote.id", ondelete="CASCADE"), index=True
+    )
+
+    legislator_bioguide_id = Column(
+        String, ForeignKey("legislator.bioguide_id", ondelete="CASCADE"), index=True
+    )
+
+    vote = Column(Enum(LegislatorVoteType))
 
 
 class User(Base):
@@ -811,6 +853,8 @@ class Legislator(Base):
     bioguide_id = Column(
         String, index=True, unique=True
     )  # https://bioguideretro.congress.gov/
+
+    lis_id = Column(String, index=True, nullable=True)
 
     first_name = Column(String)
     middle_name = Column(String)

@@ -13,14 +13,17 @@ BULK_BIOGUIDE_URL = "https://bioguide.congress.gov/bioguide/data/BioguideProfile
 CURRENT_LEGIS_URL = (
     "https://theunitedstates.io/congress-legislators/legislators-current.json"
 )
-
+HISTORICAL_LEGIS_URL = (
+    "https://theunitedstates.io/congress-legislators/legislators-historical.json"
+)
 
 class BioGuideImporter:
     def __init__(
-        self, bulk_bioguide_url=BULK_BIOGUIDE_URL, current_legis_url=CURRENT_LEGIS_URL
+        self, bulk_bioguide_url=BULK_BIOGUIDE_URL, current_legis_url=CURRENT_LEGIS_URL, historical_legis_url=HISTORICAL_LEGIS_URL
     ):
         self.bulk_bioguide_url = bulk_bioguide_url
         self.current_legis_url = current_legis_url
+        self.historical_legis_url = historical_legis_url
         self.session = Session()
 
     def _download_zip(self) -> zipfile.ZipFile:
@@ -51,8 +54,25 @@ class BioGuideImporter:
                     items.append(legis)
         return items
 
+    def run_metadata(self):
+        member_lis_lookup = {}
+
+        r = requests.get(self.current_legis_url)
+        for legislator in r.json():
+            if legislator['id'].get('lis') is not None:
+                member_lis_lookup[legislator['id'].get('bioguide')] = legislator['id'].get('lis')
+
+        r = requests.get(self.historical_legis_url)
+        for legislator in r.json():
+            if legislator['id'].get('lis') is not None:
+                member_lis_lookup[legislator['id'].get('bioguide')] = legislator['id'].get('lis')
+
+        return member_lis_lookup
+
     def download_to_database(self) -> None:
         legislators = self.run_import()
+        lis_lookup = self.run_metadata()
+
         db_items = []
         with self.session.begin():
             for legislator in legislators:
@@ -78,6 +98,7 @@ class BioGuideImporter:
                     image_source = None
 
                 record_data = {
+                    'lis_id': lis_lookup.get(legislator.usCongressBioId, None),
                     'bioguide_id': legislator.usCongressBioId,
                     'first_name': legislator.nickName or legislator.unaccentedGivenName or legislator.givenName,
                     'last_name': legislator.unaccentedFamilyName or legislator.familyName,
