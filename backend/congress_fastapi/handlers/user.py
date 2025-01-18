@@ -8,6 +8,8 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import aliased
 
 from billparser.db.models import (
+    USCContent,
+    USCContentDiff,
     User,
     Legislation,
     Legislator,
@@ -15,11 +17,17 @@ from billparser.db.models import (
     UserLegislator,
     LegislationSponsorship,
     LegislationVersion,
-    Congress
+    Congress,
+    UserUSCContent,
+    UserUSCContentFolder as UserUSCContentFolderDB,
 )
 from congress_fastapi.handlers.legislation.search import get_bill_sponsor
 from congress_fastapi.db.postgres import get_database
-from congress_fastapi.models.user import UserLoginResponse, UserLogoutResponse
+from congress_fastapi.models.user import (
+    UserLoginResponse,
+    UserLogoutResponse,
+    UserUSCContentFolder,
+)
 
 GOOGLE_USERINFO_URL = "https://www.googleapis.com/oauth2/v3/userinfo"
 
@@ -350,7 +358,84 @@ async def handle_get_user_stats(cookie):
         .where(LegislationVersion.effective_date >= first_day_of_year))
 
     return {
-        'legislation': legislation_count or 0,
-        'versions': version_count or 0,
-        'legislators': len(bioguide_count) or 0
+        "legislation": legislation_count or 0,
+        "versions": version_count or 0,
+        "legislators": len(bioguide_count) or 0,
     }
+
+
+async def handle_get_usc_tracking_folders(user_id: str) -> List[UserUSCContentFolder]:
+    database = await get_database()
+
+    query = select(*UserUSCContentFolder.sqlalchemy_columns()).where(
+        UserUSCContentFolderDB.user_id == user_id
+    )
+
+    results = await database.fetch_all(query)
+    return [UserUSCContentFolder.from_sqlalchemy(result) for result in results]
+
+
+async def handle_get_usc_tracking_results(user_id: str, folder_id: int):
+    database = await get_database()
+    query = (
+        select(UserUSCContent.usc_ident)
+        .where(UserUSCContent.user_id == user_id)
+        .where(UserUSCContent.user_usc_content_folder_id == folder_id)
+        .distinct()
+        .as_scalar()
+    )
+    result = await database.fetch_all(query)
+    idents = [x[0] for x in result]
+    usc_content_alias = aliased(USCContent)
+    usc_content_diff_alias = aliased(USCContentDiff)
+    legislation_version_alias = aliased(LegislationVersion)
+    legislation_alias = aliased(Legislation)
+
+    query = (
+        select(
+            Legislation.legislation_id,
+            Legislation.title,
+            Legislation.number,
+            Congress.session_number,
+            Legislation.legislation_type,
+            Legislation.chamber,
+            func.min(LegislationVersion.effective_date).label("effective_date"),
+        )
+        .select_from(USCContent)
+        .join(
+            USCContentDiff,
+            USCContentDiff.usc_content_id == USCContent.usc_content_id,
+        )
+        .join(
+            LegislationVersion,
+            USCContentDiff.version_id == LegislationVersion.version_id,
+        )
+        .join(
+            Legislation,
+            LegislationVersion.legislation_id
+            == Legislation.legislation_id,
+        )
+        .join(Congress, Congress.congress_id == 2)
+        .group_by(
+            Legislation.legislation_id,
+            Legislation.title,
+            Congress.session_number,
+            Legislation.number,
+            Legislation.congress_id,
+            Legislation.legislation_type,
+            Legislation.chamber,
+        )
+        .where(or_(*[USCContent.usc_ident.ilike(ident) for ident in idents]))
+        .where(Congress.congress_id == 2)
+    )
+
+    results = await database.fetch_all(query)
+    legislation_ids = [result["legislation_id"] for result in results]
+    sponsors_by_id = await get_bill_sponsor(legislation_ids)
+
+    legislation = [
+        {**dict(r), "sponsor": sponsors_by_id.get(r["legislation_id"], None)}
+        for r in results
+    ]
+    
+    return {"legislation": legislation}

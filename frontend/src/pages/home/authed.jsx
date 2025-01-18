@@ -10,8 +10,9 @@ import {
     userGetLegislationFeed,
     userGetLegislatorFeed,
     userGetStats,
+    userGetFolders,
 } from "common/api";
-import { BillTable } from "components";
+import { BillTable, USCTrackingTabs } from "components";
 import { LoginContext } from "context";
 
 function AuthedHome() {
@@ -33,6 +34,7 @@ function AuthedHome() {
             userGetStats().then((response) => {
                 setStats(response);
             });
+            userGetFolders().then(console.log);
         }
     }, [user]);
 
@@ -47,14 +49,19 @@ function AuthedHome() {
                     {stats != null && (
                         <ul>
                             <li>
-                                {stats.legislation} bill{stats.legislation != 1 ? 's' : ''} introduced
+                                {stats.legislation} bill
+                                {stats.legislation != 1 ? "s" : ""} introduced
                                 this year.
                             </li>
                             <li>
-                                {stats.versions} bill version{stats.versions != 1 ? 's' : ''} parsed.
+                                {stats.versions} bill version
+                                {stats.versions != 1 ? "s" : ""} parsed.
                             </li>
                             <li>
-                                {stats.legislators} member{stats.legislators != 1 ? 's' : ''} {stats.legislators != 1 ? 'have' : 'has'} introduced bills.
+                                {stats.legislators} member
+                                {stats.legislators != 1 ? "s" : ""}{" "}
+                                {stats.legislators != 1 ? "have" : "has"}{" "}
+                                introduced bills.
                             </li>
                         </ul>
                     )}
@@ -122,6 +129,12 @@ function AuthedHome() {
                         </SectionCard>
                     )}
                 </Section>
+
+                <Section title="USC Tracking"
+                    subtitle="Last 7 Days"
+                    icon="drag-handle-vertical">
+                    {<USCTrackingTabs />} 
+                    </Section>
             </div>
         </SectionCard>
     );

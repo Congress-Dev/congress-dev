@@ -6,7 +6,9 @@ from billparser.db.models import (
     User,
     Legislation,
     Legislator,
-    LegislationChamber
+    LegislationChamber,
+    UserUSCContentFolder,
+    UserUSCContent
 )
 from congress_fastapi.models.legislation import LegislatorMetadata, LegislationMetadata
 from congress_fastapi.models.abstract import MappableBase
@@ -60,3 +62,14 @@ class UserStatsResponse(MappableBase):
     legislation: int
     versions: int
     legislators: int
+
+
+# USC Tracking
+
+
+class UserUSCContentFolder(MappableBase):
+    user_usc_content_folder_id: Annotated[
+        int, UserUSCContentFolder.user_usc_content_folder_id
+    ]
+    name: Annotated[str, UserUSCContentFolder.name]
+
