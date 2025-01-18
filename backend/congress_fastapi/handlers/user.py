@@ -1,3 +1,4 @@
+from typing import List
 import requests
 import base64
 from datetime import datetime, timedelta
