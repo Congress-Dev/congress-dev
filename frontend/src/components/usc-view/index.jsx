@@ -62,9 +62,12 @@ function USCView({ release, title, section, diffs = {}, interactive = true }) {
         }
         let index = 0;
         if (str.includes("<") && str.includes(">")) {
-            const parsed = new xmldoc.XmlDocument(`<str>${str.replace(/[\n\r]/g, '\\n')
-              .replace(/&/g,"&amp;")
-              .replace(/-/g,"&#45;")}</str>`);
+            const parsed = new xmldoc.XmlDocument(
+                `<str>${str
+                    .replace(/[\n\r]/g, "\\n")
+                    .replace(/&/g, "&amp;")
+                    .replace(/-/g, "&#45;")}</str>`,
+            );
             return lodash.reduce(
                 parsed.children,
                 (prev, cur) => {

@@ -187,12 +187,15 @@ function BillSearch(props) {
                 text: params.text,
             };
         }
-        if(params.congress != null && currentSearch.congress != params.congress) {
+        if (
+            params.congress != null &&
+            currentSearch.congress != params.congress
+        ) {
             updated = true;
             newSearch = {
                 ...newSearch,
-                congress: params.congress
-            }
+                congress: params.congress,
+            };
         }
 
         const encoded = encodeSelections();
@@ -350,20 +353,29 @@ function BillSearch(props) {
                             checked={currentSearch.congress.includes("119")}
                             label="119th"
                             onChange={() => {
-                                const cong = currentSearch.congress.split(',').filter((value) => {
-                                    return value != ""
-                                })
-                                if(cong.includes("119")) {
+                                const cong = currentSearch.congress
+                                    .split(",")
+                                    .filter((value) => {
+                                        return value != "";
+                                    });
+                                if (cong.includes("119")) {
                                     setCurrentSearch({
                                         ...currentSearch,
-                                        congress: cong.filter((value) => { return value != "119" && value != ""}).join(',')
-                                    })
+                                        congress: cong
+                                            .filter((value) => {
+                                                return (
+                                                    value != "119" &&
+                                                    value != ""
+                                                );
+                                            })
+                                            .join(","),
+                                    });
                                 } else {
-                                    cong.push("119")
+                                    cong.push("119");
                                     setCurrentSearch({
                                         ...currentSearch,
-                                        congress: cong.join(',')
-                                    })
+                                        congress: cong.join(","),
+                                    });
                                 }
                             }}
                         />
@@ -371,20 +383,26 @@ function BillSearch(props) {
                             checked={currentSearch.congress.includes("118")}
                             label="118th"
                             onChange={() => {
-                                const cong = currentSearch.congress.split(',').filter((value) => {
-                                    return value != ""
-                                })
-                                if(cong.includes("118")) {
+                                const cong = currentSearch.congress
+                                    .split(",")
+                                    .filter((value) => {
+                                        return value != "";
+                                    });
+                                if (cong.includes("118")) {
                                     setCurrentSearch({
                                         ...currentSearch,
-                                        congress: cong.filter((value) => { return value != "118"}).join(',')
-                                    })
+                                        congress: cong
+                                            .filter((value) => {
+                                                return value != "118";
+                                            })
+                                            .join(","),
+                                    });
                                 } else {
-                                    cong.push("118")
+                                    cong.push("118");
                                     setCurrentSearch({
                                         ...currentSearch,
-                                        congress: cong.join(',')
-                                    })
+                                        congress: cong.join(","),
+                                    });
                                 }
                             }}
                         />
