@@ -226,6 +226,52 @@ class UserLegislator(Base):
     )
 
 
+class UserUSCContentFolder(Base):
+    """
+    Folders for grouping tracked sections
+    """
+
+    __tablename__ = "user_usc_content_folder"
+    __table_args__ = {"schema": "sensitive"}
+
+    user_usc_content_folder_id = Column(Integer, primary_key=True)
+
+    user_id = Column(
+        String,
+        ForeignKey("sensitive.user_ident.user_id", ondelete="CASCADE"),
+        index=True,
+    )
+
+    name = Column(String, nullable=False)
+
+
+class UserUSCContent(Base):
+    """
+    Tracks which sections of the USC a user has favorited
+    """
+
+    __tablename__ = "user_usc_content"
+    __table_args__ = {"schema": "sensitive"}
+
+    user_usc_content_id = Column(Integer, primary_key=True)
+
+    user_id = Column(
+        String,
+        ForeignKey("sensitive.user_ident.user_id", ondelete="CASCADE"),
+        index=True,
+    )
+    user_usc_content_folder_id = Column(
+        Integer,
+        ForeignKey(
+            "sensitive.user_usc_content_folder.user_usc_content_folder_id",
+            ondelete="CASCADE",
+        ),
+        index=True,
+    )
+
+    usc_ident = Column(String)
+
+
 class Congress(Base):
     """
     Holds the relationships for the Congress sessions

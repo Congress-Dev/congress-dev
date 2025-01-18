@@ -184,6 +184,7 @@ function BillDisplay() {
             .chain(action)
             .map(lodash.toPairs)
             .flatten()
+            .sort()
             .value();
         let tempStr = contentStr;
         lodash.forEach(strings, (value) => {
@@ -192,6 +193,9 @@ function BillDisplay() {
                 value[1],
                 `<span class="action-${value[0]}">${value[1]}</span>`,
             );
+            if (value[0] === "_full_match") {
+              return false;
+            }
           }
         });
         return (

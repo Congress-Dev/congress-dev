@@ -91,13 +91,14 @@ regex_holder = {
         r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended.? by inserting \"(?P<to_insert_text>.+?)\" after \"(?P<to_remove_text>.+?)\"(?:; and|\.)",
         r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended.? by inserting after \"(?P<to_remove_text>.+?)\" the following: \"(?P<to_insert_text>.+?)\"(?:; and|\.)",
         r"^in (?P<target>.+?), by inserting \"(?P<to_insert_text>.+?)\" after \"(?P<to_remove_text>.+?)\";?",
+        r"^by inserting \"(?P<to_insert_text>.+?)\" after \"(?P<to_remove_text>.+?)\";?",
     ],
     ActionType.INSERT_TEXT: [
         r"(?:(?P<target>.+?) of (?P<within>.+?) is amended )?by inserting \"(?P<to_insert_text>.+?)\" before \"(?P<target_text>.+?)\".?"
     ],
     ActionType.INSERT_TEXT_END: [
         r"in (?P<target>.+?), by adding \"(?P<to_replace>.+?)\" at the end;",
-        r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended.? by adding at the end the following: \"(?P<to_insert_text>.+?)\"(?:; and|\.)"
+        r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended.? by adding at the end the following: \"(?P<to_insert_text>.+?)\"(?:; and|\.)",
     ],
     ActionType.STRIKE_SECTION_INSERT: [
         r"by striking (?P<target>(?:sub)?(?:section|paragraph) .+?) and inserting the following:"
@@ -201,6 +202,8 @@ def determine_action(text: str) -> Dict[ActionType, Action]:
             c = c + 1
             if res is not None:
                 gg = res.groupdict()
+                if action == ActionType.DATE:
+                    gg["_full_match"] = res.group(0)
                 gg["REGEX"] = c
                 gg["action_type"] = action
                 actions[action] = gg

@@ -95,6 +95,14 @@ export const userGetStats = () => {
         .catch(toastError);
 };
 
+export const userGetFolders = () => {
+    return fetch(`${endPv2}/user/usc_tracking/folders`, {
+        credentials: "include",
+    })
+        .then(handleStatus)
+        .catch(toastError);
+};
+
 export const userAddLegislation = (legislationId) => {
     return fetch(
         `${endPv2}/user/legislation/update?action=add&legislation_id=${legislationId}`,
@@ -127,7 +135,17 @@ export const userAddLegislator = (bioGuideId) => {
         .then(handleStatus)
         .catch(toastError);
 };
+export const getUSCTrackingFolders = () => {
+    return fetch(`${endPv2}/user/usc_tracking/folders`, {
+        credentials: "include",
+    });
+};
 
+export const getUSCTrackingBills = (folderId) => {
+    return fetch(`${endPv2}/user/usc_tracking/folder/${folderId}`, {
+        credentials: "include",
+    }); 
+};
 export const userRemoveLegislator = (bioGuideId) => {
     return fetch(
         `${endPv2}/user/legislator/update?action=remove&bioguide_id=${bioGuideId}`,

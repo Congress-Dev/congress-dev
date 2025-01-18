@@ -18,8 +18,7 @@ import {
 } from "context";
 
 function BillViewToolbar() {
-    const { user, favoriteBills, setFavoriteBills } =
-        useContext(LoginContext);
+    const { user, favoriteBills, setFavoriteBills } = useContext(LoginContext);
     const { preferences, setPreference } = useContext(PreferenceContext);
     const billContext = useContext(BillContext);
     const history = useHistory();

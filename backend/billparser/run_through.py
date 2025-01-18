@@ -55,6 +55,7 @@ from billparser.translater import translate_paragraph
 
 from joblib import Parallel, delayed
 from typing import Any, Dict, List
+from functools import lru_cache
 
 text_paths = ["legis-body/section/subsection/text", "legis-body/section/text"]
 filename_regex = re.compile(
@@ -247,18 +248,28 @@ def extract_single_action(
     return res
 
 
+@lru_cache(maxsize=20)
+def get_congress_from_session_number(session_number: int, session) -> int:
+    congress = (
+        session.query(Congress)
+        .filter(Congress.session_number == session_number)
+        .first()
+    )
+    if congress is None:
+        return None
+    return congress.congress_id
+
+
 def find_or_create_bill(bill_obj: dict, title: str, session: "SQLAlchemy.session"):
     new_version = Version(base_id=BASE_VERSION)
     session.add(new_version)
     session.commit()
     existing_bill = (
         session.query(Legislation)
+        .join(Congress, Legislation.congress_id == Congress.congress_id)
         .filter(Legislation.number == bill_obj["bill_number"])
         .filter(Legislation.chamber == LegislationChamber(bill_obj["chamber"]))
-        .filter(
-            Legislation.congress_id
-            == EXISTING_CONGRESS[int(bill_obj["congress_session"])]
-        )
+        .filter(Congress.session_number == int(bill_obj["congress_session"]))
         .all()
     )
     if len(existing_bill) > 0:
@@ -270,9 +281,9 @@ def find_or_create_bill(bill_obj: dict, title: str, session: "SQLAlchemy.session
             chamber=LegislationChamber(bill_obj["chamber"]),
             legislation_type=LegislationType.Bill,
             version_id=new_version.version_id,
-            congress_id=EXISTING_CONGRESS[
-                int(bill_obj["congress_session"])
-            ],  # CURRENT_CONGRESS is set by the ensure_congress function
+            congress_id=get_congress_from_session_number(
+                int(bill_obj["congress_session"]), session
+            ),  # CURRENT_CONGRESS is set by the ensure_congress function
         )
         session.add(new_bill)
         session.commit()
@@ -404,11 +415,11 @@ def check_for_existing_legislation_version(bill_obj: object) -> bool:
     # Check to see if we've already ingested this bill
     existing_legis = (
         session.query(Legislation)
+        .join(Congress, Legislation.congress_id == Congress.congress_id)
         .filter(
             Legislation.number == bill_obj["bill_number"],
             Legislation.chamber == LegislationChamber(bill_obj["chamber"]),
-            Legislation.congress_id
-            == EXISTING_CONGRESS[int(bill_obj["congress_session"])],
+            Congress.session_number == int(bill_obj["congress_session"]),
         )
         .all()
     )
@@ -438,8 +449,13 @@ def retrieve_existing_legislations(session) -> List[dict]:
             Legislation.chamber,
             Legislation.number,
             LegislationVersion.legislation_version,
+            Congress.session_number,
         )
-        .join(LegislationVersion)
+        .join(
+            LegislationVersion,
+            Legislation.legislation_id == LegislationVersion.legislation_id,
+        )
+        .join(Congress, Legislation.congress_id == Congress.congress_id)
         .all()
     )
     return [
@@ -447,6 +463,7 @@ def retrieve_existing_legislations(session) -> List[dict]:
             "chamber": x[0],
             "bill_number": x[1],
             "bill_version": x[2],
+            "congress_session": x[3],
         }
         for x in existing_legis
     ]
@@ -467,6 +484,9 @@ def parse_bill(
         start_time = time.time()
         res = []
         session = Session()
+        congress_id = get_congress_from_session_number(
+            int(bill_obj["congress_session"]), session
+        )
         try:
 
             found = check_for_existing_legislation_version(bill_obj)
@@ -517,7 +537,7 @@ def parse_bill(
                 form_element = form_element[0]
             # extract_sponsors_from_form(form_element, new_bill.legislation_id, session)
             extract_sponsors_from_api(
-                EXISTING_CONGRESS[int(bill_obj["congress_session"])],
+                congress_id,
                 bill_obj,
                 new_bill.legislation_id,
                 session,
@@ -749,6 +769,7 @@ def parse_archive(
     )
     BASE_VERSION = release_point[0].version_id
     print("Base version is", BASE_VERSION)
+    print("reee")
     archive = ZipFile(path)
     names = []
     rec = []
@@ -769,10 +790,12 @@ def parse_archive(
                     "chamber": chamb[house],
                 }
             )
-        except:
+        except Exception as e:
+            raise e
             pass
 
     names = sorted(names, key=lambda x: x["bill_number"])
+    print(names)
     # names = names[50:55]
     # names = [x for x in names if (x.get('bill_version') == 'enr')]
 
@@ -886,18 +909,18 @@ def parse_archives(
     existing_legislation = retrieve_existing_legislations(session)
     print("Existing legislation", len(existing_legislation))
     legis_lookup: Dict[LegislationChamber, List[LegislationVersionEnum]] = defaultdict(
-        lambda: defaultdict(list)
+        lambda: defaultdict(lambda: defaultdict(list))
     )
     for leg in existing_legislation:
-        legis_lookup[LegislationChamber(leg["chamber"])][leg["bill_number"]].append(
-            LegislationVersionEnum(leg["bill_version"])
-        )
+        legis_lookup[LegislationChamber(leg["chamber"])][leg["bill_number"]][
+            leg["congress_session"]
+        ].append(LegislationVersionEnum(leg["bill_version"]))
 
     def filter_existing_legislation(x):
         if x["chamber"] in legis_lookup:
             if (
                 LegislationVersionEnum(x["bill_version"])
-                in legis_lookup[x["chamber"]][x["bill_number"]]
+                in legis_lookup[x["chamber"]][x["bill_number"]][x["congress_session"]]
             ):
                 return False
         return True
