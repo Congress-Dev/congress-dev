@@ -55,6 +55,8 @@ def get_latest_senate_rollcall(session) -> int:
 def download_house_rollcall(session, formatted, congress):
     HOUSE_ROLL_TEMPLATE = "https://clerk.house.gov/evs/{year}/roll{h_index:03}.xml" # Index 3 digits
 
+    rec = []
+
     while True:
         print("-"*50)
         formatted['h_index'] = formatted['h_index'] + 1
@@ -159,6 +161,7 @@ def download_house_rollcall(session, formatted, congress):
                     }
 
                     legislation_vote = LegislationVote(**legislation_vote_data)
+                    rec.append(legislation_vote)
 
                     try:
                         session.add(legislation_vote)
@@ -197,9 +200,13 @@ def download_house_rollcall(session, formatted, congress):
                 else:
                     logging.info(f"Skipping rollcall {formatted['h_index']} due to missing vote data")
 
+    return rec
+
 def download_senate_rollcall(session, formatted, congress):
     SENATE_ROLL_TEMPLATE = "https://www.senate.gov/legislative/LIS/roll_call_votes/vote{congress}{session}/vote_{congress}_{session}_{s_index:05}.xml" #Index 5 digits
     LEGIS_LOOKUP = get_legislator_lookup()
+
+    rec = []
 
     while True:
         print("-"*50)
@@ -297,6 +304,7 @@ def download_senate_rollcall(session, formatted, congress):
                     }
 
                     legislation_vote = LegislationVote(**legislation_vote_data)
+                    rec.append(legislation_vote)
 
                     try:
                         session.add(legislation_vote)
@@ -335,6 +343,14 @@ def download_senate_rollcall(session, formatted, congress):
                 else:
                     logging.info(f"Skipping rollcall {formatted['s_index']} due to missing vote data")
 
+    return rec
+
+def send_message(text):
+    if webhook_url is not None:
+        import requests
+
+        requests.post(webhook_url, json={"content": text})
+
 def download_to_database():
     CURRENT_CONGRESS = None
 
@@ -359,9 +375,12 @@ def download_to_database():
         's_index': get_latest_senate_rollcall(session),
     }
 
-    download_house_rollcall(session, formatted, CURRENT_CONGRESS)
-    download_senate_rollcall(session, formatted, CURRENT_CONGRESS)
+    house_rec = download_house_rollcall(session, formatted, CURRENT_CONGRESS)
+    senate_rec = download_senate_rollcall(session, formatted, CURRENT_CONGRESS)
 
+    send_message(
+        f"Added {len(house_rec)} House and {len(senate_rec)} Senate rollcall votes today"
+    )
 
 if __name__ == "__main__":
     download_to_database()

@@ -32,6 +32,11 @@ def calculate_congress_from_year() -> int:
     congress = ((current_year - 2001) // 2) + 107
     return congress
 
+def send_message(text):
+    if webhook_url is not None:
+        import requests
+
+        requests.post(webhook_url, json={"content": text})
 
 if __name__ == "__main__":
     """
@@ -47,6 +52,7 @@ if __name__ == "__main__":
     congress = calculate_congress_from_year()
     ensure_congress(congress)
 
+    legis_objs = []
     zip_paths = []
     for session in [1, 2]:
         for chamber in ["hr", "s"]:
@@ -71,3 +77,6 @@ if __name__ == "__main__":
     else:
         legis_objs = parse_archives(zip_paths)
 
+    send_message(
+        f"Added {len(legis_objs)} new bills today"
+    )
