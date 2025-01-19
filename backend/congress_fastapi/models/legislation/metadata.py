@@ -1,10 +1,12 @@
 from typing import Annotated, List, Optional
-
+from pydantic import root_validator
 from datetime import datetime
+import json
 
 from billparser.db.models import (
     Legislation,
     LegislationVersion,
+    LegislationVote,
     LegislationSponsorship,
     Appropriation as AppropriationModel,
     LegislationVersionEnum,
@@ -67,6 +69,28 @@ class LegislationVersionMetadata(MappableBase):
     ]
 
 
+class LegislationVoteMetadata(MappableBase):
+    date: Annotated[str, LegislationVote.date]
+    question: Annotated[str, LegislationVote.question]
+    total: Annotated[dict, LegislationVote.total] = {}
+    republican: Annotated[dict, LegislationVote.republican] = {}
+    democrat: Annotated[dict, LegislationVote.democrat] = {}
+    independent: Annotated[dict, LegislationVote.independent] = {}
+    passed: Annotated[bool, LegislationVote.passed]
+
+    @root_validator(pre=True)
+    def parse_json(cls, values):
+        if isinstance(values.get("total"), str):
+            values["total"] = json.loads(values["total"])
+        if isinstance(values.get("republican"), str):
+            values["republican"] = json.loads(values["republican"])
+        if isinstance(values.get("democrat"), str):
+            values["democrat"] = json.loads(values["democrat"])
+        if isinstance(values.get("independent"), str):
+            values["independent"] = json.loads(values["independent"])
+        return values
+
+
 class LegislationMetadata(MappableBase):
     """'legislation_type': 'legislation_type',
     'number': 'number',
@@ -90,6 +114,8 @@ class LegislationMetadata(MappableBase):
 
     sponsor: Optional[LegislatorMetadata]
     cosponsors: Optional[List[LegislatorMetadata]]
+
+    votes: Optional[List[LegislationVoteMetadata]]
 
 
 class LegislationClauseTag(MappableBase):

@@ -30,8 +30,8 @@ function BillTableOfContents(props) {
         for (const child of textTree?.children) {
             const children = [];
 
-            if(child.heading === 'Short title') {
-                continue
+            if (child.heading === "Short title") {
+                continue;
             }
 
             for (const subchild of child.children) {

@@ -130,11 +130,13 @@ function AuthedHome() {
                     )}
                 </Section>
 
-                <Section title="USC Tracking"
+                <Section
+                    title="USC Tracking"
                     subtitle="Last 7 Days"
-                    icon="drag-handle-vertical">
-                    {<USCTrackingTabs />} 
-                    </Section>
+                    icon="drag-handle-vertical"
+                >
+                    {<USCTrackingTabs />}
+                </Section>
             </div>
         </SectionCard>
     );

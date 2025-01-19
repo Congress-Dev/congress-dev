@@ -19,7 +19,9 @@ function USCRevisionBox({
             <h2>
                 <Link to={`/uscode/${usc_release_id}`}>{short_title}</Link>
             </h2>
-            {long_title != "" && <p style={{ fontStyle: "italic" }}>{long_title}</p>}
+            {long_title != "" && (
+                <p style={{ fontStyle: "italic" }}>{long_title}</p>
+            )}
             <p>Effective: {effective_date}</p>
             <Button>
                 <a target="_blank" href={url}>

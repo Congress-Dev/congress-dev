@@ -144,7 +144,7 @@ export const getUSCTrackingFolders = () => {
 export const getUSCTrackingBills = (folderId) => {
     return fetch(`${endPv2}/user/usc_tracking/folder/${folderId}`, {
         credentials: "include",
-    }); 
+    });
 };
 export const userRemoveLegislator = (bioGuideId) => {
     return fetch(
