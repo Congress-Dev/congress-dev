@@ -22,7 +22,7 @@ function Learn(props) {
     const history = useHistory();
 
     const navigation = (
-        <SectionCard className="learn-nav">
+        (section != null && <SectionCard className="learn-nav">
             <Breadcrumbs
                 breadcrumbRenderer={({ icon, text, link }) => (
                     <>
@@ -33,10 +33,10 @@ function Learn(props) {
                 items={[
                     { icon: "home" },
                     { text: "Knowledge Base", link: "/learn" },
-                    { text: "Amendments" },
+                    { text: section.charAt(0).toUpperCase() + section.slice(1) },
                 ]}
             />
-        </SectionCard>
+        </SectionCard>)
     );
 
     function getPageContent() {
