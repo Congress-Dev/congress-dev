@@ -85,7 +85,7 @@ def clause_tagger(legis_version_id: int, prompt_id: int):
                     resp_dict = json.loads(response.choices[0].message.content)
                     jsonschema.validate(resp_dict, SCHEMA)
                     tags = normalize_tags(resp_dict["tags"])
-                    full_tags = full_tags.update(tags)
+                    full_tags.update(tags)
                     tag_obj = LegislationContentTag(
                         prompt_batch_id=prompt_batch.prompt_batch_id,
                         legislation_content_id=lc.legislation_content_id,
