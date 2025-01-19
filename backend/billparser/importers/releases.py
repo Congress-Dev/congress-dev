@@ -30,7 +30,7 @@ if __name__ == "__main__":
     response = requests.get(RELEASE_POINTS)
     tree = html.fromstring(response.content)
 
-    for year in range(2022, datetime.now().year):
+    for year in range(2022, datetime.now().year, 2):
         search_date = f"12/21/{year}"
         links = tree.xpath(f'//a[contains(text(), "{search_date}")]/@href')
 
