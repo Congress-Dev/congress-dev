@@ -15,12 +15,13 @@ import LearnCommittees from "./committees";
 import LearnStages from "./stages";
 import LearnAmendments from "./amendments";
 import LearnPresident from "./president";
+import LearnVotes from "./votes";
 
 function Learn(props) {
     const { section } = props.match.params;
     const history = useHistory();
 
-    const navigation = (
+    const navigation = section != null && (
         <SectionCard className="learn-nav">
             <Breadcrumbs
                 breadcrumbRenderer={({ icon, text, link }) => (
@@ -32,7 +33,10 @@ function Learn(props) {
                 items={[
                     { icon: "home" },
                     { text: "Knowledge Base", link: "/learn" },
-                    { text: "Amendments" },
+                    {
+                        text:
+                            section.charAt(0).toUpperCase() + section.slice(1),
+                    },
                 ]}
             />
         </SectionCard>
@@ -52,6 +56,8 @@ function Learn(props) {
                 return <LearnAmendments navigation={navigation} />;
             case "president":
                 return <LearnPresident navigation={navigation} />;
+            case "votes":
+                return <LearnVotes navigation={navigation} />;
         }
     }
 
@@ -120,6 +126,16 @@ function Learn(props) {
                     >
                         Understanding the Stages of a Bill in the House and
                         Senate
+                        <Icon icon="chevron-right" />
+                    </Card>
+
+                    <Card
+                        interactive={true}
+                        onClick={() => {
+                            history.push("/learn/votes");
+                        }}
+                    >
+                        Types of Votes in the House and Senate
                         <Icon icon="chevron-right" />
                     </Card>
 

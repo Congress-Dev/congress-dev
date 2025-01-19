@@ -54,9 +54,9 @@ function MemberViewer(props) {
                         <Button
                             icon="star"
                             {...{
-                                ...(favoriteSponsors?.includes(
-                                    bioguideId,
-                                ) && { intent: "primary" }),
+                                ...(favoriteSponsors?.includes(bioguideId) && {
+                                    intent: "primary",
+                                }),
                             }}
                             onClick={handleSponsorFavorite}
                         />

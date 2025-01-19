@@ -8,6 +8,7 @@ from billparser.db.models import (
     LegislationSponsorship,
     LegislationVersion,
     LegislationVersionEnum,
+    LegislationVote,
     Legislator,
     USCRelease,
     Version,
@@ -16,6 +17,7 @@ from congress_fastapi.db.postgres import get_database
 from congress_fastapi.models.legislation import (
     LegislationMetadata,
     LegislationVersionMetadata,
+    LegislationVoteMetadata,
     LegislatorMetadata,
     Appropriation,
 )
@@ -131,6 +133,29 @@ async def get_legislation_metadata_by_legislation_id(
             print(result)
             print(e)
 
+    votes_query = (
+        select(*LegislationVoteMetadata.sqlalchemy_columns())
+        .where(LegislationVote.legislation_id == legislation_id)
+        .order_by(LegislationVote.datetime.desc())
+    )
+
+    votes_results = (await database.fetch_all(votes_query))
+
+    vote_objs = []
+    for vote in votes_results:
+        try:
+            vote_data = {
+                **vote,
+                'datetime': vote.datetime.strftime("%Y-%m-%d")
+            }
+
+            vote_objs.append(LegislationVoteMetadata(
+                **vote_data,
+            ))
+        except Exception as e:
+            print(result)
+            print(e)
+
     usc_release_id = (await database.fetch_one(usc_query)).usc_release_id
     return LegislationMetadata(
         legislation_versions=legis_versions,
@@ -138,5 +163,6 @@ async def get_legislation_metadata_by_legislation_id(
         appropriations=appropriations,
         sponsor=sponsor_objs[0] if len(sponsor_objs) > 0 else None,
         cosponsors=sponsor_objs[1:] if len(sponsor_objs) > 0 else None,
+        votes=vote_objs,
         **result,
     )

@@ -140,11 +140,39 @@ b {
 .learn-content {
     padding-left: 40px !important;
     padding-right: 40px !important;
+}
 
-    h2 {
+.learn-content,
+.about-us {
+    line-height: 1.5em;
+
+    h2,
+    h3 {
         margin-bottom: 5px;
         margin-top: 30px;
-        color: #4c90f0;
+        color: #bdadff !important;
+    }
+
+    b {
+        color: #d69fd6 !important;
+    }
+
+    li {
+        margin-bottom: 15px;
+    }
+}
+
+#root:not(.bp5-dark) {
+    .learn-content,
+    .about-us {
+        h2,
+        h3 {
+            color: #7961db !important;
+        }
+
+        b {
+            color: #9d3f9d !important;
+        }
     }
 }
 
@@ -235,14 +263,6 @@ b {
 .mobile,
 .mobile-flex {
     display: none;
-}
-
-.about-us {
-    .faq {
-        li {
-            margin-bottom: 10px;
-        }
-    }
 }
 
 .bp5-drawer {
