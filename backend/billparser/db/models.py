@@ -156,6 +156,11 @@ class LegislationVote(Base):
     number = Column(Integer, index=True, nullable=False)
     date = Column(Date)
 
+    chamber = Column(Enum(LegislationChamber))
+    congress_id = Column(
+        Integer, ForeignKey("congress.congress_id", ondelete="CASCADE"), index=True
+    )
+
     legislation_id = Column(
         Integer, ForeignKey("legislation.legislation_id", ondelete="CASCADE"), index=True
     )

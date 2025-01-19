@@ -8,7 +8,7 @@ import re
 import time
 
 from billparser.db.handler import Session
-from billparser.db.models import LegislationVote, LegislatorVote, LegislatorVoteType, Legislation, Legislator, Congress
+from billparser.db.models import LegislationVote, LegislatorVote, LegislatorVoteType, Legislation, LegislationChamber, Legislator, Congress
 from billparser.bioguide.manager import BioGuideImporter
 
 def calculate_congress_from_year() -> int:
@@ -26,11 +26,31 @@ def calculate_session_from_year() -> int:
     else:
         return 2
 
-def get_latest_house_rollcall() -> int:
-    return 0
+def get_latest_house_rollcall(session) -> int:
+    legislation_vote = (session
+        .query(LegislationVote)
+        .filter(LegislationVote.chamber == LegislationChamber.House)
+        .order_by(LegislationVote.number.desc())
+        .first()
+    )
 
-def get_latest_senate_rollcall() -> int:
-    return 0
+    if legislation_vote is None:
+        return 0
+    else:
+        return legislation_vote.number
+
+def get_latest_senate_rollcall(session) -> int:
+    legislation_vote = (session
+        .query(LegislationVote)
+        .filter(LegislationVote.chamber == LegislationChamber.Senate)
+        .order_by(LegislationVote.number.desc())
+        .first()
+    )
+
+    if legislation_vote is None:
+        return 0
+    else:
+        return legislation_vote.number
 
 def get_legislator_lookup() -> int:
     member_lis_lookup = {}
@@ -73,8 +93,8 @@ def download_to_database():
         'year': datetime.now().year,
         'congress': calculate_congress_from_year(),
         'session': calculate_session_from_year(),
-        'h_index': get_latest_house_rollcall(),
-        's_index': get_latest_senate_rollcall(),
+        'h_index': get_latest_house_rollcall(session),
+        's_index': get_latest_senate_rollcall(session),
     }
 
     while True:
@@ -85,7 +105,7 @@ def download_to_database():
         logging.info(f"Fetching House rollcall vote from {url}")
         resp = requests.get(url)
 
-        if resp.status_code == 404 or formatted['h_index'] == 7:
+        if resp.status_code == 404:
             logging.info(f"Completed fetch at {formatted['h_index']} with 404 error")
             break
         else:
@@ -175,6 +195,8 @@ def download_to_database():
                         'democrat': json.dumps(by_party['Democratic']),
                         'total': json.dumps(by_total),
                         'passed': (vote_result == 'Passed'),
+                        'chamber': LegislationChamber.House,
+                        'congress_id': CURRENT_CONGRESS,
                     }
 
                     legislation_vote = LegislationVote(**legislation_vote_data)
