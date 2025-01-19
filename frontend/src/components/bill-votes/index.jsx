@@ -17,6 +17,10 @@ function BillVotes(props) {
                             title={vote.question}
                             subtitle={vote.date}
                             icon="heat-grid"
+                            collapsible={true}
+                            collapseProps={{
+                                defaultIsOpen: false
+                            }}
                         >
                             <HTMLTable
                                 compact={true}
