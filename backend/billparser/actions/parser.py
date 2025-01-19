@@ -49,13 +49,11 @@ def strike_emulation(to_strike: str, to_replace: str, target: str) -> str:
     Returns:
         str: The result of the replacement
     """
-    start_boi = r"(\s|\b)"
-    if re.match(r"[^\w]", to_strike):
-        start_boi = ""
+    start_boi = r"(\b)"
     # target = remove_citations(target)
     if "$" not in to_strike:
         return re.sub(
-            r"{}({})(?:\s|\b)".format(start_boi, re.escape(to_strike)),
+            r"{}({})(?:\b)".format(start_boi, re.escape(to_strike)),
             to_replace,
             target,
         )
