@@ -8,7 +8,7 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: Pull
-        run: cd /home/mustyoshi/Github/congress-dev && GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no" git pull
+        run: cd /home/mustyoshi/Github/congress-dev && GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no" git checkout ${GITHUB_SHA}
       - name: Build containers
         run: cd /home/mustyoshi/Github/congress-dev && docker-compose -f .docker/docker-compose.yml -f .docker/docker-compose.prod.yml build
       - name: Deploy
