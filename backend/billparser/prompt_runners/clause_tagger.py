@@ -29,6 +29,7 @@ SCHEMA = {
     },
 }
 
+
 def normalize_tags(tags: List[str]) -> List[str]:
     # Convert everything to title case
     # Replace underscores with spaces
@@ -42,8 +43,11 @@ def normalize_tags(tags: List[str]) -> List[str]:
         )
     )
 
+
 def clause_tagger(legis_version_id: int, prompt_id: int):
-    with LogContext({"legislation_version": {"legislation_version_id": legis_version_id}}):
+    with LogContext(
+        {"legislation_version": {"legislation_version_id": legis_version_id}}
+    ):
         session = Session()
         existing_prompt_batch, prompt, legis_content = get_existing_batch_or_content(
             legis_version_id, prompt_id, session
@@ -88,12 +92,14 @@ def clause_tagger(legis_version_id: int, prompt_id: int):
                         tags=tags,
                     )
                     session.add(tag_obj)
-                    print(f"Tagged {lc.legislation_content_id} with {tags}")
+                    logging.debug(f"Tagged {lc.legislation_content_id} with {tags}")
                     prompt_batch.successful += 1
                 except Exception as e:
                     prompt_batch.failed += 1
                     logging.exception("Failed to tag clause")
-                    continue
+                    if full_tags is None:
+                        logging.warning("full_tags became None")
+                        full_tags = set()
             else:
                 prompt_batch.skipped += 1
         # Create the full set of tags for the legis body
