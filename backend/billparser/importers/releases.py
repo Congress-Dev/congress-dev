@@ -25,9 +25,6 @@ if __name__ == "__main__":
     release_points = json.load(open(file_location, "rt"))
     session = Session()
     for rp in release_points:
-        print("=" * 5)
-        print(rp.get("short_title"))
-        rp["short_title"] = datetime.now().strftime("%D %T")
         existing_rp = (
             session.query(USCRelease)
             .filter(
