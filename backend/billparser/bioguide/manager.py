@@ -104,18 +104,28 @@ class BioGuideImporter:
                     image_url = None
                     image_source = None
 
-                record_data = {
-                    'lis_id': lis_lookup.get(legislator.usCongressBioId, None),
-                    'bioguide_id': legislator.usCongressBioId,
-                    'first_name': legislator.nickName or legislator.unaccentedGivenName or legislator.givenName,
-                    'last_name': legislator.unaccentedFamilyName or legislator.familyName,
-                    'middle_name': legislator.unaccentedMiddleName or legislator.middleName,
-                    'party': party,
-                    'state': state,
-                    'image_url': image_url,
-                    'image_source': image_source,
-                    'profile': legislator.profileText
-                }
+                record_data = {}
+
+                if lis_lookup.get(legislator.usCongressBioId, None):
+                    record_data['lis_id'] = lis_lookup.get(legislator.usCongressBioId, None)
+                if legislator.usCongressBioId:
+                    record_data['bioguide_id'] = legislator.usCongressBioId
+                if legislator.nickName or legislator.unaccentedGivenName or legislator.givenName:
+                    record_data['first_name'] = legislator.nickName or legislator.unaccentedGivenName or legislator.givenName
+                if legislator.unaccentedFamilyName or legislator.familyName:
+                    record_data['last_name'] = legislator.unaccentedFamilyName or legislator.familyName
+                if legislator.unaccentedMiddleName or legislator.middleName:
+                    record_data['middle_name'] = legislator.unaccentedMiddleName or legislator.middleName
+                if party:
+                    record_data['party'] = party
+                if state:
+                    record_data['state'] = state
+                if image_url:
+                    record_data['image_url'] = image_url
+                if image_source:
+                    record_data['image_source'] = image_source
+                if legislator.profileText:
+                    record_data['profile'] = legislator.profileText
 
                 existing_record = self.session.query(Legislator).filter(Legislator.bioguide_id == legislator.usCongressBioId).first()
                 if existing_record is None:

@@ -41,7 +41,7 @@ class LegislatorMetadata(MappableBase):
     first_name: Annotated[str, Legislator.first_name]
     middle_name: Annotated[Optional[str], Legislator.middle_name]
     last_name: Annotated[str, Legislator.last_name]
-    party: Annotated[str, Legislator.party]
+    party: Annotated[Optional[str], Legislator.party]
     state: Annotated[Optional[str], Legislator.state]
     district: Annotated[Optional[str], Legislator.district]
     image_url: Annotated[Optional[str], Legislator.image_url]
