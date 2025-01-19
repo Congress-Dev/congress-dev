@@ -1,4 +1,5 @@
 import re
+from billparser.utils.logger import LogContext
 from billparser.actions import ActionObject, ActionType, determine_action
 from billparser.run_through import convert_to_text
 from billparser.utils.cite_parser import (
@@ -394,7 +395,7 @@ def apply_action(
     if not computed_citation.startswith("/us"):
         logging.error(f"Citation is not complete? {computed_citation=}")
         return
-    logging.info(f"Applying action to {computed_citation=}")
+    logging.debug(f"Applying action to {computed_citation=}")
     actions = action.actions
     diffs: List[USCContentDiff] = []
     for act, act_obj in actions[0].items():
@@ -450,35 +451,38 @@ def recursively_extract_actions(
     parent_actions: List[LegislationActionParse] = [],
     version_id: int = 0,
 ):
-    # Check if the content is a quote block
-    if content.content_type == "quoted-block":
-        # Quotes are separate entities than the action that they come from
-        # For our purposes, the quote insertion happens on the tag that the quote is attached to
-        return
-    new_action = None
-    new_parents = []
-    if content.content_str is not None and content.content_str.strip() != "":
-        # If it has content, then we can extract actions from it
-        action_dict = determine_action(content.content_str)
-        cite_list = parse_text_for_cite(content.content_str)
-        if action_dict != {} or cite_list != []:
-            new_action = LegislationActionParse(
-                legislation_content_id=content.legislation_content_id,
-                legislation_version_id=content.legislation_version_id,
-                actions=[action_dict],
-                citations=cite_list,
-            )
-            PARSER_SESSION.add(new_action)
-            apply_action(content_by_parent_id, new_action, parent_actions, version_id)
-            new_parents = [*parent_actions] + [new_action]
-    else:
-        new_parents = parent_actions
+    with LogContext(
+        {"legislation_version": {"legislation_content_id": LegislationContent.legislation_content_id}}
+    ):
+        # Check if the content is a quote block
+        if content.content_type == "quoted-block":
+            # Quotes are separate entities than the action that they come from
+            # For our purposes, the quote insertion happens on the tag that the quote is attached to
+            return
+        new_action = None
+        new_parents = []
+        if content.content_str is not None and content.content_str.strip() != "":
+            # If it has content, then we can extract actions from it
+            action_dict = determine_action(content.content_str)
+            cite_list = parse_text_for_cite(content.content_str)
+            if action_dict != {} or cite_list != []:
+                new_action = LegislationActionParse(
+                    legislation_content_id=content.legislation_content_id,
+                    legislation_version_id=content.legislation_version_id,
+                    actions=[action_dict],
+                    citations=cite_list,
+                )
+                PARSER_SESSION.add(new_action)
+                apply_action(content_by_parent_id, new_action, parent_actions, version_id)
+                new_parents = [*parent_actions] + [new_action]
+        else:
+            new_parents = parent_actions
 
-    # Continue to recurse
-    for child in content_by_parent_id[content.legislation_content_id]:
-        recursively_extract_actions(
-            content_by_parent_id, child, new_parents, version_id
-        )
+        # Continue to recurse
+        for child in content_by_parent_id[content.legislation_content_id]:
+            recursively_extract_actions(
+                content_by_parent_id, child, new_parents, version_id
+            )
 
 
 def parse_bill_for_actions(legislation_version: LegislationVersion):
@@ -487,27 +491,31 @@ def parse_bill_for_actions(legislation_version: LegislationVersion):
     if PARSER_SESSION is None:
         PARSER_SESSION = get_scoped_session()
     PARSER_SESSION.rollback()
+    with LogContext(
+        {"legislation_version": {"legislation_version_id": legislation_version.version_id}}
+    ):
+        with PARSER_SESSION.begin():
+            # Retrieve all the content for the legislation version
+            contents = get_bill_contents(legislation_version.legislation_version_id)
 
-    with PARSER_SESSION.begin():
-        # Retrieve all the content for the legislation version
-        contents = get_bill_contents(legislation_version.legislation_version_id)
-
-        # Put into a dict by parent
-        # This will constitute our traversal of the tree
-        content_by_parent_id: Dict[int, List[LegislationContent]] = defaultdict(list)
-        for content in contents:
-            content_by_parent_id[content.parent_id].append(content)
-
-        # Sort the lists now so we can proceed in a depth first manner
-        for parent_id, content_list in content_by_parent_id.items():
-            content_list.sort(key=lambda x: x.legislation_content_id)
-
-        root_content = content_by_parent_id[None]
-
-        # Iterate over the root children
-        for content in root_content:
-            recursively_extract_actions(
-                content_by_parent_id, content, [], legislation_version.version_id
+            # Put into a dict by parent
+            # This will constitute our traversal of the tree
+            content_by_parent_id: Dict[int, List[LegislationContent]] = defaultdict(
+                list
             )
-        PARSER_SESSION.flush()
-        PARSER_SESSION.commit()
+            for content in contents:
+                content_by_parent_id[content.parent_id].append(content)
+
+            # Sort the lists now so we can proceed in a depth first manner
+            for parent_id, content_list in content_by_parent_id.items():
+                content_list.sort(key=lambda x: x.legislation_content_id)
+
+            root_content = content_by_parent_id[None]
+
+            # Iterate over the root children
+            for content in root_content:
+                recursively_extract_actions(
+                    content_by_parent_id, content, [], legislation_version.version_id
+                )
+            PARSER_SESSION.flush()
+            PARSER_SESSION.commit()
