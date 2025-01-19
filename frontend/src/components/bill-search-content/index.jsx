@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import lodash from "lodash";
 import {
     SectionCard,
+    Spinner,
     NonIdealState,
     NonIdealStateIconSize,
 } from "@blueprintjs/core";
@@ -15,8 +16,10 @@ function BillSearchContent(props) {
         legislation: [],
         total_results: 0,
     });
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        setLoading(true);
         getCongressSearch(
             props.congress,
             props.chamber,
@@ -27,6 +30,7 @@ function BillSearchContent(props) {
             props.pageSize,
         ).then((billList) => {
             if (billList != null) {
+                setLoading(false);
                 setBillList(billList);
             }
         });
@@ -48,7 +52,9 @@ function BillSearchContent(props) {
         return <BillCard bill={billItem} key={`bill-search-list-${ind}`} />;
     }
 
-    return (
+    return loading ? (
+        <Spinner className="loading-spinner" intent="primary" />
+    ) : (
         <>
             {billList.legislation.length > 0 ? (
                 lodash.map(billList.legislation, renderCardList)
