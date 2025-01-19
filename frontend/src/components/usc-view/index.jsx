@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useHistory, Link } from "react-router-dom";
 import lodash from "lodash";
-import { diffWords } from "diff";
+import { diffWordsWithSpace } from "diff";
 import xmldoc from "xmldoc";
 import { Spinner } from "@blueprintjs/core";
 
@@ -9,6 +9,26 @@ import { getUSCSectionContent } from "common/api";
 import { md5 } from "common/other";
 
 import "styles/usc-view.scss";
+function findCommonPrefix(str1, str2) {
+    let i = 0;
+    const minLength = Math.min(str1.length, str2.length);
+    while (i < minLength && str1[i] === str2[i]) {
+        i++;
+    }
+    return i;
+}
+
+function findCommonSuffix(str1, str2) {
+    let i = 0;
+    const minLength = Math.min(str1.length, str2.length);
+    while (
+        i < minLength &&
+        str1[str1.length - 1 - i] === str2[str2.length - 1 - i]
+    ) {
+        i++;
+    }
+    return i;
+}
 
 function USCView({ release, title, section, diffs = {}, interactive = true }) {
     const history = useHistory();
@@ -103,12 +123,46 @@ function USCView({ release, title, section, diffs = {}, interactive = true }) {
                     itemDiff[key] !== undefined &&
                     itemDiff[key] !== item[key]
                 ) {
-                    newItem[key] = diffStyle(
-                        diffWords(
-                            removeCitations(item[key] || ""),
-                            removeCitations(itemDiff[key] || ""),
-                        ),
+                    const diffStart = findCommonPrefix(
+                        item[key],
+                        itemDiff[key],
                     );
+                    const diffEnd = findCommonSuffix(item[key], itemDiff[key]);
+
+                    // Generate the diff
+                    // The common prefix will be unchanged
+                    // Removed text will be in red
+                    // Added text will be in green
+                    newItem[key] = diffStyle([
+                        {
+                            value: item[key].slice(0, diffStart),
+                            removed: false,
+                            added: false,
+                        },
+                        {
+                            value: item[key].slice(
+                                diffStart + 1,
+                                item[key].length - diffEnd,
+                            ),
+                            removed: true,
+                            added: false,
+                        },
+                        {
+                            value: itemDiff[key].slice(
+                                diffStart,
+                                itemDiff[key].length - diffEnd,
+                            ),
+                            removed: false,
+                            added: true,
+                        },
+                        {
+                            value: itemDiff[key].slice(
+                                itemDiff[key].length - diffEnd,
+                            ),
+                            removed: false,
+                            added: false,
+                        },
+                    ]);
                     // TODO: Fix this ordering issue on the backend maybe?
                     // Should create diffs to reorder things?
                     newItem["order_number"] -= 0.01;

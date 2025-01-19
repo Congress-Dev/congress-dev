@@ -188,15 +188,15 @@ function BillDisplay() {
             .value();
         let tempStr = contentStr;
         lodash.forEach(strings, (value) => {
-          if (value[0] !== "REGEX") {
-            tempStr = tempStr.replace(
-                value[1],
-                `<span class="action-${value[0]}">${value[1]}</span>`,
-            );
-            if (value[0] === "_full_match") {
-              return false;
+            if (value[0] !== "REGEX") {
+                tempStr = tempStr.replace(
+                    value[1],
+                    `<span class="action-${value[0]}">${value[1]}</span>`,
+                );
+                if (value[0] === "_full_match") {
+                    return false;
+                }
             }
-          }
         });
         return (
             <span
@@ -389,6 +389,14 @@ function BillDisplay() {
                                                     <span>
                                                         <b>Actions:</b>{" "}
                                                         {actionStr}
+                                                    </span>
+                                                ) : (
+                                                    ""
+                                                )}
+                                                {citationStr != "" ? (
+                                                    <span>
+                                                        <b>Citations:</b>{" "}
+                                                        {citationStr}
                                                     </span>
                                                 ) : (
                                                     ""

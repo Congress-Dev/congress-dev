@@ -390,10 +390,13 @@ def apply_action(
                     computed_citation = parent_cite["cite"]
                     break
     if computed_citation is None:
-        logging.debug("No citation found for action")
+        logging.warning("No citation found for action")
         return
     if not computed_citation.startswith("/us"):
-        logging.error(f"Citation is not complete? {computed_citation=}")
+        logging.error(
+            f"Citation is not complete? {computed_citation=}",
+            extra={"citation": computed_citation},
+        )
         return
     logging.debug(f"Applying action to {computed_citation=}")
     actions = action.actions
@@ -438,7 +441,7 @@ def apply_action(
                 # print(act_obj)
                 # print(computed_citation)
         except:
-            logging.error(f"Unexpected failure while parsing action {act_obj}")
+            logging.exception(f"Unexpected failure while parsing action {act_obj}")
     for diff in diffs:
         diff.legislation_content_id = action.legislation_content_id
         diff.version_id = version_id
@@ -452,7 +455,11 @@ def recursively_extract_actions(
     version_id: int = 0,
 ):
     with LogContext(
-        {"legislation_version": {"legislation_content_id": LegislationContent.legislation_content_id}}
+        {
+            "legislation_version": {
+                "legislation_content_id": LegislationContent.legislation_content_id
+            }
+        }
     ):
         # Check if the content is a quote block
         if content.content_type == "quoted-block":
@@ -473,7 +480,9 @@ def recursively_extract_actions(
                     citations=cite_list,
                 )
                 PARSER_SESSION.add(new_action)
-                apply_action(content_by_parent_id, new_action, parent_actions, version_id)
+                apply_action(
+                    content_by_parent_id, new_action, parent_actions, version_id
+                )
                 new_parents = [*parent_actions] + [new_action]
         else:
             new_parents = parent_actions
@@ -492,7 +501,11 @@ def parse_bill_for_actions(legislation_version: LegislationVersion):
         PARSER_SESSION = get_scoped_session()
     PARSER_SESSION.rollback()
     with LogContext(
-        {"legislation_version": {"legislation_version_id": legislation_version.version_id}}
+        {
+            "legislation_version": {
+                "legislation_version_id": legislation_version.version_id
+            }
+        }
     ):
         with PARSER_SESSION.begin():
             # Retrieve all the content for the legislation version
