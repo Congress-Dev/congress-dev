@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Tabs, Tab } from "@blueprintjs/core";
+import { Tabs, Tab, NonIdealState, NonIdealStateIconSize } from "@blueprintjs/core";
 import USCTrackingTab from "./usc-tracking-tab";
 import { getUSCTrackingFolders } from "common/api";
 
@@ -19,7 +19,21 @@ export default function USCTrackingTabs() {
             });
     }, []);
     console.log(folders);
-    return (
+    return folders.length == 0 ? (
+        <NonIdealState
+            icon="inbox"
+            iconSize={NonIdealStateIconSize.STANDARD}
+            title="No legislation results for this week"
+            description={
+                <>
+                    Try adding more legislation to favorites,
+                    <br />
+                    or check back later.
+                </>
+            }
+            layout="vertical"
+        />
+    ) : (
         <Tabs
             id="usc-tracking-tabs"
             selectedTabId={selectedTab}

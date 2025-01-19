@@ -135,7 +135,9 @@ function AuthedHome() {
                     subtitle="Last 7 Days"
                     icon="drag-handle-vertical"
                 >
-                    {<USCTrackingTabs />}
+                    <SectionCard>
+                        <USCTrackingTabs />
+                    </SectionCard>
                 </Section>
             </div>
         </SectionCard>
