@@ -4,6 +4,7 @@ import logging
 import zipfile
 import json
 import io
+import json
 
 from billparser.db.handler import Session
 from billparser.db.models import Legislator
@@ -52,6 +53,12 @@ class BioGuideImporter:
                     else:
                         legis = BioGuideMember(**jdata.get('data'))
                     items.append(legis)
+
+        with open('bioguide.json', 'r') as jdata:
+            for item in json.load(jdata):
+                item['usCongressBioId'] = item['id']
+                items.append(BioGuideMember(**item))
+
         return items
 
     def run_metadata(self):

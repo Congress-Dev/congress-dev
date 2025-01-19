@@ -5,9 +5,11 @@ from lxml.etree import Element
 import json
 import logging
 import re
+import time
 
 from billparser.db.handler import Session
-from billparser.db.models import LegislationVote, LegislatorVote, Legislation, Congress
+from billparser.db.models import LegislationVote, LegislatorVote, LegislatorVoteType, Legislation, Legislator, Congress
+from billparser.bioguide.manager import BioGuideImporter
 
 def calculate_congress_from_year() -> int:
     current_year = datetime.now().year
@@ -48,7 +50,10 @@ def get_legislator_lookup() -> int:
 def download_to_database():
     HOUSE_ROLL_TEMPLATE = "https://clerk.house.gov/evs/{year}/roll{h_index:03}.xml" # Index 3 digits
     SENATE_ROLL_TEMPLATE = "https://www.senate.gov/legislative/LIS/roll_call_votes/vote{congress}{session}/vote_{congress}_{session}_{s_index:05}.xml" #Index 5 digits
+    BIOGUIDE_TEMPLATE = "https://bioguide.congress.gov/search/bio/{bioguide_id}.json"
     CURRENT_CONGRESS = None
+
+    BioImporter = BioGuideImporter()
 
     session = Session()
 
@@ -123,10 +128,10 @@ def download_to_database():
                 totals_data = root.xpath("//totals-by-vote")
                 if len(totals_data) == 1:
                     by_total = {
-                        'yea': totals_data[0].xpath("./yea-total/text()")[0],
-                        'nay': totals_data[0].xpath("./nay-total/text()")[0],
-                        'present': totals_data[0].xpath("./present-total/text()")[0],
-                        'abstain': totals_data[0].xpath("./not-voting-total/text()")[0],
+                        'yea': int(totals_data[0].xpath("./yea-total/text()")[0]),
+                        'nay': int(totals_data[0].xpath("./nay-total/text()")[0]),
+                        'present': int(totals_data[0].xpath("./present-total/text()")[0]),
+                        'abstain': int(totals_data[0].xpath("./not-voting-total/text()")[0]),
                     }
 
                 party_data = root.xpath("//totals-by-party")
@@ -134,10 +139,10 @@ def download_to_database():
                     for party in party_data:
                         party_type = party.xpath("./party/text()")[0]  # Get the party name
                         by_party[party_type] = {
-                            'yea': party.xpath("./yea-total/text()")[0],
-                            'nay': party.xpath("./nay-total/text()")[0],
-                            'present': party.xpath("./present-total/text()")[0],
-                            'abstain': party.xpath("./not-voting-total/text()")[0],
+                            'yea': int(party.xpath("./yea-total/text()")[0]),
+                            'nay': int(party.xpath("./nay-total/text()")[0]),
+                            'present': int(party.xpath("./present-total/text()")[0]),
+                            'abstain': int(party.xpath("./not-voting-total/text()")[0]),
                         }
 
                 vote_data = root.xpath("//recorded-vote")
@@ -145,7 +150,7 @@ def download_to_database():
                     for vote in vote_data:
                         legislator = vote.xpath('./legislator')[0]
                         by_legislator[legislator.get('name-id')] = {
-                            'vote': vote.xpath('./vote/text()')[0]
+                            'vote': LegislatorVoteType.from_string(vote.xpath('./vote/text()')[0])
                         }
 
                 if by_total and by_party and by_legislator:
@@ -160,25 +165,54 @@ def download_to_database():
                         logging.error(f"Could not find matching legislation for H.R.{legislation_number}")
                         continue
 
-                    legislation_vote = LegislationVote(
-                        number=formatted['h_index'],
-                        date=vote_date,
-                        legislation_id=legislation.id,
-                        question=vote_question,
-                        independent=json.dumps(by_party['Independent']),
-                        republican=json.dumps(by_party['Republican']),
-                        democrat=json.dumps(by_party['Democratic']),
-                        total=json.dumps(by_total),
-                        passed=(vote_result == 'Passed'),
-                    )
+                    legislation_vote_data = {
+                        'number': formatted['h_index'],
+                        'date': datetime.strptime(vote_date, "%d-%b-%Y"),
+                        'legislation_id': legislation.legislation_id,
+                        'question': vote_question,
+                        'independent': json.dumps(by_party['Independent']),
+                        'republican': json.dumps(by_party['Republican']),
+                        'democrat': json.dumps(by_party['Democratic']),
+                        'total': json.dumps(by_total),
+                        'passed': (vote_result == 'Passed'),
+                    }
 
-                    # try:
-                    #     session.add(legislation_vote)
-                    #     session.commit()
-                    # except:
-                    #     logging.error(f"Could not commit LegislationVote to database")
+                    legislation_vote = LegislationVote(**legislation_vote_data)
 
-                    # committed_vote_id = legislation_vote.get('id')
+                    try:
+                        session.add(legislation_vote)
+                        session.commit()
+                    except:
+                        logging.error(f"Could not commit LegislationVote to database")
+                        continue
+
+                    legislator_votes = []
+                    for bioguide_id, vote_info in by_legislator.items():
+                        legislator = (session
+                            .query(Legislator)
+                            .filter(Legislator.bioguide_id == bioguide_id)
+                            .first())
+
+                        if legislator is None:
+                            logging.info(f"Missing legislator information for {bioguide_id}")
+                            continue
+
+                        legislator_vote_data = {
+                            'legislation_vote_id': legislation_vote.id,
+                            'legislator_bioguide_id': bioguide_id,
+                            **vote_info
+                        }
+
+                        legislator_vote = LegislatorVote(**legislator_vote_data)
+                        legislator_votes.append(legislator_vote)
+
+                    try:
+                        session.add_all(legislator_votes)
+                        session.commit()
+                    except:
+                        logging.error(f"Could not commit LegislatorVote to database")
+
+                    logging.info(f"Finished parsing rollcall {formatted['h_index']}")
                 else:
                     logging.info(f"Skipping rollcall {formatted['h_index']} due to missing vote data")
 

@@ -12,3 +12,5 @@ usc/
 **.egg-info/
 dist/
 build/
+
+bioguide.json

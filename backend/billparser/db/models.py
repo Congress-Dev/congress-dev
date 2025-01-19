@@ -39,6 +39,23 @@ class LegislatorVoteType(str, enum.Enum):
     present = "present"
     abstain = "abstain"
 
+    @classmethod
+    def from_string(cls, string: str) -> "LegislationChamber":
+        if string.lower() == 'yea':
+            return cls.yay
+        elif string.lower() == 'aye':
+            return cls.yay
+        elif string.lower() == 'nay':
+            return cls.nay
+        elif string.lower() == 'no':
+            return cls.nay
+        elif string.lower() == 'present':
+            return cls.present
+        elif string.lower() == 'not voting':
+            return cls.abstain
+        else:
+            raise ValueError(f"Invalid LegislatorVoteType: {string}")
+
 class LegislationType(str, enum.Enum):
     Bill = "Bill"
     CRes = "Continuing Resolution"
