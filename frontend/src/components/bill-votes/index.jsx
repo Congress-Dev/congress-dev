@@ -19,7 +19,7 @@ function BillVotes(props) {
                             icon={vote.passed ? "endorsed" : "error"}
                             collapsible={true}
                             collapseProps={{
-                                defaultIsOpen: false
+                                defaultIsOpen: false,
                             }}
                         >
                             <HTMLTable

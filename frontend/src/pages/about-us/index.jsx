@@ -65,6 +65,16 @@ function AboutUs() {
                         </li>
                         <li>
                             <a
+                                href="https://gpo.congress.gov/"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                https://gpo.congress.gov/
+                            </a>
+                            &nbsp;(Bill Sponsors)
+                        </li>
+                        <li>
+                            <a
                                 href="https://uscode.house.gov/download/priorreleasepoints.htm"
                                 target="_blank"
                                 rel="noopener noreferrer"
@@ -73,13 +83,51 @@ function AboutUs() {
                             </a>
                             &nbsp;(USCode Text)
                         </li>
+                        <li>
+                            <a
+                                href="https://bioguide.congress.gov/"
+                                target="_blank"
+                                rel="noopener norefferer"
+                            >
+                                https://bioguide.congress.gov/
+                            </a>
+                            &nbsp;(Member Profiles)
+                        </li>
+                        <li>
+                            <a
+                                href="https://theunitedstates.io/"
+                                target="_blank"
+                                rel="noopener norefferer"
+                            >
+                                https://theunitedstates.io/
+                            </a>
+                            &nbsp;(Member Metadata)
+                        </li>
+                        <li>
+                            <a
+                                href="https://clerk.house.gov/"
+                                target="_blank"
+                                rel="noopener norefferer"
+                            >
+                                https://clerk.house.gov/
+                            </a>
+                            &nbsp;(House Roll-Call Votes)
+                        </li>
+                        <li>
+                            <a
+                                href="https://www.senate.gov/"
+                                target="_blank"
+                                rel="noopener norefferer"
+                            >
+                                https://www.senate.gov/
+                            </a>
+                            &nbsp;(Senate Roll-Call Votes)
+                        </li>
                     </ul>
                 </Callout>
                 <br />
                 <Callout>
-                    <h3 className="bp5-heading">
-                        Frequently Asked Questions (FAQs):
-                    </h3>
+                    <h3 className="bp5-heading">Frequently Asked Questions:</h3>
                     <ol className="faq">
                         <li>
                             <b>How often is the data updated?</b>
