@@ -141,10 +141,30 @@ b {
     padding-left: 40px !important;
     padding-right: 40px !important;
 
+    line-height: 1.5em;
+
     h2 {
         margin-bottom: 5px;
         margin-top: 30px;
-        color: #4c90f0;
+        color: #BDADFF;
+    }
+
+    b {
+        color: #D69FD6;
+    }
+
+    li {
+        margin-bottom: 15px;
+    }
+}
+
+#root:not(.bp5-dark) {
+    .learn-content h2 {
+        color: #7961DB;
+    }
+
+    .learn-content b {
+        color: #9D3F9D;
     }
 }
 

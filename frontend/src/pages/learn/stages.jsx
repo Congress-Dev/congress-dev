@@ -31,12 +31,20 @@ function LearnStages({ navigation }) {
                     matter.
                 </p>
                 <p>
-                    - <b>House of Representatives:</b> Bills are introduced
-                    during the House's daily session, and the Speaker of the
-                    House assigns the bill to the appropriate committee for
-                    further review. - <b>Senate:</b> Similarly, bills are
-                    introduced during the Senate's session, and the bill is
-                    referred to a committee for review by the Senate leadership.
+                    <ul>
+                        <li>
+                            <b>House of Representatives:</b> Bills are
+                            introduced during the House's daily session, and the
+                            Speaker of the House assigns the bill to the
+                            appropriate committee for further review.
+                        </li>
+                        <li>
+                            <b>Senate:</b> Similarly, bills are introduced
+                            during the Senate's session, and the bill is
+                            referred to a committee for review by the Senate
+                            leadership.
+                        </li>
+                    </ul>
                 </p>
 
                 <h2>2. Committee Consideration</h2>
@@ -49,18 +57,26 @@ function LearnStages({ navigation }) {
                     bill.
                 </p>
                 <p>
-                    - <b>House of Representatives:</b> The House has a large
-                    number of standing committees, each focusing on a specific
-                    policy area. Bills are typically assigned to one of these
-                    committees based on their content. If the committee approves
-                    the bill, it moves forward to the next stage. -{" "}
-                    <b>Senate:</b>
-                    Like the House, the Senate also has specialized committees.
-                    However, Senate committees tend to be smaller, and the
-                    review process is often more deliberative. Amendments to the
-                    bill can be introduced and debated within the committee, and
-                    the bill may also be subject to hearings with expert
-                    testimony.
+                    <ul>
+                        <li>
+                            <b>House of Representatives:</b> The House has a
+                            large number of standing committees, each focusing
+                            on a specific policy area. Bills are typically
+                            assigned to one of these committees based on their
+                            content. If the committee approves the bill, it
+                            moves forward to the next stage.
+                        </li>
+                        <li>
+                            <b>Senate:</b>
+                            Like the House, the Senate also has specialized
+                            committees. However, Senate committees tend to be
+                            smaller, and the review process is often more
+                            deliberative. Amendments to the bill can be
+                            introduced and debated within the committee, and the
+                            bill may also be subject to hearings with expert
+                            testimony.
+                        </li>
+                    </ul>
                 </p>
 
                 <h2>3. Debating the Bill</h2>
@@ -72,19 +88,27 @@ function LearnStages({ navigation }) {
                     with it.
                 </p>
                 <p>
-                    - <b>House of Representatives:</b> Debate in the House is
-                    typically more structured and time-limited. The Speaker of
-                    the House sets the rules for debate, including how much time
-                    each side can speak. The House often uses a "rules
-                    committee" to set the terms of debate, and members may not
-                    have the opportunity to speak as freely or at length as in
-                    the Senate. - <b>Senate:</b> Debate in the Senate is
-                    generally less restricted, allowing Senators more time to
-                    discuss the bill. This can lead to more extensive debate,
-                    and in some cases, filibusters may be used to delay or block
-                    a vote. The Senate’s tradition of extended debate means that
-                    bills may face much longer deliberations before reaching a
-                    final vote.
+                    <ul>
+                        <li>
+                            <b>House of Representatives:</b> Debate in the House
+                            is typically more structured and time-limited. The
+                            Speaker of the House sets the rules for debate,
+                            including how much time each side can speak. The
+                            House often uses a "rules committee" to set the
+                            terms of debate, and members may not have the
+                            opportunity to speak as freely or at length as in
+                            the Senate.
+                        </li>
+                        <li>
+                            <b>Senate:</b> Debate in the Senate is generally
+                            less restricted, allowing Senators more time to
+                            discuss the bill. This can lead to more extensive
+                            debate, and in some cases, filibusters may be used
+                            to delay or block a vote. The Senate’s tradition of
+                            extended debate means that bills may face much
+                            longer deliberations before reaching a final vote.
+                        </li>
+                    </ul>
                 </p>
 
                 <h2>4. Voting on the Bill</h2>
@@ -98,17 +122,25 @@ function LearnStages({ navigation }) {
                     sent to the President for approval.
                 </p>
                 <p>
-                    - <b>House of Representatives:</b> Voting in the House is
-                    typically done via electronic voting, where members cast
-                    their votes using a computerized system. The results are
-                    displayed on a board. In some cases, voice votes may be
-                    used, where the Speaker determines whether the "ayes" or
-                    "nays" have it, but this is less common for significant
-                    legislation. - <b>Senate:</b> In the Senate, voting is often
-                    done by roll-call vote, where each Senator’s vote is
-                    recorded individually. The Senate also has a more flexible
-                    voting system, allowing for more debate and amendments
-                    before the final vote takes place.
+                    <ul>
+                        <li>
+                            <b>House of Representatives:</b> Voting in the House
+                            is typically done via electronic voting, where
+                            members cast their votes using a computerized
+                            system. The results are displayed on a board. In
+                            some cases, voice votes may be used, where the
+                            Speaker determines whether the "ayes" or "nays" have
+                            it, but this is less common for significant
+                            legislation.
+                        </li>
+                        <li>
+                            <b>Senate:</b> In the Senate, voting is often done
+                            by roll-call vote, where each Senator’s vote is
+                            recorded individually. The Senate also has a more
+                            flexible voting system, allowing for more debate and
+                            amendments before the final vote takes place.
+                        </li>
+                    </ul>
                 </p>
 
                 <h2>
@@ -156,13 +188,17 @@ function LearnStages({ navigation }) {
                     Congress is in session, it automatically becomes law.
                 </p>
                 <p>
-                    - <b>House of Representatives & Senate:</b> If both chambers
-                    pass the bill in identical form, it is sent to the President
-                    for final action. In cases where there are differences
-                    between the versions of the bill passed in the House and
-                    Senate, a conference committee may be formed to reconcile
-                    the differences before sending the final version to the
-                    President.
+                    <ul>
+                        <li>
+                            <b>House of Representatives & Senate:</b> If both
+                            chambers pass the bill in identical form, it is sent
+                            to the President for final action. In cases where
+                            there are differences between the versions of the
+                            bill passed in the House and Senate, a conference
+                            committee may be formed to reconcile the differences
+                            before sending the final version to the President.
+                        </li>
+                    </ul>
                 </p>
             </SectionCard>
         </Section>
