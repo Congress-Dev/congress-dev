@@ -9,7 +9,7 @@ function AboutUs() {
             subtitle="Empowering Civic Engagement and Understanding"
         >
             <SectionCard>
-                <b>Congress.dev</b> was created to empower everyday people with
+                This project was created to empower everyday people with
                 easy access to the workings of Congress. We believe that
                 democracy thrives when citizens are informed and engaged, but
                 navigating the legislative process can feel overwhelming and
