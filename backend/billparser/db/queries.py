@@ -12,7 +12,6 @@ from billparser.db.models import (
     LegislationActionParse,
     Version,
 )
-from billparser.db.caching import FromCache
 from cachetools import cached, TTLCache
 from sqlalchemy import or_, String, func
 from sqlalchemy.sql.expression import cast

@@ -50,7 +50,6 @@ async def get_member_sponsorships(
     },
 ) -> LegislationSponsorshipList:
     """Returns a list of LegislationSponsorshipInfo objects for a given bioguide_id"""
-    print("Got req")
     obj = await get_member_by_bioguide_id(bioguide_id)
     if obj is None:
         raise HTTPException(

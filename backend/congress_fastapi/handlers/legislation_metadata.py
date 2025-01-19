@@ -1,3 +1,4 @@
+import traceback
 from typing import List, Optional
 
 from sqlalchemy import select
@@ -39,7 +40,6 @@ async def get_legislation_version_metadata_by_legislation_id(
     results = list(await database.fetch_all(query))
     if results is None or len(results) == 0:
         return None
-    print(results)
     return [
         LegislationVersionMetadata.from_sqlalchemy(result)
         for result in results
@@ -63,8 +63,8 @@ async def get_appropriations_by_legislation_version_id(
         try:
             result_objs.append(Appropriation(**result))
         except Exception as e:
+            print(traceback.format_exc())
             print(result)
-            print(e)
     return result_objs
 
 
@@ -130,8 +130,8 @@ async def get_legislation_metadata_by_legislation_id(
         try:
             sponsor_objs.append(LegislatorMetadata(**sponsor))
         except Exception as e:
+            print(traceback.format_exc())
             print(result)
-            print(e)
 
     votes_query = (
         select(*LegislationVoteMetadata.sqlalchemy_columns())
@@ -153,8 +153,8 @@ async def get_legislation_metadata_by_legislation_id(
                 **vote_data,
             ))
         except Exception as e:
+            print(traceback.format_exc())
             print(result)
-            print(e)
 
     usc_release_id = (await database.fetch_one(usc_query)).usc_release_id
     return LegislationMetadata(

@@ -5,6 +5,7 @@
 
 *.code-workspace
 bills/
+notebooks/
 usc/
 .vscode/
 *.ipynb
@@ -12,5 +13,3 @@ usc/
 **.egg-info/
 dist/
 build/
-
-bioguide.json

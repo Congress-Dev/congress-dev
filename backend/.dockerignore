@@ -2,3 +2,5 @@
 .docker
 *.workspace
 usc
+bills/
+notebooks/

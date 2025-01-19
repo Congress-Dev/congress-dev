@@ -1,15 +1,20 @@
-from billparser.db.handler import import_title, get_number, Session
-from billparser.db.models import USCRelease, Version
-from sqlalchemy import func
-import os
-import sys
-import json
-import zipfile
+
 from datetime import datetime
 from joblib import Parallel, delayed
+from lxml import html
+import os
+import re
+import requests
+from sqlalchemy import func
+import zipfile
+
+from billparser.db.handler import import_title, get_number, Session
+from billparser.db.models import USCRelease, Version
+
 
 THREADS = int(os.environ.get("PARSE_THREADS", -1))
-
+DOWNLOAD_BASE = "https://uscode.house.gov/download/{}"
+RELEASE_POINTS = "https://uscode.house.gov/download/priorreleasepoints.htm"
 
 def download_path(url: str):
     os.makedirs("usc", exist_ok=True)
@@ -21,8 +26,26 @@ def download_path(url: str):
 
 
 if __name__ == "__main__":
-    file_location = "rp.json" if len(sys.argv) < 2 else sys.argv[1]
-    release_points = json.load(open(file_location, "rt"))
+    release_points = []
+    response = requests.get(RELEASE_POINTS)
+    tree = html.fromstring(response.content)
+
+    for year in range(2022, datetime.now().year):
+        search_date = f"12/21/{year}"
+        links = tree.xpath(f'//a[contains(text(), "{search_date}")]/@href')
+
+        if len(links) > 0:
+            link = links[0].replace('usc-rp', 'xml_uscAll').replace('.htm', '.zip')
+            zipPath = DOWNLOAD_BASE.format(link)
+            match = re.search(r'@(\d+)-(\d+)\.zip', link)
+
+            release_points.append({
+                "date": search_date,
+                "short_title": f"Public Law {match.group(1)}-{match.group(2)}",
+                "long_title": "",
+                "url": zipPath
+            })
+
     session = Session()
     for rp in release_points:
         existing_rp = (
