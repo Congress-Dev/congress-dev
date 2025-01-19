@@ -18,5 +18,4 @@ async def get_legislation_content_by_legislation_version_id(
         LegislationContentModel.legislation_version_id == legislation_version_id
     )
     results = await db.fetch_all(query)
-    print(results)
     return [LegislationContent(**result) for result in results]

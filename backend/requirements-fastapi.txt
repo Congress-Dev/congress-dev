@@ -1,4 +1,13 @@
-databases[postgresql]~=0.8.0
+# Python tools
+python-json-logger~=2.0.4
+requests==2.32.2
+
+# FastAPI tools
 fastapi~=0.108.0
 uvicorn[standard]
+
+# SQLAlchemy tools
+databases[postgresql]~=0.8.0
+psycopg2-binary~=2.8.4
 pyhumps~=3.8.0  # camelCase <-> snake_case
+SQLAlchemy~=1.4.0

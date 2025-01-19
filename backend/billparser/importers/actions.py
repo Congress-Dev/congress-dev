@@ -5,7 +5,6 @@ from billparser.db.models import LegislationActionParse, LegislationVersion
 from joblib import Parallel, delayed
 from sqlalchemy import func
 from billparser.actions.parser import parse_bill_for_actions
-from billparser.db.queries import get_legislation_versions, check_for_action_parses
 from billparser.db.handler import Session, init_session
 
 THREADS = int(os.environ.get("PARSE_THREADS", -4))

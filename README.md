@@ -36,8 +36,8 @@ From the backend folder, you will need to tell it to parse some files before you
 ```bash
 docker exec -it docker_parser_api bash
 
-python3 -m billparser.importers.releases rp.json
-python3 -m billparser.importers.bills bills.json
+python3 -m billparser.importers.releases
+python3 -m billparser.importers.bills
 
 ```
 

@@ -19,8 +19,6 @@ from sqlalchemy.orm import relationship
 import sqlalchemy as sa
 from sqlalchemy.schema import Index
 
-from billparser.db.caching import CacheableMixin, query_callable, regions
-
 Base = declarative_base()
 
 # This will hold various things related to my appropriation parsing
