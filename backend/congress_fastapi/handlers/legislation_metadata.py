@@ -136,7 +136,7 @@ async def get_legislation_metadata_by_legislation_id(
     votes_query = (
         select(*LegislationVoteMetadata.sqlalchemy_columns())
         .where(LegislationVote.legislation_id == legislation_id)
-        .order_by(LegislationVote.date.desc())
+        .order_by(LegislationVote.datetime.desc())
     )
 
     votes_results = (await database.fetch_all(votes_query))
@@ -146,7 +146,7 @@ async def get_legislation_metadata_by_legislation_id(
         try:
             vote_data = {
                 **vote,
-                'date': vote.date.strftime("%Y-%m-%d")
+                'datetime': vote.datetime.strftime("%Y-%m-%d")
             }
 
             vote_objs.append(LegislationVoteMetadata(

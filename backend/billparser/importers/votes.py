@@ -94,6 +94,7 @@ def download_house_rollcall(session, formatted, congress):
                 by_legislator = {}
 
                 vote_date = root.xpath("//action-date/text()")[0]
+                vote_time = root.xpath("//action-time/text()")[0]
                 vote_question = root.xpath("//vote-question/text()")[0]
                 vote_type = root.xpath("//vote-type/text()")[0]
                 vote_result = root.xpath("//vote-result/text()")[0]
@@ -114,7 +115,7 @@ def download_house_rollcall(session, formatted, congress):
                     logging.info(f"Skipping rollcall {formatted['h_index']} due to missing legislation_number")
                     continue
 
-                if vote_type != "YEA-AND-NAY":
+                if "YEA-AND-NAY" not in vote_type:
                     logging.info(f"Skipping rollcall {formatted['h_index']} due to unsupported vote_type {vote_type}")
                     continue
 
@@ -160,7 +161,7 @@ def download_house_rollcall(session, formatted, congress):
 
                     legislation_vote_data = {
                         'number': formatted['h_index'],
-                        'date': datetime.strptime(vote_date, "%d-%b-%Y"),
+                        'datetime': datetime.strptime(f"{vote_date} {vote_time}", "%d-%b-%Y %I:%M %p"),
                         'legislation_id': legislation.legislation_id,
                         'question': vote_question,
                         'independent': json.dumps(by_party['Independent']),
@@ -298,7 +299,7 @@ def download_senate_rollcall(session, formatted, congress):
 
                     legislation_vote_data = {
                         'number': formatted['s_index'],
-                        'date': datetime.strptime(vote_date, "%B %d, %Y, %I:%M %p").date(),
+                        'datetime': datetime.strptime(vote_date, "%B %d, %Y, %I:%M %p"),
                         'legislation_id': legislation.legislation_id,
                         'question': vote_question,
                         'independent': json.dumps(by_party['I']),

@@ -16,7 +16,7 @@ function BillVotes(props) {
                             compact={true}
                             title={vote.question}
                             subtitle={vote.date}
-                            icon="heat-grid"
+                            icon={vote.passed ? "endorsed" : "error"}
                             collapsible={true}
                             collapseProps={{
                                 defaultIsOpen: false

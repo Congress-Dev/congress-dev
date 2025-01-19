@@ -154,7 +154,7 @@ class LegislationVote(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     number = Column(Integer, index=True, nullable=False)
-    date = Column(Date)
+    datetime = Column(DateTime)
 
     chamber = Column(Enum(LegislationChamber))
     congress_id = Column(

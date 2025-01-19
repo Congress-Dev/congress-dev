@@ -70,7 +70,7 @@ class LegislationVersionMetadata(MappableBase):
 
 
 class LegislationVoteMetadata(MappableBase):
-    date: Annotated[str, LegislationVote.date]
+    datetime: Annotated[str, LegislationVote.datetime]
     question: Annotated[str, LegislationVote.question]
     total: Annotated[dict, LegislationVote.total] = {}
     republican: Annotated[dict, LegislationVote.republican] = {}
