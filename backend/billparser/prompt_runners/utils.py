@@ -1,5 +1,5 @@
 from collections import defaultdict
-from datetime import time
+import time
 import logging
 from typing import Dict, List, Optional, Tuple
 from billparser.db.models import LegislationContent, Prompt, PromptBatch
