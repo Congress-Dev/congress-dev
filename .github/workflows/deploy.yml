@@ -1,0 +1,10 @@
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Pull
+        run: cd /home/mustyoshi/Github/congress-dev && git pull
+      - name: Build containers
+        run: cd /home/mustyoshi/Github/congress-dev && docker-compose -f docker-compose.prod.yml up --build
+      - name: Deploy
+        run: cd /home/mustyoshi/Github/congress-dev && bash start_prod.sh
