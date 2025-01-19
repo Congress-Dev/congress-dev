@@ -15,7 +15,7 @@ function BillVotes(props) {
                             className="vote-result"
                             compact={true}
                             title={vote.question}
-                            subtitle={vote.date}
+                            subtitle={vote.datetime}
                             icon={vote.passed ? "endorsed" : "error"}
                             collapsible={true}
                             collapseProps={{
