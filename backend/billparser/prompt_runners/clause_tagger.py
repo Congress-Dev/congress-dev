@@ -1,3 +1,4 @@
+import logging
 from typing import List
 from billparser.db.models import (
     LegislationContentTag,
@@ -5,6 +6,7 @@ from billparser.db.models import (
 )
 from billparser.db.handler import Session
 import json
+from billparser.utils.logger import LogContext
 import jsonschema
 from collections import defaultdict
 
@@ -41,66 +43,70 @@ def normalize_tags(tags: List[str]) -> List[str]:
     )
 
 def clause_tagger(legis_version_id: int, prompt_id: int):
-    session = Session()
-    existing_prompt_batch, prompt, legis_content = get_existing_batch_or_content(
-        legis_version_id, prompt_id, session
-    )
-    if existing_prompt_batch:
-        return
-    legis_by_parent, legis_by_id = get_legis_by_parent_and_id(legis_content)
+    with LogContext({"legislation_version": {"legislation_version_id": legis_version_id}}):
+        session = Session()
+        existing_prompt_batch, prompt, legis_content = get_existing_batch_or_content(
+            legis_version_id, prompt_id, session
+        )
+        if existing_prompt_batch:
+            return
+        legis_by_parent, legis_by_id = get_legis_by_parent_and_id(legis_content)
 
-    prompt_text = prompt.prompt
-    prompt_batch = PromptBatch(
-        prompt_id=prompt_id,
-        legislation_version_id=legis_version_id,
-        attempted=0,
-        successful=0,
-        failed=0,
-        skipped=0,
-        created_at=datetime.now(),
-    )
-    session.add(prompt_batch)
-    session.commit()
-    full_tags = set()
-    legis_body = None
-    for lc in legis_content:
-        if lc.content_type == "legis-body":
-            legis_body = lc
-            continue
-        if lc.content_str and "amended" in lc.content_str:
-            prompt_batch.attempted += 1
-            try:
-                clause = print_clause(
-                    legis_by_id, legis_by_parent, lc.legislation_content_id
-                )
-                query = prompt_text.format(clause=clause)
-                response = run_query(query)
-                resp_dict = json.loads(response.choices[0].message.content)
-                jsonschema.validate(resp_dict, SCHEMA)
-                tags = normalize_tags(resp_dict["tags"])
-                full_tags = full_tags.update(tags)
-                tag_obj = LegislationContentTag(
-                    prompt_batch_id=prompt_batch.prompt_batch_id,
-                    legislation_content_id=lc.legislation_content_id,
-                    tags=tags,
-                )
-                session.add(tag_obj)
-                print(f"Tagged {lc.legislation_content_id} with {tags}")
-                prompt_batch.successful += 1
-            except Exception as e:
-                prompt_batch.failed += 1
-                print(e)
+        prompt_text = prompt.prompt
+        prompt_batch = PromptBatch(
+            prompt_id=prompt_id,
+            legislation_version_id=legis_version_id,
+            attempted=0,
+            successful=0,
+            failed=0,
+            skipped=0,
+            created_at=datetime.now(),
+        )
+        session.add(prompt_batch)
+        session.commit()
+        full_tags = set()
+        legis_body = None
+        for lc in legis_content:
+            if lc.content_type == "legis-body":
+                legis_body = lc
                 continue
+            if lc.content_str and "amended" in lc.content_str:
+                prompt_batch.attempted += 1
+                try:
+                    clause = print_clause(
+                        legis_by_id, legis_by_parent, lc.legislation_content_id
+                    )
+                    query = prompt_text.format(clause=clause)
+                    response = run_query(query)
+                    resp_dict = json.loads(response.choices[0].message.content)
+                    jsonschema.validate(resp_dict, SCHEMA)
+                    tags = normalize_tags(resp_dict["tags"])
+                    full_tags = full_tags.update(tags)
+                    tag_obj = LegislationContentTag(
+                        prompt_batch_id=prompt_batch.prompt_batch_id,
+                        legislation_content_id=lc.legislation_content_id,
+                        tags=tags,
+                    )
+                    session.add(tag_obj)
+                    print(f"Tagged {lc.legislation_content_id} with {tags}")
+                    prompt_batch.successful += 1
+                except Exception as e:
+                    prompt_batch.failed += 1
+                    logging.exception("Failed to tag clause")
+                    continue
+            else:
+                prompt_batch.skipped += 1
+        # Create the full set of tags for the legis body
+        if full_tags:
+            tag_obj = LegislationContentTag(
+                prompt_batch_id=prompt_batch.prompt_batch_id,
+                legislation_content_id=legis_body.legislation_content_id,
+                tags=list(full_tags),
+            )
+            session.add(tag_obj)
         else:
-            prompt_batch.skipped += 1
-    # Create the full set of tags for the legis body
-    tag_obj = LegislationContentTag(
-        prompt_batch_id=prompt_batch.prompt_batch_id,
-        legislation_content_id=legis_body.legislation_content_id,
-        tags=list(full_tags),
-    )
-    session.add(tag_obj)
-    prompt_batch.completed_at = datetime.now()
-    # Store the prompt batch
-    session.add(prompt_batch)
-    session.commit()
+            logging.warning("No tags found for the legislation body")
+        prompt_batch.completed_at = datetime.now()
+        # Store the prompt batch
+        session.add(prompt_batch)
+        session.commit()
