@@ -52,21 +52,6 @@ def get_latest_senate_rollcall(session) -> int:
     else:
         return legislation_vote.number
 
-def get_legislator_lookup() -> int:
-    member_lis_lookup = {}
-
-    r = requests.get("https://theunitedstates.io/congress-legislators/legislators-current.json")
-    for legislator in r.json():
-        if legislator['id'].get('lis') is not None:
-            member_lis_lookup[legislator['id'].get('lis')] = legislator['id'].get('bioguide')
-
-    r = requests.get("https://theunitedstates.io/congress-legislators/legislators-historical.json")
-    for legislator in r.json():
-        if legislator['id'].get('lis') is not None:
-            member_lis_lookup[legislator['id'].get('lis')] = legislator['id'].get('bioguide')
-
-    return member_lis_lookup
-
 def download_house_rollcall(session, formatted, congress):
     HOUSE_ROLL_TEMPLATE = "https://clerk.house.gov/evs/{year}/roll{h_index:03}.xml" # Index 3 digits
 
@@ -282,7 +267,7 @@ def download_senate_rollcall(session, formatted, congress):
                         party = vote.xpath('./party/text()')[0]
                         vote = LegislatorVoteType.from_string(vote.xpath('./vote_cast/text()')[0])
 
-                        by_legislator[LEGIS_LOOKUP[legislator]] = { 'vote': vote }
+                        by_legislator[legislator] = { 'vote': vote }
                         by_party[party][vote.value] = by_party[party][vote.value] + 1
 
                 if by_total and by_party and by_legislator:
@@ -321,19 +306,19 @@ def download_senate_rollcall(session, formatted, congress):
                         continue
 
                     legislator_votes = []
-                    for bioguide_id, vote_info in by_legislator.items():
+                    for lis_id, vote_info in by_legislator.items():
                         legislator = (session
                             .query(Legislator)
-                            .filter(Legislator.bioguide_id == bioguide_id)
+                            .filter(Legislator.lis_id == lis_id)
                             .first())
 
                         if legislator is None:
-                            logging.info(f"Missing legislator information for {bioguide_id}")
+                            logging.info(f"Missing legislator information for {lis_id}")
                             continue
 
                         legislator_vote_data = {
                             'legislation_vote_id': legislation_vote.id,
-                            'legislator_bioguide_id': bioguide_id,
+                            'legislator_bioguide_id': legislator.bioguide_id,
                             **vote_info
                         }
 
