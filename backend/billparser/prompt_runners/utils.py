@@ -1,4 +1,6 @@
 from collections import defaultdict
+from datetime import time
+import logging
 from typing import Dict, List, Optional, Tuple
 from billparser.db.models import LegislationContent, Prompt, PromptBatch
 from litellm import completion
@@ -9,6 +11,7 @@ litellm._logging._disable_debugging()
 
 
 def run_query(query: str, model: str = "ollama/qwen2.5:32b") -> dict:
+    start_time = time.time()
     response = completion(
         model=model,
         messages=[{"role": "user", "content": query}],
@@ -16,6 +19,19 @@ def run_query(query: str, model: str = "ollama/qwen2.5:32b") -> dict:
         format="json",
         timeout=60,
         max_tokens=10000,
+    )
+    end_time = time.time()
+    logging.info(
+        "Model response",
+        extra={
+            "model": {
+                "response_time": end_time - start_time,
+                "name": model,
+                "input_tokens": response.usage.prompt_tokens,
+                "output_tokens": response.usage.completion_tokens,
+                "total_tokens": response.usage.total_tokens,
+            }
+        },
     )
     return response
 
