@@ -3,6 +3,7 @@ import requests
 import base64
 from datetime import datetime, timedelta
 import hashlib
+from typing import List
 
 from sqlalchemy import select, update, join, delete, func, literal
 from sqlalchemy.dialects.postgresql import insert
@@ -438,5 +439,5 @@ async def handle_get_usc_tracking_results(user_id: str, folder_id: int):
         {**dict(r), "sponsor": sponsors_by_id.get(r["legislation_id"], None)}
         for r in results
     ]
-    
+
     return {"legislation": legislation}

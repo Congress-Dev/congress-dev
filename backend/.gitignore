@@ -5,6 +5,7 @@
 
 *.code-workspace
 bills/
+notebooks/
 usc/
 .vscode/
 *.ipynb

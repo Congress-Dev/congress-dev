@@ -7,6 +7,7 @@ import {
     BillDiffSidebar,
     BillTableOfContents,
     BillVersionsBreadcrumb,
+    BillVotes,
     AppropriationTree,
     LegislatorChip,
 } from "components";
@@ -15,6 +16,8 @@ function BillViewSidebar() {
     const [selectedTab, setSelectedTab] = useState("toc");
 
     const { billSummary, bill, bill2 } = useContext(BillContext);
+
+    console.log(bill2);
 
     return (
         <>
@@ -68,6 +71,10 @@ function BillViewSidebar() {
                     title="Spending"
                     panel={<AppropriationTree />}
                 />
+
+                {bill2?.votes?.length > 0 && (
+                    <Tab id="votes" title="Votes" panel={<BillVotes />} />
+                )}
             </Tabs>
         </>
     );

@@ -19,8 +19,6 @@ from sqlalchemy.orm import relationship
 import sqlalchemy as sa
 from sqlalchemy.schema import Index
 
-from billparser.db.caching import CacheableMixin, query_callable, regions
-
 Base = declarative_base()
 
 # This will hold various things related to my appropriation parsing
@@ -32,6 +30,29 @@ class CastingArray(ARRAY):
     def bind_expression(self, bindvalue):
         return sa.cast(bindvalue, self)
 
+
+class LegislatorVoteType(str, enum.Enum):
+    yay = "yay"
+    nay = "nay"
+    present = "present"
+    abstain = "abstain"
+
+    @classmethod
+    def from_string(cls, string: str) -> "LegislationChamber":
+        if string.lower() == 'yea':
+            return cls.yay
+        elif string.lower() == 'aye':
+            return cls.yay
+        elif string.lower() == 'nay':
+            return cls.nay
+        elif string.lower() == 'no':
+            return cls.nay
+        elif string.lower() == 'present':
+            return cls.present
+        elif string.lower() == 'not voting':
+            return cls.abstain
+        else:
+            raise ValueError(f"Invalid LegislatorVoteType: {string}")
 
 class LegislationType(str, enum.Enum):
     Bill = "Bill"
@@ -124,6 +145,47 @@ class LegislationVersionEnum(str, enum.Enum):
             return cls.ENR
         else:
             raise ValueError(f"Invalid version: {string}")
+
+
+class LegislationVote(Base):
+    __tablename__ = "legislation_vote"
+
+    id = Column(Integer, primary_key=True, index=True)
+    number = Column(Integer, index=True, nullable=False)
+    datetime = Column(DateTime)
+
+    chamber = Column(Enum(LegislationChamber))
+    congress_id = Column(
+        Integer, ForeignKey("congress.congress_id", ondelete="CASCADE"), index=True
+    )
+
+    legislation_id = Column(
+        Integer, ForeignKey("legislation.legislation_id", ondelete="CASCADE"), index=True
+    )
+
+    question = Column(String, index=True)
+    independent = Column(JSONB)
+    republican = Column(JSONB)
+    democrat = Column(JSONB)
+    total = Column(JSONB)
+
+    passed = Column(Boolean)
+
+
+class LegislatorVote(Base):
+    __tablename__ = "legislator_vote"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    legislation_vote_id = Column(
+        Integer, ForeignKey("legislation_vote.id", ondelete="CASCADE"), index=True
+    )
+
+    legislator_bioguide_id = Column(
+        String, ForeignKey("legislator.bioguide_id", ondelete="CASCADE"), index=True
+    )
+
+    vote = Column(Enum(LegislatorVoteType))
 
 
 class User(Base):
@@ -857,6 +919,8 @@ class Legislator(Base):
     bioguide_id = Column(
         String, index=True, unique=True
     )  # https://bioguideretro.congress.gov/
+
+    lis_id = Column(String, index=True, nullable=True)
 
     first_name = Column(String)
     middle_name = Column(String)

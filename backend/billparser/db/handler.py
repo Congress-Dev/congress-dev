@@ -10,7 +10,6 @@ from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.pool import NullPool
 
 from billparser.utils.citation import resolve_citations
-from billparser.db.caching import query_callable, regions
 from billparser.db.models import USCSection
 from billparser.db.models import *
 
@@ -27,7 +26,7 @@ engine = create_engine(
 Base.metadata.create_all(engine)
 
 ribber = string.ascii_letters + string.digits
-Session = scoped_session(sessionmaker(bind=engine, query_cls=query_callable(regions)))
+Session = scoped_session(sessionmaker(bind=engine))
 
 
 def init_session():

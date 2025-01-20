@@ -33,24 +33,30 @@ function LearnAmendments({ navigation }) {
                     forward to the full chamber for consideration.
                 </p>
                 <p>
-                    - <b>House of Representatives:</b> In the House, committees
-                    have the power to mark up bills, meaning they can amend the
-                    text of the bill before it is reported out to the full
-                    House. The House Rules Committee plays a central role in
-                    determining how a bill will be debated, including how
-                    amendments can be introduced during the debate. Amendments
-                    made in committee are often more technical or focused on
-                    specific issues, but they can also be more substantial,
-                    altering the bill’s content or intent.
-                </p>
-                <p>
-                    - <b>Senate:</b> In the Senate, the process of amending a
-                    bill during committee review is similar to the House, but
-                    Senate committees often allow for more debate on proposed
-                    changes. Senators may offer amendments to the bill during
-                    committee meetings, and the committee decides whether to
-                    adopt those amendments before sending the bill to the full
-                    Senate.
+                    <ul>
+                        <li>
+                            <b>House of Representatives:</b> In the House,
+                            committees have the power to mark up bills, meaning
+                            they can amend the text of the bill before it is
+                            reported out to the full House. The House Rules
+                            Committee plays a central role in determining how a
+                            bill will be debated, including how amendments can
+                            be introduced during the debate. Amendments made in
+                            committee are often more technical or focused on
+                            specific issues, but they can also be more
+                            substantial, altering the bill’s content or intent.
+                        </li>
+                        <li>
+                            <b>Senate:</b> In the Senate, the process of
+                            amending a bill during committee review is similar
+                            to the House, but Senate committees often allow for
+                            more debate on proposed changes. Senators may offer
+                            amendments to the bill during committee meetings,
+                            and the committee decides whether to adopt those
+                            amendments before sending the bill to the full
+                            Senate.
+                        </li>
+                    </ul>
                 </p>
 
                 <h2>2. Amendments on the Floor</h2>
@@ -63,23 +69,29 @@ function LearnAmendments({ navigation }) {
                     correcting errors or clarifying language.
                 </p>
                 <p>
-                    - <b>House of Representatives:</b> The House has stricter
-                    rules for introducing amendments on the floor. The Rules
-                    Committee sets the terms for debate, including how many
-                    amendments can be offered and whether they will be debated
-                    individually or as a group. In some cases, the House may
-                    consider a "closed rule," which limits the number of
-                    amendments that can be offered, or an "open rule," which
-                    allows more flexibility in amending the bill during debate.
-                </p>
-                <p>
-                    - <b>Senate:</b> In the Senate, the process for amending
-                    bills on the floor is more flexible. Senators can propose
-                    amendments directly during the debate, and those amendments
-                    are typically debated individually. The Senate’s tradition
-                    of extended debate means that amendments can be discussed in
-                    detail, allowing Senators to offer substantial changes to
-                    the bill’s text.
+                    <ul>
+                        <li>
+                            <b>House of Representatives:</b> The House has
+                            stricter rules for introducing amendments on the
+                            floor. The Rules Committee sets the terms for
+                            debate, including how many amendments can be offered
+                            and whether they will be debated individually or as
+                            a group. In some cases, the House may consider a
+                            "closed rule," which limits the number of amendments
+                            that can be offered, or an "open rule," which allows
+                            more flexibility in amending the bill during debate.
+                        </li>
+                        <li>
+                            <b>Senate:</b> In the Senate, the process for
+                            amending bills on the floor is more flexible.
+                            Senators can propose amendments directly during the
+                            debate, and those amendments are typically debated
+                            individually. The Senate’s tradition of extended
+                            debate means that amendments can be discussed in
+                            detail, allowing Senators to offer substantial
+                            changes to the bill’s text.
+                        </li>
+                    </ul>
                 </p>
 
                 <h2>3. The Importance of Amendments in Shaping Legislation</h2>
@@ -106,25 +118,32 @@ function LearnAmendments({ navigation }) {
                     President for final approval.
                 </p>
                 <p>
-                    - <b>Conference Committee:</b> When the House and Senate
-                    pass different versions of a bill, a conference committee is
-                    often formed to reconcile the differences. The committee is
-                    made up of members from both the House and Senate, and its
-                    job is to negotiate a compromise between the two versions of
-                    the bill. The conference committee produces a final version
-                    of the bill, known as the "conference report," which is then
-                    sent back to both chambers for approval.
-                </p>
-                <p>
-                    - <b>Consideration of the Conference Report:</b> Once the
-                    conference committee agrees on a compromise, the conference
-                    report is presented to both the House and Senate for a vote.
-                    The members of each chamber vote on whether to accept or
-                    reject the report. If both chambers approve the conference
-                    report, the bill moves to the President for final approval.
-                    If either chamber rejects the report, the bill may be sent
-                    back to the conference committee for further negotiation or
-                    die altogether.
+                    <ul>
+                        <li>
+                            <b>Conference Committee:</b> When the House and
+                            Senate pass different versions of a bill, a
+                            conference committee is often formed to reconcile
+                            the differences. The committee is made up of members
+                            from both the House and Senate, and its job is to
+                            negotiate a compromise between the two versions of
+                            the bill. The conference committee produces a final
+                            version of the bill, known as the "conference
+                            report," which is then sent back to both chambers
+                            for approval.
+                        </li>
+                        <li>
+                            <b>Consideration of the Conference Report:</b> Once
+                            the conference committee agrees on a compromise, the
+                            conference report is presented to both the House and
+                            Senate for a vote. The members of each chamber vote
+                            on whether to accept or reject the report. If both
+                            chambers approve the conference report, the bill
+                            moves to the President for final approval. If either
+                            chamber rejects the report, the bill may be sent
+                            back to the conference committee for further
+                            negotiation or die altogether.
+                        </li>
+                    </ul>
                 </p>
 
                 <h2>5. The Role of Amendments in the Reconciliation Process</h2>

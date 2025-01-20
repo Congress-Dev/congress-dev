@@ -1,5 +1,3 @@
-from lxml import etree
-import lxml
 import logging
 import requests
 from typing import List, Dict

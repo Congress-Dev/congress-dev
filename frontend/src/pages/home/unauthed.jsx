@@ -41,8 +41,8 @@ function UnauthedHome() {
                             <li>
                                 <b>Understand the Proces</b>
                                 <br />
-                                Learn how laws are made and track their
-                                progress through Congress.
+                                Learn how laws are made and track their progress
+                                through Congress.
                             </li>
                         </ul>
                     </Section>

@@ -168,11 +168,11 @@ class BioGuideMember(BaseModel):
     birthCirca: Optional[bool] = None
     deathDate: Optional[str] = None
     deathCirca: Optional[bool] = None
-    profileText: str
-    relationship: List[RelationshipItem]
-    jobPositions: List[JobPosition]
-    creativeWork: List[CreativeWorkItem]
-    researchRecord: List[ResearchRecordItem]
+    profileText: Optional[str] = None
+    relationship: Optional[List[RelationshipItem]] = []
+    jobPositions: Optional[List[JobPosition]] = []
+    creativeWork: Optional[List[CreativeWorkItem]] = []
+    researchRecord: Optional[List[ResearchRecordItem]] = []
     nickName: Optional[str] = None
     image: Optional[List[ImageItem]] = None
     middleName: Optional[str] = None

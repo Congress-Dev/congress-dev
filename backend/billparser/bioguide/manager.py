@@ -4,6 +4,7 @@ import logging
 import zipfile
 import json
 import io
+import json
 
 from billparser.db.handler import Session
 from billparser.db.models import Legislator
@@ -13,14 +14,17 @@ BULK_BIOGUIDE_URL = "https://bioguide.congress.gov/bioguide/data/BioguideProfile
 CURRENT_LEGIS_URL = (
     "https://theunitedstates.io/congress-legislators/legislators-current.json"
 )
-
+HISTORICAL_LEGIS_URL = (
+    "https://theunitedstates.io/congress-legislators/legislators-historical.json"
+)
 
 class BioGuideImporter:
     def __init__(
-        self, bulk_bioguide_url=BULK_BIOGUIDE_URL, current_legis_url=CURRENT_LEGIS_URL
+        self, bulk_bioguide_url=BULK_BIOGUIDE_URL, current_legis_url=CURRENT_LEGIS_URL, historical_legis_url=HISTORICAL_LEGIS_URL
     ):
         self.bulk_bioguide_url = bulk_bioguide_url
         self.current_legis_url = current_legis_url
+        self.historical_legis_url = historical_legis_url
         self.session = Session()
 
     def _download_zip(self) -> zipfile.ZipFile:
@@ -49,10 +53,33 @@ class BioGuideImporter:
                     else:
                         legis = BioGuideMember(**jdata.get('data'))
                     items.append(legis)
+
+        with open('bioguide.json', 'r') as jdata:
+            for item in json.load(jdata):
+                item['usCongressBioId'] = item['id']
+                items.append(BioGuideMember(**item))
+
         return items
+
+    def run_metadata(self):
+        member_lis_lookup = {}
+
+        r = requests.get(self.current_legis_url)
+        for legislator in r.json():
+            if legislator['id'].get('lis') is not None:
+                member_lis_lookup[legislator['id'].get('bioguide')] = legislator['id'].get('lis')
+
+        r = requests.get(self.historical_legis_url)
+        for legislator in r.json():
+            if legislator['id'].get('lis') is not None:
+                member_lis_lookup[legislator['id'].get('bioguide')] = legislator['id'].get('lis')
+
+        return member_lis_lookup
 
     def download_to_database(self) -> None:
         legislators = self.run_import()
+        lis_lookup = self.run_metadata()
+
         db_items = []
         with self.session.begin():
             for legislator in legislators:
@@ -77,17 +104,28 @@ class BioGuideImporter:
                     image_url = None
                     image_source = None
 
-                record_data = {
-                    'bioguide_id': legislator.usCongressBioId,
-                    'first_name': legislator.nickName or legislator.unaccentedGivenName or legislator.givenName,
-                    'last_name': legislator.unaccentedFamilyName or legislator.familyName,
-                    'middle_name': legislator.unaccentedMiddleName or legislator.middleName,
-                    'party': party,
-                    'state': state,
-                    'image_url': image_url,
-                    'image_source': image_source,
-                    'profile': legislator.profileText
-                }
+                record_data = {}
+
+                if lis_lookup.get(legislator.usCongressBioId, None):
+                    record_data['lis_id'] = lis_lookup.get(legislator.usCongressBioId, None)
+                if legislator.usCongressBioId:
+                    record_data['bioguide_id'] = legislator.usCongressBioId
+                if legislator.nickName or legislator.unaccentedGivenName or legislator.givenName:
+                    record_data['first_name'] = legislator.nickName or legislator.unaccentedGivenName or legislator.givenName
+                if legislator.unaccentedFamilyName or legislator.familyName:
+                    record_data['last_name'] = legislator.unaccentedFamilyName or legislator.familyName
+                if legislator.unaccentedMiddleName or legislator.middleName:
+                    record_data['middle_name'] = legislator.unaccentedMiddleName or legislator.middleName
+                if party:
+                    record_data['party'] = party
+                if state:
+                    record_data['state'] = state
+                if image_url:
+                    record_data['image_url'] = image_url
+                if image_source:
+                    record_data['image_source'] = image_source
+                if legislator.profileText:
+                    record_data['profile'] = legislator.profileText
 
                 existing_record = self.session.query(Legislator).filter(Legislator.bioguide_id == legislator.usCongressBioId).first()
                 if existing_record is None:

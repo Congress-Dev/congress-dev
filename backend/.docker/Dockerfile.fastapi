@@ -4,9 +4,7 @@ RUN apt update
 RUN apt install wget build-essential -y
 
 COPY requirements-fastapi.txt .
-COPY requirements-billparser.txt .
 RUN pip3 install -r requirements-fastapi.txt
-RUN pip3 install -r requirements-billparser.txt
 
 COPY . /usr/src/app
 WORKDIR /usr/src/app
