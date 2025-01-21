@@ -6,10 +6,13 @@ import json
 import logging
 import re
 import time
+import os
 
 from billparser.db.handler import Session
 from billparser.db.models import LegislationVote, LegislatorVote, LegislatorVoteType, Legislation, LegislationChamber, Legislator, Congress
 from billparser.bioguide.manager import BioGuideImporter
+
+webhook_url = os.environ.get("DISCORD_WEBHOOK", None)
 
 def calculate_congress_from_year() -> int:
     current_year = datetime.now().year
@@ -204,7 +207,6 @@ def download_house_rollcall(session, formatted, congress):
 
 def download_senate_rollcall(session, formatted, congress):
     SENATE_ROLL_TEMPLATE = "https://www.senate.gov/legislative/LIS/roll_call_votes/vote{congress}{session}/vote_{congress}_{session}_{s_index:05}.xml" #Index 5 digits
-    LEGIS_LOOKUP = get_legislator_lookup()
 
     rec = []
 

@@ -9,6 +9,8 @@ import argparse
 from datetime import datetime
 from billparser.run_through import parse_archives, ensure_congress
 
+webhook_url = os.environ.get("DISCORD_WEBHOOK", None)
+
 parser = argparse.ArgumentParser(description="Reprocess")
 parser.add_argument("--bill", type=str, help="Which bill you want to reprocess")
 
