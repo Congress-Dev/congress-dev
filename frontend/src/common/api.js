@@ -311,14 +311,21 @@ export const getUSCSectionLineage = (
         .catch(toastError);
 };
 
+export const getUSCChapterContent = (
+    uscReleaseId,
+    shortTitle
+) => {
+    return fetch(`${endpoint}/usc/${uscReleaseId}/${shortTitle}/text`)
+        .then(handleStatus)
+        .catch(toastError);
+}
+
 export const getUSCSectionContent = (
     uscReleaseId,
     shortTitle,
     sectionNumber,
 ) => {
-    return fetch(
-        `${endpoint}/usc/${uscReleaseId}/${shortTitle}/${sectionNumber}/text`,
-    )
+    return fetch(`${endpoint}/usc/${uscReleaseId}/${shortTitle}/${sectionNumber}/text`)
         .then(handleStatus)
         .then((flatJson) => {
             if (flatJson) {

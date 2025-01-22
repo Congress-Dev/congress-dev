@@ -824,6 +824,36 @@ paths:
       tags:
       - uscode
       x-openapi-router-controller: congress_api.controllers.uscode_controller
+  /usc/{release_vers}/{short_title}/text:
+    get:
+      description: Get the text for a specific short title
+      operationId: get_usc_release_bulk_text
+      parameters:
+      - explode: false
+        in: path
+        name: release_vers
+        required: true
+        schema:
+          type: string
+        style: simple
+      - explode: false
+        in: path
+        name: short_title
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/USCSectionContentList'
+          description: OK
+      summary: USCode section text
+      tags:
+      - uscode
+      x-openapi-router-controller: congress_api.controllers.uscode_controller      
   /usc/{release_vers}/{short_title}/{section_number}/text:
     get:
       description: Get the text for a specific section

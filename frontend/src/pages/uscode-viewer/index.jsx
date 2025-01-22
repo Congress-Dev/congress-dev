@@ -1,11 +1,23 @@
 // Will hold a sidebar, and a main viewing area
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import { Section, SectionCard, Callout } from "@blueprintjs/core";
 
 import { USCSidebar, USCView } from "components";
 
 function USCodeViewer(props) {
     const { uscReleaseId, uscTitle, uscSection } = props.match.params;
+    const elementRef = useRef();
+
+    useEffect(() => {
+        const element = elementRef.current;
+        if (element) {
+            const yPosition = element.getBoundingClientRect().top + 35;
+            document.documentElement.style.setProperty(
+                "--usc-content-y-position",
+                `${yPosition}px`,
+            );
+        }
+    }, []);
 
     return (
         <Section
@@ -27,15 +39,23 @@ function USCodeViewer(props) {
                         section={uscSection}
                     />
                 </div>
-                <div className="content">
+                <Section
+                    compact={true}
+                    className="content"
+                    title={uscTitle}
+                    subtitle={uscSection}
+                    icon="drag-handle-vertical"
+                >
                     <Callout>
-                        <USCView
-                            release={uscReleaseId}
-                            section={uscSection}
-                            title={uscTitle}
-                        />
+                        <div className="usc-content" ref={elementRef}>
+                            <USCView
+                                release={uscReleaseId}
+                                section={uscSection}
+                                title={uscTitle}
+                            />
+                        </div>
                     </Callout>
-                </div>
+                </Section>
             </SectionCard>
         </Section>
     );

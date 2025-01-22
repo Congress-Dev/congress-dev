@@ -57,6 +57,18 @@ def _get_sect_obj(chapter_id: int, section_number: str) -> USCSection:
         return sect[0]
     return None
 
+@cached(TTLCache(CACHE_SIZE, CACHE_TIME))
+def _get_sects(chapter_id: int) -> USCSection:
+    sect = (
+        current_session.query(USCSection)
+        .filter(USCSection.usc_chapter_id == chapter_id)
+        .all()
+    )
+    if len(sect) > 0:
+        return sect
+    return None
+
+
 
 @cached(TTLCache(CACHE_SIZE, CACHE_TIME))
 def get_available_releases() -> ReleasePointList:
@@ -133,6 +145,61 @@ def get_title_sections(release_vers: str, short_title: str) -> USCSectionList:
         )
     return USCSectionList(usc_chapter_id=title_obj.usc_chapter_id, sections=sect_list)
 
+@cached(TTLCache(CACHE_SIZE, CACHE_TIME))
+def get_short_title_text(
+    release_vers: str, short_title: str
+) -> USCSectionContentList:
+    if release_vers.lower() == "latest":
+        latest_rp = _get_latest_rp()
+        if latest_rp is None:
+            return None
+        target_rp_id = latest_rp.usc_release_id
+    else:
+        target_rp_id = int(release_vers)
+
+    title_obj = _get_title_obj(target_rp_id, short_title)
+    if title_obj is None:
+        return None
+
+    sect_objs = _get_sects(title_obj.usc_chapter_id)
+    if sect_objs is None:
+        return None
+    
+    sect_ids = [x.usc_section_id for x in sect_objs]
+    sect_parents = {x.usc_section_id: x for x in sect_objs if x.parent_id is None}
+
+    content: List[USCContent] = current_session.query(USCContent).filter(
+        USCContent.usc_section_id.in_(sect_ids)
+    ).all()
+
+    content_by_sect = {}
+    for cont in content:
+        if cont.usc_section_id is not None:
+            if cont.usc_section_id not in content_by_sect:
+                content_by_sect[cont.usc_section_id] = []
+            content_by_sect[cont.usc_section_id].append(USCSectionContent(
+                usc_content_id=cont.usc_content_id,
+                usc_ident=cont.usc_ident,
+                parent_id=cont.parent_id,
+                order_number=cont.order_number,
+                section_display=cont.section_display,
+                heading=cont.heading,
+                content_str=cont.content_str,
+                content_type=cont.content_type,
+                number=cont.number,
+                usc_section_id=cont.usc_section_id,
+            ))
+
+    tree = {}
+    for sect in sect_objs:
+        if sect.parent_id is None:
+            tree[sect.usc_section_id] = {'title': f"{sect.section_display} {sect.heading}", 'children': []}
+        else:
+            tree[sect.parent_id]['children'].extend(content_by_sect[sect.usc_section_id])
+
+    return USCSectionContentList(
+        usc_section_id=None, content=tree
+    )
 
 @cached(TTLCache(CACHE_SIZE, CACHE_TIME))
 def get_section_text(

@@ -52,6 +52,11 @@ b {
     overflow-y: scroll;
 }
 
+.usc-content {
+    max-height: calc(100vh - var(--usc-content-y-position));
+    overflow-y: scroll;
+}
+
 .home-page-unauthed {
     .bp5-card {
         h3 {

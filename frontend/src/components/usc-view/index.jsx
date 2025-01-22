@@ -5,7 +5,7 @@ import { diffWords } from "diff";
 import xmldoc from "xmldoc";
 import { Spinner } from "@blueprintjs/core";
 
-import { getUSCSectionContent } from "common/api";
+import { getUSCSectionContent, getUSCChapterContent } from "common/api";
 import { md5 } from "common/other";
 
 import "styles/usc-view.scss";
@@ -14,6 +14,7 @@ function USCView({ release, title, section, diffs = {}, interactive = true }) {
     const history = useHistory();
 
     const [contentTree, setContentTree] = useState({});
+    const [chapterTree, setChapterTree] = useState({});
     const [activeHash, setActiveHash] = useState(
         history.location.hash.slice(history.location.hash.lastIndexOf("#") + 1),
     );
@@ -27,9 +28,12 @@ function USCView({ release, title, section, diffs = {}, interactive = true }) {
     }, [renderedTarget]);
 
     useEffect(() => {
-        if (section) {
+        if (section != null) {
             setContentTree({ loading: true });
             getUSCSectionContent(release, title, section).then(setContentTree);
+        } else {
+            setChapterTree({ loading: true });
+            getUSCChapterContent(release, title).then(setChapterTree);
         }
     }, [release, title, section]);
 
@@ -211,10 +215,124 @@ function USCView({ release, title, section, diffs = {}, interactive = true }) {
         );
     }
 
-    if (contentTree === undefined || contentTree?.loading) {
+    function renderChapters(tree) {
+        if (tree.content == null) {
+            return;
+        }
+
+        for (const idx in tree.content) {
+            // Create a fake root
+            let looped = {
+                [null]: {
+                    content_type: "{}section",
+                    usc_content_id: 0,
+                    usc_ident: "/",
+                    children: [],
+                },
+            };
+            const sorted = lodash.sortBy(
+                tree.content[idx].children,
+                ({ usc_content_id, order_number }) => usc_content_id,
+            );
+            if (sorted.length === 0) {
+                return {};
+            }
+            lodash.forEach(sorted, (obj) => {
+                let copyObj = { ...obj, children: [] };
+                looped[copyObj.usc_content_id] = copyObj;
+                if (copyObj.parent_id && looped[copyObj.parent_id]) {
+                    looped[copyObj.parent_id].children.push(copyObj);
+                } else {
+                    // If we can't find it, add it to the root
+                    looped[null].children.push(copyObj);
+                }
+            });
+
+            tree.content[idx] = {
+                ...tree.content[idx],
+                children: [looped[null]],
+            };
+        }
+
+        // console.log(tree.content);
+
+        function renderChildren(node) {
+            const newChildren = lodash
+                .chain(node.children || [])
+                .map(computeDiff)
+                .sortBy("order_number")
+                .value();
+            return (
+                <>
+                    {lodash.map(newChildren, (item, ind) => {
+                        const {
+                            usc_content_id,
+                            usc_ident,
+                            content_str,
+                            content_type,
+                            section_display,
+                            heading,
+                            children = [],
+                        } = item;
+
+                        return (
+                            <div
+                                key={ind}
+                                className="usc-content-section"
+                            >
+                                <span>
+                                    {heading !== undefined ? (
+                                        <b>
+                                            {section_display} {heading}
+                                        </b>
+                                    ) : (
+                                        <span
+                                            className={
+                                                "usc-content-section-display"
+                                            }
+                                        >
+                                            {section_display}{" "}
+                                        </span>
+                                    )}
+                                    <span
+                                        className={
+                                            heading !== undefined
+                                                ? "usc-content-continue"
+                                                : ""
+                                        }
+                                    >
+                                        {content_str}
+                                    </span>
+                                </span>
+                                {renderChildren({ children })}
+                            </div>
+                        );
+                    })}
+                </>
+            );
+        }
+
+        return (
+            <>
+                {Object.entries(tree.content).map((chapter) => (
+                    <div key={chapter[0]} className="usc-content-section">
+                        <b>{chapter[1].title}</b>
+                        {renderChildren(chapter[1].children[0])}
+                    </div>
+                ))}
+            </>
+        );
+    }
+
+    if (contentTree?.loading || chapterTree?.loading) {
         return <Spinner intent="primary" />;
     }
-    return <>{renderRecursive(contentTree)}</>;
+    return (
+        <>
+            {contentTree != null && renderRecursive(contentTree)}
+            {chapterTree != null && renderChapters(chapterTree)}
+        </>
+    );
 }
 
 export default USCView;

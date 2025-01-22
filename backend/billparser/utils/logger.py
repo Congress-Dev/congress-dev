@@ -26,11 +26,12 @@ class _LogExtraData:
             del self._thread_data.data[data_id]
 
     def get_all_data(self) -> Dict[str, Any]:
-        data_items = [*list(self._data.items()), *list(self._thread_data.data.items())]
-        sorted_items = sorted(data_items, key=lambda x: x[0])
         combined = {}
-        for _, v in sorted_items:
-            combined = {**combined, **v}
+        if hasattr(self._thread_data, 'data'):
+            data_items = [*list(self._data.items()), *list(self._thread_data.data.items())]
+            sorted_items = sorted(data_items, key=lambda x: x[0])
+            for _, v in sorted_items:
+                combined = {**combined, **v}
         return combined
 
 

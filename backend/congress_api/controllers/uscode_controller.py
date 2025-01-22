@@ -1,6 +1,7 @@
 from congress_api.db.uscode_queries import (
     get_available_releases,
     get_available_titles,
+    get_short_title_text, 
     get_section_text,
     get_title_sections,
     get_section_levels,
@@ -35,6 +36,17 @@ def get_usc_release_sections(release_vers, short_title) -> USCSectionList:  # no
         resp = get_title_sections(release_vers, short_title)
         if resp is None:
             return ErrorResponse(message="No titles found for that release"), 404
+        return resp
+    except Exception as e:
+        return ErrorResponse(message=str(e)), 500
+
+def get_usc_release_bulk_text(
+    release_vers, short_title
+) -> USCSectionContentList:
+    try:
+        resp = get_short_title_text(release_vers, short_title)
+        if resp is None:
+            return ErrorResponse(message="No Content Found"), 404
         return resp
     except Exception as e:
         return ErrorResponse(message=str(e)), 500
