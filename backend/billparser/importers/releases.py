@@ -14,9 +14,14 @@ THREADS = int(os.environ.get("PARSE_THREADS", -1))
 DOWNLOAD_BASE = "https://uscode.house.gov/download/{}"
 RELEASE_POINTS = "https://uscode.house.gov/download/priorreleasepoints.htm"
 
+
 def main():
     parser = argparse.ArgumentParser(description="Process release points.")
-    parser.add_argument('--release-point', type=str, help='URL of the zip file to process a single release point')
+    parser.add_argument(
+        "--release-point",
+        type=str,
+        help="URL of the zip file to process a single release point",
+    )
     args = parser.parse_args()
 
     if args.release_point:
@@ -24,20 +29,37 @@ def main():
     else:
         process_all_release_points()
 
-def process_single_release_point(url, release = None):
+
+def process_single_release_point(url, release=None):
     zip_file_path = download_path(url)
     with zipfile.ZipFile(zip_file_path) as zip_file:
+        if release is None:
+            session = Session()
+            new_version = Version(base_id=None)
+            session.add(new_version)
+            session.flush()
+            release = USCRelease(
+                short_title=zip_file_path.split("/")[-1].split(".")[0],
+                effective_date=datetime.now(),
+                long_title="",
+                version_id=new_version.version_id,
+            )
+            session.add(release)
+            session.commit()
         files = zip_file.namelist()
-        files = sorted(files, key=lambda x: get_number(x.split(".")[0].replace("usc", "")))
+        files = sorted(
+            files, key=lambda x: get_number(x.split(".")[0].replace("usc", ""))
+        )
         Parallel(n_jobs=THREADS, verbose=5, backend="loky")(
             delayed(import_title)(
                 zip_file.open(file).read(),
                 file.split(".")[0].replace("usc", ""),
                 None,  # Assuming title is not needed for single release point
-                release   # Assuming release_point.to_dict() is not needed for single release point
+                release.to_dict(),  # Assuming release_point.to_dict() is not needed for single release point
             )
             for file in files
         )
+
 
 def process_all_release_points():
     release_points = []
@@ -49,16 +71,18 @@ def process_all_release_points():
         links = tree.xpath(f'//a[contains(text(), "{search_date}")]/@href')
 
         if len(links) > 0:
-            link = links[0].replace('usc-rp', 'xml_uscAll').replace('.htm', '.zip')
+            link = links[0].replace("usc-rp", "xml_uscAll").replace(".htm", ".zip")
             zipPath = DOWNLOAD_BASE.format(link)
-            match = re.search(r'@(\d+)-(\d+)\.zip', link)
+            match = re.search(r"@(\d+)-(\d+)\.zip", link)
 
-            release_points.append({
-                "date": search_date,
-                "short_title": f"Public Law {match.group(1)}-{match.group(2)}",
-                "long_title": "",
-                "url": zipPath
-            })
+            release_points.append(
+                {
+                    "date": search_date,
+                    "short_title": f"Public Law {match.group(1)}-{match.group(2)}",
+                    "long_title": "",
+                    "url": zipPath,
+                }
+            )
 
     session = Session()
     for rp in release_points:
@@ -102,6 +126,6 @@ def process_all_release_points():
                 for file in files  # if "09" in file
             )
 
+
 if __name__ == "__main__":
     main()
-
