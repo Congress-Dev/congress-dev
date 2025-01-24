@@ -62,6 +62,7 @@ def _get_sects(chapter_id: int) -> USCSection:
     sect = (
         current_session.query(USCSection)
         .filter(USCSection.usc_chapter_id == chapter_id)
+        .order_by(USCSection.usc_section_id)
         .all()
     )
     if len(sect) > 0:
@@ -166,39 +167,99 @@ def get_short_title_text(
         return None
     
     sect_ids = [x.usc_section_id for x in sect_objs]
-    sect_parents = {x.usc_section_id: x for x in sect_objs if x.parent_id is None}
+
+    print(sect_ids)
 
     content: List[USCContent] = current_session.query(USCContent).filter(
         USCContent.usc_section_id.in_(sect_ids)
     ).all()
 
-    content_by_sect = {}
+    cont_by_section_id = {}
     for cont in content:
-        if cont.usc_section_id is not None:
-            if cont.usc_section_id not in content_by_sect:
-                content_by_sect[cont.usc_section_id] = []
-            content_by_sect[cont.usc_section_id].append(USCSectionContent(
-                usc_content_id=cont.usc_content_id,
-                usc_ident=cont.usc_ident,
-                parent_id=cont.parent_id,
-                order_number=cont.order_number,
-                section_display=cont.section_display,
-                heading=cont.heading,
-                content_str=cont.content_str,
-                content_type=cont.content_type,
-                number=cont.number,
-                usc_section_id=cont.usc_section_id,
-            ))
+        if cont.usc_section_id not in cont_by_section_id:
+            cont_by_section_id[cont.usc_section_id] = []
+        cont_by_section_id[cont.usc_section_id].append(cont)
 
-    tree = {}
-    for sect in sect_objs:
-        if sect.parent_id is None:
-            tree[sect.usc_section_id] = {'title': f"{sect.section_display} {sect.heading}", 'children': []}
-        else:
-            tree[sect.parent_id]['children'].extend(content_by_sect[sect.usc_section_id])
+    print(f"{len(content)} count content ")
+
+    try:
+        def build_content_node(record, all_records):
+            # If it's a section node, return the raw record itself
+            if record.parent_id is not None:
+                return [USCSectionContent(
+                    usc_content_id=cont.usc_content_id,
+                    usc_ident=cont.usc_ident,
+                    parent_id=cont.parent_id,
+                    order_number=cont.order_number,
+                    section_display=cont.section_display,
+                    heading=cont.heading,
+                    content_str=cont.content_str,
+                    content_type=cont.content_type,
+                    number=cont.number,
+                    usc_section_id=cont.usc_section_id,
+                ) for cont in cont_by_section_id.get(record.usc_section_id)]
+            else:
+                # If not a section, format the node with a title and children
+                children = []
+                for child in all_records:
+                    #print(f"Checking child {child.parent_id} against {record.usc_section_id}")
+                    if child.parent_id == record.usc_section_id:
+                        print(f"Child match {child.parent_id} {record.usc_section_id}")
+                        children.extend(build_content_node(child, all_records))
+                return children 
+                   
+        def build_section_node(record, all_records):
+            # If it's a section node, return the raw record itself
+            if record.parent_id is not None:
+                return {
+                    'usc_ident': record.usc_ident,
+                    'content_type': record.content_type,
+                    'section_display': record.section_display,
+                    'heading': record.heading,
+                    'children': build_content_node(record, cont_by_section_id.get(record.usc_section_id))
+                }
+
+                return [USCSectionContent(
+                    usc_content_id=cont.usc_content_id,
+                    usc_ident=cont.usc_ident,
+                    parent_id=cont.parent_id,
+                    order_number=cont.order_number,
+                    section_display=cont.section_display,
+                    heading=cont.heading,
+                    content_str=cont.content_str,
+                    content_type=cont.content_type,
+                    number=cont.number,
+                    usc_section_id=cont.usc_section_id,
+                ) for cont in ]
+            else:
+                # If not a section, format the node with a title and children
+                children = []
+                for child in all_records:
+                    #print(f"Checking child {child.parent_id} against {record.usc_section_id}")
+                    if child.parent_id == record.usc_section_id:
+                        print(f"Child match {child.parent_id} {record.usc_section_id}")
+                        children.append(build_section_node(child, all_records))
+                return children
+
+        # Start by finding the root nodes (those that don't have a parent)
+        tree = []
+        for record in sect_objs:
+            if record.parent_id is None:  # Root nodes (parent_id is None)
+                print(f"Root {record.heading}")
+                tree.append({
+                    'usc_ident': record.usc_ident,
+                    'content_type': record.content_type,
+                    'section_display': record.section_display,
+                    'heading': record.heading,
+                    'children': build_section_node(record, sect_objs)
+                })
+
+    except:
+        import traceback
+        print(traceback.format_exc())
 
     return USCSectionContentList(
-        usc_section_id=None, content=tree
+        usc_section_id=None, content={'children': tree}
     )
 
 @cached(TTLCache(CACHE_SIZE, CACHE_TIME))
