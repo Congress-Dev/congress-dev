@@ -2,6 +2,9 @@ import re
 from billparser.utils.logger import LogContext
 from billparser.actions import ActionObject, ActionType, determine_action
 from billparser.run_through import convert_to_text
+from sqlalchemy.orm import Session
+from sqlalchemy.sql import Select
+from sqlalchemy import Table
 from billparser.utils.cite_parser import (
     CiteObject,
     parse_action_for_cite,
@@ -24,9 +27,36 @@ from billparser.db.models import (
     USCChapter,
     USCContent,
     USCContentDiff,
+    Version,
 )
 
 PARSER_SESSION = None
+
+
+class QueryInjector:
+    def __init__(self, session: "Session", where_clause, target_table: Table):
+        self.session = session
+        self.where_clause = where_clause
+        self.target_table = target_table
+
+    def __enter__(self):
+        self.original_execute = self.session.execute
+        self.session.execute = self._execute_with_injection
+        return self.session
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.session.execute = self.original_execute
+
+    def _execute_with_injection(self, query, *args, **kwargs):
+        if isinstance(query, Select) and any(
+            self.target_table.name == x.name for x in query.froms
+        ):
+            query = query.where(self.where_clause)
+            compiled_query = query.compile(
+                dialect=postgresql.dialect(), compile_kwargs={"literal_binds": True}
+            )
+            # print(f"Modified query: {compiled_query}")
+        return self.original_execute(query, *args, **kwargs)
 
 
 def get_bill_contents(legislation_version_id: int) -> List[LegislationContent]:
@@ -64,7 +94,7 @@ def strike_emulation(to_strike: str, to_replace: str, target: str) -> str:
 
 
 def get_chapter_id(chapter: str) -> int:
-    query = select(USCChapter).where(USCChapter.short_title == chapter)
+    query = select(USCChapter).where(USCChapter.short_title == chapter.zfill(2))
     result = PARSER_SESSION.execute(query).first()[0]
     return result.usc_chapter_id
 
@@ -276,6 +306,9 @@ def insert_section_end(
         .limit(1)
     )
     results = session.execute(query).all()
+    if len(results) == 0:
+        logging.warning("No children found for section", extra={"usc_ident": citation})
+        return []
     last_content = results[0][0]
     return insert_section_after(
         target_section,
@@ -374,21 +407,18 @@ def apply_action(
             computed_citation = cite["cite"]
         else:
             # We need to go up the parent chain
+            computed_citation = ""
             for parent_action in parent_actions:
                 if parent_action.citations:
                     parent_cite = parent_action.citations[0]
-                    if parent_cite["complete"]:
-                        # Merge the citations
-                        computed_citation = parent_cite["cite"] + cite["cite"]
-                        break
+                    computed_citation += parent_cite["cite"]
+            computed_citation += cite["cite"]
     else:
+        computed_citation = ""
         for parent_action in parent_actions:
             if parent_action.citations:
                 parent_cite = parent_action.citations[0]
-                if parent_cite["complete"]:
-                    # Merge the citations
-                    computed_citation = parent_cite["cite"]
-                    break
+                computed_citation += parent_cite["cite"]
     if computed_citation is None:
         logging.warning("No citation found for action")
         return
@@ -438,8 +468,6 @@ def apply_action(
                             PARSER_SESSION,
                         )
                     )
-                # print(act_obj)
-                # print(computed_citation)
         except:
             logging.exception(f"Unexpected failure while parsing action {act_obj}")
     for diff in diffs:
@@ -457,7 +485,7 @@ def recursively_extract_actions(
     with LogContext(
         {
             "legislation_version": {
-                "legislation_content_id": LegislationContent.legislation_content_id
+                "legislation_content_id": content.legislation_content_id
             }
         }
     ):
@@ -507,7 +535,16 @@ def parse_bill_for_actions(legislation_version: LegislationVersion):
             }
         }
     ):
-        with PARSER_SESSION.begin():
+        # with PARSER_SESSION.begin():
+        base_version = select(Version).where(
+            Version.version_id == legislation_version.version_id
+        )
+        result = PARSER_SESSION.execute(base_version).first()[0]
+        with QueryInjector(
+            PARSER_SESSION,
+            USCContent.version_id == result.base_id,
+            USCContent.__table__,
+        ):
             # Retrieve all the content for the legislation version
             contents = get_bill_contents(legislation_version.legislation_version_id)
 
