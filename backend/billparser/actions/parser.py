@@ -5,6 +5,7 @@ from billparser.run_through import convert_to_text
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import Select
 from sqlalchemy import Table
+from sqlalchemy.dialects import postgresql
 from billparser.utils.cite_parser import (
     CiteObject,
     parse_action_for_cite,
@@ -298,6 +299,11 @@ def insert_section_end(
     # We assume our target citation is the parent section, so to insert at the end we need to find the last child
     query = select(USCContent).where(USCContent.usc_ident == citation)
     results = session.execute(query).all()
+
+    if len(results) == 0:
+        logging.debug("Could not find content", extra={"usc_ident": citation})
+        return []
+
     target_section = results[0][0]
     query = (
         select(USCContent)
@@ -375,7 +381,13 @@ def replace_section(
     diffs: List[USCContentDiff] = []
     diffs.extend(strike_section(action, citation, session))
     query = select(USCContent).where(USCContent.usc_ident == citation)
-    target_section = session.execute(query).first()[0]
+    target_section = session.execute(query).first()
+
+    if target_section is None:
+        logging.debug("Could not find target section", extra={"usc_ident": citation})
+        return []
+    target_section = target_section[0]
+
     diffs.extend(
         insert_section_after(
             target_section,
@@ -470,6 +482,8 @@ def apply_action(
                     )
         except:
             logging.exception(f"Unexpected failure while parsing action {act_obj}")
+    if len(diffs) > 0:
+        print(f"Created {len(diffs)} diffs")
     for diff in diffs:
         diff.legislation_content_id = action.legislation_content_id
         diff.version_id = version_id
