@@ -18,6 +18,9 @@ function findCommonPrefix(str1, str2) {
     while (i < minLength && str1[i] === str2[i]) {
         i++;
     }
+    if (str1[i] !== " " && i > 0 && str1[i - 1] === " ") {
+        i--;
+    }
     return i;
 }
 

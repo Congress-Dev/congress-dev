@@ -33,7 +33,6 @@ from billparser.db.models import (
 
 PARSER_SESSION = None
 
-
 class QueryInjector:
     def __init__(self, session: "Session", where_clause, target_table: Table):
         self.session = session
@@ -123,22 +122,27 @@ def strike_text(
     )
 
     if content.heading:
+
         # We're modifying the heading
         strike_result = strike_emulation(to_strike, to_replace or "", content.heading)
+
         # If they're different, store it
         if strike_result != content.heading:
             diff.heading = strike_result
 
-    elif content.content_str:
+    if content.content_str:
+
         strike_result = strike_emulation(
             to_strike, to_replace or "", content.content_str
         )
+
         # If they're different, store it
         if strike_result != content.content_str:
             diff.content_str = strike_result
 
     if diff.content_str or diff.heading:
         return [diff]
+
     return []
 
 
@@ -299,11 +303,6 @@ def insert_section_end(
     # We assume our target citation is the parent section, so to insert at the end we need to find the last child
     query = select(USCContent).where(USCContent.usc_ident == citation)
     results = session.execute(query).all()
-
-    if len(results) == 0:
-        logging.debug("Could not find content", extra={"usc_ident": citation})
-        return []
-
     target_section = results[0][0]
     query = (
         select(USCContent)
@@ -381,13 +380,7 @@ def replace_section(
     diffs: List[USCContentDiff] = []
     diffs.extend(strike_section(action, citation, session))
     query = select(USCContent).where(USCContent.usc_ident == citation)
-    target_section = session.execute(query).first()
-
-    if target_section is None:
-        logging.debug("Could not find target section", extra={"usc_ident": citation})
-        return []
-    target_section = target_section[0]
-
+    target_section = session.execute(query).first()[0]
     diffs.extend(
         insert_section_after(
             target_section,
