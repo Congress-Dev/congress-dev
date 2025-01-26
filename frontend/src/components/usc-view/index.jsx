@@ -11,6 +11,9 @@ import { md5 } from "common/other";
 import "styles/usc-view.scss";
 function findCommonPrefix(str1, str2) {
     let i = 0;
+    if (str1 === undefined || str2 === undefined) {
+        return 0;
+    }
     const minLength = Math.min(str1.length, str2.length);
     while (i < minLength && str1[i] === str2[i]) {
         i++;
@@ -20,6 +23,9 @@ function findCommonPrefix(str1, str2) {
 
 function findCommonSuffix(str1, str2) {
     let i = 0;
+    if (str1 === undefined || str2 === undefined) {
+        return 0;
+    }
     const minLength = Math.min(str1.length, str2.length);
     while (
         i < minLength &&
@@ -135,30 +141,33 @@ function USCView({ release, title, section, diffs = {}, interactive = true }) {
                     // Added text will be in green
                     newItem[key] = diffStyle([
                         {
-                            value: item[key].slice(0, diffStart),
+                            value: item[key]?.slice(0, diffStart) || "",
                             removed: false,
                             added: false,
                         },
                         {
-                            value: item[key].slice(
-                                diffStart + 1,
-                                item[key].length - diffEnd,
-                            ),
+                            value:
+                                item[key]?.slice(
+                                    diffStart + 1,
+                                    item[key].length - diffEnd,
+                                ) || "",
                             removed: true,
                             added: false,
                         },
                         {
-                            value: itemDiff[key].slice(
-                                diffStart,
-                                itemDiff[key].length - diffEnd,
-                            ),
+                            value:
+                                itemDiff[key]?.slice(
+                                    diffStart,
+                                    itemDiff[key].length - diffEnd,
+                                ) || "",
                             removed: false,
                             added: true,
                         },
                         {
-                            value: itemDiff[key].slice(
-                                itemDiff[key].length - diffEnd,
-                            ),
+                            value:
+                                itemDiff[key]?.slice(
+                                    itemDiff[key].length - diffEnd,
+                                ) || "",
                             removed: false,
                             added: false,
                         },
