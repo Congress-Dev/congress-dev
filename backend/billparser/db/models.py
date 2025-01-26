@@ -671,13 +671,14 @@ class USCSection(Base):
 
     def to_dict(self):
         boi = {
-            "section_id": self.usc_section_id,
-            "ident": self.usc_ident,
+            "usc_section_id": self.usc_section_id,
+            "usc_ident": self.usc_ident,
             "number": self.number,
-            "display": self.section_display,
+            "section_display": self.section_display,
             "heading": self.heading,
-            "chapter_id": self.usc_chapter_id,
-            "version": self.version_id,
+            "usc_chapter_id": self.usc_chapter_id,
+            "version_id": self.version_id,
+            "content_type": self.content_type,
         }
         return {k: v for (k, v) in boi.items() if v is not None}
 
@@ -715,17 +716,17 @@ class USCContent(Base):
 
     def to_dict(self):
         boi = {
-            "content_id": self.usc_content_id,
+            "usc_content_id": self.usc_content_id,
             "content_type": self.content_type,
-            "section_id": self.usc_section_id,
-            "order": self.order_number,
-            "parent": self.parent_id,
-            "ident": self.usc_ident,
+            "usc_section_id": self.usc_section_id,
+            "order_number": self.order_number,
+            "parent_id": self.parent_id,
+            "usc_ident": self.usc_ident,
             "number": self.number,
-            "display": self.section_display,
+            "section_display": self.section_display,
             "heading": self.heading,
-            "content": self.content_str,
-            "version": self.version_id,
+            "content_str": self.content_str,
+            "version_id": self.version_id,
         }
         return {k: v for (k, v) in boi.items() if v is not None}
 

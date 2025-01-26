@@ -152,8 +152,8 @@ function USCView({ release, title, section, diffs = {}, interactive = true }) {
             .map(computeDiff)
             .sortBy("order_number")
             .value();
-            
-        return (
+
+            return (
             <>
                 {lodash.map(newChildren, (item, ind) => {
                     const {

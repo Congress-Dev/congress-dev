@@ -29,7 +29,6 @@ function USCodeViewer(props) {
                 <div
                     className="sidebar"
                     style={{
-                        height: `${window.innerHeight - 70}px`,
                         overflow: "auto",
                     }}
                 >

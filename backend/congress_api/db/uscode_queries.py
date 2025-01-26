@@ -162,147 +162,68 @@ def get_short_title_text(
     if title_obj is None:
         return None
 
-    sect_objs = _get_sects(title_obj.usc_chapter_id)
-    if sect_objs is None:
+    sections = _get_sects(title_obj.usc_chapter_id)
+    if sections is None:
         return None
-    
-    sect_ids = [x.usc_section_id for x in sect_objs]
 
-    print(sect_ids)
+    section_ids = [x.usc_section_id for x in sections]
 
     content: List[USCContent] = current_session.query(USCContent).filter(
-        USCContent.usc_section_id.in_(sect_ids)
+        USCContent.usc_section_id.in_(section_ids)
     ).all()
 
-    cont_by_section_id = {}
-    for cont in content:
-        if cont.usc_section_id not in cont_by_section_id:
-            cont_by_section_id[cont.usc_section_id] = []
-        cont_by_section_id[cont.usc_section_id].append(cont)
-
-    print(f"{len(content)} count content ")
+    section_hierarchy = []
 
     try:
-        def build_section_tree(sections, content_by_sect_id, parent_id=None):
-            tree = []
-            
-            # Find all sections that have the current parent_id
-            for section in sections:
-                if section['parent_id'] == parent_id:
-                    node = {
-                        'id': section['id'],
-                        'usc_section_id': section['usc_section_id'],
-                        'heading': None,
-                        'section_display': None,
-                        'children': []
-                    }
-                    
-                    # Check for content with a null parent_id, which maps to this section
-                    if section['usc_section_id'] in content_by_sect_id:
-                        for content in content_by_sect_id[section['usc_section_id']]:
-                            if content['parent_id'] is None:  # Content that maps directly to this section
-                                node['heading'] = content.get('heading')
-                                node['section_display'] = content.get('section_display')
-                    
-                    # Recursively process children sections
-                    node['children'] = build_section_tree(sections, content_by_sect_id, section['id'])
-                    
-                    # Now look for nested content for this section
-                    content_nodes = []
-                    for content in content_by_sect_id.get(section['usc_section_id'], []):
-                        if content['parent_id'] is not None:  # This content belongs under this section
-                            content_nodes.append(content)
-                    
-                    if content_nodes:
-                        node['children'].extend(content_nodes)
-                    
-                    tree.append(node)
-            
-            return tree
+        def build_hierarchy(records, id_key, parent_key="parent_id", nested=None):
+            record_map = {}
+            for record in records:
+                obj = record.to_dict()
+                record_map[obj.get(id_key)] = {
+                    **obj,
+                    'children': []
+                }
 
-        content = build_section_tree(sect_objs, content_by_sect_id=cont_by_section_id, parent_id=None)
+            nested_map = {}
+            if nested is not None:
+                for nesting in nested:
+                    nested_id = nesting.get(id_key)
+                    nested_map[nested_id] = nesting
+
+            # The top-level hierarchy (records without parents)
+            top_level = []
+
+            for record in records:
+                record_id = getattr(record, id_key)
+                if record_id in nested_map:
+                    parent = record_map.get(record_id)
+                    if parent:
+                        parent['content_str'] = nested_map[record_id]['content_str']
+                        parent['children'] = nested_map[record_id]['children']
+
+            # Build the hierarchy
+            for record in records:
+                record_id = getattr(record, id_key)
+                parent_id = getattr(record, parent_key)
+                if parent_id is None:
+                    # No parent, so this is a top-level item
+                    top_level.append(record_map[record_id])
+                else:
+                    # Add the record to its parent's "children" list
+                    parent = record_map.get(parent_id)
+                    if parent:
+                        parent['children'].append(record_map[record_id])
+
+            return top_level
+
+        content_hierarchy = build_hierarchy(content, id_key="usc_content_id")
+        section_hierarchy = build_hierarchy(sections, id_key="usc_section_id", parent_key="parent_id", nested=content_hierarchy)
     except Exception as e:
         import traceback
         print(traceback.format_exc())
 
-    # try:
-    #     def build_content_node(record, all_records):
-    #         # If it's a section node, return the raw record itself
-    #         if record.parent_id is not None:
-    #             return [USCSectionContent(
-    #                 usc_content_id=cont.usc_content_id,
-    #                 usc_ident=cont.usc_ident,
-    #                 parent_id=cont.parent_id,
-    #                 order_number=cont.order_number,
-    #                 section_display=cont.section_display,
-    #                 heading=cont.heading,
-    #                 content_str=cont.content_str,
-    #                 content_type=cont.content_type,
-    #                 number=cont.number,
-    #                 usc_section_id=cont.usc_section_id,
-    #             ) for cont in cont_by_section_id.get(record.usc_section_id)]
-    #         else:
-    #             # If not a section, format the node with a title and children
-    #             children = []
-    #             for child in all_records:
-    #                 #print(f"Checking child {child.parent_id} against {record.usc_section_id}")
-    #                 if child.parent_id == record.usc_section_id:
-    #                     print(f"Child match {child.parent_id} {record.usc_section_id}")
-    #                     children.extend(build_content_node(child, all_records))
-    #             return children 
-                   
-    #     def build_section_node(record, all_records):
-    #         # If it's a section node, return the raw record itself
-    #         if record.content_type == 'section':
-    #             return {
-    #                 'usc_ident': record.usc_ident,
-    #                 'content_type': record.content_type,
-    #                 'section_display': record.section_display,
-    #                 'heading': record.heading,
-    #                 'children': build_content_node(record, cont_by_section_id.get(record.usc_section_id))
-    #             }
-
-    #             return [USCSectionContent(
-    #                 usc_content_id=cont.usc_content_id,
-    #                 usc_ident=cont.usc_ident,
-    #                 parent_id=cont.parent_id,
-    #                 order_number=cont.order_number,
-    #                 section_display=cont.section_display,
-    #                 heading=cont.heading,
-    #                 content_str=cont.content_str,
-    #                 content_type=cont.content_type,
-    #                 number=cont.number,
-    #                 usc_section_id=cont.usc_section_id,
-    #             ) for cont in ]
-    #         else:
-    #             # If not a section, format the node with a title and children
-    #             children = []
-    #             for child in all_records:
-    #                 #print(f"Checking child {child.parent_id} against {record.usc_section_id}")
-    #                 if child.parent_id == record.usc_section_id:
-    #                     print(f"Child match {child.parent_id} {record.usc_section_id}")
-    #                     children.append(build_section_node(child, all_records))
-    #             return children
-
-    #     # Start by finding the root nodes (those that don't have a parent)
-    #     tree = []
-    #     for record in sect_objs:
-    #         if record.parent_id is None:  # Root nodes (parent_id is None)
-    #             print(f"Root {record.heading}")
-    #             tree.append({
-    #                 'usc_ident': record.usc_ident,
-    #                 'content_type': record.content_type,
-    #                 'section_display': record.section_display,
-    #                 'heading': record.heading,
-    #                 'children': build_section_node(record, sect_objs)
-    #             })
-
-    # except:
-    #     import traceback
-    #     print(traceback.format_exc())
-
     return USCSectionContentList(
-        usc_section_id=None, content={'children': content}
+        usc_section_id=None, content={'children': section_hierarchy}
     )
 
 @cached(TTLCache(CACHE_SIZE, CACHE_TIME))
