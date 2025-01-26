@@ -39,20 +39,21 @@ class LegislatorVoteType(str, enum.Enum):
 
     @classmethod
     def from_string(cls, string: str) -> "LegislationChamber":
-        if string.lower() == 'yea':
+        if string.lower() == "yea":
             return cls.yay
-        elif string.lower() == 'aye':
+        elif string.lower() == "aye":
             return cls.yay
-        elif string.lower() == 'nay':
+        elif string.lower() == "nay":
             return cls.nay
-        elif string.lower() == 'no':
+        elif string.lower() == "no":
             return cls.nay
-        elif string.lower() == 'present':
+        elif string.lower() == "present":
             return cls.present
-        elif string.lower() == 'not voting':
+        elif string.lower() == "not voting":
             return cls.abstain
         else:
             raise ValueError(f"Invalid LegislatorVoteType: {string}")
+
 
 class LegislationType(str, enum.Enum):
     Bill = "Bill"
@@ -160,7 +161,9 @@ class LegislationVote(Base):
     )
 
     legislation_id = Column(
-        Integer, ForeignKey("legislation.legislation_id", ondelete="CASCADE"), index=True
+        Integer,
+        ForeignKey("legislation.legislation_id", ondelete="CASCADE"),
+        index=True,
     )
 
     question = Column(String, index=True)
@@ -213,17 +216,21 @@ class UserLegislation(Base):
     Holds the relationship between User and favorited Legislation
     """
 
-    __tablename__  = "user_legislation"
+    __tablename__ = "user_legislation"
     __table_args__ = {"schema": "sensitive"}
 
     user_legislation_id = Column(Integer, primary_key=True)
 
     user_id = Column(
-        String, ForeignKey("sensitive.user_ident.user_id", ondelete="CASCADE"), index=True
+        String,
+        ForeignKey("sensitive.user_ident.user_id", ondelete="CASCADE"),
+        index=True,
     )
 
     legislation_id = Column(
-        Integer, ForeignKey("legislation.legislation_id", ondelete="CASCADE"), index=True
+        Integer,
+        ForeignKey("legislation.legislation_id", ondelete="CASCADE"),
+        index=True,
     )
 
 
@@ -232,13 +239,15 @@ class UserLegislator(Base):
     Holds the relationship between User and favorited Legislator
     """
 
-    __tablename__  = "user_legislator"
+    __tablename__ = "user_legislator"
     __table_args__ = {"schema": "sensitive"}
 
     user_legislator_id = Column(Integer, primary_key=True)
 
     user_id = Column(
-        String, ForeignKey("sensitive.user_ident.user_id", ondelete="CASCADE"), index=True
+        String,
+        ForeignKey("sensitive.user_ident.user_id", ondelete="CASCADE"),
+        index=True,
     )
 
     bioguide_id = Column(
@@ -346,7 +355,9 @@ class Legislation(Base):
 
     __tablename__ = "legislation"
     __table_args__ = (
-        UniqueConstraint("chamber", "number", "legislation_type", "congress_id", name="unq_bill"),
+        UniqueConstraint(
+            "chamber", "number", "legislation_type", "congress_id", name="unq_bill"
+        ),
     )
     legislation_id = Column(Integer, primary_key=True)
 
@@ -510,7 +521,7 @@ class LegislationActionParse(Base):
 
     legislation_version_id = Column(
         Integer,
-        ForeignKey("legislation_version.legislation_version_id"),
+        ForeignKey("legislation_version.legislation_version_id", ondelete="CASCADE"),
         index=True,
     )
 
@@ -523,7 +534,7 @@ class LegislationActionParse(Base):
     actions = Column(CastingArray(JSONB))
     citations = Column(CastingArray(JSONB))
 
-    def  to_dict(self):
+    def to_dict(self):
         boi = {
             "action_id": self.legislation_action_parse_id,
             "version_id": self.legislation_version_id,
@@ -532,6 +543,7 @@ class LegislationActionParse(Base):
             "citations": self.citations,
         }
         return {k: v for (k, v) in boi.items() if v is not None and v != {}}
+
 
 class LegislationContentTag(Base):
     """
@@ -756,7 +768,9 @@ class USCContentDiff(Base):
     content_type = Column(String)
 
     usc_content_id = Column(
-        Integer, ForeignKey("usc_content.usc_content_id"), index=True
+        Integer,
+        ForeignKey("usc_content.usc_content_id", ondelete="CASCADE"),
+        index=True,
     )
 
     usc_section_id = Column(
@@ -891,7 +905,9 @@ class LegislationCommitteeAssociation(Base):
 
     legislation_committee_id = Column(
         Integer,
-        ForeignKey("legislation_committee.legislation_committee_id"),
+        ForeignKey(
+            "legislation_committee.legislation_committee_id", ondelete="CASCADE"
+        ),
         index=True,
     )
 
@@ -899,7 +915,9 @@ class LegislationCommitteeAssociation(Base):
     discharge_date = Column(DateTime)
 
     legislation_id = Column(
-        Integer, ForeignKey("legislation.legislation_id"), index=True
+        Integer,
+        ForeignKey("legislation.legislation_id", ondelete="CASCADE"),
+        index=True,
     )
 
     congress_id = Column(

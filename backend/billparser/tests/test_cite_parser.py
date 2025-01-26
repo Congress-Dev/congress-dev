@@ -132,3 +132,8 @@ class TestExtractUSCCite(TestCase):
         text = """Section 2107(e)(1)(J) of the Social Security Act (42 U.S.C. 1397gg(e)(1)(J)), as inserted by section 9822 of the American Rescue Plan Act of 2021 (Public Law 117-2), is amended to read as follows:"""
         cite = extract_usc_cite(text)
         self.assertEqual(cite, "/us/usc/t42/s1397gg/e/1/J")
+
+    def test_119_hr_471_parens(self):
+        text = """in section 603(c)(2)(B) (16 U.S.C. 6591b(c)(2)(B)), by striking "Fire Regime Groups I, II, or III" and inserting "Fire Regime I, Fire Regime II, Fire Regime III, Fire Regime IV, or Fire Regime V"""
+        cite = extract_usc_cite(text)
+        self.assertEqual(cite, "/us/usc/t16/s6591b/c/2/B")

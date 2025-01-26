@@ -261,7 +261,10 @@ def get_congress_from_session_number(session_number: int, session) -> int:
 
 
 def find_or_create_bill(bill_obj: dict, title: str, session: "SQLAlchemy.session"):
-    new_version = Version(base_id=BASE_VERSION)
+    release_point = (
+        session.query(USCRelease).order_by(desc(USCRelease.created_at)).limit(1).all()
+    )
+    new_version = Version(base_id=release_point[0].version_id)
     session.add(new_version)
     session.commit()
     existing_bill = (
@@ -847,11 +850,6 @@ def parse_archives(
     session = Session()
     # Get latest release version for the base
     # TODO: Move these around to select the correct release point given the bill
-    release_point = (
-        session.query(USCRelease).order_by(desc(USCRelease.created_at)).limit(1).all()
-    )
-    BASE_VERSION = release_point[0].version_id
-    print("Base version is", BASE_VERSION)
     names: List[Dict[str, Any]] = []
     rec = []
     open_archives = []

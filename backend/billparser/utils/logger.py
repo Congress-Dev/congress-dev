@@ -29,8 +29,13 @@ class _LogExtraData:
         data_items = [*list(self._data.items()), *list(self._thread_data.data.items())]
         sorted_items = sorted(data_items, key=lambda x: x[0])
         combined = {}
+        # Handle nested dictionaries
         for _, v in sorted_items:
-            combined = {**combined, **v}
+            for key, value in v.items():
+                if isinstance(value, dict):
+                    combined[key] = {**combined.get(key, {}), **value}
+                else:
+                    combined[key] = value
         return combined
 
 
