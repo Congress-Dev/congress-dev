@@ -185,7 +185,7 @@ function USCView({ release, title, section, diffs = {}, interactive = true }) {
                                 activeHash === itemHash ? "content-hash" : ""
                             }`}
                             key={ind}
-                            onClick={changeUrl}
+                            // onClick={changeUrl}
                         >
                             <span>
                                 {heading !== undefined ? (

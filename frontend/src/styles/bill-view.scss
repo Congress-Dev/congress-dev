@@ -1,10 +1,21 @@
 .bill-content-section {
     margin-left: 15px;
-    margin-bottom: 0px;
-    margin-top: 5px;
-    line-height: 20px;
-    border-left: 1px dashed gray;
+    margin-bottom: 5px;
+    border-left: 1px dotted gray;
     padding-left: 10px;
+}
+
+#root:not(.bp5-dark) {
+    .bill-content-section {
+        border-color:  rgba(17, 20, 24, 0.15)
+    }
+}
+
+.bill-content {
+    & > .bill-content-section {
+        margin-left: 0px;
+        padding-left: 15px;
+    }
 }
 
 .bill-content-continue {
