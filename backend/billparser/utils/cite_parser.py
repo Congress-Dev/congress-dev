@@ -39,7 +39,7 @@ def find_extra_clause_references(snippet):
 
 
 def split_section_text(text: str) -> List[str]:
-    print(text)
+    # Takes strings like "b)(2)(A)(ii)" and returns ["b", "2", "A", "ii"]
     return [x.replace(")", "") for x in text.split(")(")]
 
 
@@ -53,7 +53,7 @@ def extract_usc_cite(text: str) -> Optional[str]:
         cite += "/s{}".format(regex_match["section"].split("(")[0])
         if "(" in regex_match["section"]:
             possibles = split_section_text(regex_match["section"].split("(", 1)[1])
-            print(possibles)
+
             if len(possibles) > 0:
                 cite += "/" + "/".join(possibles)
         return cite
@@ -102,10 +102,14 @@ def parse_text_for_cite(text: str) -> List[CiteObject]:
         cite = "/us/usc/t{}/s{}".format(
             regex_match["title"], regex_match["section"].split("(")[0]
         )
+
+        # Parse the subsections
         if "(" in regex_match["section"]:
             possibles = split_section_text(regex_match["section"].split("(", 1)[1])
             if len(possibles) > 0:
                 cite += "/" + "/".join(possibles)
+
+        # Maybe there was an additional subclause
         if regex_match["finalsub"]:
             possibles = split_section_text(regex_match["finalsub"].split("(", 1)[0])
             if len(possibles) > 0:

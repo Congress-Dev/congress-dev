@@ -10,7 +10,7 @@ litellm.turn_off_message_logging = True
 litellm._logging._disable_debugging()
 
 
-def run_query(query: str, model: str = "ollama/qwen2.5:32b") -> dict:
+def run_query(query: str, model: str = "ollama/qwen2.5:32b", *, num_ctx: int = 2048) -> dict:
     start_time = time.time()
     response = completion(
         model=model,
@@ -19,6 +19,7 @@ def run_query(query: str, model: str = "ollama/qwen2.5:32b") -> dict:
         format="json",
         timeout=60,
         max_tokens=10000,
+        num_ctx=num_ctx,
     )
     end_time = time.time()
     log_obj = {
