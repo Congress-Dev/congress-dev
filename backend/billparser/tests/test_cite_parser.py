@@ -116,6 +116,28 @@ class TestParseActionForCite(TestCase):
         self.assertEqual(res, "/us/usc/t42/s18071/1402")
 
 
+class TestParseTextForCite(TestCase):
+    def test_119_s_21_title_of_code(self):
+        text = """Section 6506(d) of title 5, United States Code, is amended-"""
+        res = parse_text_for_cite(text)
+        self.assertEqual(len(res), 1)
+        cite = res[0]
+        self.assertEqual(cite["cite"], "/us/usc/t5/s6506/d")
+
+    def test_random(self):
+        text = """Paragraph (6) of section 106 of title 17, United States Code, is amended to read as follows:"""
+        res = parse_text_for_cite(text)
+        self.assertEqual(len(res), 1)
+        cite = res[0]
+        self.assertEqual(cite["cite"], "/us/usc/t17/s106/6")
+
+    def test_118_hr_5__is_amended(self):
+        text = "Section 1111(g)(2) of the Elementary and Secondary Education Act of 1965 (20 U.S.C. 6311(g)(2)) is amended-"
+        res = parse_text_for_cite(text)
+        self.assertEqual(len(res), 1)
+        self.assertEqual(res[0]["cite"], "/us/usc/t20/s6311/g/2")
+
+
 class TestExtractUSCCite(TestCase):
     def test_118_hr_5__is_amended(self):
         text = "Section 1111(g)(2) of the Elementary and Secondary Education Act of 1965 (20 U.S.C. 6311(g)(2)) is amended-"
