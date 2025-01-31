@@ -110,18 +110,21 @@ b {
     margin-bottom: 10px;
 }
 
-.sidebar .collapse-controls {
-    margin-top: 10px;
-    margin-bottom: 10px;
-}
+.sidebar,
+.bp5-drawer {
+    .collapse-controls {
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
 
-.sidebar .collapse-wrapper {
-    margin-bottom: 10px;
-}
+    .collapse-wrapper {
+        margin-bottom: 10px;
+    }
 
-.sidebar .collapse-wrapper .collapse-section {
-    margin-top: 10px;
-    margin-left: 20px;
+    .collapse-wrapper .collapse-section {
+        margin-top: 10px;
+        margin-left: 20px;
+    }
 }
 
 .congress-link {

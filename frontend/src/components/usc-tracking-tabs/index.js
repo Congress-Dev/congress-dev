@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Tabs, Tab, NonIdealState, NonIdealStateIconSize } from "@blueprintjs/core";
+import {
+    Tabs,
+    Tab,
+    NonIdealState,
+    NonIdealStateIconSize,
+} from "@blueprintjs/core";
 import USCTrackingTab from "./usc-tracking-tab";
 import { getUSCTrackingFolders } from "common/api";
 

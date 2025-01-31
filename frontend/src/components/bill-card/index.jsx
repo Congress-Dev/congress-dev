@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useContext } from "react";
 import { withRouter, Link } from "react-router-dom";
 import { Callout, Tag, SectionCard } from "@blueprintjs/core";
 
+import { PreferenceEnum, PreferenceContext } from "context";
 import { chamberLookup } from "common/lookups";
 import { BillVersionsBreadcrumb, LegislatorChip } from "components";
 
@@ -13,6 +14,8 @@ const USDollar = new Intl.NumberFormat("en-US", {
 });
 
 function BillCard({ bill }) {
+    const { preferences } = useContext(PreferenceContext);
+
     function genTitle() {
         const { legislation_versions = [] } = bill;
         let version = "";
@@ -91,9 +94,10 @@ function BillCard({ bill }) {
                     <></>
                 )}
 
-                {renderTags()}
+                {preferences[PreferenceEnum.SHOW_TAGS] && renderTags()}
 
-                {bill.appropriations ? (
+                {preferences[PreferenceEnum.SHOW_APPROPRIATIONS] &&
+                bill.appropriations ? (
                     <>
                         <span style={{ fontWeight: "bold" }}>
                             Appropriations:

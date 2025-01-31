@@ -13,3 +13,5 @@ usc/
 **.egg-info/
 dist/
 build/
+
+.sources/
