@@ -69,7 +69,9 @@ def get_bill_contents(legislation_version_id: int) -> List[LegislationContent]:
     return [x[0] for x in results]
 
 
-def strike_emulation(to_strike: str, to_replace: str, target: str) -> str:
+def strike_emulation(
+    to_strike: str, to_replace: str, target: str, multiple: bool = True
+) -> str:
     """
     Handles emulating the strike text behavior for a given string
 
@@ -90,7 +92,7 @@ def strike_emulation(to_strike: str, to_replace: str, target: str) -> str:
             target,
         )
     elif to_strike in target:
-        return target.replace(to_strike, to_replace)
+        return target.replace(to_strike, to_replace, -1 if multiple else 1)
     return target
 
 
@@ -101,45 +103,56 @@ def get_chapter_id(chapter: str) -> int:
 
 
 def strike_text(
-    action: ActionObject, citation: str, session: "Session"
+    action: ActionObject, citation: str, session: "Session", *, multiple: bool = False
 ) -> List[USCContentDiff]:
-    query = select(USCContent).where(USCContent.usc_ident == citation)
+    if multiple == False:
+        query = select(USCContent).where(USCContent.usc_ident == citation)
+    else:
+        query = select(USCContent).where(USCContent.usc_ident.like(f"{citation}%"))
     results = session.execute(query).all()
 
     if len(results) == 0:
         logging.debug("Could not find content", extra={"usc_ident": citation})
         return []
-
-    content = results[0][0]
-    to_strike: Optional[str] = action.get("to_remove_text")
-    to_replace: Optional[str] = action.get("to_replace")
-    if to_strike is None:
-        logging.debug("No strike text found")
-        return []
-    diff = USCContentDiff(
-        usc_content_id=content.usc_content_id,
-        usc_section_id=content.usc_section_id,
-        usc_chapter_id=get_chapter_id(citation.split("/")[3].replace("t", "")),
-    )
-
-    if content.heading:
-        # We're modifying the heading
-        strike_result = strike_emulation(to_strike, to_replace or "", content.heading)
-        # If they're different, store it
-        if strike_result != content.heading:
-            diff.heading = strike_result
-
-    elif content.content_str:
-        strike_result = strike_emulation(
-            to_strike, to_replace or "", content.content_str
+    diffs: List[USCContentDiff] = []
+    for content_ in results:
+        content = content_[0]
+        to_strike: Optional[str] = action.get("to_remove_text")
+        to_replace: Optional[str] = action.get("to_replace")
+        if to_strike is None:
+            logging.debug("No strike text found")
+            return []
+        diff = USCContentDiff(
+            usc_content_id=content.usc_content_id,
+            usc_section_id=content.usc_section_id,
+            usc_chapter_id=get_chapter_id(citation.split("/")[3].replace("t", "")),
         )
-        # If they're different, store it
-        if strike_result != content.content_str:
-            diff.content_str = strike_result
 
-    if diff.content_str or diff.heading:
-        return [diff]
-    return []
+        if content.heading:
+
+            # We're modifying the heading
+            strike_result = strike_emulation(
+                to_strike, to_replace or "", content.heading, multiple
+            )
+
+            # If they're different, store it
+            if strike_result != content.heading:
+                diff.heading = strike_result
+
+        if content.content_str:
+
+            strike_result = strike_emulation(
+                to_strike, to_replace or "", content.content_str, multiple
+            )
+
+            # If they're different, store it
+            if strike_result != content.content_str:
+                diff.content_str = strike_result
+
+        if diff.content_str or diff.heading:
+            diffs.append(diff)
+
+    return diffs
 
 
 def insert_text_end(
@@ -299,11 +312,6 @@ def insert_section_end(
     # We assume our target citation is the parent section, so to insert at the end we need to find the last child
     query = select(USCContent).where(USCContent.usc_ident == citation)
     results = session.execute(query).all()
-
-    if len(results) == 0:
-        logging.debug("Could not find content", extra={"usc_ident": citation})
-        return []
-
     target_section = results[0][0]
     query = (
         select(USCContent)
@@ -381,13 +389,7 @@ def replace_section(
     diffs: List[USCContentDiff] = []
     diffs.extend(strike_section(action, citation, session))
     query = select(USCContent).where(USCContent.usc_ident == citation)
-    target_section = session.execute(query).first()
-
-    if target_section is None:
-        logging.debug("Could not find target section", extra={"usc_ident": citation})
-        return []
-    target_section = target_section[0]
-
+    target_section = session.execute(query).first()[0]
     diffs.extend(
         insert_section_after(
             target_section,
@@ -448,7 +450,15 @@ def apply_action(
             if act != ActionType.AMEND_MULTIPLE:
                 if act == ActionType.STRIKE_TEXT:
                     diffs.extend(
-                        strike_text(act_obj, computed_citation, PARSER_SESSION)
+                        strike_text(
+                            act_obj, computed_citation, PARSER_SESSION, multiple=False
+                        )
+                    )
+                if act == ActionType.STRIKE_TEXT_MULTIPLE:
+                    diffs.extend(
+                        strike_text(
+                            act_obj, computed_citation, PARSER_SESSION, multiple=True
+                        )
                     )
                 elif act == ActionType.INSERT_TEXT_END:
                     diffs.extend(

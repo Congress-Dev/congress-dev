@@ -72,6 +72,7 @@ regex_holder = {
     ],
     ActionType.STRIKE_TEXT_MULTIPLE: [
         r"in (?P<target>.+?), by striking \"(?P<to_remove_text>.+?)\" and inserting \"(?P<to_replace>.+?)\" each place the term appears;",
+        r"by striking \"(?P<to_remove_text>.+?)\" each place such term appears and inserting \"(?P<to_replace>.+?)\"",
     ],
     ActionType.STRIKE_INSERT_SECTION: [
         r"by striking \"(?P<to_remove_section>.+?)\" and inserting the following:"
@@ -86,6 +87,7 @@ regex_holder = {
         r"in (?P<target>.*), by adding at the end the following new (?:sub)?paragraph:",
         r"by adding at the end the following new (?:sub)?paragraph:",
         r"by adding at the end the following:$",
+        r"by adding at the end following:$"
     ],
     ActionType.INSERT_TEXT_AFTER: [
         r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended.? by inserting \"(?P<to_insert_text>.+?)\" after \"(?P<to_remove_text>.+?)\"(?:; and|\.)",
