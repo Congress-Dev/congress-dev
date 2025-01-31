@@ -278,16 +278,21 @@ async def search_legislation(
     if chamber:
         legis_query = legis_query.where(Legislation.chamber.in_(chamber.split(",")))
     if text:
-        number_match = re.search(r"(H\.R\.|S\.) (\d+)", text, re.IGNORECASE)
+        number_match = re.search(r"(H\.?R\.?|S\.?)\s?(\d+)", text, re.IGNORECASE)
         if number_match:
             chamber_lookup = {
                 "H.R.": "House",
+                "HR": "House",
                 "S.": "Senate",
+                "S": "Senate"
             }
             legis_query = legis_query.where(Legislation.chamber == chamber_lookup[number_match.group(1).upper()])
             legis_query = legis_query.where(Legislation.number == int(number_match.group(2)))
         else:
-            legis_query = legis_query.where(or_(Legislation.title.ilike(f"%{text}%"), Legislation.number == int(text)))
+            try:
+                legis_query = legis_query.where(or_(Legislation.title.ilike(f"%{text}%"), Legislation.number == int(text)))
+            except ValueError:
+                legis_query = legis_query.where(Legislation.title.ilike(f"%{text}%"))
 
     print(legis_query)
 
@@ -341,8 +346,22 @@ async def search_legislation(
         count_query = count_query.where(Congress.session_number.in_(congress))
     if chamber:
         count_query = count_query.where(Legislation.chamber.in_(chamber.split(",")))
-
     if text:
-        count_query = count_query.where(Legislation.title.ilike(f"%{text}%"))
+        number_match = re.search(r"(H\.?R\.?|S\.?)\s?(\d+)", text, re.IGNORECASE)
+        if number_match:
+            chamber_lookup = {
+                "H.R.": "House",
+                "HR": "House",
+                "S.": "Senate",
+                "S": "Senate"
+            }
+            count_query = count_query.where(Legislation.chamber == chamber_lookup[number_match.group(1).upper()])
+            count_query = count_query.where(Legislation.number == int(number_match.group(2)))
+        else:
+            try:
+                count_query = count_query.where(or_(Legislation.title.ilike(f"%{text}%"), Legislation.number == int(text)))
+            except ValueError:
+                count_query = count_query.where(Legislation.title.ilike(f"%{text}%"))
+
     count_results = await database.fetch_all(count_query)
     return objs, len(count_results)
