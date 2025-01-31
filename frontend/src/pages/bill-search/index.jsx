@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useLocation } from "react-router-dom";
 import lodash from "lodash";
 import {
@@ -8,22 +8,26 @@ import {
     InputGroup,
     Checkbox,
     Button,
-    Divider,
     SectionCard,
     ControlGroup,
     HTMLSelect,
-    RadioGroup,
-    Radio,
     ButtonGroup,
     Section,
-    Icon,
+    Popover,
+    Menu,
+    MenuItem,
+    MenuDivider,
 } from "@blueprintjs/core";
 import qs from "query-string";
+
+import { PreferenceEnum, PreferenceContext } from "context";
 
 import { initialVersionToFull, versionToFull } from "common/lookups";
 import { BillSearchContent, CollapsibleSection, Paginator } from "components";
 
 function BillSearch(props) {
+    const { preferences, setPreference } = useContext(PreferenceContext);
+
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
 
@@ -181,12 +185,15 @@ function BillSearch(props) {
                 sort: params.sort,
             };
         }
-        if (params.direction != null && currentSearch.direction != params.direction) {
+        if (
+            params.direction != null &&
+            currentSearch.direction != params.direction
+        ) {
             updated = true;
             newSearch = {
                 ...newSearch,
-                direction: params.direction
-            }
+                direction: params.direction,
+            };
         }
         if (params.text != null && currentSearch.text != params.text) {
             updated = true;
@@ -234,7 +241,10 @@ function BillSearch(props) {
             updated = true;
             params.sort = currentSearch.sort;
         }
-        if (currentSearch.direction != null && params.direction != currentSearch.direction) {
+        if (
+            currentSearch.direction != null &&
+            params.direction != currentSearch.direction
+        ) {
             updated = true;
             params.direction = currentSearch.direction;
         }
@@ -301,7 +311,7 @@ function BillSearch(props) {
             ...currentSearch,
             page: 1,
             direction: direction,
-        })
+        });
     }
 
     return (
@@ -499,9 +509,63 @@ function BillSearch(props) {
                                         : "sort-alphabetical"
                                 }
                                 onClick={() => {
-                                    setCurrentDirection(currentSearch.direction === "asc" ? "desc" : "asc")
+                                    setCurrentDirection(
+                                        currentSearch.direction === "asc"
+                                            ? "desc"
+                                            : "asc",
+                                    );
                                 }}
                             />
+                            <Popover
+                                content={
+                                    <Menu>
+                                        <MenuDivider title="Display Options" />
+                                        <MenuItem
+                                            text="Show tags"
+                                            icon={
+                                                preferences[
+                                                    PreferenceEnum
+                                                        .SHOW_TAGS
+                                                ]
+                                                    ? "small-tick"
+                                                    : "small-cross"
+                                            }
+                                            onClick={() =>
+                                                setPreference(
+                                                    PreferenceEnum.SHOW_TAGS,
+                                                    !preferences[
+                                                        PreferenceEnum
+                                                            .SHOW_TAGS
+                                                    ],
+                                                )
+                                            }
+                                        />
+                                        <MenuItem
+                                            text="Show appropriations"
+                                            icon={
+                                                preferences[
+                                                    PreferenceEnum
+                                                        .SHOW_APPROPRIATIONS
+                                                ]
+                                                    ? "small-tick"
+                                                    : "small-cross"
+                                            }
+                                            onClick={() =>
+                                                setPreference(
+                                                    PreferenceEnum.SHOW_APPROPRIATIONS,
+                                                    !preferences[
+                                                        PreferenceEnum
+                                                            .SHOW_APPROPRIATIONS
+                                                    ],
+                                                )
+                                            }
+                                        />
+                                    </Menu>
+                                }
+                                placement="bottom"
+                            >
+                                <Button icon="cog" />
+                            </Popover>
                         </>
                     }
                 >
