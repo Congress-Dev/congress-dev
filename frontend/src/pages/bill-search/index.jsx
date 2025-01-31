@@ -2,9 +2,10 @@ import React, { useState, useEffect, useContext } from "react";
 import { useLocation } from "react-router-dom";
 import lodash from "lodash";
 import {
-    Card,
     Elevation,
     FormGroup,
+    Drawer,
+    DrawerSize,
     InputGroup,
     Checkbox,
     Button,
@@ -20,13 +21,16 @@ import {
 } from "@blueprintjs/core";
 import qs from "query-string";
 
-import { PreferenceEnum, PreferenceContext } from "context";
+import { PreferenceEnum, PreferenceContext, ThemeContext } from "context";
 
 import { initialVersionToFull, versionToFull } from "common/lookups";
 import { BillSearchContent, CollapsibleSection, Paginator } from "components";
 
 function BillSearch(props) {
+    const { isDarkMode } = useContext(ThemeContext);
     const { preferences, setPreference } = useContext(PreferenceContext);
+
+    const [drawerOpen, setDrawerOpen] = useState(false);
 
     const location = useLocation();
     const searchParams = new URLSearchParams(location.search);
@@ -314,6 +318,138 @@ function BillSearch(props) {
         });
     }
 
+    function renderCollapseControls() {
+        return (
+            <>
+                <ButtonGroup className="collapse-controls" fill={true}>
+                    <Button
+                        icon="collapse-all"
+                        onClick={toggleCollapseAll}
+                    ></Button>
+                    <Button
+                        icon="expand-all"
+                        onClick={toggleExpandAll}
+                    ></Button>
+                    <Button icon="add" onClick={toggleCheckAll}></Button>
+                    <Button icon="remove" onClick={toggleUncheckAll}></Button>
+                    <Button
+                        className="enrolled-button"
+                        icon="th-filtered"
+                        onClick={toggleEnrolled}
+                    >
+                        Enrolled
+                    </Button>
+                </ButtonGroup>
+                <CollapsibleSection
+                    title="Session of Congress"
+                    collapsed={collapsed}
+                >
+                    <Checkbox
+                        checked={currentSearch.congress.includes("119")}
+                        label="119th"
+                        onChange={() => {
+                            const cong = currentSearch.congress
+                                .split(",")
+                                .filter((value) => {
+                                    return value != "";
+                                });
+                            if (cong.includes("119")) {
+                                setCurrentSearch({
+                                    ...currentSearch,
+                                    congress: cong
+                                        .filter((value) => {
+                                            return (
+                                                value != "119" && value != ""
+                                            );
+                                        })
+                                        .join(","),
+                                });
+                            } else {
+                                cong.push("119");
+                                setCurrentSearch({
+                                    ...currentSearch,
+                                    congress: cong.join(","),
+                                });
+                            }
+                        }}
+                    />
+                    <Checkbox
+                        checked={currentSearch.congress.includes("118")}
+                        label="118th"
+                        onChange={() => {
+                            const cong = currentSearch.congress
+                                .split(",")
+                                .filter((value) => {
+                                    return value != "";
+                                });
+                            if (cong.includes("118")) {
+                                setCurrentSearch({
+                                    ...currentSearch,
+                                    congress: cong
+                                        .filter((value) => {
+                                            return value != "118";
+                                        })
+                                        .join(","),
+                                });
+                            } else {
+                                cong.push("118");
+                                setCurrentSearch({
+                                    ...currentSearch,
+                                    congress: cong.join(","),
+                                });
+                            }
+                        }}
+                    />
+                </CollapsibleSection>
+                <CollapsibleSection
+                    title="Chamber of Origin"
+                    collapsed={collapsed}
+                >
+                    <Checkbox
+                        checked={chamberButtons.House === true}
+                        label="House"
+                        onChange={() => {
+                            setChamberButtons({
+                                ...chamberButtons,
+                                House: !chamberButtons.House,
+                            });
+                        }}
+                    />
+                    <Checkbox
+                        checked={chamberButtons.Senate === true}
+                        label="Senate"
+                        onChange={() => {
+                            setChamberButtons({
+                                ...chamberButtons,
+                                Senate: !chamberButtons.Senate,
+                            });
+                        }}
+                    />
+                </CollapsibleSection>
+                <CollapsibleSection
+                    title="Legislation Status"
+                    collapsed={collapsed}
+                >
+                    {lodash.map(initialVersionToFull, (value, key) => {
+                        return (
+                            <Checkbox
+                                key={`checkbox-${key}`}
+                                checked={versionButtons[key] === true}
+                                label={key}
+                                onChange={() => {
+                                    setVersionButtons({
+                                        ...versionButtons,
+                                        [key]: !versionButtons[key],
+                                    });
+                                }}
+                            />
+                        );
+                    })}
+                </CollapsibleSection>
+            </>
+        );
+    }
+
     return (
         <Section
             className="page"
@@ -334,6 +470,25 @@ function BillSearch(props) {
                             className="search-sort"
                         >
                             <ControlGroup fill={true}>
+                                <Drawer
+                                    size={DrawerSize.SMALL}
+                                    className={isDarkMode ? "bp5-dark" : ""}
+                                    isOpen={drawerOpen}
+                                    icon="filter"
+                                    position="left"
+                                    onClose={() => setDrawerOpen(false)}
+                                    isCloseButtonShown={true}
+                                    title="Search Filters"
+                                >
+                                    <SectionCard>
+                                        {renderCollapseControls()}
+                                    </SectionCard>
+                                </Drawer>
+                                <Button
+                                    icon="filter"
+                                    className="mobile-flex"
+                                    onClick={() => setDrawerOpen(!drawerOpen)}
+                                ></Button>
                                 <InputGroup
                                     value={textBox}
                                     leftIcon="search"
@@ -353,169 +508,48 @@ function BillSearch(props) {
                             </ControlGroup>
                         </FormGroup>
                     </form>
-                    <ButtonGroup className="collapse-controls" fill={true}>
-                        <Button
-                            icon="collapse-all"
-                            onClick={toggleCollapseAll}
-                        ></Button>
-                        <Button
-                            icon="expand-all"
-                            onClick={toggleExpandAll}
-                        ></Button>
-                        <Button icon="add" onClick={toggleCheckAll}></Button>
-                        <Button
-                            icon="remove"
-                            onClick={toggleUncheckAll}
-                        ></Button>
-                        <Button
-                            className="enrolled-button"
-                            icon="th-filtered"
-                            onClick={toggleEnrolled}
-                        >
-                            Enrolled
-                        </Button>
-                    </ButtonGroup>
-                    <CollapsibleSection
-                        title="Session of Congress"
-                        collapsed={collapsed}
-                    >
-                        <Checkbox
-                            checked={currentSearch.congress.includes("119")}
-                            label="119th"
-                            onChange={() => {
-                                const cong = currentSearch.congress
-                                    .split(",")
-                                    .filter((value) => {
-                                        return value != "";
-                                    });
-                                if (cong.includes("119")) {
-                                    setCurrentSearch({
-                                        ...currentSearch,
-                                        congress: cong
-                                            .filter((value) => {
-                                                return (
-                                                    value != "119" &&
-                                                    value != ""
-                                                );
-                                            })
-                                            .join(","),
-                                    });
-                                } else {
-                                    cong.push("119");
-                                    setCurrentSearch({
-                                        ...currentSearch,
-                                        congress: cong.join(","),
-                                    });
-                                }
-                            }}
-                        />
-                        <Checkbox
-                            checked={currentSearch.congress.includes("118")}
-                            label="118th"
-                            onChange={() => {
-                                const cong = currentSearch.congress
-                                    .split(",")
-                                    .filter((value) => {
-                                        return value != "";
-                                    });
-                                if (cong.includes("118")) {
-                                    setCurrentSearch({
-                                        ...currentSearch,
-                                        congress: cong
-                                            .filter((value) => {
-                                                return value != "118";
-                                            })
-                                            .join(","),
-                                    });
-                                } else {
-                                    cong.push("118");
-                                    setCurrentSearch({
-                                        ...currentSearch,
-                                        congress: cong.join(","),
-                                    });
-                                }
-                            }}
-                        />
-                    </CollapsibleSection>
-                    <CollapsibleSection
-                        title="Chamber of Origin"
-                        collapsed={collapsed}
-                    >
-                        <Checkbox
-                            checked={chamberButtons.House === true}
-                            label="House"
-                            onChange={() => {
-                                setChamberButtons({
-                                    ...chamberButtons,
-                                    House: !chamberButtons.House,
-                                });
-                            }}
-                        />
-                        <Checkbox
-                            checked={chamberButtons.Senate === true}
-                            label="Senate"
-                            onChange={() => {
-                                setChamberButtons({
-                                    ...chamberButtons,
-                                    Senate: !chamberButtons.Senate,
-                                });
-                            }}
-                        />
-                    </CollapsibleSection>
-                    <CollapsibleSection
-                        title="Legislation Status"
-                        collapsed={collapsed}
-                    >
-                        {lodash.map(initialVersionToFull, (value, key) => {
-                            return (
-                                <Checkbox
-                                    key={`checkbox-${key}`}
-                                    checked={versionButtons[key] === true}
-                                    label={key}
-                                    onChange={() => {
-                                        setVersionButtons({
-                                            ...versionButtons,
-                                            [key]: !versionButtons[key],
-                                        });
-                                    }}
-                                />
-                            );
-                        })}
-                    </CollapsibleSection>
+                    {renderCollapseControls()}
                 </div>
                 <Section
                     title="Results"
-                    subtitle={`${totalResults.toLocaleString()} Bills`}
+                    subtitle={`${totalResults.toLocaleString()}`}
                     className="content"
                     icon="inbox-search"
                     rightElement={
                         <>
                             Sort:
-                            <HTMLSelect
-                                value={currentSearch.sort}
-                                options={[
-                                    { label: "Bill No.", value: "number" },
-                                    { label: "Title", value: "title" },
-                                    { label: "Date", value: "effective_date" },
-                                ]}
-                                onChange={(event) => {
-                                    setCurrentSort(event.currentTarget.value);
-                                }}
-                            />
-                            <Button
-                                icon={
-                                    currentSearch.direction === "desc"
-                                        ? "sort-alphabetical-desc"
-                                        : "sort-alphabetical"
-                                }
-                                onClick={() => {
-                                    setCurrentDirection(
-                                        currentSearch.direction === "asc"
-                                            ? "desc"
-                                            : "asc",
-                                    );
-                                }}
-                            />
+                            <ControlGroup>
+                                <HTMLSelect
+                                    value={currentSearch.sort}
+                                    options={[
+                                        { label: "Bill No.", value: "number" },
+                                        { label: "Title", value: "title" },
+                                        {
+                                            label: "Date",
+                                            value: "effective_date",
+                                        },
+                                    ]}
+                                    onChange={(event) => {
+                                        setCurrentSort(
+                                            event.currentTarget.value,
+                                        );
+                                    }}
+                                />
+                                <Button
+                                    icon={
+                                        currentSearch.direction === "desc"
+                                            ? "sort-alphabetical-desc"
+                                            : "sort-alphabetical"
+                                    }
+                                    onClick={() => {
+                                        setCurrentDirection(
+                                            currentSearch.direction === "asc"
+                                                ? "desc"
+                                                : "asc",
+                                        );
+                                    }}
+                                />
+                            </ControlGroup>
                             <Popover
                                 content={
                                     <Menu>
@@ -524,8 +558,7 @@ function BillSearch(props) {
                                             text="Show tags"
                                             icon={
                                                 preferences[
-                                                    PreferenceEnum
-                                                        .SHOW_TAGS
+                                                    PreferenceEnum.SHOW_TAGS
                                                 ]
                                                     ? "small-tick"
                                                     : "small-cross"
@@ -534,8 +567,7 @@ function BillSearch(props) {
                                                 setPreference(
                                                     PreferenceEnum.SHOW_TAGS,
                                                     !preferences[
-                                                        PreferenceEnum
-                                                            .SHOW_TAGS
+                                                        PreferenceEnum.SHOW_TAGS
                                                     ],
                                                 )
                                             }

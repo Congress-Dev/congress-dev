@@ -96,7 +96,8 @@ function BillCard({ bill }) {
 
                 {preferences[PreferenceEnum.SHOW_TAGS] && renderTags()}
 
-                {preferences[PreferenceEnum.SHOW_APPROPRIATIONS] && bill.appropriations ? (
+                {preferences[PreferenceEnum.SHOW_APPROPRIATIONS] &&
+                bill.appropriations ? (
                     <>
                         <span style={{ fontWeight: "bold" }}>
                             Appropriations:

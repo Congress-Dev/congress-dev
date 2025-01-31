@@ -9,16 +9,16 @@ function AboutUs() {
             subtitle="Empowering Civic Engagement and Understanding"
         >
             <SectionCard>
-                This project was created to empower everyday people with
-                easy access to the workings of Congress. We believe that
-                democracy thrives when citizens are informed and engaged, but
-                navigating the legislative process can feel overwhelming and
-                opaque. By providing clear, comprehensive tools to track bills,
-                understand their impact, and follow lawmakers' actions, this
-                project seeks to bridge the gap between the public and
-                policymaking. Our mission is to make federal legislation more
-                transparent, accessible, and relevant to everyone—because an
-                informed public is a stronger democracy.
+                This project was created to empower everyday people with easy
+                access to the workings of Congress. We believe that democracy
+                thrives when citizens are informed and engaged, but navigating
+                the legislative process can feel overwhelming and opaque. By
+                providing clear, comprehensive tools to track bills, understand
+                their impact, and follow lawmakers' actions, this project seeks
+                to bridge the gap between the public and policymaking. Our
+                mission is to make federal legislation more transparent,
+                accessible, and relevant to everyone—because an informed public
+                is a stronger democracy.
             </SectionCard>
 
             <SectionCard>
