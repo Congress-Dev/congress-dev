@@ -1,7 +1,8 @@
+import re
 from collections import defaultdict
 from typing import Dict, List, Tuple
 
-from sqlalchemy import select, join, func, distinct, exists, asc, desc
+from sqlalchemy import select, join, func, distinct, exists, asc, desc, or_
 from sqlalchemy.orm import aliased
 from congress_fastapi.db.postgres import get_database
 from billparser.db.models import (
@@ -277,7 +278,16 @@ async def search_legislation(
     if chamber:
         legis_query = legis_query.where(Legislation.chamber.in_(chamber.split(",")))
     if text:
-        legis_query = legis_query.where(Legislation.title.ilike(f"%{text}%"))
+        number_match = re.search(r"(H\.R\.|S\.) (\d+)", text, re.IGNORECASE)
+        if number_match:
+            chamber_lookup = {
+                "H.R.": "House",
+                "S.": "Senate",
+            }
+            legis_query = legis_query.where(Legislation.chamber == chamber_lookup[number_match.group(1).upper()])
+            legis_query = legis_query.where(Legislation.number == int(number_match.group(2)))
+        else:
+            legis_query = legis_query.where(or_(Legislation.title.ilike(f"%{text}%"), Legislation.number == int(text)))
 
     print(legis_query)
 
