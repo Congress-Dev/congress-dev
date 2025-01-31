@@ -294,8 +294,6 @@ async def search_legislation(
             except ValueError:
                 legis_query = legis_query.where(Legislation.title.ilike(f"%{text}%"))
 
-    print(legis_query)
-
     results = await database.fetch_all(legis_query)
     results = [dict(result) for result in results]
 
