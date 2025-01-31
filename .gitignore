@@ -9,3 +9,5 @@ venv/
 .resources/
 *.backup
 import.sh
+
+.DS_Store

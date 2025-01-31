@@ -362,13 +362,14 @@ export const getCongressSearch = (
     versions,
     text,
     sort,
+    direction,
     page,
     pageSize,
 ) => {
     return fetch(
         `${endPv2}/legislation/search?${congress != "" ? `congress=${congress}` : ""}&chamber=${
             chamber || "None"
-        }&versions=${versions || ""}&text=${text}&sort=${sort}&page=${page}&pageSize=${pageSize}`,
+        }&versions=${versions || ""}&text=${text}&sort=${sort}&direction=${direction}&page=${page}&pageSize=${pageSize}`,
     )
         .then(handleStatus)
         .catch(toastError);

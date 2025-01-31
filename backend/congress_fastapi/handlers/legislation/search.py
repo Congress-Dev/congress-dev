@@ -1,7 +1,7 @@
 from collections import defaultdict
 from typing import Dict, List, Tuple
 
-from sqlalchemy import select, join, func, distinct, exists
+from sqlalchemy import select, join, func, distinct, exists, asc, desc
 from sqlalchemy.orm import aliased
 from congress_fastapi.db.postgres import get_database
 from billparser.db.models import (
@@ -219,11 +219,16 @@ async def search_legislation(
     versions: str,
     text: str,
     sort: str,
+    direction: str,
     page: int,
     page_size: int,
 ) -> Tuple[List[SearchResult], int]:
     if congress:
         congress = [int(c) for c in congress.split(",")]
+
+    sort_order = asc(sort)
+    if direction == "desc":
+        sort_order = desc(sort)
 
     database = await get_database()
     lv_alias = aliased(LegislationVersion)
@@ -263,7 +268,7 @@ async def search_legislation(
             Legislation.chamber,
         )
         .having(exists(subquery))
-        .order_by(sort, Legislation.legislation_id)
+        .order_by(sort_order, Legislation.legislation_id)
         .limit(page_size)
         .offset((page - 1) * page_size)
     )
@@ -271,9 +276,11 @@ async def search_legislation(
         legis_query = legis_query.where(Congress.session_number.in_(congress))
     if chamber:
         legis_query = legis_query.where(Legislation.chamber.in_(chamber.split(",")))
-
     if text:
         legis_query = legis_query.where(Legislation.title.ilike(f"%{text}%"))
+
+    print(legis_query)
+
     results = await database.fetch_all(legis_query)
     results = [dict(result) for result in results]
 

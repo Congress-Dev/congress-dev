@@ -20,14 +20,14 @@ async def get_search_legislation(
     congress: str = Query(None),
     chamber: str = Query(None),
     versions: str = Query(None),
-    results: int = Query(10),
     sort: str = Query(None),
+    direction: str = Query("asc"),
     page: int = Query(1),
     page_size: int = Query(10, alias="pageSize"),
 ) -> SearchResponse:
     """Returns a list of LegislationMetadata objects for a given query"""
     obj, total = await search_legislation(
-        congress, chamber, versions, text, sort, page, page_size
+        congress, chamber, versions, text, sort, direction, page, page_size
     )
     if obj is None:
         raise HTTPException(

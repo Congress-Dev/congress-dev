@@ -37,7 +37,7 @@ function BillSearch(props) {
     const [totalResults, setTotalResults] = useState(0);
 
     const [currentSearch, setCurrentSearch] = useState({
-        congress: searchParams.get("congress") || "118,119",
+        congress: searchParams.get("congress") || "119",
         chamber: lodash
             .keys(lodash.pickBy(chamberButtons, (value) => value))
             .join(","),
@@ -52,6 +52,7 @@ function BillSearch(props) {
             .join(","),
         text: searchParams.get("text") || "",
         sort: searchParams.get("sort") || "number",
+        direction: searchParams.get("direction") || "asc",
         page: searchParams.get("page") || 1,
         pageSize: resPageSize,
     });
@@ -180,6 +181,13 @@ function BillSearch(props) {
                 sort: params.sort,
             };
         }
+        if (params.direction != null && currentSearch.direction != params.direction) {
+            updated = true;
+            newSearch = {
+                ...newSearch,
+                direction: params.direction
+            }
+        }
         if (params.text != null && currentSearch.text != params.text) {
             updated = true;
             newSearch = {
@@ -225,6 +233,10 @@ function BillSearch(props) {
         if (currentSearch.sort != null && params.sort != currentSearch.sort) {
             updated = true;
             params.sort = currentSearch.sort;
+        }
+        if (currentSearch.direction != null && params.direction != currentSearch.direction) {
+            updated = true;
+            params.direction = currentSearch.direction;
         }
         if (currentSearch.text == "" && params.text != null) {
             updated = true;
@@ -282,6 +294,14 @@ function BillSearch(props) {
             page: 1,
             sort: sort,
         });
+    }
+
+    function setCurrentDirection(direction) {
+        setCurrentSearch({
+            ...currentSearch,
+            page: 1,
+            direction: direction,
+        })
     }
 
     return (
@@ -460,7 +480,7 @@ function BillSearch(props) {
                     icon="inbox-search"
                     rightElement={
                         <>
-                            <Icon icon="sort-alphabetical" /> Sort:
+                            Sort:
                             <HTMLSelect
                                 value={currentSearch.sort}
                                 options={[
@@ -472,6 +492,16 @@ function BillSearch(props) {
                                     setCurrentSort(event.currentTarget.value);
                                 }}
                             />
+                            <Button
+                                icon={
+                                    currentSearch.direction === "desc"
+                                        ? "sort-alphabetical-desc"
+                                        : "sort-alphabetical"
+                                }
+                                onClick={() => {
+                                    setCurrentDirection(currentSearch.direction === "asc" ? "desc" : "asc")
+                                }}
+                            />
                         </>
                     }
                 >
@@ -481,6 +511,7 @@ function BillSearch(props) {
                         versions={currentSearch.versions}
                         text={currentSearch.text}
                         sort={currentSearch.sort}
+                        direction={currentSearch.direction}
                         page={currentSearch.page}
                         pageSize={currentSearch.pageSize}
                         setResults={setTotalResults}
