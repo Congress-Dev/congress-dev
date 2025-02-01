@@ -28,19 +28,46 @@ class TestEnactmentDates(TestCase):
         text = """not later than 180 days after the date of enactment of this Act"""
         result = determine_action(text)
         self.assertIn(ActionType.EFFECTIVE_DATE, result)
-        self.assertEqual(result["amount"], 180)
+        result = result[ActionType.EFFECTIVE_DATE]
+        self.assertEqual(result["amount"], "180")
         self.assertEqual(result["unit"], "days")
 
     def test_not_later_full_title(self):
         text = """Not later than 60 days after the date of enactment of the Requiring Effective Management and Oversight of Teleworking Employees Act"""
         result = determine_action(text)
         self.assertIn(ActionType.EFFECTIVE_DATE, result)
-        self.assertEqual(result["amount"], 60)
+        result = result[ActionType.EFFECTIVE_DATE]
+        self.assertEqual(result["amount"], "60")
         self.assertEqual(result["unit"], "days")
 
     def test_beginning_days(self):
         text = """Beginning on the date that is 180 days after the date of enactment of this Act"""
         result = determine_action(text)
         self.assertIn(ActionType.EFFECTIVE_DATE, result)
-        self.assertEqual(result["amount"], 0)
+        result = result[ActionType.EFFECTIVE_DATE]
+        self.assertEqual(result["amount"], "180")
+        self.assertEqual(result["unit"], "days")
+
+    def test_more_verbiage(self):
+        text = """Not later than 120 days after the date of the enactment of this Act"""
+        result = determine_action(text)
+        self.assertIn(ActionType.EFFECTIVE_DATE, result)
+        result = result[ActionType.EFFECTIVE_DATE]
+        self.assertEqual(result["amount"], "120")
+        self.assertEqual(result["unit"], "days")
+
+    def test_sunset(self):
+        text = """This Act shall cease to have any force or effect beginning on the date that is 5 years after the date of the enactment of this Act."""
+        result = determine_action(text)
+        self.assertIn(ActionType.EFFECTIVE_DATE, result)
+        result = result[ActionType.EFFECTIVE_DATE]
+        self.assertEqual(result["amount"], "5")
+        self.assertEqual(result["unit"], "years")
+
+    def test_take_effect(self):
+        text = """The amendments made by this section shall take effect 90 days after the date of the enactment of this Act."""
+        result = determine_action(text)
+        self.assertIn(ActionType.EFFECTIVE_DATE, result)
+        result = result[ActionType.EFFECTIVE_DATE]
+        self.assertEqual(result["amount"], "90")
         self.assertEqual(result["unit"], "days")
