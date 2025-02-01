@@ -87,7 +87,7 @@ regex_holder = {
         r"in (?P<target>.*), by adding at the end the following new (?:sub)?paragraph:",
         r"by adding at the end the following new (?:sub)?paragraph:",
         r"by adding at the end the following:$",
-        r"by adding at the end following:$"
+        r"by adding at the end following:$",
     ],
     ActionType.INSERT_TEXT_AFTER: [
         r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended.? by inserting \"(?P<to_insert_text>.+?)\" after \"(?P<to_remove_text>.+?)\"(?:; and|\.)",
@@ -117,7 +117,9 @@ regex_holder = {
     ],
     ActionType.REPEAL: [r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is repealed.?"],
     ActionType.EFFECTIVE_DATE: [
-        r"The amendments made by this section shall apply to taxable years beginning after (?P<effective_date>.+?)\."
+        r"The amendments made by this section shall apply to taxable years beginning after (?P<effective_date>.+?)\.",
+        r"not later than (?P<amount>\d+) (?P<unit>(day|week|month|year)s?) after the (?:date of )enactment of (?:(this|the .*?)) Act",
+        r"Beginning on the date that is (?P<amount>\d+) (?P<unit>(day|week|month|year)s?) after the (?:date of )enactment of this Act",
     ],
     ActionType.TABLE_OF_CONTENTS: [
         r"The table of contents (for|of) this Act is as follows:"

@@ -21,3 +21,26 @@ class TestDetermineAction(TestCase):
         text = """Section 242(f) of the Immigration and Nationality Act (8 U.S.C. 1252(f)) is amended by adding at the end following:"""
         result = determine_action(text)
         self.assertIn(ActionType.INSERT_END, result)
+
+
+class TestEnactmentDates(TestCase):
+    def test_not_later_days(self):
+        text = """not later than 180 days after the date of enactment of this Act"""
+        result = determine_action(text)
+        self.assertIn(ActionType.EFFECTIVE_DATE, result)
+        self.assertEqual(result["amount"], 180)
+        self.assertEqual(result["unit"], "days")
+
+    def test_not_later_full_title(self):
+        text = """Not later than 60 days after the date of enactment of the Requiring Effective Management and Oversight of Teleworking Employees Act"""
+        result = determine_action(text)
+        self.assertIn(ActionType.EFFECTIVE_DATE, result)
+        self.assertEqual(result["amount"], 60)
+        self.assertEqual(result["unit"], "days")
+
+    def test_beginning_days(self):
+        text = """Beginning on the date that is 180 days after the date of enactment of this Act"""
+        result = determine_action(text)
+        self.assertIn(ActionType.EFFECTIVE_DATE, result)
+        self.assertEqual(result["amount"], 0)
+        self.assertEqual(result["unit"], "days")
