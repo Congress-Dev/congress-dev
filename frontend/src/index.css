@@ -28,3 +28,123 @@ html {
 html:has(#root.bp5-dark) {
     background-color: #1a232b;
 }
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.app-container {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+.calendar-container {
+  position: relative;
+  width: 800px;
+  border: 1px solid #ccc;
+}
+
+/* Header styles */
+.calendar-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+}
+
+.calendar-header button {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  padding: 5px 10px;
+  margin: 0 10px;
+  cursor: pointer;
+}
+
+/* Grid layout */
+.calendar-grid {
+  padding: 10px;
+}
+
+.calendar-row {
+  display: flex;
+}
+
+.calendar-cell {
+  flex: 1;
+  border: 1px solid #ddd;
+  min-height: 80px;
+  padding: 5px;
+  box-sizing: border-box;
+}
+
+.weekday {
+  background-color: #f0f0f0;
+  text-align: center;
+  font-weight: bold;
+}
+
+.day-cell {
+  position: relative;
+}
+
+.day-number {
+  font-size: 12px;
+  margin-bottom: 5px;
+}
+
+/* Event indicator inside day cells */
+.events-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.calendar-event {
+  background-color: #fff;
+  cursor: pointer;
+  padding: 2px 4px;
+  margin-bottom: 2px;
+  border-radius: 2px;
+  font-size: 12px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Sidebar styles */
+.event-sidebar {
+  position: absolute;
+  top: 0;
+  right: -300px;
+  width: 300px;
+  height: 100%;
+  background-color: #fafafa;
+  border-left: 1px solid #ccc;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  box-sizing: border-box;
+  transition: right 0.3s ease-in-out;
+}
+
+.event-sidebar.open {
+  right: 0;
+}
+
+.close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.legislator-card.republican {
+  background-color: hsl(0, 100%, 94%);
+} 
+.legislator-card.democrat {
+  background-color: hsl(246, 100%, 94%);
+}

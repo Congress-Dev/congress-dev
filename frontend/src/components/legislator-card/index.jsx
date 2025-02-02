@@ -12,95 +12,27 @@ const USDollar = new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 0,
 });
 
-function LegislatorCard({ legislator }) {
-    function genTitle() {
-        const { legislation_versions = [] } = bill;
-        let version = "";
-        if (legislation_versions.length > 0) {
-            version = `/${legislation_versions[legislation_versions.length - 1]}`;
-        }
-
-        return (
-            <>
-                <Link
-                    to={`/bill/${bill.congress}/${bill.chamber}/${bill.number}${version}`}
-                >
-                    {`${chamberLookup[bill.chamber]} ${bill.number}`}
-                </Link>
-            </>
-        );
+function LegislatorCard({ legislator, bill, history }) {
+    const navigateToLegislatorPage = (bioguideId) => {
+      history.push(`/member/${bioguideId}`);
     }
-
-    function renderTags() {
-        if (bill.tags == null || bill.tags.length == 0) {
-            return;
+    const getPartyLetter = (party) => {
+        if (party === "Democrat") {
+            return "D";
+        } else if (party === "Republican") {
+            return "R";
+        } else {
+            return "I";
         }
-
-        return (
-            <>
-                <span style={{ fontWeight: "bold" }}>Tags:</span>
-                {bill.tags.map((tag) => (
-                    <>
-                        <Tag minimal={true} round={true}>
-                            {tag}
-                        </Tag>
-                        {"  "}
-                    </>
-                ))}
-                <br />
-            </>
-        );
-    }
-    return <>hi</>;
+    };
     return (
-        <SectionCard padded={false} className="bill-card">
+        <SectionCard padded={false} className={`legislator-card ${legislator.party.toLowerCase()}`} onClick={() => navigateToLegislatorPage(legislator.bioguideId)}>
             <Callout>
                 <h2 style={{ marginTop: "0px", marginBottom: "0px" }}>
-                    {genTitle()} - {bill.title}
+                    ({getPartyLetter(legislator.party)}) {legislator.lastName}, {legislator.firstName} - {legislator.state}
                 </h2>
+                <img height={50} width={50} src={legislator.imageUrl} alt="Legislator" />
 
-                {bill.effective_date != null ? (
-                    <>
-                        <span className="bill-card-introduced-date">
-                            <span style={{ fontWeight: "bold" }}>
-                                Introduced:
-                            </span>{" "}
-                            {bill.effective_date}
-                        </span>
-                        <br />
-                    </>
-                ) : (
-                    <></>
-                )}
-                {bill.sponsor != null ? (
-                    <>
-                        <span style={{ fontWeight: "bold" }}>Sponsor:</span>{" "}
-                        <LegislatorChip sponsor={bill.sponsor} />
-                    </>
-                ) : (
-                    ""
-                )}
-                {bill.legislation_versions != null &&
-                bill.legislation_versions.length > 0 ? (
-                    <>
-                        <span style={{ fontWeight: "bold" }}>Versions:</span>{" "}
-                        <BillVersionsBreadcrumb bill={bill} />
-                        <br />
-                    </>
-                ) : (
-                    <></>
-                )}
-
-                {renderTags()}
-
-                {bill.appropriations ? (
-                    <>
-                        <span style={{ fontWeight: "bold" }}>
-                            Appropriations:
-                        </span>{" "}
-                        {USDollar.format(bill.appropriations)}{" "}
-                    </>
-                ) : null}
             </Callout>
         </SectionCard>
     );

@@ -9,7 +9,7 @@ import {
 } from "@blueprintjs/core";
 
 import { LegislatorCard } from "components";
-import { getCongressSearch } from "common/api";
+import { getMemberSearch } from "common/api";
 
 function LegislatorSearchContent(props) {
     const [memberList, setMemberList] = useState({
@@ -20,14 +20,8 @@ function LegislatorSearchContent(props) {
 
     useEffect(() => {
         setLoading(true);
-        getCongressSearch(
-            props.congress,
-            props.chamber,
-            props.versions,
-            props.text,
-            props.sort,
-            props.page,
-            props.pageSize,
+        getMemberSearch(
+
         ).then((billList) => {
             if (billList != null) {
                 setLoading(false);
@@ -51,7 +45,7 @@ function LegislatorSearchContent(props) {
     function renderCardList(memberItem, ind) {
         return (
             <LegislatorCard
-                bill={memberItem}
+                legislator={memberItem}
                 key={`member-search-list-${ind}`}
             />
         );
@@ -61,8 +55,8 @@ function LegislatorSearchContent(props) {
         <Spinner className="loading-spinner" intent="primary" />
     ) : (
         <>
-            {memberList.legislation.length > 0 ? (
-                lodash.map(memberList.legislation, renderCardList)
+            {memberList.members.length > 0 ? (
+                lodash.map(memberList.members, renderCardList)
             ) : (
                 <SectionCard className="member-card">
                     <NonIdealState
