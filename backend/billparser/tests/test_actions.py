@@ -22,6 +22,12 @@ class TestDetermineAction(TestCase):
         result = determine_action(text)
         self.assertIn(ActionType.INSERT_END, result)
 
+    def test_insert_text_end(self):
+        text = """by adding at the end the following: "For purposes of the preceding sentence, the term "non-invasive" means, with respect to a diagnostic device, that the device does not penetrate the skin or any other membrane of the body, is not inserted or implanted into the body, causes no more than ephemeral compression or temperature changes to in situ bodily tissues, and does not subject bodily tissues to ionizing radiation."."""
+        result = determine_action(text)
+        self.assertIn(ActionType.INSERT_TEXT_END, result)
+
+
 
 class TestEnactmentDates(TestCase):
     def test_not_later_days(self):
@@ -48,6 +54,14 @@ class TestEnactmentDates(TestCase):
         self.assertEqual(result["amount"], "180")
         self.assertEqual(result["unit"], "days")
 
+    def test_hours(self):
+        text = """Not later than 24 hours after the date of enactment of this Act"""
+        result = determine_action(text)
+        self.assertIn(ActionType.EFFECTIVE_DATE, result)
+        result = result[ActionType.EFFECTIVE_DATE]
+        self.assertEqual(result["amount"], "24")
+        self.assertEqual(result["unit"], "hours")
+
     def test_more_verbiage(self):
         text = """Not later than 120 days after the date of the enactment of this Act"""
         result = determine_action(text)
@@ -71,3 +85,35 @@ class TestEnactmentDates(TestCase):
         result = result[ActionType.EFFECTIVE_DATE]
         self.assertEqual(result["amount"], "90")
         self.assertEqual(result["unit"], "days")
+
+    def test_fiscal_year(self):
+        text = """This Act shall take effect on the 1st day of the 1st fiscal year that begins after the date of the enactment of this Act."""
+        result = determine_action(text)
+        self.assertIn(ActionType.EFFECTIVE_DATE, result)
+        result = result[ActionType.EFFECTIVE_DATE]
+        self.assertEqual(result["amount"], "1")
+        self.assertEqual(result["unit"], "fiscal year")
+
+    def test_same_day(self):
+        text = "Effective on the date of enactment of this Act"
+        result = determine_action(text)
+        self.assertIn(ActionType.EFFECTIVE_DATE, result)
+        result = result[ActionType.EFFECTIVE_DATE]
+        self.assertEqual(result["amount"], "0")
+        self.assertEqual(result["unit"], "days")
+    
+    def test_same_date(self):
+        text = """Effective beginning on the date of the enactment of this Act"""
+        result = determine_action(text)
+        self.assertIn(ActionType.EFFECTIVE_DATE, result)
+        result = result[ActionType.EFFECTIVE_DATE]
+        self.assertEqual(result["amount"], "0")
+        self.assertEqual(result["unit"], "days")
+
+    def test_cease(self):
+        text = """The court described in subsection (a) shall cease to exist for administrative purposes 2 years after the effective date of this Act."""
+        result = determine_action(text)
+        self.assertIn(ActionType.EFFECTIVE_DATE, result)
+        result = result[ActionType.EFFECTIVE_DATE]
+        self.assertEqual(result["amount"], "2")
+        self.assertEqual(result["unit"], "years")

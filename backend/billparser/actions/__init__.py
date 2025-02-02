@@ -118,13 +118,13 @@ regex_holder = {
     ActionType.REPEAL: [r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is repealed.?"],
     ActionType.EFFECTIVE_DATE: [
         r"The amendments made by this section shall apply to taxable years beginning after (?P<effective_date>.+?)\.",
-        r"not later than (?P<amount>\d+) (?P<unit>(day|week|month|year)s?) after the (?:date of )?(?:the )?enactment of (?:(this|the .*?)) Act",
-        r"not later than (?P<amount>\d+) (?P<unit>(day|week|month|year)s?) after the (?:date of )?(?:the )?enactment of (?:(this|the .*?)) Act",
-        r"Beginning on the date that is (?P<amount>\d+) (?P<unit>(day|week|month|year)s?) after the (?:date of )(?:the )?enactment of this Act",
+        r"not later than (?P<amount>\d+) (?P<unit>(hour|day|week|month|year)s?) after the (?:date of )?(?:the )?enactment of (?:(this|the .*?)) Act",
+        r"not later than (?P<amount>\d+) (?P<unit>(hour|day|week|month|year)s?) after the (?:date of )?(?:the )?enactment of (?:(this|the .*?)) Act",
+        r"Beginning on the date that is (?P<amount>\d+) (?P<unit>(hour|day|week|month|year)s?) after the (?:date of )(?:the )?enactment of this Act",
         r"Effective on the date of the enactment of this Act",
         r"On and after the (?:date of )?(?:the )?enactment of this Act",
-        r"within (?P<amount>\d+) (?P<unit>(day|week|month|year)s?) after the (?:date of )?(?:the )?enactment of this Act",
-        r"take effect (?P<amount>\d+) (?P<unit>(day|week|month|year)s?) after the (?:date of )?(?:the )?enactment of this Act",
+        r"within (?P<amount>\d+) (?P<unit>(hour|day|week|month|year)s?) after the (?:date of )?(?:the )?enactment of this Act",
+        r"take effect (?P<amount>\d+) (?P<unit>(hour|day|week|month|year)s?) after the (?:date of )?(?:the )?enactment of this Act",
     ],
     ActionType.TABLE_OF_CONTENTS: [
         r"The table of contents (for|of) this Act is as follows:"
