@@ -81,6 +81,15 @@ function AppBar() {
                 <Button
                     className={Classes.MINIMAL}
                     icon="people"
+                    text="Legislators"
+                    onClick={() => {
+                        handleClose();
+                        history.push("/members");
+                    }}
+                />
+                <Button
+                    className={Classes.MINIMAL}
+                    icon="people"
                     text="About Us"
                     onClick={() => {
                         handleClose();

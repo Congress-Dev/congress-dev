@@ -14,7 +14,7 @@ import {
     USCodeRevisionList,
     USCodeViewer,
 } from "pages";
-
+import MemberSearch from "pages/member-search";
 import "styles/common.scss";
 
 function App() {
@@ -46,7 +46,11 @@ function App() {
                                     path="/uscode"
                                     component={USCodeRevisionList}
                                 />
-
+                                <Route
+                                exact
+                                    path="/members"
+                                    component={MemberSearch}
+                                />
                                 <Route
                                     exact
                                     path="/member/:bioguideId"
@@ -64,7 +68,7 @@ function App() {
                                     exact
                                     path="/about"
                                     component={AboutUs}
-                                />
+                                />            
                                 <Route path={["/", "/home"]} component={Home} />
                             </Switch>
                         </Router>
