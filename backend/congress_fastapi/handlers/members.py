@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy import select, and_
 
@@ -10,7 +10,35 @@ from billparser.db.models import (
     Congress,
 )
 from congress_fastapi.db.postgres import get_database
-from congress_fastapi.models.members import LegislationSponsorshipInfo, MemberInfo
+from congress_fastapi.models.members import LegislationSponsorshipInfo, MemberInfo, MemberSearchInfo
+
+
+async def get_members(
+    name: Optional[str],
+    party: Optional[List[str]],
+    chamber: Optional[str],
+    state: Optional[List[str]],
+    *,
+    limit: int = 10,
+    offset: int = 0,
+) -> List[MemberSearchInfo]:
+    database = await get_database()
+    query = select(*MemberSearchInfo.sqlalchemy_columns()).select_from(Legislator)
+    if name:
+        query = query.where(Legislator.name.ilike(f"%{name}%"))
+    if party:
+        query = query.where(Legislator.party.in_(party))
+    if chamber:
+        query = query.where(Legislator.chamber == chamber)
+    if state:
+        query = query.where(Legislator.state.in_(state))
+    query = query.limit(limit).offset(offset)
+    result = await database.fetch_all(query)
+    if result is None:
+        return None
+    if len(result) == 0:
+        return []
+    return [MemberSearchInfo(**r) for r in result]
 
 
 async def get_member_by_bioguide_id(bioguide_id: str) -> MemberInfo:
