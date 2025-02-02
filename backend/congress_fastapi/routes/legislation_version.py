@@ -20,7 +20,7 @@ from congress_fastapi.models.legislation import (
     LegislationClauseSummary,
 )
 
-router = APIRouter()
+router = APIRouter(tags=["Legislation", "Legislation Version"])
 
 
 @router.get(

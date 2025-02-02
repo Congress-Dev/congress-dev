@@ -43,7 +43,7 @@ from congress_fastapi.models.user import (
     UserUSCContentFolder,
 )
 
-router = APIRouter()
+router = APIRouter(tags=["User"])
 
 
 async def user_from_cookie(authentication: Optional[str] = Cookie()) -> Optional[User]:
