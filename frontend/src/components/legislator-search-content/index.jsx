@@ -21,7 +21,10 @@ function LegislatorSearchContent(props) {
     useEffect(() => {
         setLoading(true);
         getMemberSearch(
-
+          props.name,
+          undefined,
+          undefined,
+          props.chamber?.split(","),
         ).then((billList) => {
             if (billList != null) {
                 setLoading(false);
@@ -29,18 +32,12 @@ function LegislatorSearchContent(props) {
             }
         });
     }, [
-        props.congress,
-        props.chamber,
-        props.versions,
-        props.text,
-        props.sort,
-        props.page,
-        props.pageSize,
+        props.name
     ]);
 
     useEffect(() => {
         props.setResults(memberList.total_results);
-    }, [memberList.total_results]);
+    }, [props.setResults, memberList.total_results]);
 
     function renderCardList(memberItem, ind) {
         return (

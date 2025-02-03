@@ -46,11 +46,12 @@ async def get_members_search(
     Returns:
         `List[MemberSearchInfo]`: List of members matching the search criteria.
     """
+    member_list, total_results = await get_members(
+        name, party, chamber, state, limit=limit, offset=offset
+    )
     result = {
-        "members": await get_members(
-            name, party, chamber, state, limit=limit, offset=offset
-        ),
-        "total_results": 0,
+        "members": member_list,
+        "total_results": total_results,
     }
     return result
 

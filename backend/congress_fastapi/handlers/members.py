@@ -1,6 +1,6 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, or_, func
 
 from billparser.db.models import (
     Legislation,
@@ -10,7 +10,11 @@ from billparser.db.models import (
     Congress,
 )
 from congress_fastapi.db.postgres import get_database
-from congress_fastapi.models.members import LegislationSponsorshipInfo, MemberInfo, MemberSearchInfo
+from congress_fastapi.models.members import (
+    LegislationSponsorshipInfo,
+    MemberInfo,
+    MemberSearchInfo,
+)
 
 
 async def get_members(
@@ -21,24 +25,39 @@ async def get_members(
     *,
     limit: int = 10,
     offset: int = 0,
-) -> List[MemberSearchInfo]:
+) -> Tuple[List[MemberSearchInfo], int]:
     database = await get_database()
     query = select(*MemberSearchInfo.sqlalchemy_columns()).select_from(Legislator)
     if name:
-        query = query.where(Legislator.name.ilike(f"%{name}%"))
-    if party:
-        query = query.where(Legislator.party.in_(party))
-    if chamber:
-        query = query.where(Legislator.chamber == chamber)
-    if state:
-        query = query.where(Legislator.state.in_(state))
+        query = query.where(
+            or_(
+                Legislator.first_name.ilike(f"%{name}%"),
+                Legislator.last_name.ilike(f"%{name}%"),
+            )
+        )
+    # if party:
+    #     query = query.where(Legislator.party.in_(party))
+    # if chamber:
+    #     query = query.where(Legislator.chamber == chamber)
+    # if state:
+    #     query = query.where(Legislator.state.in_(state))
     query = query.limit(limit).offset(offset)
     result = await database.fetch_all(query)
     if result is None:
         return None
     if len(result) == 0:
         return []
-    return [MemberSearchInfo(**r) for r in result]
+    query = select(func.count(Legislator.legislator_id)).select_from(Legislator)
+    if name:
+        query = query.where(
+            or_(
+                Legislator.first_name.ilike(f"%{name}%"),
+                Legislator.last_name.ilike(f"%{name}%"),
+            )
+        )
+    query = query.limit(limit).offset(offset)
+    count_result = await database.fetch_one(query)
+    return [MemberSearchInfo(**r) for r in result], count_result[0]
 
 
 async def get_member_by_bioguide_id(bioguide_id: str) -> MemberInfo:

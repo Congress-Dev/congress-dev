@@ -424,7 +424,7 @@ export const getMemberSearch = (
     pageSize,
 ) => {
     return fetch(
-        `${endPv2}/members`,
+        `${endPv2}/members?name=${name?.join("&name=") || ""}&chamber=${chamber?.join('&chamber=') || ""}&party=${party?.join("&party=") || ""}&state=${state?.join("&state=") || ""}&page=${page}&pageSize=${pageSize}`,
     )
         .then(handleStatus)
         .catch(toastError);

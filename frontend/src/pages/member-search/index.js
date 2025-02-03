@@ -41,7 +41,7 @@ function MemberSearch(props) {
       chamber: lodash
           .keys(lodash.pickBy(chamberButtons, (value) => value))
           .join(","),
-      versions: lodash
+      state: lodash
           .keys(
               lodash.pickBy(versionToFull, (value) =>
                   lodash
@@ -433,34 +433,26 @@ function MemberSearch(props) {
                 </div>
                 <Section
                     title="Results"
-                    subtitle={`${totalResults.toLocaleString()} Bills`}
+                    subtitle={`${totalResults.toLocaleString()} Legislators`}
                     className="content"
                     icon="inbox-search"
-                    rightElement={
-                        <>
-                            <Icon icon="sort-alphabetical" /> Sort:
-                            <HTMLSelect
-                                value={currentSearch.sort}
-                                options={[
-                                    { label: "Bill No.", value: "number" },
-                                    { label: "Title", value: "title" },
-                                    { label: "Date", value: "effective_date" },
-                                ]}
-                                onChange={(event) => {
-                                    setCurrentSort(event.currentTarget.value);
-                                }}
-                            />
-                        </>
-                    }
+                    // rightElement={
+                    //     <>
+                    //         <Icon icon="sort-alphabetical" /> Sort:
+                    //         <HTMLSelect
+                    //             value={currentSearch.sort}
+                    //             options={[
+                    //             ]}
+                    //             onChange={(event) => {
+                    //                 setCurrentSort(event.currentTarget.value);
+                    //             }}
+                    //         />
+                    //     </>
+                    // }
                 >
                     <LegislatorSearchContent
-                        congress={currentSearch.congress}
+                        name={[currentSearch.text]}
                         chamber={currentSearch.chamber}
-                        versions={currentSearch.versions}
-                        text={currentSearch.text}
-                        sort={currentSearch.sort}
-                        page={currentSearch.page}
-                        pageSize={currentSearch.pageSize}
                         setResults={setTotalResults}
                     />
                     {totalResults > 0 ? (
