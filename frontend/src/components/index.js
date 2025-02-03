@@ -19,3 +19,5 @@ export { default as USCSidebar } from "./usc-sidebar";
 export { default as USCView } from "./usc-view";
 export { default as USCTrackingTabs } from "./usc-tracking-tabs";
 export { default as BillVotes } from "./bill-votes";
+export { default as LegislatorCard } from "./legislator-card";
+export { default as LegislatorSearchContent } from "./legislator-search-content";

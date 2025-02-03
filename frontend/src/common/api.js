@@ -416,6 +416,20 @@ export const getBillVersionDiffForSection = (
 };
 
 // Endpoint V2 being
+export const getMemberSearch = (
+    name,
+    party,
+    state,
+    chamber,
+    page,
+    pageSize,
+) => {
+    return fetch(
+        `${endPv2}/members?name=${name?.join("&name=") || ""}&chamber=${chamber?.join('&chamber=') || ""}&party=${party?.join("&party=") || ""}&state=${state?.join("&state=") || ""}&page=${page}&pageSize=${pageSize}`,
+    )
+        .then(handleStatus)
+        .catch(toastError);
+}
 
 export const getMemberInfo = (bioGuideId) => {
     return fetch(`${endPv2}/member/${bioGuideId}`)

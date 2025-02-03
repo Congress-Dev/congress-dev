@@ -9,7 +9,7 @@ from congress_fastapi.handlers.legislation.search import (
 from congress_fastapi.models.errors import Error
 from congress_fastapi.models.legislation.search import SearchResponse, SearchResult
 
-router = APIRouter()
+router = APIRouter(tags=["Legislation"])
 
 
 @router.get(
