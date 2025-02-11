@@ -42,11 +42,20 @@ const TalkToBill = () => {
             setMessages((prev) => [...prev, aiMessage]);
         } catch (error) {
             console.error("Error calling LLM:", error);
-            if (error.name === "HTTP Error: 429") {
+            if (error.name?.startsWith("HTTP Error:")) {
+                const errors = {
+                    "HTTP Error: 429":
+                        "I'm sorry, I can't respond to that right now. Please try again later. You are limited to 5 requests per 5 minutes",
+                    "HTTP Error: 422":
+                        "I'm sorry, I don't understand. Please try rephrasing your question.",
+                    "HTTP Error: 413":
+                        "I'm sorry, I can't respond to that right now. Your question is too long",
+                };
                 const aiMessage = {
                     sender: "warning",
                     content:
-                        "I'm sorry, I can't respond to that right now. Please try again later. You are limited to 5 requests per 5 minutes",
+                        errors[error.name] ||
+                        `I'm sorry, I can't respond to that right now. Please try again later. ${error.name}`,
                     tokens: 0,
                     time: 0,
                 };

@@ -84,7 +84,12 @@ async def run_talk_to_bill_prompt(query: str, content: str) -> LLMResponse:
         query=query, content=content
     )
     start_time = time.time()
-    response = run_query(prompt, model="ollama/hf.co/bartowski/Qwen2.5-14B-Instruct-1M-GGUF:latest", json=False)
+    response = run_query(
+        prompt,
+        model="ollama/hf.co/bartowski/Qwen2.5-14B-Instruct-1M-GGUF:latest",
+        json=False,
+        num_ctx=50000,
+    )
     end_time = time.time()
     content = response.json()["choices"][0]["message"]["content"]
     if content.startswith("```markdown\n"):
