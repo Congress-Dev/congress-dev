@@ -5,6 +5,7 @@ requests==2.32.2
 # FastAPI tools
 fastapi~=0.108.0
 uvicorn[standard]
+slowapi~=0.1.9
 
 # SQLAlchemy tools
 databases[postgresql]~=0.8.0
