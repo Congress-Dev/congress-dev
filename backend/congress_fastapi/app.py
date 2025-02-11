@@ -10,12 +10,18 @@ from congress_fastapi.routes.legislation_version import (
 )
 from congress_fastapi.routes.search import router as search_router
 from congress_fastapi.routes.user import router as user_router
+from congress_fastapi.utils.limiter import limiter
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+
 
 origins = [
     "http://localhost:3000",
     "https://congress.dev",
 ]
 app = FastAPI()
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,  # Allow specific origins (or ["*"] for all origins)

@@ -16,14 +16,13 @@ export default function USCTrackingTabs() {
         getUSCTrackingFolders()
             .then((res) => res.json())
             .then((res) => {
-                console.log(res);
                 setFolders(res || []);
                 if (res && res.length > 0) {
                     setSelectedTab(res[0].userUscContentFolderId);
                 }
             });
     }, []);
-    console.log(folders);
+
     return folders.length == 0 ? (
         <NonIdealState
             icon="inbox"

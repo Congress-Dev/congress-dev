@@ -7,7 +7,9 @@ function handleStatus(res) {
         return res.json();
     } else {
         console.error(res);
-        throw new Error(res);
+        const err = new Error(res);
+        err.name = "HTTP Error: " + res.status;
+        throw err;
         return null;
     }
 }
@@ -442,3 +444,16 @@ export const getMemberSponsoredLegislation = (bioGuideId) => {
         .then(handleStatus)
         .catch(toastError);
 };
+
+export const talkToBill = (legislationVersionId, query) => {
+    return fetch(`${endPv2}/legislation_version/${legislationVersionId}/llm`, {
+        method: "POST",
+        body: JSON.stringify({ query }),
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+    })
+        .then(handleStatus)
+        // .catch(toastError);
+}

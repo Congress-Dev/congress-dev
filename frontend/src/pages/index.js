@@ -6,3 +6,4 @@ export { default as Learn } from "./learn";
 export { default as MemberViewer } from "./member-viewer";
 export { default as USCodeRevisionList } from "./uscode-revision-list";
 export { default as USCodeViewer } from "./uscode-viewer";
+export { CalendarPage as Calendar } from "./calendar";

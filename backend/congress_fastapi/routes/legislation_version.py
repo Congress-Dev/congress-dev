@@ -1,5 +1,7 @@
 from typing import Dict, List
 
+from billparser.db.models import User
+from billparser.prompt_runners.utils import get_legis_by_parent_and_id, print_clause
 from congress_fastapi.models.legislation.content import LegislationContent
 from congress_fastapi.handlers.legislation.actions import (
     get_legislation_version_actions_by_legislation_id,
@@ -8,11 +10,15 @@ from congress_fastapi.handlers.legislation.content import (
     get_legislation_content_by_legislation_version_id,
 )
 from congress_fastapi.models.legislation.actions import LegislationActionParse
-from fastapi import APIRouter, HTTPException, Query, status
+from congress_fastapi.models.legislation.llm import LLMRequest
+from congress_fastapi.routes.user import user_from_cookie
+from congress_fastapi.utils.limiter import limiter
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 
 from congress_fastapi.handlers.legislation_version import (
     get_legislation_version_tags_by_legislation_id,
     get_legislation_version_summaries_by_legislation_id,
+    run_talk_to_bill_prompt,
 )
 from congress_fastapi.models.errors import Error
 from congress_fastapi.models.legislation import (
@@ -142,3 +148,29 @@ async def get_legislation_version_text(
             if content.legislation_content_id in action_by_content_id:
                 content.actions = action_by_content_id[content.legislation_content_id]
     return content_list
+
+
+@router.post(
+    "/legislation_version/{legislation_version_id}/llm",
+)
+@limiter.limit("5/5minutes")
+async def post_legislation_version_llm(
+    legislation_version_id: int,
+    query_request: LLMRequest,
+    request: Request,
+    user: User = Depends(user_from_cookie),
+) -> None:
+    """Returns a list of LegislationContent objects for a given legislation_id"""
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Not logged in"
+        )
+    legis_content = await get_legislation_content_by_legislation_version_id(
+        legislation_version_id
+    )
+    legis_by_parent, legis_by_id = get_legis_by_parent_and_id(legis_content)
+    legis_body = legis_by_parent[None][0]
+    content = print_clause(
+        legis_by_id, legis_by_parent, legis_body.legislation_content_id
+    )
+    return await run_talk_to_bill_prompt(query_request.query, content)

@@ -10,14 +10,13 @@ import {
     BillVotes,
     AppropriationTree,
     LegislatorChip,
+    TalkToBill,
 } from "components";
 
 function BillViewSidebar() {
     const [selectedTab, setSelectedTab] = useState("toc");
 
     const { billSummary, bill, bill2 } = useContext(BillContext);
-
-    console.log(bill2);
 
     return (
         <>
@@ -75,7 +74,12 @@ function BillViewSidebar() {
                 {bill2?.votes?.length > 0 && (
                     <Tab id="votes" title="Votes" panel={<BillVotes />} />
                 )}
-            </Tabs>
+                <Tab
+                    id="talk-to-bill"
+                    title="AI Chat"
+                    panel ={<TalkToBill />}
+                />
+                </Tabs>
         </>
     );
 }

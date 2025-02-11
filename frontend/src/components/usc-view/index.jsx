@@ -169,8 +169,8 @@ function USCView({ release, title, section, diffs = {}, interactive = true }) {
                     itemDiff[key] !== undefined &&
                     itemDiff[key] !== item[key]
                 ) {
-                  console.log(findDiffStrings(item[key] ||"", itemDiff[key]|| ""));
-                    const diffStart = findCommonPrefix(
+
+                  const diffStart = findCommonPrefix(
                         item[key],
                         itemDiff[key],
                     );
