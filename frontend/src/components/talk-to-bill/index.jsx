@@ -2,16 +2,17 @@ import React, { useContext, useEffect, useState } from "react";
 import { Card, Elevation, Button, InputGroup, H5 } from "@blueprintjs/core";
 import { talkToBill } from "common/api";
 import { useLocation } from "react-router-dom";
-import { BillContext } from "context";
+import { BillContext, LoginContext } from "context";
 import ReactMarkdown from "react-markdown";
 
 const TalkToBill = () => {
     const location = useLocation();
-    console.log("Current URL:", location.pathname);
     const [messages, setMessages] = useState([]);
     const [query, setQuery] = useState("");
     const [versionId, setVersionId] = useState(undefined);
     const { bill } = useContext(BillContext);
+    const { user } = useContext(LoginContext);
+
     useEffect(() => {
         bill?.legislation_versions?.forEach((version) => {
             if (
@@ -22,9 +23,39 @@ const TalkToBill = () => {
             }
         });
     }, [bill, location.pathname]);
+
+    useEffect(() => {
+        if (
+            !user &&
+            messages.slice(-1)[0]?.sender !== "gray" &&
+            bill?.title &&
+            bill?.title !== undefined
+        ) {
+            setMessages((prev) => [
+                ...prev,
+                {
+                    sender: "gray",
+                    content: `You must be logged in to chat with the ${bill.title}.`,
+                    tokens: 0,
+                    time: 0,
+                },
+            ]);
+        }
+    }, [user, bill]);
+    
     const sendMessage = async () => {
         if (!query.trim()) return;
-
+        if (!user) {
+            setMessages((prev) => [
+                ...prev,
+                {
+                    sender: "gray",
+                    content: "You must be logged in to chat with Bill.",
+                    tokens: 0,
+                    time: 0,
+                },
+            ]);
+        }
         // Append user's message
         const userMessage = { sender: "user", content: query };
         setMessages((prev) => [...prev, userMessage]);
@@ -85,6 +116,7 @@ const TalkToBill = () => {
                                 ai: "#e8f5e9",
                                 user: "#e3f2fd",
                                 warning: "#ffeece",
+                                gray: "#f5f5f5",
                             }[msg.sender],
                         }}
                     >
@@ -128,6 +160,7 @@ const TalkToBill = () => {
                     intent="primary"
                     onClick={sendMessage}
                     style={{ marginLeft: "0.5rem" }}
+                    disabled={!user}
                 />
             </div>
         </div>

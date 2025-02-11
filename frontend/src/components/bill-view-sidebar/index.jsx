@@ -18,8 +18,6 @@ function BillViewSidebar() {
 
     const { billSummary, bill, bill2 } = useContext(BillContext);
 
-    console.log("bill2", bill);
-
     return (
         <>
             <SectionCard>
