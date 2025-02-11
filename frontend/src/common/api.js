@@ -7,7 +7,9 @@ function handleStatus(res) {
         return res.json();
     } else {
         console.error(res);
-        throw new Error(res);
+        const err = new Error(res);
+        err.name = "HTTP Error: " + res.status;
+        throw err;
         return null;
     }
 }
@@ -453,5 +455,5 @@ export const talkToBill = (legislationVersionId, query) => {
         credentials: "include",
     })
         .then(handleStatus)
-        .catch(toastError);
+        // .catch(toastError);
 }

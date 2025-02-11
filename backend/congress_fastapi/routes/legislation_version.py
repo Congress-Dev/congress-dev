@@ -12,7 +12,8 @@ from congress_fastapi.handlers.legislation.content import (
 from congress_fastapi.models.legislation.actions import LegislationActionParse
 from congress_fastapi.models.legislation.llm import LLMRequest
 from congress_fastapi.routes.user import user_from_cookie
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from congress_fastapi.utils.limiter import limiter
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 
 from congress_fastapi.handlers.legislation_version import (
     get_legislation_version_tags_by_legislation_id,
@@ -152,9 +153,11 @@ async def get_legislation_version_text(
 @router.post(
     "/legislation_version/{legislation_version_id}/llm",
 )
+@limiter.limit("5/5minutes")
 async def post_legislation_version_llm(
     legislation_version_id: int,
     query_request: LLMRequest,
+    request: Request,
     user: User = Depends(user_from_cookie),
 ) -> None:
     """Returns a list of LegislationContent objects for a given legislation_id"""

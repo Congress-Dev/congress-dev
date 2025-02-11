@@ -42,16 +42,25 @@ const TalkToBill = () => {
             setMessages((prev) => [...prev, aiMessage]);
         } catch (error) {
             console.error("Error calling LLM:", error);
+            if (error.name === "HTTP Error: 429") {
+                const aiMessage = {
+                    sender: "warning",
+                    content:
+                        "I'm sorry, I can't respond to that right now. Please try again later. You are limited to 5 requests per 5 minutes",
+                    tokens: 0,
+                    time: 0,
+                };
+                setMessages((prev) => [...prev, aiMessage]);
+            }
         }
     };
 
     return (
         <div
             style={{
-                width: "300px",
                 padding: "1rem",
                 borderRight: "1px solid #ccc",
-                height: "100vh",
+                height: "70vh",
                 overflowY: "auto",
             }}
         >
@@ -63,8 +72,11 @@ const TalkToBill = () => {
                         elevation={Elevation.TWO}
                         style={{
                             marginBottom: "0.5rem",
-                            backgroundColor:
-                                msg.sender === "ai" ? "#e8f5e9" : "#e3f2fd",
+                            backgroundColor: {
+                                ai: "#e8f5e9",
+                                user: "#e3f2fd",
+                                warning: "#ffeece",
+                            }[msg.sender],
                         }}
                     >
                         {msg.sender === "ai" &&
@@ -72,7 +84,7 @@ const TalkToBill = () => {
                             msg.time !== undefined && (
                                 <div
                                     style={{
-                                        fontSize: "0.8rem",
+                                        fontSize: "0.6rem",
                                         marginBottom: "0.3rem",
                                         color: "#555",
                                     }}
@@ -81,7 +93,15 @@ const TalkToBill = () => {
                                     {msg.time.toFixed(3)}s
                                 </div>
                             )}
-                        <div><ReactMarkdown>{msg.content}</ReactMarkdown></div>
+                        <div
+                            style={{
+                                fontSize: "0.7rem",
+                                marginBottom: "0.3rem",
+                                color: "#555",
+                            }}
+                        >
+                            <ReactMarkdown>{msg.content}</ReactMarkdown>
+                        </div>
                     </Card>
                 ))}
             </div>

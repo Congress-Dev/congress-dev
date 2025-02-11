@@ -73,6 +73,7 @@ async def run_talk_to_bill_prompt(query: str, content: str) -> LLMResponse:
     prompt = """You are a helpful agent working on Congress.dev, you receive a query from the user and a piece of legislation content.
     You shall then answer their query using the legislation.
     If you do not know, under NO circumstances should you hallucinate or otherwise make stuff up.
+    Please respond in raw Markdown format.
     ONLY PROVIDE RESPONSES RELATED TO THE LEGISLATION.
     EVERYTHING BELOW HERE IS USER INPUT
     ==== Query ====
@@ -85,8 +86,13 @@ async def run_talk_to_bill_prompt(query: str, content: str) -> LLMResponse:
     start_time = time.time()
     response = run_query(prompt, model="ollama/hf.co/bartowski/Qwen2.5-14B-Instruct-1M-GGUF:latest", json=False)
     end_time = time.time()
+    content = response.json()["choices"][0]["message"]["content"]
+    if content.startswith("```markdown\n"):
+        content = content[12:]
+    if content.endswith("```"):
+        content = content[:-3]
     return LLMResponse(
-        response=response.json()["choices"][0]["message"]["content"],
+        response=content,
         tokens=(
             response.usage.total_tokens
             if response.usage and response.usage.total_tokens
