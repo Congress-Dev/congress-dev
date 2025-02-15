@@ -39,6 +39,8 @@ function LegislatorSearchContent(props) {
     }, [
         props.name,
         props.page,
+        props.congress,
+        props.chamber,
         props.pageSize,
         props.sort,
         props.direction,

@@ -35,9 +35,14 @@ async def get_members(
         'Senate': 'Senator',
         'House': 'Representative',
     }
-    job = [job_lookup[x] for x in chamber]
 
-    congress = [int(c) for c in congress]
+    job = None
+    if chamber is not None and chamber[0] != '':
+        job = [job_lookup[x] for x in chamber]
+
+    sessions = None
+    if congress is not None and congress[0] != '':
+        sessions = [int(c) for c in congress]
 
     sort_order = asc(sort)
     if direction == "desc":
@@ -71,11 +76,11 @@ async def get_members(
             )
     # if party:
     #     query = query.where(Legislator.party.in_(party))
-    if congress:
+    if sessions:
         query = query.where(
-            or_(*[Legislator.congress_id.any(c) for c in congress])
+            or_(*[Legislator.congress_id.any(c) for c in sessions])
         )
-    if chamber:
+    if job:
         query = query.where(Legislator.job.in_(job))
     # if state:
     #     query = query.where(Legislator.state.in_(state))
@@ -83,8 +88,6 @@ async def get_members(
     query = query.limit(page_size)
     query = query.offset((page - 1) * page_size)
     result = await database.fetch_all(query)
-
-    print(query)
 
     query = select(func.count(Legislator.legislator_id)).select_from(Legislator)
     if name:
@@ -112,11 +115,11 @@ async def get_members(
                     Legislator.last_name.ilike(f"%{name}%"),
                 )
             )
-    if congress:
+    if sessions:
         query = query.where(
-            or_(*[Legislator.congress_id.any(c) for c in congress])
+            or_(*[Legislator.congress_id.any(c) for c in sessions])
         )
-    if chamber:
+    if job:
         query = query.where(Legislator.job.in_(job))
     count_result = await database.fetch_one(query)
     return [MemberSearchInfo(**r) for r in result], count_result[0]
