@@ -512,7 +512,7 @@ function BillSearch(props) {
                 </div>
                 <Section
                     title="Results"
-                    subtitle={`${totalResults.toLocaleString()}`}
+                    subtitle={`${totalResults.toLocaleString()} Bills`}
                     className="content"
                     icon="inbox-search"
                     rightElement={

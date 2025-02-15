@@ -54,7 +54,7 @@ function BillViewSidebar() {
             </SectionCard>
 
             <Tabs
-                id="sidebar-tabs"
+                id="bill-sidebar-tabs"
                 selectedTabId={selectedTab}
                 onChange={setSelectedTab}
             >
@@ -63,7 +63,11 @@ function BillViewSidebar() {
                     title="Contents"
                     panel={<BillTableOfContents />}
                 />
-                <Tab id="uscode" title="Diffs" panel={<BillDiffSidebar />} />
+                <Tab
+                    id="uscode"
+                    title="Diffs"
+                    panel={<BillDiffSidebar />}
+                />
 
                 <Tab
                     id="dollarlist"
@@ -72,14 +76,13 @@ function BillViewSidebar() {
                 />
 
                 {bill2?.votes?.length > 0 && (
-                    <Tab id="votes" title="Votes" panel={<BillVotes />} />
+                    <Tab
+                        id="votes"
+                        title="Votes"
+                        panel={<BillVotes />}
+                    />
                 )}
-                <Tab
-                    id="talk-to-bill"
-                    title="AI Chat"
-                    panel ={<TalkToBill />}
-                />
-                </Tabs>
+            </Tabs>
         </>
     );
 }

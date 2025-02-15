@@ -89,7 +89,7 @@ function AppBar() {
                 />
                 <Button
                     className={Classes.MINIMAL}
-                    icon="people"
+                    icon="info-sign"
                     text="About Us"
                     onClick={() => {
                         handleClose();

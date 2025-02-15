@@ -194,8 +194,8 @@ const LegislatorProfile = ({
         );
     } else {
         return (
-            <div class="legislator-profile">
-                <div class="sidebar">
+            <div className="legislator-profile">
+                <div className="sidebar">
                     <Section title="Biography" icon="manual" compact={true}>
                         <SectionCard>
                             <div className="center">{renderBiopicture()}</div>
@@ -204,7 +204,7 @@ const LegislatorProfile = ({
                     </Section>
                 </div>
 
-                <div class="content">
+                <div className="content">
                     <Section
                         title="Sponsored Legislation"
                         subtitle="All Records"

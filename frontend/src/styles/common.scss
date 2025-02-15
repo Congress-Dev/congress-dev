@@ -43,8 +43,8 @@ b {
 }
 
 .page {
-    width: 90%;
-    margin-left: 5%;
+    width: 80%;
+    margin-left: 10%;
 }
 
 .bill-content {
@@ -353,6 +353,36 @@ b {
 
     .bp5-button {
         margin: 20px;
+    }
+}
+
+.legislator-card {
+    .bp5-callout {
+        display: flex;
+    }
+
+    .details {
+        margin-left: 10px;
+    }
+
+    .image {
+        width: 75px; /* Set a fixed width */
+        height: 75px; /* Set a fixed height */
+        border-radius: 50%; /* Make it circular */
+        overflow: hidden; /* Hide anything outside the circle */
+        display: flex;
+        background-color: #00000042;
+
+        svg {
+            width: 75px;
+            height: 75px;
+        }
+
+        img {
+            width: 100%; /* Makes the image cover the container width */
+            height: 100%; /* Makes the image cover the container height */
+            object-fit: cover; /* Ensures the image covers the area without stretching */
+        }
     }
 }
 

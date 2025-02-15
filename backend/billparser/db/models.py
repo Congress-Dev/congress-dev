@@ -31,6 +31,10 @@ class CastingArray(ARRAY):
         return sa.cast(bindvalue, self)
 
 
+class LegislatorJob(str, enum.Enum):
+    Senator = "Senator"
+    Representative = "Representative"
+
 class LegislatorVoteType(str, enum.Enum):
     yay = "yay"
     nay = "nay"
@@ -53,7 +57,6 @@ class LegislatorVoteType(str, enum.Enum):
             return cls.abstain
         else:
             raise ValueError(f"Invalid LegislatorVoteType: {string}")
-
 
 class LegislationType(str, enum.Enum):
     Bill = "Bill"
@@ -970,6 +973,9 @@ class Legislator(Base):
     middle_name = Column(String)
     last_name = Column(String)
 
+    job = Column(Enum(LegislatorJob))
+    congress_id = Column(ARRAY(Integer), index=False)
+
     # TODO: Enum?
     party = Column(String, index=True)
     state = Column(String, index=True)
@@ -980,6 +986,10 @@ class Legislator(Base):
 
     profile = Column(String, index=False, nullable=True)
 
+    twitter = Column(String, index=False, nullable=True)
+    facebook = Column(String, index=False, nullable=True)
+    youtube = Column(String, index=False, nullable=True)
+    instagram = Column(String, index=False, nullable=True)
 
 class LegislationSponsorship(Base):
     """

@@ -346,52 +346,42 @@ async def handle_get_user_stats(cookie):
 
     legislation_count = await database.execute(
         select(
-            func.count(Legislation.legislation_id).label("count"),
-            literal("grouper").label("grouper"),
+            func.count(func.distinct(Legislation.legislation_id)).label("count"),
         )
         .select_from(
             join(
                 Legislation,
                 LegislationVersion,
                 Legislation.legislation_id == LegislationVersion.legislation_id,
-            ).join(Congress, Congress.congress_id == Legislation.congress_id)
+            )
         )
-        .group_by("grouper")
         .where(LegislationVersion.effective_date >= first_day_of_year)
     )
 
     version_count = await database.execute(
         select(
-            func.count(LegislationVersion.legislation_version_id).label("count"),
-        )
-        .select_from(
-            join(
-                Legislation,
-                LegislationVersion,
-                Legislation.legislation_id == LegislationVersion.legislation_id,
-            ).join(Congress, Congress.congress_id == Legislation.congress_id)
-        )
-        .group_by(LegislationVersion.legislation_version_id)
-        .where(LegislationVersion.effective_date >= first_day_of_year)
+            func.count(func.distinct(LegislationVersion.legislation_version_id)).label(
+                "count"
+            ),
+        ).where(LegislationVersion.effective_date >= first_day_of_year)
     )
 
     bioguide_count = await database.fetch_all(
         select(
-            func.count(LegislationSponsorship.legislator_bioguide_id).label("count"),
+            func.count(
+                func.distinct(LegislationSponsorship.legislator_bioguide_id)
+            ).label("count"),
         )
         .select_from(
             join(
                 Legislation,
                 LegislationVersion,
                 Legislation.legislation_id == LegislationVersion.legislation_id,
-            )
-            .join(
+            ).join(
                 LegislationSponsorship,
                 Legislation.legislation_id == LegislationSponsorship.legislation_id,
             )
-            .join(Congress, Congress.congress_id == Legislation.congress_id)
         )
-        .group_by(LegislationSponsorship.legislator_bioguide_id)
         .where(LegislationVersion.effective_date >= first_day_of_year)
     )
 
@@ -497,6 +487,9 @@ async def insert_llm_query_result(
 ) -> None:
     database = await get_database()
     query = insert(UserLLMQuery).values(
-        legislation_version_id=legislation_version_id, query=query, response=response, safe=False
+        legislation_version_id=legislation_version_id,
+        query=query,
+        response=response,
+        safe=False,
     )
     await database.execute(query)
