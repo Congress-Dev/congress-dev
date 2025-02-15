@@ -1,11 +1,23 @@
-import React, { useContext, useEffect, useState } from "react";
-import { Card, Elevation, Button, InputGroup, H5 } from "@blueprintjs/core";
-import { talkToBill } from "common/api";
-import { useLocation } from "react-router-dom";
-import { BillContext, LoginContext } from "context";
+import React, { useContext, useEffect, useState, useRef } from "react";
 import ReactMarkdown from "react-markdown";
+import { useLocation } from "react-router-dom";
+
+import {
+    Section,
+    SectionCard,
+    Card,
+    Elevation,
+    Button,
+    InputGroup,
+    NonIdealState,
+    NonIdealStateIconSize,
+} from "@blueprintjs/core";
+
+import { talkToBill } from "common/api";
+import { BillContext, LoginContext } from "context";
 
 const TalkToBill = () => {
+    const elementRef = useRef(null);
     const location = useLocation();
     const [messages, setMessages] = useState([]);
     const [query, setQuery] = useState("");
@@ -42,7 +54,13 @@ const TalkToBill = () => {
             ]);
         }
     }, [user, bill]);
-    
+
+    useEffect(() => {
+        if (elementRef.current) {
+            elementRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+    }, [messages]);
+
     const sendMessage = async () => {
         if (!query.trim()) return;
         if (!user) {
@@ -96,74 +114,65 @@ const TalkToBill = () => {
     };
 
     return (
-        <div
-            style={{
-                padding: "1rem",
-                borderRight: "1px solid #ccc",
-                height: "70vh",
-                overflowY: "auto",
-            }}
-        >
-            <H5>Chat</H5>
-            <div style={{ marginBottom: "1rem" }}>
+        <Section title="AI Insights" className="chat-popover-content">
+            <SectionCard className="history">
+                {messages.length == 0 && (
+                    <NonIdealState
+                        icon="predictive-analysis"
+                        iconSize={NonIdealStateIconSize.STANDARD}
+                        title="Chat with AI about this bill"
+                        description={
+                            <>
+                                Ask questions about this bill
+                                <br />
+                                to gain more insight
+                            </>
+                        }
+                        layout="vertical"
+                    />
+                )}
                 {messages.map((msg, index) => (
                     <Card
                         key={index}
                         elevation={Elevation.TWO}
-                        style={{
-                            marginBottom: "0.5rem",
-                            backgroundColor: {
-                                ai: "#e8f5e9",
-                                user: "#e3f2fd",
-                                warning: "#ffeece",
-                                gray: "#f5f5f5",
-                            }[msg.sender],
-                        }}
+                        className={msg.sender}
+                        ref={index === messages.length - 1 ? elementRef : null}
                     >
                         {msg.sender === "ai" &&
                             msg.tokens !== undefined &&
                             msg.time !== undefined && (
-                                <div
-                                    style={{
-                                        fontSize: "0.6rem",
-                                        marginBottom: "0.3rem",
-                                        color: "#555",
-                                    }}
-                                >
+                                <div className="info">
                                     Tokens: {msg.tokens} | Time:{" "}
                                     {msg.time.toFixed(3)}s
                                 </div>
                             )}
-                        <div
-                            style={{
-                                fontSize: "0.7rem",
-                                marginBottom: "0.3rem",
-                                color: "#555",
-                            }}
-                        >
+                        <div className="message">
                             <ReactMarkdown>{msg.content}</ReactMarkdown>
                         </div>
                     </Card>
                 ))}
-            </div>
-            <div style={{ display: "flex" }}>
+            </SectionCard>
+            <SectionCard className="inputs">
                 <InputGroup
+                    fill={true}
                     placeholder="Enter your message..."
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
                     onKeyPress={(e) => {
                         if (e.key === "Enter") sendMessage();
                     }}
+                    rightElement={
+                        <Button
+                            icon="send-message"
+                            intent="primary"
+                            onClick={sendMessage}
+                            style={{ marginLeft: "0.5rem" }}
+                            disabled={!user}
+                        />
+                    }
                 />
-                <Button
-                    icon="send"
-                    intent="primary"
-                    onClick={sendMessage}
-                    style={{ marginLeft: "0.5rem" }}
-                    disabled={!user}
-                />
-            </div>
-        </div>
+            </SectionCard>
+        </Section>
     );
 };
 

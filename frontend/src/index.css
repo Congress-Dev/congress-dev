@@ -141,15 +141,3 @@ body {
     font-size: 20px;
     cursor: pointer;
 }
-#root.bp5-dark .legislator-card.republican {
-    background-color: hsl(0, 36.87%, 35.78%);
-}
-.legislator-card.republican {
-    background-color: hsl(0, 100%, 94%);
-}
-.legislator-card.democrat {
-    background-color: hsl(246, 100%, 94%);
-}
-#root.bp5-dark .legislator-card.democrat {
-    background-color: hsl(246, 49.84%, 61.15%);
-}

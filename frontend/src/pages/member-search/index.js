@@ -428,7 +428,7 @@ function MemberSearch(props) {
                         title="State"
                         collapsed={collapsed}
                     >
-                        
+
                     </CollapsibleSection>
                 </div>
                 <Section
@@ -451,7 +451,7 @@ function MemberSearch(props) {
                     // }
                 >
                     <LegislatorSearchContent
-                        name={[currentSearch.text]}
+                        name={currentSearch.text}
                         chamber={currentSearch.chamber}
                         setResults={setTotalResults}
                     />
