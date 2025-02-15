@@ -423,11 +423,13 @@ export const getMemberSearch = (
     party,
     state,
     chamber,
+    sort,
+    direction,
     page,
     pageSize,
 ) => {
     return fetch(
-        `${endPv2}/members?name=${name || ""}&chamber=${chamber?.join('&chamber=') || ""}&party=${party?.join("&party=") || ""}&state=${state?.join("&state=") || ""}&page=${page}&pageSize=${pageSize}`,
+        `${endPv2}/members?name=${name || ""}&chamber=${chamber?.join('&chamber=') || ""}&party=${party?.join("&party=") || ""}&state=${state?.join("&state=") || ""}&sort=${sort}&direction=${direction}&page=${page}&pageSize=${pageSize}`,
     )
         .then(handleStatus)
         .catch(toastError);
