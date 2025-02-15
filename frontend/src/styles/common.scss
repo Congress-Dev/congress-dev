@@ -398,8 +398,24 @@ b {
         margin-bottom: 0px !important;
         margin-top: 0px !important;
 
+        &.quarter {
+            width: calc(25% - 10px)
+        }
+
+        &.third {
+            width: calc(33% - 10px)
+        }
+
         &.half {
             width: calc(50% - 10px)
+        }
+
+        &.two-third {
+            width: calc(67% - 10px);
+        }
+
+        &.three-quarter {
+            width: calc(75% - 10px);
         }
     }
 }

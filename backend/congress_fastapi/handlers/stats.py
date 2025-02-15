@@ -69,7 +69,7 @@ async def handle_get_legislation_funnel():
 
     legislation_count = await database.fetch_all(
         select(
-            func.count(LegislationVersion.legislation_version_id).label('value'),
+            func.count(LegislationVersion.legislation_version).label('value'),
             LegislationVersion.legislation_version
         )
         .group_by(LegislationVersion.legislation_version)

@@ -93,9 +93,8 @@ function AuthedHome() {
 
             <div className="content dashboard-grid">
                 <Section
-                    className="half"
+                    className="third"
                     title="Legislation Funnel"
-                    subtitle="Stages of the Bill"
                     icon="drag-handle-vertical"
                     compact="true"
                     collapsible={true}
@@ -116,25 +115,22 @@ function AuthedHome() {
                                     from: "color",
                                     modifiers: [["darker", 3]],
                                 }}
-                                beforeSeparatorLength={100}
+                                beforeSeparatorLength={20}
                                 beforeSeparatorOffset={20}
-                                afterSeparatorLength={100}
+                                afterSeparatorLength={20}
                                 afterSeparatorOffset={20}
-                                currentPartSizeExtension={10}
-                                currentBorderWidth={40}
+                                currentPartSizeExtension={0}
+                                currentBorderWidth={0}
                                 motionConfig="wobbly"
                                 theme={nivoTheme}
                                 animate={false}
-                                currentPartSizeExtensio={0}
-                                currentBorderWidt={0}
                             />
                         )}
                     </div>
                 </Section>
                 <Section
-                    className="half"
+                    className="two-third"
                     title="Legislation Calendar"
-                    subtitle="Activity over the year"
                     icon="drag-handle-vertical"
                     compact="true"
                     collapsible={true}
