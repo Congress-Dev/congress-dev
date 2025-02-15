@@ -5,21 +5,27 @@ import {
     NonIdealState,
     NonIdealStateIconSize,
 } from "@blueprintjs/core";
+import { ResponsiveCalendar } from '@nivo/calendar'
 
 import {
     userGetLegislationFeed,
     userGetLegislatorFeed,
     userGetStats,
     userGetFolders,
+    statsGetCalendar,
 } from "common/api";
 import { BillTable, USCTrackingTabs } from "components";
-import { LoginContext } from "context";
+import { LoginContext, ThemeContext } from "context";
 
 function AuthedHome() {
     const { user } = useContext(LoginContext);
+    const { nivoTheme } = useContext(ThemeContext);
     const [legislationFeed, setLegislationFeed] = useState([]);
     const [legislatorFeed, setLegislatorFeed] = useState([]);
     const [stats, setStats] = useState(null);
+    const [calendar, setCalendar] = useState([])
+
+    console.log(nivoTheme)
 
     useEffect(() => {
         if (user != null) {
@@ -36,6 +42,10 @@ function AuthedHome() {
             });
             userGetFolders().then(console.log);
         }
+
+        statsGetCalendar().then((response) => {
+            setCalendar(response.data)
+        })
     }, [user]);
 
     return (
@@ -78,9 +88,35 @@ function AuthedHome() {
 
             <div className="content">
                 <Section
+                    title="Legislation Calendar"
+                    subtitle="Activity over the year"
+                    icon="drag-handle-vertical"
+                    compact="true"
+                    collapsible={true}
+                >
+                    <div style={{height: '200px'}}>
+                        <ResponsiveCalendar
+                            data={calendar}
+                            from="2025-02-01"
+                            to="2025-07-20"
+                            emptyColor={nivoTheme.annotations.outline.outlineColor}
+                            colors={[ '#BDADFF', '#9881F3', '#7961DB', '#634DBF' ]}
+                            margin={{ top: 40, left: 40, right: 20, bottom: 20 }}
+                            yearSpacing={40}
+                            monthBorderColor={nivoTheme.annotations.outline.stroke}
+                            dayBorderWidth={2}
+                            dayBorderColor={nivoTheme.annotations.outline.stroke}
+                            theme={nivoTheme}
+                        />
+                    </div>
+                </Section>
+                <Section
+                    className="half"
                     title="Followed Legislation"
                     subtitle="Last 7 Days"
                     icon="drag-handle-vertical"
+                    compact={true}
+                    collapsible={true}
                 >
                     {legislationFeed?.length > 0 ? (
                         <BillTable bills={legislationFeed} />
@@ -105,9 +141,12 @@ function AuthedHome() {
                 </Section>
 
                 <Section
+                    className="half"
                     title="Followed Sponsors"
                     subtitle="Last 7 Days"
                     icon="drag-handle-vertical"
+                    compact={true}
+                    collapsible={true}
                 >
                     {legislatorFeed?.length > 0 ? (
                         <BillTable bills={legislatorFeed} />
@@ -134,6 +173,8 @@ function AuthedHome() {
                     title="USC Tracking"
                     subtitle="Last 7 Days"
                     icon="drag-handle-vertical"
+                    compact={true}
+                    collapsible={true}
                 >
                     <SectionCard>
                         <USCTrackingTabs />

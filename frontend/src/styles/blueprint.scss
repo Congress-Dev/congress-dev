@@ -6,6 +6,21 @@
     -moz-outline-radius: 0px !important;
 }
 
+
+
+@media (min-device-width: 1200px) {
+    .bp5-section.half {
+        display: inline-block;
+        vertical-align: top;
+        width: calc(50% - 10px);
+
+        & + .bp5-section.half {
+            margin-left: 20px;
+        }
+    }
+}
+
+
 .bp5-divider {
     margin: 10px 0px;
 }

@@ -159,6 +159,12 @@ export const userRemoveLegislator = (bioGuideId) => {
         .catch(toastError);
 };
 
+export const statsGetCalendar = () => {
+    return fetch(`${endPv2}/stats/calendar`)
+        .then(handleStatus)
+        .catch(toastError)
+}
+
 export const getBill = (congress, chamber, billNumber) => {
     return fetch(
         `${endpoint}/congress/${congress}/${capFirstLetter(
