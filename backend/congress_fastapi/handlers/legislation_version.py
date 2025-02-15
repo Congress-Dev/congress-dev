@@ -69,7 +69,9 @@ async def get_legislation_version_summaries_by_legislation_id(
     ]
 
 
-async def run_talk_to_bill_prompt(query: str, content: str) -> LLMResponse:
+async def run_talk_to_bill_prompt(
+    query: str, content: str, metadata: str
+) -> LLMResponse:
     prompt = """You are a helpful agent working on Congress.dev, you receive a query from the user and a piece of legislation content.
     You shall then answer their query using the legislation.
     If you do not know, under NO circumstances should you hallucinate or otherwise make stuff up.
@@ -78,10 +80,11 @@ async def run_talk_to_bill_prompt(query: str, content: str) -> LLMResponse:
     EVERYTHING BELOW HERE IS USER INPUT
     ==== Query ====
     {query}
-    
+    ==== Metadata ====
+    {metadata}
     ==== Legislation ====
     {content}""".format(
-        query=query, content=content
+        query=query, content=content, metadata=metadata
     )
     start_time = time.time()
     response = run_query(

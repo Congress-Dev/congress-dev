@@ -9,6 +9,9 @@ from congress_fastapi.handlers.legislation.actions import (
 from congress_fastapi.handlers.legislation.content import (
     get_legislation_content_by_legislation_version_id,
 )
+from congress_fastapi.handlers.legislation_metadata import (
+    get_legislation_metadata_by_version_id,
+)
 from congress_fastapi.models.legislation.actions import LegislationActionParse
 from congress_fastapi.models.legislation.llm import LLMRequest
 from congress_fastapi.routes.user import user_from_cookie
@@ -173,4 +176,19 @@ async def post_legislation_version_llm(
     content = print_clause(
         legis_by_id, legis_by_parent, legis_body.legislation_content_id
     )
-    return await run_talk_to_bill_prompt(query_request.query, content)
+
+    metadata = await get_legislation_metadata_by_version_id(legislation_version_id)
+    metadata_context = """== Sponsor ==
+{sponsor}
+== Cosponsors ==
+{cosponsors}
+    """.format(
+        sponsor=f"{metadata.sponsor.first_name} {metadata.sponsor.last_name}",
+        cosponsors=",".join(
+            [
+                f"{cosponsor.first_name} {cosponsor.last_name}"
+                for cosponsor in metadata.cosponsors
+            ]
+        ),
+    )
+    return await run_talk_to_bill_prompt(query_request.query, content, metadata_context)
