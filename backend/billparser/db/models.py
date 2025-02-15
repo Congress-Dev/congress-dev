@@ -301,6 +301,32 @@ class UserUSCContent(Base):
     usc_ident = Column(String)
 
 
+class UserLLMQuery(Base):
+    """
+    Acts as a log of all user queries into legislation, for tracking purposes
+    """
+
+    __tablename__ = "user_llm_query"
+    __table_args__ = {"schema": "sensitive"}
+
+    user_llm_query_id = Column(Integer, primary_key=True)
+
+    user_id = Column(
+        String,
+        ForeignKey("sensitive.user_ident.user_id", ondelete="CASCADE"),
+        index=True,
+    )
+    legislation_version_id = Column(
+        Integer,
+        ForeignKey("legislation_version.legislation_version_id", ondelete="CASCADE"),
+        index=True,
+    )
+    query = Column(String, nullable=False, index=True)
+    response = Column(String, nullable=False)
+    safe = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime(timezone=False), server_default=func.now())
+
+
 class Congress(Base):
     """
     Holds the relationships for the Congress sessions
