@@ -20,7 +20,7 @@ from congress_fastapi.models.members import (
 async def get_members(
     name: Optional[str],
     party: Optional[List[str]],
-    chamber: Optional[str],
+    chamber: Optional[List[str]],
     state: Optional[List[str]],
     *,
     sort: str,
@@ -29,6 +29,15 @@ async def get_members(
     page_size: int = 10,
 ) -> Tuple[List[MemberSearchInfo], int]:
     database = await get_database()
+
+    job_lookup = {
+        'Senate': 'Senator',
+        'House': 'Representative',
+    }
+
+    job = [job_lookup[x] for x in chamber]
+
+    print(job)
 
     sort_order = asc(sort)
     if direction == "desc":
@@ -62,8 +71,8 @@ async def get_members(
             )
     # if party:
     #     query = query.where(Legislator.party.in_(party))
-    # if chamber:
-    #     query = query.where(Legislator.chamber == chamber)
+    if chamber:
+        query = query.where(Legislator.job.in_(job))
     # if state:
     #     query = query.where(Legislator.state.in_(state))
     query = query.order_by(sort_order, Legislator.last_name)

@@ -65,9 +65,20 @@ class BioGuideImporter:
 
         return member_lis_lookup
 
+    def run_socials(self):
+        member_social_lookup = {}
+
+        with open('./.sources/legislators-social.json', 'r') as f:
+            for legislator in json.load(f):
+                if legislator['id'].get('bioguide') is not None:
+                    member_social_lookup[legislator['id'].get('bioguide')] = legislator['social']
+
+        return member_social_lookup
+
     def download_to_database(self) -> None:
         legislators = self.run_import()
         lis_lookup = self.run_metadata()
+        social_lookup = self.run_socials()
 
         db_items = []
         with self.session.begin():
@@ -86,12 +97,42 @@ class BioGuideImporter:
                     state = None
 
                 try:
+                    job = legislator.jobPositions[-1].job.name
+                except:
+                    job = None
+
+                if job is not None:
+                    if job != 'Senator' and job != 'Representative':
+                        continue
+
+                try:
+                    congress_id = []
+                    for jobPosition in legislator.jobPositions:
+                        congress_id.append(jobPosition.congressAffiliation.congress.congressNumber)
+                except:
+                    congress_id = []
+
+                try:
                     image_url = "https://bioguide.congress.gov/photo/"
                     image_url += legislator.asset[-1]['contentUrl'].split("/")[-1]
                     image_source = legislator.asset[-1]['creditLine']
                 except:
                     image_url = None
                     image_source = None
+
+                try:
+                    socials = social_lookup[ legislator.usCongressBioId]
+
+                    if socials is not None:
+                        twitter = socials.get('twitter', None)
+                        facebook = socials.get('facebook', None)
+                        youtube = socials.get('youtube', None)
+                        instagram = socials.get('instagram', None)
+                except:
+                    twitter = None
+                    facebook = None
+                    youtube = None
+                    instagram = None
 
                 record_data = {}
 
@@ -109,12 +150,24 @@ class BioGuideImporter:
                     record_data['party'] = party
                 if state:
                     record_data['state'] = state
+                if job:
+                    record_data['job'] = job
+                if congress_id:
+                    record_data['congress_id'] = congress_id
                 if image_url:
                     record_data['image_url'] = image_url
                 if image_source:
                     record_data['image_source'] = image_source
                 if legislator.profileText:
                     record_data['profile'] = legislator.profileText
+                if twitter:
+                    record_data['twitter'] = twitter
+                if facebook:
+                    record_data['facebook'] = facebook
+                if youtube:
+                    record_data['youtube'] = youtube
+                if instagram:
+                    record_data['instagram'] = instagram
 
                 existing_record = self.session.query(Legislator).filter(Legislator.bioguide_id == legislator.usCongressBioId).first()
                 if existing_record is None:

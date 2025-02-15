@@ -21,6 +21,9 @@ function LegislatorCard({ legislator }) {
                         <Link to={`/member/${legislator.bioguideId}`}>{`${legislator.lastName}, ${legislator.firstName}`}</Link>
                     </h2>
                     <div>
+                        <b>Job:</b> {legislator.job ?? "Unknown"}
+                    </div>
+                    <div>
                         <b>Party:</b> {legislator.party ?? "Unknown"}
                     </div>
                     <div>
