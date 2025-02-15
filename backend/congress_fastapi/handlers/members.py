@@ -36,12 +36,30 @@ async def get_members(
 
     query = select(*MemberSearchInfo.sqlalchemy_columns()).select_from(Legislator)
     if name:
-        query = query.where(
-            or_(
-                Legislator.first_name.ilike(f"%{name}%"),
-                Legislator.last_name.ilike(f"%{name}%"),
+        if ", " in name:
+            name_parts = name.split(", ")
+            print(name_parts)
+            query = query.where(
+                and_(
+                    Legislator.first_name.ilike(f"%{name_parts[1]}%"),
+                    Legislator.last_name.ilike(f"%{name_parts[0]}%"),
+                )
             )
-        )
+        elif " " in name:
+            name_parts = name.split(" ")
+            query = query.where(
+                and_(
+                    Legislator.first_name.ilike(f"%{name_parts[0]}%"),
+                    Legislator.last_name.ilike(f"%{name_parts[1]}%"),
+                )
+            )
+        else:
+            query = query.where(
+                or_(
+                    Legislator.first_name.ilike(f"%{name}%"),
+                    Legislator.last_name.ilike(f"%{name}%"),
+                )
+            )
     # if party:
     #     query = query.where(Legislator.party.in_(party))
     # if chamber:
@@ -52,10 +70,6 @@ async def get_members(
     query = query.limit(page_size)
     query = query.offset((page - 1) * page_size)
     result = await database.fetch_all(query)
-    if result is None:
-        return None
-    if len(result) == 0:
-        return []
 
     query = select(func.count(Legislator.legislator_id)).select_from(Legislator)
     if name:
