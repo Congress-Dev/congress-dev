@@ -160,7 +160,7 @@ export const userRemoveLegislator = (bioGuideId) => {
 };
 
 export const statsGetCalendar = () => {
-    return fetch(`${endPv2}/stats/calendar`)
+    return fetch(`${endPv2}/stats/legislation_calendar`)
         .then(handleStatus)
         .catch(toastError)
 }
