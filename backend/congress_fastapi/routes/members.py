@@ -23,6 +23,7 @@ async def get_members_search(
     page: int = Query(1, description="Offset for pagination"),
     page_size: int = Query(10, description="Number of members to return", alias="pageSize"),
     party: List[str] = Query(None, description="Filter by party"),
+    congress: List[str] = Query(None, description="Filter by congress"),
     chamber: List[str] = Query(None, description="Filter by chamber"),
     state: List[str] = Query(None, description="Filter by state"),
     name: str = Query(None, description="Filter by name"),
@@ -49,7 +50,7 @@ async def get_members_search(
         `List[MemberSearchInfo]`: List of members matching the search criteria.
     """
     member_list, total_results = await get_members(
-        name, party, chamber, state, sort=sort, direction=direction, page=page, page_size=page_size
+        name, party, congress, chamber, state, sort=sort, direction=direction, page=page, page_size=page_size
     )
     result = {
         "members": member_list,

@@ -497,6 +497,7 @@ function MemberSearch(props) {
                 >
                     <LegislatorSearchContent
                         name={currentSearch.text}
+                        congress={currentSearch.congress}
                         chamber={currentSearch.chamber}
                         setResults={setTotalResults}
                         sort={currentSearch.sort}

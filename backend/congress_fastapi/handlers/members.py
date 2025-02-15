@@ -20,6 +20,7 @@ from congress_fastapi.models.members import (
 async def get_members(
     name: Optional[str],
     party: Optional[List[str]],
+    congress: Optional[List[str]],
     chamber: Optional[List[str]],
     state: Optional[List[str]],
     *,
@@ -34,10 +35,9 @@ async def get_members(
         'Senate': 'Senator',
         'House': 'Representative',
     }
-
     job = [job_lookup[x] for x in chamber]
 
-    print(job)
+    congress = [int(c) for c in congress]
 
     sort_order = asc(sort)
     if direction == "desc":
@@ -71,6 +71,10 @@ async def get_members(
             )
     # if party:
     #     query = query.where(Legislator.party.in_(party))
+    if congress:
+        query = query.where(
+            or_(*[Legislator.congress_id.any(c) for c in congress])
+        )
     if chamber:
         query = query.where(Legislator.job.in_(job))
     # if state:
@@ -79,6 +83,8 @@ async def get_members(
     query = query.limit(page_size)
     query = query.offset((page - 1) * page_size)
     result = await database.fetch_all(query)
+
+    print(query)
 
     query = select(func.count(Legislator.legislator_id)).select_from(Legislator)
     if name:
@@ -106,6 +112,12 @@ async def get_members(
                     Legislator.last_name.ilike(f"%{name}%"),
                 )
             )
+    if congress:
+        query = query.where(
+            or_(*[Legislator.congress_id.any(c) for c in congress])
+        )
+    if chamber:
+        query = query.where(Legislator.job.in_(job))
     count_result = await database.fetch_one(query)
     return [MemberSearchInfo(**r) for r in result], count_result[0]
 

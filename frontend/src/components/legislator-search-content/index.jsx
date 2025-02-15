@@ -24,6 +24,7 @@ function LegislatorSearchContent(props) {
           props.name,
           undefined,
           undefined,
+          props.congress?.split(","),
           props.chamber?.split(","),
           props.sort,
           props.direction,
