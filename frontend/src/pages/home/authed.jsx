@@ -5,14 +5,16 @@ import {
     NonIdealState,
     NonIdealStateIconSize,
 } from "@blueprintjs/core";
-import { ResponsiveCalendar } from '@nivo/calendar'
+import { ResponsiveCalendar } from "@nivo/calendar";
+import { ResponsiveFunnel } from "@nivo/funnel";
 
 import {
     userGetLegislationFeed,
     userGetLegislatorFeed,
     userGetStats,
     userGetFolders,
-    statsGetCalendar,
+    statsGetLegislationCalendar,
+    statsGetLegislationFunnel,
 } from "common/api";
 import { BillTable, USCTrackingTabs } from "components";
 import { LoginContext, ThemeContext } from "context";
@@ -23,9 +25,8 @@ function AuthedHome() {
     const [legislationFeed, setLegislationFeed] = useState([]);
     const [legislatorFeed, setLegislatorFeed] = useState([]);
     const [stats, setStats] = useState(null);
-    const [calendar, setCalendar] = useState([])
-
-    console.log(nivoTheme)
+    const [calendar, setCalendar] = useState([]);
+    const [funnel, setFunnel] = useState([]);
 
     useEffect(() => {
         if (user != null) {
@@ -43,9 +44,13 @@ function AuthedHome() {
             userGetFolders().then(console.log);
         }
 
-        statsGetCalendar().then((response) => {
-            setCalendar(response.data)
-        })
+        statsGetLegislationCalendar().then((response) => {
+            setCalendar(response.data);
+        });
+
+        statsGetLegislationFunnel().then((response) => {
+            setFunnel(response.data);
+        });
     }, [user]);
 
     return (
@@ -86,26 +91,82 @@ function AuthedHome() {
                 </SectionCard>
             </div>
 
-            <div className="content">
+            <div className="content dashboard-grid">
                 <Section
+                    className="half"
+                    title="Legislation Funnel"
+                    subtitle="Stages of the Bill"
+                    icon="drag-handle-vertical"
+                    compact="true"
+                    collapsible={true}
+                >
+                    <div style={{ height: "150px" }}>
+                        {funnel.length > 0 && (
+                            <ResponsiveFunnel
+                                data={funnel}
+                                margin={{
+                                    top: 20,
+                                    right: 20,
+                                    bottom: 20,
+                                    left: 20,
+                                }}
+                                colors={{ scheme: "spectral" }}
+                                borderWidth={20}
+                                labelColor={{
+                                    from: "color",
+                                    modifiers: [["darker", 3]],
+                                }}
+                                beforeSeparatorLength={100}
+                                beforeSeparatorOffset={20}
+                                afterSeparatorLength={100}
+                                afterSeparatorOffset={20}
+                                currentPartSizeExtension={10}
+                                currentBorderWidth={40}
+                                motionConfig="wobbly"
+                                theme={nivoTheme}
+                                animate={false}
+                                currentPartSizeExtensio={0}
+                                currentBorderWidt={0}
+                            />
+                        )}
+                    </div>
+                </Section>
+                <Section
+                    className="half"
                     title="Legislation Calendar"
                     subtitle="Activity over the year"
                     icon="drag-handle-vertical"
                     compact="true"
                     collapsible={true}
                 >
-                    <div style={{height: '200px'}}>
+                    <div style={{ height: "150px" }}>
                         <ResponsiveCalendar
                             data={calendar}
                             from="2025-02-01"
                             to="2025-07-20"
-                            emptyColor={nivoTheme.annotations.outline.outlineColor}
-                            colors={[ '#BDADFF', '#9881F3', '#7961DB', '#634DBF' ]}
-                            margin={{ top: 40, left: 40, right: 20, bottom: 20 }}
+                            emptyColor={
+                                nivoTheme.annotations.outline.outlineColor
+                            }
+                            colors={[
+                                "#BDADFF",
+                                "#9881F3",
+                                "#7961DB",
+                                "#634DBF",
+                            ]}
+                            margin={{
+                                top: 40,
+                                left: 40,
+                                right: 20,
+                                bottom: 20,
+                            }}
                             yearSpacing={40}
-                            monthBorderColor={nivoTheme.annotations.outline.stroke}
+                            monthBorderColor={
+                                nivoTheme.annotations.outline.stroke
+                            }
                             dayBorderWidth={2}
-                            dayBorderColor={nivoTheme.annotations.outline.stroke}
+                            dayBorderColor={
+                                nivoTheme.annotations.outline.stroke
+                            }
                             theme={nivoTheme}
                         />
                     </div>
