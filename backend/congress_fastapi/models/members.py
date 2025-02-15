@@ -20,10 +20,16 @@ class MemberInfo(MappableBase):
     middle_name: Annotated[Optional[str], Legislator.middle_name]
     party: Annotated[Optional[str], Legislator.party]
     state: Annotated[Optional[str], Legislator.state]
+    job: Annotated[Optional[str], Legislator.job]
 
     image_url: Annotated[Optional[str], Legislator.image_url]
     image_source: Annotated[Optional[str], Legislator.image_source]
     profile: Annotated[Optional[str], Legislator.profile]
+
+    twitter: Annotated[Optional[str], Legislator.twitter]
+    facebook: Annotated[Optional[str], Legislator.facebook]
+    youtube: Annotated[Optional[str], Legislator.youtube]
+    instagram: Annotated[Optional[str], Legislator.instagram]
 
 
 class MemberSearchInfo(MappableBase):
@@ -33,6 +39,7 @@ class MemberSearchInfo(MappableBase):
     middle_name: Annotated[Optional[str], Legislator.middle_name]
     party: Annotated[Optional[str], Legislator.party]
     state: Annotated[Optional[str], Legislator.state]
+    job: Annotated[Optional[str], Legislator.job]
 
     image_url: Annotated[Optional[str], Legislator.image_url]
 

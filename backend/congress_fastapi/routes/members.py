@@ -20,12 +20,15 @@ router = APIRouter(tags=["Members"])
 
 @router.get("/members")
 async def get_members_search(
-    limit: int = Query(10, description="Number of members to return"),
-    offset: int = Query(0, description="Offset for pagination"),
+    page: int = Query(1, description="Offset for pagination"),
+    page_size: int = Query(10, description="Number of members to return", alias="pageSize"),
     party: List[str] = Query(None, description="Filter by party"),
+    congress: List[str] = Query(None, description="Filter by congress"),
     chamber: List[str] = Query(None, description="Filter by chamber"),
     state: List[str] = Query(None, description="Filter by state"),
     name: str = Query(None, description="Filter by name"),
+    sort: str = Query(None),
+    direction: str = Query("asc"),
     responses={
         status.HTTP_200_OK: {
             "model": MemberSearchResponse,
@@ -36,8 +39,8 @@ async def get_members_search(
     """
     Returns a list of MemberInfo objects based on the provided search criteria.
 
-    - **limit**: Number of members to return. Default is 10.
-    - **offset**: Offset for pagination. Default is 0.
+    - **pageSize**: Number of members to return. Default is 10.
+    - **page**: Offset for pagination. Default is 1.
     - **party**: Filter by party. Default is None.
     - **chamber**: Filter by chamber. Default is None.
     - **state**: Filter by state. Default is None.
@@ -47,7 +50,7 @@ async def get_members_search(
         `List[MemberSearchInfo]`: List of members matching the search criteria.
     """
     member_list, total_results = await get_members(
-        name, party, chamber, state, limit=limit, offset=offset
+        name, party, congress, chamber, state, sort=sort, direction=direction, page=page, page_size=page_size
     )
     result = {
         "members": member_list,

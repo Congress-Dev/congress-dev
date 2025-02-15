@@ -8,6 +8,7 @@ import {
     userRemoveLegislator,
     userAddLegislator,
 } from "common/api";
+import { titleLookup } from "common/lookups";
 import { LegislatorProfile } from "components";
 import { LoginContext } from "context";
 
@@ -46,7 +47,7 @@ function MemberViewer(props) {
         <Section
             interactive={false}
             className="page"
-            title={`Rep. ${memberInfo.firstName} ${memberInfo.lastName}`}
+            title={`${titleLookup[memberInfo.job] + ' ' ?? ''}${memberInfo.firstName} ${memberInfo.lastName}`}
             subtitle={`${memberInfo.party} (${memberInfo.state})`}
             rightElement={
                 <>
