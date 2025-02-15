@@ -4,6 +4,11 @@ export const chamberLookup = {
     Senate: "S.",
 };
 
+export const titleLookup = {
+    Senator: 'Sen.',
+    Representative: 'Rep.'
+}
+
 export const versionSort = {
     ih: 1,
     is: 1,

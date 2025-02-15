@@ -68,35 +68,50 @@ async def get_appropriations_by_legislation_version_id(
     return result_objs
 
 
-async def get_legislation_metadata_by_legislation_id(
-    legislation_id: int, verstion_str: LegislationVersionEnum
-) -> Optional[LegislationMetadata]:
-    """
-    Returns a LegislationMetadata object for a given legislation_id
-    """
+async def _get_legislation_from_legislation_version_id(
+    legislation_version_id: int,
+) -> Legislation:
     database = await get_database()
+    query = (
+        select(Legislation)
+        .join(
+            LegislationVersion,
+            Legislation.legislation_id == LegislationVersion.legislation_id,
+        )
+        .where(LegislationVersion.legislation_version_id == legislation_version_id)
+    )
+    return await database.fetch_one(query)
+
+
+async def get_legislation_metadata_by_version_id(
+    legislation_version_id: int,
+    legis_versions: Optional[List[LegislationVersionMetadata]] = None,
+) -> Optional[LegislationMetadata]:
+    database = await get_database()
+
+    legislation: Legislation = await _get_legislation_from_legislation_version_id(
+        legislation_version_id
+    )
     query = select(
         *LegislationMetadata.sqlalchemy_columns(),
-    ).where(Legislation.legislation_id == legislation_id)
+    ).where(Legislation.legislation_id == legislation.legislation_id)
     result = await database.fetch_one(query)
     if result is None:
         return None
-    legis_versions = await get_legislation_version_metadata_by_legislation_id(
-        legislation_id
+    legis_versions = (
+        legis_versions
+        or await get_legislation_version_metadata_by_legislation_id(
+            legislation.legislation_id
+        )
     )
-    matching_vers = legis_versions[0].legislation_version_id
-    for version in legis_versions:
-        if version.legislation_version == verstion_str:
-            matching_vers = version.legislation_version_id
-            break
-    # TODO: Right now we only get the first one
-    appropriations = await get_appropriations_by_legislation_version_id(matching_vers)
+    appropriations = await get_appropriations_by_legislation_version_id(
+        legislation_version_id
+    )
     usc_query = (
         select(USCRelease)
         .join(
             LegislationVersion,
-            LegislationVersion.legislation_version_id
-            == legis_versions[0].legislation_version_id,
+            LegislationVersion.legislation_version_id == legislation_version_id,
         )
         .join(Version, USCRelease.version_id == Version.base_id)
         .filter(LegislationVersion.version_id == Version.version_id)
@@ -110,20 +125,18 @@ async def get_legislation_metadata_by_legislation_id(
         )
         .join(
             LegislationSponsorship,
-            LegislationSponsorship.legislator_bioguide_id == Legislator.bioguide_id
+            LegislationSponsorship.legislator_bioguide_id == Legislator.bioguide_id,
         )
-        .where(
-            LegislationSponsorship.legislation_id == legislation_id
-        )
+        .where(LegislationSponsorship.legislation_id == legislation.legislation_id)
         .group_by(
             Legislator.legislator_id,
             Legislator.bioguide_id,
-            LegislationSponsorship.cosponsor
+            LegislationSponsorship.cosponsor,
         )
         .order_by(LegislationSponsorship.cosponsor, Legislator.bioguide_id)
     )
 
-    sponsor_result = (await database.fetch_all(sponsor_query));
+    sponsor_result = await database.fetch_all(sponsor_query)
 
     sponsor_objs = []
     for sponsor in sponsor_result:
@@ -131,27 +144,26 @@ async def get_legislation_metadata_by_legislation_id(
             sponsor_objs.append(LegislatorMetadata(**sponsor))
         except Exception as e:
             print(traceback.format_exc())
-            print(result)
+            print(sponsor_result)
 
     votes_query = (
         select(*LegislationVoteMetadata.sqlalchemy_columns())
-        .where(LegislationVote.legislation_id == legislation_id)
+        .where(LegislationVote.legislation_id == legislation.legislation_id)
         .order_by(LegislationVote.datetime.desc())
     )
 
-    votes_results = (await database.fetch_all(votes_query))
+    votes_results = await database.fetch_all(votes_query)
 
     vote_objs = []
     for vote in votes_results:
         try:
-            vote_data = {
-                **vote,
-                'datetime': vote.datetime.strftime("%Y-%m-%d")
-            }
+            vote_data = {**vote, "datetime": vote.datetime.strftime("%Y-%m-%d")}
 
-            vote_objs.append(LegislationVoteMetadata(
-                **vote_data,
-            ))
+            vote_objs.append(
+                LegislationVoteMetadata(
+                    **vote_data,
+                )
+            )
         except Exception as e:
             print(traceback.format_exc())
             print(result)
@@ -166,3 +178,22 @@ async def get_legislation_metadata_by_legislation_id(
         votes=vote_objs,
         **result,
     )
+
+
+async def get_legislation_metadata_by_legislation_id(
+    legislation_id: int, verstion_str: LegislationVersionEnum
+) -> Optional[LegislationMetadata]:
+    """
+    Returns a LegislationMetadata object for a given legislation_id
+    """
+    database = await get_database()
+    legis_versions = await get_legislation_version_metadata_by_legislation_id(
+        legislation_id
+    )
+    matching_vers = legis_versions[0].legislation_version_id
+    for version in legis_versions:
+        if version.legislation_version == verstion_str:
+            matching_vers = version.legislation_version_id
+            break
+    # TODO: Right now we only get the first one
+    return await get_legislation_metadata_by_version_id(matching_vers, legis_versions)

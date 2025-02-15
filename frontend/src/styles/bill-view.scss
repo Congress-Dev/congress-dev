@@ -43,3 +43,94 @@
         text-align: center;
     }
 }
+
+.bp5-popover-target:has(.chat-popover-trigger) {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+
+    .chat-popover-trigger {
+        background-color: #7961DB !important;
+        width: 50px;
+        height: 50px;
+        border-radius: 25px !important;
+        animation: slideUp 1s ease-out forwards;
+
+
+        .bp5-icon {
+            color: #fff !important;
+        }
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100vh);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.chat-popover-content {
+    padding: 20px;
+    height: 400px;
+    width: 375px !important;
+    box-shadow: none !important;
+
+    display: flex;
+    flex-direction: column;
+
+    .history {
+        flex-grow: 1;
+        overflow-y: auto;
+        border-bottom: none !important;
+        padding-bottom: 0px !important;
+
+        .bp5-card {
+            padding: 10px 20px;
+            margin-bottom: 5px;
+
+            &.ai {
+                background-color: #e8f5e9;
+            }
+
+            &.user {
+                background-color: #e3f2fd;
+            }
+
+            &.warning {
+                background-color: #ffeece;
+            }
+
+            &.gray {
+                background-color: #f5f5f5;
+            }
+
+            .info {
+                font-size: 0.6rem;
+                margin-bottom: 0.3rem;
+                color: #555;
+            }
+
+            .message {
+                color: #555;
+
+                p {
+                    padding: 0px;
+                    margin: 0px;
+                }
+
+                code {
+                    white-space: normal;
+                }
+            }
+        }
+    }
+
+    .inputs {
+        display: flex;
+    }
+}

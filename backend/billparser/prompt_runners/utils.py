@@ -5,17 +5,19 @@ from typing import Dict, List, Optional, Tuple
 from billparser.db.models import LegislationContent, Prompt, PromptBatch
 from litellm import completion
 import litellm
+import os
 
 litellm.turn_off_message_logging = True
 litellm._logging._disable_debugging()
 
+llm_host = os.environ.get("LLM_HOST", "http://10.0.0.120:11434")
 
 def run_query(query: str, model: str = "ollama/qwen2.5:32b", *, num_ctx: int = 2048, json: bool = True) -> dict:
     start_time = time.time()
     response = completion(
         model=model,
         messages=[{"role": "user", "content": query}],
-        api_base="http://10.0.0.120:11434",
+        api_base=llm_host,
         format="json" if json else None,
         timeout=60,
         max_tokens=10000,

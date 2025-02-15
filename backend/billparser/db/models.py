@@ -31,6 +31,10 @@ class CastingArray(ARRAY):
         return sa.cast(bindvalue, self)
 
 
+class LegislatorJob(str, enum.Enum):
+    Senator = "Senator"
+    Representative = "Representative"
+
 class LegislatorVoteType(str, enum.Enum):
     yay = "yay"
     nay = "nay"
@@ -53,7 +57,6 @@ class LegislatorVoteType(str, enum.Enum):
             return cls.abstain
         else:
             raise ValueError(f"Invalid LegislatorVoteType: {string}")
-
 
 class LegislationType(str, enum.Enum):
     Bill = "Bill"
@@ -299,6 +302,32 @@ class UserUSCContent(Base):
     )
 
     usc_ident = Column(String)
+
+
+class UserLLMQuery(Base):
+    """
+    Acts as a log of all user queries into legislation, for tracking purposes
+    """
+
+    __tablename__ = "user_llm_query"
+    __table_args__ = {"schema": "sensitive"}
+
+    user_llm_query_id = Column(Integer, primary_key=True)
+
+    user_id = Column(
+        String,
+        ForeignKey("sensitive.user_ident.user_id", ondelete="CASCADE"),
+        index=True,
+    )
+    legislation_version_id = Column(
+        Integer,
+        ForeignKey("legislation_version.legislation_version_id", ondelete="CASCADE"),
+        index=True,
+    )
+    query = Column(String, nullable=False, index=True)
+    response = Column(String, nullable=False)
+    safe = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime(timezone=False), server_default=func.now())
 
 
 class Congress(Base):
@@ -944,6 +973,9 @@ class Legislator(Base):
     middle_name = Column(String)
     last_name = Column(String)
 
+    job = Column(Enum(LegislatorJob))
+    congress_id = Column(ARRAY(Integer), index=False)
+
     # TODO: Enum?
     party = Column(String, index=True)
     state = Column(String, index=True)
@@ -954,6 +986,10 @@ class Legislator(Base):
 
     profile = Column(String, index=False, nullable=True)
 
+    twitter = Column(String, index=False, nullable=True)
+    facebook = Column(String, index=False, nullable=True)
+    youtube = Column(String, index=False, nullable=True)
+    instagram = Column(String, index=False, nullable=True)
 
 class LegislationSponsorship(Base):
     """

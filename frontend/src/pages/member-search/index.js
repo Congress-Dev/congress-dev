@@ -21,268 +21,299 @@ import {
 import qs from "query-string";
 
 import { initialVersionToFull, versionToFull } from "common/lookups";
-import { CollapsibleSection, Paginator, LegislatorSearchContent } from "components";
+import {
+    CollapsibleSection,
+    Paginator,
+    LegislatorSearchContent,
+} from "components";
 
 function MemberSearch(props) {
-  const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
+    const location = useLocation();
+    const searchParams = new URLSearchParams(location.search);
 
-  const decoded = decodeSelections(searchParams.get("selections"));
+    const decoded = decodeSelections(searchParams.get("selections"));
 
-  const [isFirstRender, setFirstRender] = useState(true);
-  const [resPageSize, setResPageSize] = useState(5);
-  const [chamberButtons, setChamberButtons] = useState(decoded.chamber);
-  const [versionButtons, setVersionButtons] = useState(decoded.versions);
-  const [textBox, setTextBox] = useState(searchParams.get("text") || "");
-  const [totalResults, setTotalResults] = useState(0);
+    const [isFirstRender, setFirstRender] = useState(true);
+    const [resPageSize, setResPageSize] = useState(5);
+    const [chamberButtons, setChamberButtons] = useState(decoded.chamber);
+    const [versionButtons, setVersionButtons] = useState(decoded.versions);
+    const [textBox, setTextBox] = useState(searchParams.get("text") || "");
+    const [totalResults, setTotalResults] = useState(0);
 
-  const [currentSearch, setCurrentSearch] = useState({
-      congress: searchParams.get("congress") || "118,119",
-      chamber: lodash
-          .keys(lodash.pickBy(chamberButtons, (value) => value))
-          .join(","),
-      state: lodash
-          .keys(
-              lodash.pickBy(versionToFull, (value) =>
-                  lodash
-                      .keys(lodash.pickBy(versionButtons, (value) => value))
-                      .includes(value),
-              ),
-          )
-          .join(","),
-      text: searchParams.get("text") || "",
-      sort: searchParams.get("sort") || "number",
-      page: searchParams.get("page") || 1,
-      pageSize: resPageSize,
-  });
+    const [currentSearch, setCurrentSearch] = useState({
+        congress: searchParams.get("congress") || "118,119",
+        chamber: lodash
+            .keys(lodash.pickBy(chamberButtons, (value) => value))
+            .join(","),
+        state: lodash
+            .keys(
+                lodash.pickBy(versionToFull, (value) =>
+                    lodash
+                        .keys(lodash.pickBy(versionButtons, (value) => value))
+                        .includes(value),
+                ),
+            )
+            .join(","),
+        text: searchParams.get("text") || "",
+        sort: searchParams.get("sort") || "last_name",
+        direction: searchParams.get("direction") || "asc",
+        page: searchParams.get("page") || 1,
+        pageSize: resPageSize,
+    });
 
-  const [collapsed, setCollapsed] = useState(false); // State to control the signal
+    const [collapsed, setCollapsed] = useState(false); // State to control the signal
 
-  function toggleCollapseAll() {
-      setCollapsed(true);
-  }
+    function toggleCollapseAll() {
+        setCollapsed(true);
+    }
 
-  function toggleExpandAll() {
-      setCollapsed(false);
-  }
+    function toggleExpandAll() {
+        setCollapsed(false);
+    }
 
-  function toggleEnrolled() {
-      setVersionButtons({
-          ...lodash.mapValues(initialVersionToFull, () => {
-              return false;
-          }),
-          Enrolled: true,
-      });
-  }
+    function toggleEnrolled() {
+        setVersionButtons({
+            ...lodash.mapValues(initialVersionToFull, () => {
+                return false;
+            }),
+            Enrolled: true,
+        });
+    }
 
-  function toggleCheckAll() {
-      setChamberButtons({ House: true, Senate: true });
-      setVersionButtons(
-          lodash.mapValues(initialVersionToFull, () => {
-              return true;
-          }),
-      );
-  }
+    function toggleCheckAll() {
+        setChamberButtons({ House: true, Senate: true });
+        setVersionButtons(
+            lodash.mapValues(initialVersionToFull, () => {
+                return true;
+            }),
+        );
+    }
 
-  function toggleUncheckAll() {
-      setChamberButtons({ House: false, Senate: false });
-      setVersionButtons(
-          lodash.mapValues(initialVersionToFull, () => {
-              return false;
-          }),
-      );
-  }
+    function toggleUncheckAll() {
+        setChamberButtons({ House: false, Senate: false });
+        setVersionButtons(
+            lodash.mapValues(initialVersionToFull, () => {
+                return false;
+            }),
+        );
+    }
 
-  function executeSearch() {
-      setCurrentSearch({
-          ...currentSearch,
-          page: 1,
-          chamber: lodash
-              .keys(lodash.pickBy(chamberButtons, (value) => value))
-              .join(","),
-          versions: lodash
-              .keys(
-                  lodash.pickBy(versionToFull, (value) =>
-                      lodash
-                          .keys(
-                              lodash.pickBy(versionButtons, (value) => value),
-                          )
-                          .includes(value),
-                  ),
-              )
-              .join(","),
-          text: textBox,
-      });
-  }
+    function executeSearch() {
+        setCurrentSearch({
+            ...currentSearch,
+            page: 1,
+            chamber: lodash
+                .keys(lodash.pickBy(chamberButtons, (value) => value))
+                .join(","),
+            versions: lodash
+                .keys(
+                    lodash.pickBy(versionToFull, (value) =>
+                        lodash
+                            .keys(
+                                lodash.pickBy(versionButtons, (value) => value),
+                            )
+                            .includes(value),
+                    ),
+                )
+                .join(","),
+            text: textBox,
+        });
+    }
 
-  function encodeSelections() {
-      let encoded = "1";
-      lodash.mapValues(chamberButtons, (v, k) => {
-          encoded += v ? "1" : "0";
-      });
-      lodash.mapValues(versionButtons, (v, k) => {
-          encoded += v ? "1" : "0";
-      });
-      return parseInt(encoded, 2);
-  }
+    function encodeSelections() {
+        let encoded = "1";
+        lodash.mapValues(chamberButtons, (v, k) => {
+            encoded += v ? "1" : "0";
+        });
+        lodash.mapValues(versionButtons, (v, k) => {
+            encoded += v ? "1" : "0";
+        });
+        return parseInt(encoded, 2);
+    }
 
-  function decodeSelections(selections) {
-      if (selections == null || selections == "") {
-          return {
-              chamber: {
-                  House: true,
-                  Senate: true,
-              },
-              versions: initialVersionToFull,
-          };
-      }
+    function decodeSelections(selections) {
+        if (selections == null || selections == "") {
+            return {
+                chamber: {
+                    House: true,
+                    Senate: true,
+                },
+                versions: initialVersionToFull,
+            };
+        }
 
-      let bits = Number(selections).toString(2).split("");
-      let index = 1;
+        let bits = Number(selections).toString(2).split("");
+        let index = 1;
 
-      const chamber = lodash.mapValues(
-          { House: true, Senate: true },
-          (v, k) => {
-              const value = bits[index] == "1" ? true : false;
-              index++;
-              return value;
-          },
-      );
-      const versions = lodash.mapValues(initialVersionToFull, (v, k) => {
-          const value = bits[index] == "1" ? true : false;
-          index++;
-          return value;
-      });
+        const chamber = lodash.mapValues(
+            { House: true, Senate: true },
+            (v, k) => {
+                const value = bits[index] == "1" ? true : false;
+                index++;
+                return value;
+            },
+        );
+        const versions = lodash.mapValues(initialVersionToFull, (v, k) => {
+            const value = bits[index] == "1" ? true : false;
+            index++;
+            return value;
+        });
 
-      return {
-          chamber,
-          versions,
-      };
-  }
+        return {
+            chamber,
+            versions,
+        };
+    }
 
-  useEffect(() => {
-      let updated = false;
-      const params = qs.parse(props.location.search);
-      let newSearch = {
-          ...currentSearch,
-      };
-      if (params.page != null && currentSearch.page != params.page) {
-          updated = true;
-          newSearch = {
-              ...newSearch,
-              page: params.page,
-          };
-      }
-      if (params.sort != null && currentSearch.sort != params.sort) {
-          updated = true;
-          newSearch = {
-              ...newSearch,
-              sort: params.sort,
-          };
-      }
-      if (params.text != null && currentSearch.text != params.text) {
-          updated = true;
-          newSearch = {
-              ...newSearch,
-              text: params.text,
-          };
-      }
-      if (
-          params.congress != null &&
-          currentSearch.congress != params.congress
-      ) {
-          updated = true;
-          newSearch = {
-              ...newSearch,
-              congress: params.congress,
-          };
-      }
+    useEffect(() => {
+        let updated = false;
+        const params = qs.parse(props.location.search);
+        let newSearch = {
+            ...currentSearch,
+        };
+        if (params.page != null && currentSearch.page != params.page) {
+            updated = true;
+            newSearch = {
+                ...newSearch,
+                page: params.page,
+            };
+        }
+        if (params.sort != null && currentSearch.sort != params.sort) {
+            updated = true;
+            newSearch = {
+                ...newSearch,
+                sort: params.sort,
+            };
+        }
+        if (
+            params.direction != null &&
+            currentSearch.direction != params.direction
+        ) {
+            updated = true;
+            newSearch = {
+                ...newSearch,
+                direction: params.direction,
+            };
+        }
+        if (params.text != null && currentSearch.text != params.text) {
+            updated = true;
+            newSearch = {
+                ...newSearch,
+                text: params.text,
+            };
+        }
+        if (
+            params.congress != null &&
+            currentSearch.congress != params.congress
+        ) {
+            updated = true;
+            newSearch = {
+                ...newSearch,
+                congress: params.congress,
+            };
+        }
 
-      const encoded = encodeSelections();
-      if (params.selection != null && encoded != params.selection) {
-          updated = true;
+        const encoded = encodeSelections();
+        if (params.selection != null && encoded != params.selection) {
+            updated = true;
 
-          const decoded = decodeSelections(params.selection);
-          newSearch = {
-              ...newSearch,
-              chamber: decoded.chamber,
-              versions: decoded.versions,
-          };
-      }
+            const decoded = decodeSelections(params.selection);
+            newSearch = {
+                ...newSearch,
+                chamber: decoded.chamber,
+                versions: decoded.versions,
+            };
+        }
 
-      if (updated) {
-          setCurrentSearch(newSearch);
-      }
-  }, [props.location.search]);
+        if (updated) {
+            setCurrentSearch(newSearch);
+        }
+    }, [props.location.search]);
 
-  useEffect(() => {
-      let updated = false;
-      const params = qs.parse(props.location.search);
-      if (currentSearch.page != null && params.page != currentSearch.page) {
-          updated = true;
-          params.page = currentSearch.page;
-      }
-      if (currentSearch.sort != null && params.sort != currentSearch.sort) {
-          updated = true;
-          params.sort = currentSearch.sort;
-      }
-      if (currentSearch.text == "" && params.text != null) {
-          updated = true;
-          delete params.text;
-      } else if (
-          currentSearch.text != "" &&
-          params.text != currentSearch.text
-      ) {
-          updated = true;
-          params.text = currentSearch.text;
-      }
-      if (currentSearch.congress == "" && params.congress != null) {
-          updated = true;
-          delete params.congress;
-      } else if (
-          currentSearch.congress != "" &&
-          params.congress != currentSearch.congress
-      ) {
-          updated = true;
-          params.congress = currentSearch.congress;
-      }
+    useEffect(() => {
+        let updated = false;
+        const params = qs.parse(props.location.search);
+        if (currentSearch.page != null && params.page != currentSearch.page) {
+            updated = true;
+            params.page = currentSearch.page;
+        }
+        if (currentSearch.sort != null && params.sort != currentSearch.sort) {
+            updated = true;
+            params.sort = currentSearch.sort;
+        }
+        if (
+            currentSearch.direction != null &&
+            params.direction != currentSearch.direction
+        ) {
+            updated = true;
+            params.direction = currentSearch.direction;
+        }
+        if (currentSearch.text == "" && params.text != null) {
+            updated = true;
+            delete params.text;
+        } else if (
+            currentSearch.text != "" &&
+            params.text != currentSearch.text
+        ) {
+            updated = true;
+            params.text = currentSearch.text;
+        }
+        if (currentSearch.congress == "" && params.congress != null) {
+            updated = true;
+            delete params.congress;
+        } else if (
+            currentSearch.congress != "" &&
+            params.congress != currentSearch.congress
+        ) {
+            updated = true;
+            params.congress = currentSearch.congress;
+        }
 
-      const encoded = encodeSelections();
-      if (encoded != null && params.selections != encoded) {
-          updated = true;
-          params.selections = encoded;
-      }
+        const encoded = encodeSelections();
+        if (encoded != null && params.selections != encoded) {
+            updated = true;
+            params.selections = encoded;
+        }
 
-      if (updated) {
-          props.history.push({
-              pathname: props.location.pathname,
-              search: qs.stringify(params, { encode: false }),
-          });
-      }
-  }, [currentSearch]);
+        if (updated) {
+            props.history.push({
+                pathname: props.location.pathname,
+                search: qs.stringify(params, { encode: false }),
+            });
+        }
+    }, [currentSearch]);
 
-  function setCurrentPage(page) {
-      setCurrentSearch({
-          ...currentSearch,
-          page: page,
-      });
-  }
+    function setCurrentPage(page) {
+        setCurrentSearch({
+            ...currentSearch,
+            page: page,
+        });
+    }
 
-  useEffect(() => {
-      if (isFirstRender) {
-          setFirstRender(false);
-          return;
-      }
-      executeSearch();
-  }, [versionButtons, chamberButtons]);
+    useEffect(() => {
+        if (isFirstRender) {
+            setFirstRender(false);
+            return;
+        }
+        executeSearch();
+    }, [versionButtons, chamberButtons]);
 
-  function setCurrentSort(sort) {
-      setCurrentSearch({
-          ...currentSearch,
-          page: 1,
-          sort: sort,
-      });
-  }
+    function setCurrentSort(sort) {
+        setCurrentSearch({
+            ...currentSearch,
+            page: 1,
+            sort: sort,
+        });
+    }
+
+    function setCurrentDirection(direction) {
+        setCurrentSearch({
+            ...currentSearch,
+            page: 1,
+            direction: direction,
+        });
+    }
+
     return (
         <Section
             className="page"
@@ -399,10 +430,7 @@ function MemberSearch(props) {
                             }}
                         />
                     </CollapsibleSection>
-                    <CollapsibleSection
-                        title="Chamber"
-                        collapsed={collapsed}
-                    >
+                    <CollapsibleSection title="Chamber" collapsed={collapsed}>
                         <Checkbox
                             checked={chamberButtons.House === true}
                             label="House"
@@ -427,33 +455,55 @@ function MemberSearch(props) {
                     <CollapsibleSection
                         title="State"
                         collapsed={collapsed}
-                    >
-                        
-                    </CollapsibleSection>
+                    ></CollapsibleSection>
                 </div>
                 <Section
                     title="Results"
                     subtitle={`${totalResults.toLocaleString()} Legislators`}
                     className="content"
                     icon="inbox-search"
-                    // rightElement={
-                    //     <>
-                    //         <Icon icon="sort-alphabetical" /> Sort:
-                    //         <HTMLSelect
-                    //             value={currentSearch.sort}
-                    //             options={[
-                    //             ]}
-                    //             onChange={(event) => {
-                    //                 setCurrentSort(event.currentTarget.value);
-                    //             }}
-                    //         />
-                    //     </>
-                    // }
+                    rightElement={
+                        <>
+                            <HTMLSelect
+                                value={currentSearch.sort}
+                                options={[
+                                    { label: "Last Name", value: "last_name" },
+                                    { label: "State", value: "state" },
+                                    {
+                                        label: "Party",
+                                        value: "party",
+                                    },
+                                ]}
+                                onChange={(event) => {
+                                    setCurrentSort(event.currentTarget.value);
+                                }}
+                            />
+                            <Button
+                                icon={
+                                    currentSearch.direction === "desc"
+                                        ? "sort-alphabetical-desc"
+                                        : "sort-alphabetical"
+                                }
+                                onClick={() => {
+                                    setCurrentDirection(
+                                        currentSearch.direction === "asc"
+                                            ? "desc"
+                                            : "asc",
+                                    );
+                                }}
+                            />
+                        </>
+                    }
                 >
                     <LegislatorSearchContent
-                        name={[currentSearch.text]}
+                        name={currentSearch.text}
+                        congress={currentSearch.congress}
                         chamber={currentSearch.chamber}
                         setResults={setTotalResults}
+                        sort={currentSearch.sort}
+                        direction={currentSearch.direction}
+                        page={currentSearch.page}
+                        pageSize={currentSearch.pageSize}
                     />
                     {totalResults > 0 ? (
                         <Paginator

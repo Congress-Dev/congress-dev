@@ -24,7 +24,12 @@ function LegislatorSearchContent(props) {
           props.name,
           undefined,
           undefined,
+          props.congress?.split(","),
           props.chamber?.split(","),
+          props.sort,
+          props.direction,
+          props.page,
+          props.pageSize,
         ).then((billList) => {
             if (billList != null) {
                 setLoading(false);
@@ -32,7 +37,13 @@ function LegislatorSearchContent(props) {
             }
         });
     }, [
-        props.name
+        props.name,
+        props.page,
+        props.congress,
+        props.chamber,
+        props.pageSize,
+        props.sort,
+        props.direction,
     ]);
 
     useEffect(() => {

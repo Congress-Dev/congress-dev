@@ -2,6 +2,7 @@ from typing import Dict, List
 
 from billparser.db.models import User
 from billparser.prompt_runners.utils import get_legis_by_parent_and_id, print_clause
+from congress_fastapi.handlers.user import get_llm_query_result, insert_llm_query_result
 from congress_fastapi.models.legislation.content import LegislationContent
 from congress_fastapi.handlers.legislation.actions import (
     get_legislation_version_actions_by_legislation_id,
@@ -9,8 +10,11 @@ from congress_fastapi.handlers.legislation.actions import (
 from congress_fastapi.handlers.legislation.content import (
     get_legislation_content_by_legislation_version_id,
 )
+from congress_fastapi.handlers.legislation_metadata import (
+    get_legislation_metadata_by_version_id,
+)
 from congress_fastapi.models.legislation.actions import LegislationActionParse
-from congress_fastapi.models.legislation.llm import LLMRequest
+from congress_fastapi.models.legislation.llm import LLMRequest, LLMResponse
 from congress_fastapi.routes.user import user_from_cookie
 from congress_fastapi.utils.limiter import limiter
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
@@ -159,12 +163,19 @@ async def post_legislation_version_llm(
     query_request: LLMRequest,
     request: Request,
     user: User = Depends(user_from_cookie),
-) -> None:
+) -> LLMResponse:
     """Returns a list of LegislationContent objects for a given legislation_id"""
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Not logged in"
         )
+
+    # Check if the query already exists
+    response = await get_llm_query_result(legislation_version_id, query_request.query)
+    if response is not None:
+        print("Returning cached response")
+        return LLMResponse(response=response, tokens=0, time=0)
+
     legis_content = await get_legislation_content_by_legislation_version_id(
         legislation_version_id
     )
@@ -173,4 +184,26 @@ async def post_legislation_version_llm(
     content = print_clause(
         legis_by_id, legis_by_parent, legis_body.legislation_content_id
     )
-    return await run_talk_to_bill_prompt(query_request.query, content)
+
+    metadata = await get_legislation_metadata_by_version_id(legislation_version_id)
+    metadata_context = """== Sponsor ==
+{sponsor}
+== Cosponsors ==
+{cosponsors}
+    """.format(
+        sponsor=f"{metadata.sponsor.first_name} {metadata.sponsor.last_name}",
+        cosponsors=",".join(
+            [
+                f"{cosponsor.first_name} {cosponsor.last_name}"
+                for cosponsor in metadata.cosponsors
+            ]
+        ),
+    )
+    response = await run_talk_to_bill_prompt(
+        query_request.query, content, metadata_context
+    )
+    await insert_llm_query_result(
+        legislation_version_id, query_request.query, response.response
+    )
+
+    return response
