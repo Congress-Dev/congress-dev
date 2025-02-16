@@ -100,7 +100,6 @@ def bill_tagger(legis_version_id: int, prompt_id: int):
         except Exception as e:
             prompt_batch.failed += 1
             logging.exception("Failed to tag clause")
-            print(response.choices[0].message.content)
             if full_tags is None:
                 logging.warning("full_tags became None")
                 full_tags = set()
