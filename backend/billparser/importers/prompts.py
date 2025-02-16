@@ -50,6 +50,7 @@ if __name__ == "__main__":
     prompts_by_name: Dict[str, Prompt] = defaultdict(list)
 
     for prompt in prompts:
+        session.expunge(prompt)
         prompts_by_name[prompt.title].append(prompt)
 
     # Sort them by id for each prompt
