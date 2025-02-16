@@ -6,4 +6,5 @@ from .metadata import (
     LegislationClauseSummary,
     LegislatorMetadata,
     LegislationVoteMetadata,
+    LegislationVersionTag,
 )

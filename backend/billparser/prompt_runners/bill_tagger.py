@@ -91,7 +91,7 @@ def bill_tagger(legis_version_id: int, prompt_id: int):
             full_tags.update(tags)
             tag_obj = LegislationVersionTag(
                 prompt_batch_id=prompt_batch.prompt_batch_id,
-                legislation_content_id=lc.legislation_content_id,
+                legislation_version_id=lc.legislation_version_id,
                 tags=tags,
             )
             session.add(tag_obj)

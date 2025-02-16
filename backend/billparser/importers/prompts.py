@@ -1,6 +1,7 @@
 from collections import defaultdict
 import logging
 from typing import Dict, List
+from billparser.prompt_runners.bill_tagger import bill_tagger
 from billparser.utils.logger import LogContext
 from sqlalchemy import select, and_, not_
 import litellm
@@ -68,10 +69,10 @@ if __name__ == "__main__":
             )
             if prompt_name == "Clause Tagger":
 
-                for legis_v_id in results:
-                    logging.info(f"Running clause tagger on {legis_v_id}")
-                    clause_tagger(legis_v_id, prompt_id)
-
+                # for legis_v_id in results:
+                #     logging.info(f"Running clause tagger on {legis_v_id}")
+                #     clause_tagger(legis_v_id, prompt_id)
+                pass
             elif prompt_name == "Appropriation Finder":
                 for legis_v_id in results:
                     logging.info(f"Running appropriation finder on {legis_v_id}")
@@ -80,3 +81,7 @@ if __name__ == "__main__":
                 for legis_v_id in results:
                     logging.info(f"Running summarizer on {legis_v_id}")
                     section_summarizer(legis_v_id, prompt_id)
+            elif prompt_name == "Bill Tagger":
+                for legis_v_id in results:
+                    logging.info(f"Running bill tagger on {legis_v_id}")
+                    bill_tagger(legis_v_id, prompt_id)

@@ -11,30 +11,26 @@ from billparser.db.models import (
     LegislationContentTag,
     LegislationContent,
     LegislationContentSummary,
+    LegislationVersion,
+    LegislationVersionTag as DBLegislationVersionTag,
 )
 
 from congress_fastapi.models.legislation import (
     LegislationClauseTag,
     LegislationClauseSummary,
+    LegislationVersionTag,
 )
 
 
 async def get_legislation_version_tags_by_legislation_id(
     legislation_version_id: int,
-) -> List[LegislationClauseTag]:
+) -> List[LegislationVersionTag]:
     database = await get_database()
     query = (
         select(
-            *LegislationClauseTag.sqlalchemy_columns(),
+            *LegislationVersionTag.sqlalchemy_columns(),
         )
-        .select_from(LegislationContent)
-        .where(LegislationContent.legislation_version_id == legislation_version_id)
-        .join(
-            LegislationContentTag,
-            LegislationContentTag.legislation_content_id
-            == LegislationContent.legislation_content_id,
-        )
-        .order_by(LegislationContentTag.legislation_content_id)
+        .where(LegislationVersionTag.legislation_version_id == legislation_version_id)
     )
     results = list(await database.fetch_all(query))
     if results is None or len(results) == 0:
