@@ -35,6 +35,7 @@ class LegislatorJob(str, enum.Enum):
     Senator = "Senator"
     Representative = "Representative"
 
+
 class LegislatorVoteType(str, enum.Enum):
     yay = "yay"
     nay = "nay"
@@ -57,6 +58,7 @@ class LegislatorVoteType(str, enum.Enum):
             return cls.abstain
         else:
             raise ValueError(f"Invalid LegislatorVoteType: {string}")
+
 
 class LegislationType(str, enum.Enum):
     Bill = "Bill"
@@ -596,6 +598,28 @@ class LegislationContentTag(Base):
     tags = Column(ARRAY(String), index=True)
 
 
+class LegislationVersionTag(Base):
+    """
+    Represents a tag on a piece of legislation
+    """
+
+    __tablename__ = "legislation_version_tag"
+
+    legislation_version_tag_id = Column(Integer, primary_key=True)
+    legislation_version_id = Column(
+        Integer,
+        ForeignKey(LegislationVersion.legislation_version_id, ondelete="CASCADE"),
+        index=True,
+    )
+    tags = Column(ARRAY(String), index=True)
+    prompt_batch_id = Column(
+        Integer,
+        ForeignKey(PromptBatch.prompt_batch_id, ondelete="CASCADE"),
+        index=True,
+        nullable=True,
+    )
+
+
 class LegislationContentSummary(Base):
     """
     Represents a summary of a piece of legislation content
@@ -990,6 +1014,7 @@ class Legislator(Base):
     facebook = Column(String, index=False, nullable=True)
     youtube = Column(String, index=False, nullable=True)
     instagram = Column(String, index=False, nullable=True)
+
 
 class LegislationSponsorship(Base):
     """

@@ -26,7 +26,7 @@ from congress_fastapi.handlers.legislation_version import (
 )
 from congress_fastapi.models.errors import Error
 from congress_fastapi.models.legislation import (
-    LegislationClauseTag,
+    LegislationVersionTag,
     LegislationClauseSummary,
 )
 
@@ -41,15 +41,15 @@ router = APIRouter(tags=["Legislation", "Legislation Version"])
             "detail": "Legislation not found",
         },
         status.HTTP_200_OK: {
-            "model": List[LegislationClauseTag],
+            "model": List[LegislationVersionTag],
             "detail": "Tags for the clauses in the legislation",
         },
     },
 )
 async def get_legislation_version_tags(
     legislation_version_id: int,
-) -> List[LegislationClauseTag]:
-    """Returns a list of LegislationClauseTag objects for a given legislation_id"""
+) -> List[LegislationVersionTag]:
+    """Returns a list of LegislationVersionTag objects for a given legislation_id"""
     obj = await get_legislation_version_tags_by_legislation_id(legislation_version_id)
     if obj is None:
         raise HTTPException(
@@ -66,7 +66,7 @@ async def get_legislation_version_tags(
             "detail": "Legislation not found",
         },
         status.HTTP_200_OK: {
-            "model": List[LegislationClauseTag],
+            "model": List[LegislationClauseSummary],
             "detail": "Summaries for the sections in the legislation",
         },
     },
