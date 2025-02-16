@@ -5,21 +5,28 @@ import {
     NonIdealState,
     NonIdealStateIconSize,
 } from "@blueprintjs/core";
+import { ResponsiveCalendar } from "@nivo/calendar";
+import { ResponsiveFunnel } from "@nivo/funnel";
 
 import {
     userGetLegislationFeed,
     userGetLegislatorFeed,
     userGetStats,
     userGetFolders,
+    statsGetLegislationCalendar,
+    statsGetLegislationFunnel,
 } from "common/api";
 import { BillTable, USCTrackingTabs } from "components";
-import { LoginContext } from "context";
+import { LoginContext, ThemeContext } from "context";
 
 function AuthedHome() {
     const { user } = useContext(LoginContext);
+    const { nivoTheme } = useContext(ThemeContext);
     const [legislationFeed, setLegislationFeed] = useState([]);
     const [legislatorFeed, setLegislatorFeed] = useState([]);
     const [stats, setStats] = useState(null);
+    const [calendar, setCalendar] = useState([]);
+    const [funnel, setFunnel] = useState([]);
 
     useEffect(() => {
         if (user != null) {
@@ -36,6 +43,14 @@ function AuthedHome() {
             });
             userGetFolders().then(console.log);
         }
+
+        statsGetLegislationCalendar().then((response) => {
+            setCalendar(response.data);
+        });
+
+        statsGetLegislationFunnel().then((response) => {
+            setFunnel(response.data);
+        });
     }, [user]);
 
     return (
@@ -76,11 +91,89 @@ function AuthedHome() {
                 </SectionCard>
             </div>
 
-            <div className="content">
+            <div className="content dashboard-grid">
                 <Section
+                    className="third"
+                    title="Legislation Funnel"
+                    icon="drag-handle-vertical"
+                    compact="true"
+                    collapsible={true}
+                >
+                    <div style={{ height: "150px" }}>
+                        {funnel.length > 0 && (
+                            <ResponsiveFunnel
+                                data={funnel}
+                                margin={{
+                                    top: 20,
+                                    right: 20,
+                                    bottom: 20,
+                                    left: 20,
+                                }}
+                                colors={{ scheme: "spectral" }}
+                                borderWidth={20}
+                                labelColor={{
+                                    from: "color",
+                                    modifiers: [["darker", 3]],
+                                }}
+                                beforeSeparatorLength={20}
+                                beforeSeparatorOffset={20}
+                                afterSeparatorLength={20}
+                                afterSeparatorOffset={20}
+                                currentPartSizeExtension={0}
+                                currentBorderWidth={0}
+                                motionConfig="wobbly"
+                                theme={nivoTheme}
+                                animate={false}
+                            />
+                        )}
+                    </div>
+                </Section>
+                <Section
+                    className="two-third"
+                    title="Legislation Calendar"
+                    icon="drag-handle-vertical"
+                    compact="true"
+                    collapsible={true}
+                >
+                    <div style={{ height: "150px" }}>
+                        <ResponsiveCalendar
+                            data={calendar}
+                            from="2025-02-01"
+                            to="2025-07-20"
+                            emptyColor={
+                                nivoTheme.annotations.outline.outlineColor
+                            }
+                            colors={[
+                                "#BDADFF",
+                                "#9881F3",
+                                "#7961DB",
+                                "#634DBF",
+                            ]}
+                            margin={{
+                                top: 40,
+                                left: 40,
+                                right: 20,
+                                bottom: 20,
+                            }}
+                            yearSpacing={40}
+                            monthBorderColor={
+                                nivoTheme.annotations.outline.stroke
+                            }
+                            dayBorderWidth={2}
+                            dayBorderColor={
+                                nivoTheme.annotations.outline.stroke
+                            }
+                            theme={nivoTheme}
+                        />
+                    </div>
+                </Section>
+                <Section
+                    className="half"
                     title="Followed Legislation"
                     subtitle="Last 7 Days"
                     icon="drag-handle-vertical"
+                    compact={true}
+                    collapsible={true}
                 >
                     {legislationFeed?.length > 0 ? (
                         <BillTable bills={legislationFeed} />
@@ -105,9 +198,12 @@ function AuthedHome() {
                 </Section>
 
                 <Section
+                    className="half"
                     title="Followed Sponsors"
                     subtitle="Last 7 Days"
                     icon="drag-handle-vertical"
+                    compact={true}
+                    collapsible={true}
                 >
                     {legislatorFeed?.length > 0 ? (
                         <BillTable bills={legislatorFeed} />
@@ -134,6 +230,8 @@ function AuthedHome() {
                     title="USC Tracking"
                     subtitle="Last 7 Days"
                     icon="drag-handle-vertical"
+                    compact={true}
+                    collapsible={true}
                 >
                     <SectionCard>
                         <USCTrackingTabs />

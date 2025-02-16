@@ -10,6 +10,7 @@ from congress_fastapi.routes.legislation_version import (
 )
 from congress_fastapi.routes.search import router as search_router
 from congress_fastapi.routes.user import router as user_router
+from congress_fastapi.routes.stats import router as stats_router
 from congress_fastapi.utils.limiter import limiter
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -50,4 +51,5 @@ app.include_router(legislation_router)
 app.include_router(legislation_version_router)
 app.include_router(search_router)
 app.include_router(user_router)
+app.include_router(stats_router)
 print("Loaded")
