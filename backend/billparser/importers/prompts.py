@@ -63,7 +63,8 @@ if __name__ == "__main__":
         ):
             selected_prompt = prompt_list[0]
             prompt_id = selected_prompt.prompt_id
-            results = get_outstanding_legis_versions([l.prompt_id for l in prompt_list])
+            # Reverse it so we do newer bills first
+            results = get_outstanding_legis_versions([l.prompt_id for l in prompt_list])[::-1]
             results.sort()
             logging.info(
                 f"Found {len(results)} legislation versions without prompt batch for {prompt_name}"
