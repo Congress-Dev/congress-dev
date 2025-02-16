@@ -13,7 +13,7 @@ from fastapi import APIRouter, HTTPException, Query, status
 from congress_fastapi.handlers.legislation_version import (
     get_legislation_version_tags_by_legislation_id,
     get_legislation_version_summaries_by_legislation_id,
-    get_legislation_version_summaries_by_bill_number,
+    get_legislation_version_summary_by_version,
 )
 from congress_fastapi.models.errors import Error
 from congress_fastapi.models.legislation import (
@@ -152,11 +152,11 @@ async def get_legislation_version_text(
 
 
 @router.get(
-    "/legislation_version/{congress_session_number}/{chamber}-bill/{bill}/{version_id}/summary",
+    "/legislation_version/{legislation_version_id}/summary",
     responses={
         status.HTTP_404_NOT_FOUND: {
             "model": Error,
-            "detail": "Congress session not found",
+            "detail": "Legislation version not found",
         },
         status.HTTP_200_OK: {
             "model": List[LegislationVersionMetadata],
@@ -164,17 +164,14 @@ async def get_legislation_version_text(
         },
     },
 )
-async def get_bill_version_summary(
-    congress_session_number: int,
-    chamber: str,
-    bill: int,
-    version_id: str,
+async def get_legislation_version_summary(
+    legislation_version_id: int,
 ) -> List[LegislationVersionMetadata]:
-    """Returns a list of LegislationVersionMetadata objects for a given legislation_id"""
-    obj = await get_legislation_version_summaries_by_bill_number(congress_session_number, chamber, bill, version_id)
+    """Returns a list of LegislationVersionMetadata objects for a given legislation_version_id"""
+    obj = await get_legislation_version_summary_by_version(legislation_version_id)
     if obj is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Congress session not found"
+            status_code=status.HTTP_404_NOT_FOUND, detail="Legislation version session not found"
         )
     return obj
 
