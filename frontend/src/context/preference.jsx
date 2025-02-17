@@ -5,6 +5,8 @@ export const PreferenceDefaults = Object.freeze({
     HIGHLIGHT_DATES: false,
     HIGHLIGHT_DOLLARS: false,
     HIGHLIGHT_ACTIONS: false,
+    SHOW_TAGS: true,
+    SHOW_APPROPRIATIONS: true,
 });
 
 export const PreferenceEnum = Object.freeze({
@@ -12,6 +14,8 @@ export const PreferenceEnum = Object.freeze({
     HIGHLIGHT_DATES: "HIGHLIGHT_DATES",
     HIGHLIGHT_DOLLARS: "HIGHLIGHT_DOLLARS",
     HIGHLIGHT_ACTIONS: "HIGHLIGHT_ACTIONS",
+    SHOW_TAGS: "SHOW_TAGS",
+    SHOW_APPROPRIATIONS: "SHOW_APPROPRIATIONS",
 });
 
 export const PreferenceContext = createContext();

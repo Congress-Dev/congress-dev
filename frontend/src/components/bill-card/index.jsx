@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useContext } from "react";
 import { withRouter, Link } from "react-router-dom";
 import { Callout, Tag, SectionCard } from "@blueprintjs/core";
 
+import { PreferenceEnum, PreferenceContext } from "context";
 import { chamberLookup } from "common/lookups";
 import { BillVersionsBreadcrumb, LegislatorChip } from "components";
 
@@ -13,6 +14,8 @@ const USDollar = new Intl.NumberFormat("en-US", {
 });
 
 function BillCard({ bill }) {
+    const { preferences } = useContext(PreferenceContext);
+
     function genTitle() {
         const { legislation_versions = [] } = bill;
         let version = "";
@@ -62,10 +65,7 @@ function BillCard({ bill }) {
                 {bill.effective_date != null ? (
                     <>
                         <span className="bill-card-introduced-date">
-                            <span style={{ fontWeight: "bold" }}>
-                                Introduced:
-                            </span>{" "}
-                            {bill.effective_date}
+                            <b>Introduced:</b> {bill.effective_date}
                         </span>
                         <br />
                     </>
@@ -74,7 +74,7 @@ function BillCard({ bill }) {
                 )}
                 {bill.sponsor != null ? (
                     <>
-                        <span style={{ fontWeight: "bold" }}>Sponsor:</span>{" "}
+                        <b>Sponsor:</b>{" "}
                         <LegislatorChip sponsor={bill.sponsor} />
                     </>
                 ) : (
@@ -83,21 +83,19 @@ function BillCard({ bill }) {
                 {bill.legislation_versions != null &&
                 bill.legislation_versions.length > 0 ? (
                     <>
-                        <span style={{ fontWeight: "bold" }}>Versions:</span>{" "}
-                        <BillVersionsBreadcrumb bill={bill} />
+                        <b>Versions:</b> <BillVersionsBreadcrumb bill={bill} />
                         <br />
                     </>
                 ) : (
                     <></>
                 )}
 
-                {renderTags()}
+                {preferences[PreferenceEnum.SHOW_TAGS] && renderTags()}
 
-                {bill.appropriations ? (
+                {preferences[PreferenceEnum.SHOW_APPROPRIATIONS] &&
+                bill.appropriations ? (
                     <>
-                        <span style={{ fontWeight: "bold" }}>
-                            Appropriations:
-                        </span>{" "}
+                        <b>Appropriations:</b>{" "}
                         {USDollar.format(bill.appropriations)}{" "}
                     </>
                 ) : null}

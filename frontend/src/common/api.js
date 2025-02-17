@@ -7,7 +7,9 @@ function handleStatus(res) {
         return res.json();
     } else {
         console.error(res);
-        throw new Error(res);
+        const err = new Error(res);
+        err.name = "HTTP Error: " + res.status;
+        throw err;
         return null;
     }
 }
@@ -156,6 +158,18 @@ export const userRemoveLegislator = (bioGuideId) => {
         .then(handleStatus)
         .catch(toastError);
 };
+
+export const statsGetLegislationCalendar = () => {
+    return fetch(`${endPv2}/stats/legislation_calendar`)
+        .then(handleStatus)
+        .catch(toastError)
+}
+
+export const statsGetLegislationFunnel = () => {
+    return fetch(`${endPv2}/stats/legislation_funnel`)
+        .then(handleStatus)
+        .catch(toastError)
+}
 
 export const getBill = (congress, chamber, billNumber) => {
     return fetch(
@@ -362,13 +376,14 @@ export const getCongressSearch = (
     versions,
     text,
     sort,
+    direction,
     page,
     pageSize,
 ) => {
     return fetch(
         `${endPv2}/legislation/search?${congress != "" ? `congress=${congress}` : ""}&chamber=${
             chamber || "None"
-        }&versions=${versions || ""}&text=${text}&sort=${sort}&page=${page}&pageSize=${pageSize}`,
+        }&versions=${versions || ""}&text=${text}&sort=${sort}&direction=${direction}&page=${page}&pageSize=${pageSize}`,
     )
         .then(handleStatus)
         .catch(toastError);
@@ -415,6 +430,23 @@ export const getBillVersionDiffForSection = (
 };
 
 // Endpoint V2 being
+export const getMemberSearch = (
+    name,
+    party,
+    state,
+    congress,
+    chamber,
+    sort,
+    direction,
+    page,
+    pageSize,
+) => {
+    return fetch(
+        `${endPv2}/members?name=${name || ""}&congress=${congress?.join('&congress=') || ""}&chamber=${chamber?.join('&chamber=') || ""}&party=${party?.join("&party=") || ""}&state=${state?.join("&state=") || ""}&sort=${sort}&direction=${direction}&page=${page}&pageSize=${pageSize}`,
+    )
+        .then(handleStatus)
+        .catch(toastError);
+}
 
 export const getMemberInfo = (bioGuideId) => {
     return fetch(`${endPv2}/member/${bioGuideId}`)
@@ -427,3 +459,16 @@ export const getMemberSponsoredLegislation = (bioGuideId) => {
         .then(handleStatus)
         .catch(toastError);
 };
+
+export const talkToBill = (legislationVersionId, query) => {
+    return fetch(`${endPv2}/legislation_version/${legislationVersionId}/llm`, {
+        method: "POST",
+        body: JSON.stringify({ query }),
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+    })
+        .then(handleStatus)
+        // .catch(toastError);
+}

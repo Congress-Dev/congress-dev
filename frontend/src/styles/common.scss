@@ -110,18 +110,21 @@ b {
     margin-bottom: 10px;
 }
 
-.sidebar .collapse-controls {
-    margin-top: 10px;
-    margin-bottom: 10px;
-}
+.sidebar,
+.bp5-drawer {
+    .collapse-controls {
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
 
-.sidebar .collapse-wrapper {
-    margin-bottom: 10px;
-}
+    .collapse-wrapper {
+        margin-bottom: 10px;
+    }
 
-.sidebar .collapse-wrapper .collapse-section {
-    margin-top: 10px;
-    margin-left: 20px;
+    .collapse-wrapper .collapse-section {
+        margin-top: 10px;
+        margin-left: 20px;
+    }
 }
 
 .congress-link {
@@ -353,6 +356,70 @@ b {
     }
 }
 
+.legislator-card {
+    .bp5-callout {
+        display: flex;
+    }
+
+    .details {
+        margin-left: 10px;
+    }
+
+    .image {
+        width: 75px; /* Set a fixed width */
+        height: 75px; /* Set a fixed height */
+        border-radius: 50%; /* Make it circular */
+        overflow: hidden; /* Hide anything outside the circle */
+        display: flex;
+        background-color: #00000042;
+
+        svg {
+            width: 75px;
+            height: 75px;
+        }
+
+        img {
+            width: 100%; /* Makes the image cover the container width */
+            height: 100%; /* Makes the image cover the container height */
+            object-fit: cover; /* Ensures the image covers the area without stretching */
+        }
+    }
+}
+
+.dashboard-grid {
+    flex-flow: wrap;
+    place-content: stretch flex-start;
+    align-items: flex-start;
+    display: inline-flex;
+    gap: 20px;
+
+    .bp5-section {
+        width: 100%;
+        margin-bottom: 0px !important;
+        margin-top: 0px !important;
+
+        &.quarter {
+            width: calc(25% - 10px)
+        }
+
+        &.third {
+            width: calc(33% - 10px)
+        }
+
+        &.half {
+            width: calc(50% - 10px)
+        }
+
+        &.two-third {
+            width: calc(67% - 10px);
+        }
+
+        &.three-quarter {
+            width: calc(75% - 10px);
+        }
+    }
+}
+
 @media (min-device-width: 768px) and (max-device-width: 1200px) {
     .page {
         width: 100%;
@@ -373,6 +440,11 @@ b {
 
         .bp5-html-select {
             margin-bottom: 5px;
+        }
+    }
+
+    .dashboard-grid {
+        .bp5-section {
         }
     }
 }
@@ -406,6 +478,12 @@ b {
             display: none;
         }
     }
+
+    .dashboard-grid {
+        .bp5-section {
+            width: 100% !important;
+        }
+    }
 }
 
 @media (max-device-width: 812px) and (orientation: landscape) {
@@ -435,6 +513,12 @@ b {
         th:not(.critical),
         td:not(.critical) {
             display: none;
+        }
+    }
+
+    .dashboard-grid {
+        .bp5-section {
+            width: 100% !important;
         }
     }
 }
@@ -483,6 +567,13 @@ b {
     .bp5-section.content {
         margin-left: 0px;
         width: 100%;
+    }
+
+    .dashboard-grid {
+        .bp5-section {
+            width: 100% !important;
+            margin-bottom: 20px !important;
+        }
     }
 
     .mobile {

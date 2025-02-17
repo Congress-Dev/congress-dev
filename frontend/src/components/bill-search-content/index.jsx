@@ -26,6 +26,7 @@ function BillSearchContent(props) {
             props.versions,
             props.text,
             props.sort,
+            props.direction,
             props.page,
             props.pageSize,
         ).then((billList) => {
@@ -40,6 +41,7 @@ function BillSearchContent(props) {
         props.versions,
         props.text,
         props.sort,
+        props.direction,
         props.page,
         props.pageSize,
     ]);

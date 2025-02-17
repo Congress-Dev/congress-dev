@@ -1,3 +1,4 @@
+from typing import List, Optional
 import requests
 import base64
 from datetime import datetime, timedelta
@@ -14,6 +15,7 @@ from billparser.db.models import (
     User,
     Legislation,
     Legislator,
+    UserLLMQuery,
     UserLegislation,
     UserLegislator,
     LegislationSponsorship,
@@ -37,6 +39,7 @@ class InvalidTokenException(Exception):
     def __init__(self):
         self.name = ""
 
+
 async def handle_get_user_legislation(cookie):
     if cookie is None:
         raise InvalidTokenException()
@@ -45,13 +48,13 @@ async def handle_get_user_legislation(cookie):
 
     database = await get_database()
 
-    query = (
-        select(UserLegislation.legislation_id)
-        .where(UserLegislation.user_id == user.user_id)
+    query = select(UserLegislation.legislation_id).where(
+        UserLegislation.user_id == user.user_id
     )
 
     results = await database.fetch_all(query)
-    return {'legislation': [dict(x)['legislation_id'] for x in results]}
+    return {"legislation": [dict(x)["legislation_id"] for x in results]}
+
 
 async def handle_get_user_legislator(cookie):
     if cookie is None:
@@ -61,13 +64,13 @@ async def handle_get_user_legislator(cookie):
 
     database = await get_database()
 
-    query = (
-        select(UserLegislator.bioguide_id)
-        .where(UserLegislator.user_id == user.user_id)
+    query = select(UserLegislator.bioguide_id).where(
+        UserLegislator.user_id == user.user_id
     )
 
     results = await database.fetch_all(query)
-    return {'legislator': [dict(x)['bioguide_id'] for x in results]}
+    return {"legislator": [dict(x)["bioguide_id"] for x in results]}
+
 
 async def handle_get_user_legislation_update(cookie, legislation_id, action):
     legislation_id = int(legislation_id)
@@ -79,10 +82,16 @@ async def handle_get_user_legislation_update(cookie, legislation_id, action):
 
     database = await get_database()
 
-    if action == 'add':
-        query = insert(UserLegislation).values(legislation_id=legislation_id, user_id=user.user_id)
-    elif action == 'remove':
-        query = delete(UserLegislation).where(UserLegislation.legislation_id == legislation_id).where(UserLegislation.user_id == user.user_id)
+    if action == "add":
+        query = insert(UserLegislation).values(
+            legislation_id=legislation_id, user_id=user.user_id
+        )
+    elif action == "remove":
+        query = (
+            delete(UserLegislation)
+            .where(UserLegislation.legislation_id == legislation_id)
+            .where(UserLegislation.user_id == user.user_id)
+        )
 
     await database.execute(query)
     response = await handle_get_user_legislation(cookie)
@@ -97,10 +106,16 @@ async def handle_get_user_legislator_update(cookie, bioguide_id, action):
 
     database = await get_database()
 
-    if action == 'add':
-        query = insert(UserLegislator).values(bioguide_id=bioguide_id, user_id=user.user_id)
-    elif action == 'remove':
-        query = delete(UserLegislator).where(UserLegislator.bioguide_id == bioguide_id).where(UserLegislation.user_id == user.user_id)
+    if action == "add":
+        query = insert(UserLegislator).values(
+            bioguide_id=bioguide_id, user_id=user.user_id
+        )
+    elif action == "remove":
+        query = (
+            delete(UserLegislator)
+            .where(UserLegislator.bioguide_id == bioguide_id)
+            .where(UserLegislation.user_id == user.user_id)
+        )
 
     await database.execute(query)
     response = await handle_get_user_legislator(cookie)
@@ -126,16 +141,17 @@ async def handle_get_user_legislation_feed(cookie):
             Congress.session_number,
             Legislation.legislation_type,
             Legislation.chamber,
-            func.min(LegislationVersion.effective_date).label("effective_date")
+            func.min(LegislationVersion.effective_date).label("effective_date"),
         )
         .select_from(
             join(
                 UserLegislation,
                 Legislation,
                 Legislation.legislation_id == UserLegislation.legislation_id,
-            ).join(
+            )
+            .join(
                 LegislationVersion,
-                LegislationVersion.legislation_id == Legislation.legislation_id
+                LegislationVersion.legislation_id == Legislation.legislation_id,
             )
             .join(Congress, Congress.congress_id == Legislation.congress_id)
         )
@@ -158,14 +174,12 @@ async def handle_get_user_legislation_feed(cookie):
     legislation_ids = [result["legislation_id"] for result in results]
     sponsors_by_id = await get_bill_sponsor(legislation_ids)
 
-    legislation = [{
-        **dict(r),
-        'sponsor': sponsors_by_id.get(r["legislation_id"], None)
-    } for r in results]
+    legislation = [
+        {**dict(r), "sponsor": sponsors_by_id.get(r["legislation_id"], None)}
+        for r in results
+    ]
 
-    return {
-        'legislation': legislation
-    }
+    return {"legislation": legislation}
 
 
 async def handle_get_user_legislator_feed(cookie):
@@ -187,21 +201,24 @@ async def handle_get_user_legislator_feed(cookie):
             Congress.session_number,
             Legislation.legislation_type,
             Legislation.chamber,
-            func.min(LegislationVersion.effective_date).label("effective_date")
-        ).select_from(
+            func.min(LegislationVersion.effective_date).label("effective_date"),
+        )
+        .select_from(
             join(
                 UserLegislator,
                 LegislationSponsorship,
-                LegislationSponsorship.legislator_bioguide_id == UserLegislator.bioguide_id
-            ).join(
-                Legislation,
-                Legislation.legislation_id == LegislationSponsorship.legislation_id
-            ).join(
-                LegislationVersion,
-                LegislationVersion.legislation_id == Legislation.legislation_id
-            ).join(
-                Congress, Congress.congress_id == Legislation.congress_id
+                LegislationSponsorship.legislator_bioguide_id
+                == UserLegislator.bioguide_id,
             )
+            .join(
+                Legislation,
+                Legislation.legislation_id == LegislationSponsorship.legislation_id,
+            )
+            .join(
+                LegislationVersion,
+                LegislationVersion.legislation_id == Legislation.legislation_id,
+            )
+            .join(Congress, Congress.congress_id == Legislation.congress_id)
         )
         .group_by(
             Legislation.legislation_id,
@@ -223,14 +240,12 @@ async def handle_get_user_legislator_feed(cookie):
     legislation_ids = [result["legislation_id"] for result in results]
     sponsors_by_id = await get_bill_sponsor(legislation_ids)
 
-    legislation = [{
-        **dict(r),
-        'sponsor': sponsors_by_id.get(r["legislation_id"], None)
-    } for r in results]
+    legislation = [
+        {**dict(r), "sponsor": sponsors_by_id.get(r["legislation_id"], None)}
+        for r in results
+    ]
 
-    return {
-        'legislation': legislation
-    }
+    return {"legislation": legislation}
 
 
 async def handle_get_user(cookie):
@@ -253,16 +268,18 @@ async def handle_update_user_auth(user):
 
     query = insert(User).values(**user)
     query = query.on_conflict_do_update(
-        index_elements=['user_id'],
-        set_={key: value for key, value in user.items() if key != 'user_id'}
+        index_elements=["user_id"],
+        set_={key: value for key, value in user.items() if key != "user_id"},
     )
     await database.execute(query)
 
-    return await handle_get_user(user['user_auth_cookie'])
+    return await handle_get_user(user["user_auth_cookie"])
 
 
 async def handle_user_login(access_token: str, expires_in: int) -> UserLoginResponse:
-    response = requests.get(GOOGLE_USERINFO_URL, headers={"Authorization": f"Bearer {access_token}"})
+    response = requests.get(
+        GOOGLE_USERINFO_URL, headers={"Authorization": f"Bearer {access_token}"}
+    )
 
     if response.status_code == 200:
         response = response.json()
@@ -271,17 +288,19 @@ async def handle_user_login(access_token: str, expires_in: int) -> UserLoginResp
         md5_hash.update(access_token.encode("utf-8"))
         hash_result = md5_hash.hexdigest()
 
-        image_response = requests.get(response['picture'])
-        image_encoded = base64.b64encode(image_response.content).decode('utf-8')
+        image_response = requests.get(response["picture"])
+        image_encoded = base64.b64encode(image_response.content).decode("utf-8")
 
         user = {
-            'user_id': response['email'],
-            'user_first_name': response['name'].replace(response['family_name'], '').strip(),
-            'user_last_name': response['family_name'],
-            'user_image': image_encoded,
-            'user_auth_google': access_token,
-            'user_auth_expiration': datetime.now() + timedelta(weeks=1),
-            'user_auth_cookie': hash_result,
+            "user_id": response["email"],
+            "user_first_name": response["name"]
+            .replace(response["family_name"], "")
+            .strip(),
+            "user_last_name": response["family_name"],
+            "user_image": image_encoded,
+            "user_auth_google": access_token,
+            "user_auth_expiration": datetime.now() + timedelta(weeks=1),
+            "user_auth_cookie": hash_result,
         }
 
         user_query = await handle_update_user_auth(user)
@@ -302,14 +321,16 @@ async def handle_user_logout(cookie) -> UserLogoutResponse:
 
     try:
         query = update(User)
-        query = query.values(user_auth_cookie=None, user_auth_google=None, user_auth_expiration=None)
+        query = query.values(
+            user_auth_cookie=None, user_auth_google=None, user_auth_expiration=None
+        )
         query = query.where(User.user_auth_cookie == cookie)
 
         await database.execute(query)
     except Exception as e:
         pass
 
-    return { 'success': True }
+    return {"success": True}
 
 
 async def handle_get_user_stats(cookie):
@@ -325,38 +346,44 @@ async def handle_get_user_stats(cookie):
 
     legislation_count = await database.execute(
         select(
-            func.count(Legislation.legislation_id).label('count'),
-            literal('grouper').label('grouper')
+            func.count(func.distinct(Legislation.legislation_id)).label("count"),
         )
         .select_from(
-            join(Legislation, LegislationVersion, Legislation.legislation_id == LegislationVersion.legislation_id)
-            .join(Congress, Congress.congress_id == Legislation.congress_id)
+            join(
+                Legislation,
+                LegislationVersion,
+                Legislation.legislation_id == LegislationVersion.legislation_id,
+            )
         )
-        .group_by('grouper')
-        .where(LegislationVersion.effective_date >= first_day_of_year))
+        .where(LegislationVersion.effective_date >= first_day_of_year)
+    )
 
     version_count = await database.execute(
         select(
-            func.count(LegislationVersion.legislation_version_id).label('count'),
-        )
-        .select_from(
-            join(Legislation, LegislationVersion, Legislation.legislation_id == LegislationVersion.legislation_id)
-            .join(Congress, Congress.congress_id == Legislation.congress_id)
-        )
-        .group_by(LegislationVersion.legislation_version_id)
-        .where(LegislationVersion.effective_date >= first_day_of_year))
+            func.count(func.distinct(LegislationVersion.legislation_version_id)).label(
+                "count"
+            ),
+        ).where(LegislationVersion.effective_date >= first_day_of_year)
+    )
 
     bioguide_count = await database.fetch_all(
         select(
-            func.count(LegislationSponsorship.legislator_bioguide_id).label('count'),
+            func.count(
+                func.distinct(LegislationSponsorship.legislator_bioguide_id)
+            ).label("count"),
         )
         .select_from(
-            join(Legislation, LegislationVersion, Legislation.legislation_id == LegislationVersion.legislation_id)
-            .join(LegislationSponsorship, Legislation.legislation_id == LegislationSponsorship.legislation_id)
-            .join(Congress, Congress.congress_id == Legislation.congress_id)
+            join(
+                Legislation,
+                LegislationVersion,
+                Legislation.legislation_id == LegislationVersion.legislation_id,
+            ).join(
+                LegislationSponsorship,
+                Legislation.legislation_id == LegislationSponsorship.legislation_id,
+            )
         )
-        .group_by(LegislationSponsorship.legislator_bioguide_id)
-        .where(LegislationVersion.effective_date >= first_day_of_year))
+        .where(LegislationVersion.effective_date >= first_day_of_year)
+    )
 
     return {
         "legislation": legislation_count or 0,
@@ -413,8 +440,7 @@ async def handle_get_usc_tracking_results(user_id: str, folder_id: int):
         )
         .join(
             Legislation,
-            LegislationVersion.legislation_id
-            == Legislation.legislation_id,
+            LegislationVersion.legislation_id == Legislation.legislation_id,
         )
         .join(Congress, Congress.congress_id == 2)
         .group_by(
@@ -440,3 +466,30 @@ async def handle_get_usc_tracking_results(user_id: str, folder_id: int):
     ]
 
     return {"legislation": legislation}
+
+
+async def get_llm_query_result(
+    legislation_version_id: int, query: str
+) -> Optional[str]:
+    database = await get_database()
+    query = select(UserLLMQuery).where(
+        UserLLMQuery.query.ilike(query),
+        UserLLMQuery.legislation_version_id == legislation_version_id,
+    )
+    result = await database.fetch_one(query)
+    if result is None:
+        return None
+    return result["response"]
+
+
+async def insert_llm_query_result(
+    legislation_version_id: int, query: str, response: str
+) -> None:
+    database = await get_database()
+    query = insert(UserLLMQuery).values(
+        legislation_version_id=legislation_version_id,
+        query=query,
+        response=response,
+        safe=False,
+    )
+    await database.execute(query)

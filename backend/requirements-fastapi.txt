@@ -5,9 +5,17 @@ requests==2.32.2
 # FastAPI tools
 fastapi~=0.108.0
 uvicorn[standard]
+slowapi~=0.1.9
 
 # SQLAlchemy tools
 databases[postgresql]~=0.8.0
 psycopg2-binary~=2.8.4
 pyhumps~=3.8.0  # camelCase <-> snake_case
 SQLAlchemy~=1.4.0
+
+en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl
+spacy==3.7.2
+spacy-legacy==3.0.12
+spacy-loggers==1.0.5
+litellm==1.35.5
+tokenizers==0.15.2

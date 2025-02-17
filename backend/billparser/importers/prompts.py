@@ -1,6 +1,8 @@
 from collections import defaultdict
 import logging
 from typing import Dict, List
+from billparser.prompt_runners.bill_tagger import bill_tagger
+from billparser.utils.logger import LogContext
 from sqlalchemy import select, and_, not_
 import litellm
 
@@ -48,6 +50,7 @@ if __name__ == "__main__":
     prompts_by_name: Dict[str, Prompt] = defaultdict(list)
 
     for prompt in prompts:
+        session.expunge(prompt)
         prompts_by_name[prompt.title].append(prompt)
 
     # Sort them by id for each prompt
@@ -55,24 +58,31 @@ if __name__ == "__main__":
         prompt_list.sort(key=lambda x: x.prompt_id, reverse=True)
 
     for prompt_name, prompt_list in prompts_by_name.items():
-        selected_prompt = prompt_list[0]
-        prompt_id = selected_prompt.prompt_id
-        results = get_outstanding_legis_versions([l.prompt_id for l in prompt_list])
-        results.sort()
-        logging.info(
-            f"Found {len(results)} legislation versions without prompt batch for {prompt_name}"
-        )
-        if prompt_name == "Clause Tagger":
+        with LogContext(
+            {"prompt": {"name": prompt_name, "prompt_id": prompt_list[0].prompt_id}}
+        ):
+            selected_prompt = prompt_list[0]
+            prompt_id = selected_prompt.prompt_id
+            results = get_outstanding_legis_versions([l.prompt_id for l in prompt_list])
+            results.sort()
+            logging.info(
+                f"Found {len(results)} legislation versions without prompt batch for {prompt_name}"
+            )
+            if prompt_name == "Clause Tagger":
 
-            for legis_v_id in results:
-                logging.info(f"Running clause tagger on {legis_v_id}")
-                clause_tagger(legis_v_id, prompt_id)
-
-        elif prompt_name == "Appropriation Finder":
-            for legis_v_id in results:
-                logging.info(f"Running appropriation finder on {legis_v_id}")
-                appropriation_finder(legis_v_id, prompt_id)
-        elif prompt_name == "Bill Summarizer":
-            for legis_v_id in results:
-                logging.info(f"Running summarizer on {legis_v_id}")
-                section_summarizer(legis_v_id, prompt_id)
+                # for legis_v_id in results:
+                #     logging.info(f"Running clause tagger on {legis_v_id}")
+                #     clause_tagger(legis_v_id, prompt_id)
+                pass
+            elif prompt_name == "Appropriation Finder":
+                for legis_v_id in results:
+                    logging.info(f"Running appropriation finder on {legis_v_id}")
+                    appropriation_finder(legis_v_id, prompt_id)
+            elif prompt_name == "Bill Summarizer":
+                for legis_v_id in results:
+                    logging.info(f"Running summarizer on {legis_v_id}")
+                    section_summarizer(legis_v_id, prompt_id)
+            elif prompt_name == "Bill Tagger":
+                for legis_v_id in results:
+                    logging.info(f"Running bill tagger on {legis_v_id}")
+                    bill_tagger(legis_v_id, prompt_id)

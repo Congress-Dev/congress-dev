@@ -393,6 +393,14 @@ function BillDisplay() {
                                                 ) : (
                                                     ""
                                                 )}
+                                                {citationStr != "" ? (
+                                                    <span>
+                                                        <b>Citations:</b>{" "}
+                                                        {citationStr}
+                                                    </span>
+                                                ) : (
+                                                    ""
+                                                )}
                                             </p>
                                         }
                                         disabled={

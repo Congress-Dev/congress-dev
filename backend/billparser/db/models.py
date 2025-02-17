@@ -31,6 +31,11 @@ class CastingArray(ARRAY):
         return sa.cast(bindvalue, self)
 
 
+class LegislatorJob(str, enum.Enum):
+    Senator = "Senator"
+    Representative = "Representative"
+
+
 class LegislatorVoteType(str, enum.Enum):
     yay = "yay"
     nay = "nay"
@@ -39,20 +44,21 @@ class LegislatorVoteType(str, enum.Enum):
 
     @classmethod
     def from_string(cls, string: str) -> "LegislationChamber":
-        if string.lower() == 'yea':
+        if string.lower() == "yea":
             return cls.yay
-        elif string.lower() == 'aye':
+        elif string.lower() == "aye":
             return cls.yay
-        elif string.lower() == 'nay':
+        elif string.lower() == "nay":
             return cls.nay
-        elif string.lower() == 'no':
+        elif string.lower() == "no":
             return cls.nay
-        elif string.lower() == 'present':
+        elif string.lower() == "present":
             return cls.present
-        elif string.lower() == 'not voting':
+        elif string.lower() == "not voting":
             return cls.abstain
         else:
             raise ValueError(f"Invalid LegislatorVoteType: {string}")
+
 
 class LegislationType(str, enum.Enum):
     Bill = "Bill"
@@ -160,7 +166,9 @@ class LegislationVote(Base):
     )
 
     legislation_id = Column(
-        Integer, ForeignKey("legislation.legislation_id", ondelete="CASCADE"), index=True
+        Integer,
+        ForeignKey("legislation.legislation_id", ondelete="CASCADE"),
+        index=True,
     )
 
     question = Column(String, index=True)
@@ -213,17 +221,21 @@ class UserLegislation(Base):
     Holds the relationship between User and favorited Legislation
     """
 
-    __tablename__  = "user_legislation"
+    __tablename__ = "user_legislation"
     __table_args__ = {"schema": "sensitive"}
 
     user_legislation_id = Column(Integer, primary_key=True)
 
     user_id = Column(
-        String, ForeignKey("sensitive.user_ident.user_id", ondelete="CASCADE"), index=True
+        String,
+        ForeignKey("sensitive.user_ident.user_id", ondelete="CASCADE"),
+        index=True,
     )
 
     legislation_id = Column(
-        Integer, ForeignKey("legislation.legislation_id", ondelete="CASCADE"), index=True
+        Integer,
+        ForeignKey("legislation.legislation_id", ondelete="CASCADE"),
+        index=True,
     )
 
 
@@ -232,13 +244,15 @@ class UserLegislator(Base):
     Holds the relationship between User and favorited Legislator
     """
 
-    __tablename__  = "user_legislator"
+    __tablename__ = "user_legislator"
     __table_args__ = {"schema": "sensitive"}
 
     user_legislator_id = Column(Integer, primary_key=True)
 
     user_id = Column(
-        String, ForeignKey("sensitive.user_ident.user_id", ondelete="CASCADE"), index=True
+        String,
+        ForeignKey("sensitive.user_ident.user_id", ondelete="CASCADE"),
+        index=True,
     )
 
     bioguide_id = Column(
@@ -290,6 +304,32 @@ class UserUSCContent(Base):
     )
 
     usc_ident = Column(String)
+
+
+class UserLLMQuery(Base):
+    """
+    Acts as a log of all user queries into legislation, for tracking purposes
+    """
+
+    __tablename__ = "user_llm_query"
+    __table_args__ = {"schema": "sensitive"}
+
+    user_llm_query_id = Column(Integer, primary_key=True)
+
+    user_id = Column(
+        String,
+        ForeignKey("sensitive.user_ident.user_id", ondelete="CASCADE"),
+        index=True,
+    )
+    legislation_version_id = Column(
+        Integer,
+        ForeignKey("legislation_version.legislation_version_id", ondelete="CASCADE"),
+        index=True,
+    )
+    query = Column(String, nullable=False, index=True)
+    response = Column(String, nullable=False)
+    safe = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime(timezone=False), server_default=func.now())
 
 
 class Congress(Base):
@@ -346,7 +386,9 @@ class Legislation(Base):
 
     __tablename__ = "legislation"
     __table_args__ = (
-        UniqueConstraint("chamber", "number", "legislation_type", "congress_id", name="unq_bill"),
+        UniqueConstraint(
+            "chamber", "number", "legislation_type", "congress_id", name="unq_bill"
+        ),
     )
     legislation_id = Column(Integer, primary_key=True)
 
@@ -510,7 +552,7 @@ class LegislationActionParse(Base):
 
     legislation_version_id = Column(
         Integer,
-        ForeignKey("legislation_version.legislation_version_id"),
+        ForeignKey("legislation_version.legislation_version_id", ondelete="CASCADE"),
         index=True,
     )
 
@@ -523,7 +565,7 @@ class LegislationActionParse(Base):
     actions = Column(CastingArray(JSONB))
     citations = Column(CastingArray(JSONB))
 
-    def  to_dict(self):
+    def to_dict(self):
         boi = {
             "action_id": self.legislation_action_parse_id,
             "version_id": self.legislation_version_id,
@@ -532,6 +574,7 @@ class LegislationActionParse(Base):
             "citations": self.citations,
         }
         return {k: v for (k, v) in boi.items() if v is not None and v != {}}
+
 
 class LegislationContentTag(Base):
     """
@@ -553,6 +596,28 @@ class LegislationContentTag(Base):
         index=True,
     )
     tags = Column(ARRAY(String), index=True)
+
+
+class LegislationVersionTag(Base):
+    """
+    Represents a tag on a piece of legislation
+    """
+
+    __tablename__ = "legislation_version_tag"
+
+    legislation_version_tag_id = Column(Integer, primary_key=True)
+    legislation_version_id = Column(
+        Integer,
+        ForeignKey(LegislationVersion.legislation_version_id, ondelete="CASCADE"),
+        index=True,
+    )
+    tags = Column(ARRAY(String), index=True)
+    prompt_batch_id = Column(
+        Integer,
+        ForeignKey(PromptBatch.prompt_batch_id, ondelete="CASCADE"),
+        index=True,
+        nullable=True,
+    )
 
 
 class LegislationContentSummary(Base):
@@ -756,7 +821,9 @@ class USCContentDiff(Base):
     content_type = Column(String)
 
     usc_content_id = Column(
-        Integer, ForeignKey("usc_content.usc_content_id"), index=True
+        Integer,
+        ForeignKey("usc_content.usc_content_id", ondelete="CASCADE"),
+        index=True,
     )
 
     usc_section_id = Column(
@@ -891,7 +958,9 @@ class LegislationCommitteeAssociation(Base):
 
     legislation_committee_id = Column(
         Integer,
-        ForeignKey("legislation_committee.legislation_committee_id"),
+        ForeignKey(
+            "legislation_committee.legislation_committee_id", ondelete="CASCADE"
+        ),
         index=True,
     )
 
@@ -899,7 +968,9 @@ class LegislationCommitteeAssociation(Base):
     discharge_date = Column(DateTime)
 
     legislation_id = Column(
-        Integer, ForeignKey("legislation.legislation_id"), index=True
+        Integer,
+        ForeignKey("legislation.legislation_id", ondelete="CASCADE"),
+        index=True,
     )
 
     congress_id = Column(
@@ -926,6 +997,9 @@ class Legislator(Base):
     middle_name = Column(String)
     last_name = Column(String)
 
+    job = Column(Enum(LegislatorJob))
+    congress_id = Column(ARRAY(Integer), index=False)
+
     # TODO: Enum?
     party = Column(String, index=True)
     state = Column(String, index=True)
@@ -935,6 +1009,11 @@ class Legislator(Base):
     image_source = Column(String, index=False, nullable=True)
 
     profile = Column(String, index=False, nullable=True)
+
+    twitter = Column(String, index=False, nullable=True)
+    facebook = Column(String, index=False, nullable=True)
+    youtube = Column(String, index=False, nullable=True)
+    instagram = Column(String, index=False, nullable=True)
 
 
 class LegislationSponsorship(Base):

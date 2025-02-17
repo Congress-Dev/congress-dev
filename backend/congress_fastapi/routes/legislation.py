@@ -9,7 +9,7 @@ from congress_fastapi.handlers.legislation_metadata import (
 from congress_fastapi.models.errors import Error
 from congress_fastapi.models.legislation import LegislationMetadata
 
-router = APIRouter()
+router = APIRouter(tags=["Legislation"])
 
 
 @router.get(

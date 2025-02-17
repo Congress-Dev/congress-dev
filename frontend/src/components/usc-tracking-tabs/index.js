@@ -1,5 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Tabs, Tab, NonIdealState, NonIdealStateIconSize } from "@blueprintjs/core";
+import {
+    Tabs,
+    Tab,
+    NonIdealState,
+    NonIdealStateIconSize,
+} from "@blueprintjs/core";
 import USCTrackingTab from "./usc-tracking-tab";
 import { getUSCTrackingFolders } from "common/api";
 
@@ -11,14 +16,13 @@ export default function USCTrackingTabs() {
         getUSCTrackingFolders()
             .then((res) => res.json())
             .then((res) => {
-                console.log(res);
                 setFolders(res || []);
                 if (res && res.length > 0) {
                     setSelectedTab(res[0].userUscContentFolderId);
                 }
             });
     }, []);
-    console.log(folders);
+
     return folders.length == 0 ? (
         <NonIdealState
             icon="inbox"

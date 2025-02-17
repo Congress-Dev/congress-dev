@@ -1,7 +1,8 @@
+import re
 from collections import defaultdict
 from typing import Dict, List, Tuple
 
-from sqlalchemy import select, join, func, distinct, exists
+from sqlalchemy import select, join, func, distinct, exists, asc, desc, or_
 from sqlalchemy.orm import aliased
 from congress_fastapi.db.postgres import get_database
 from billparser.db.models import (
@@ -13,6 +14,7 @@ from billparser.db.models import (
     LegislationContentSummary,
     LegislationContentTag,
     LegislationSponsorship,
+    LegislationVersionTag,
     LegislationVersion,
     LegislationVersionEnum,
     Legislator,
@@ -52,12 +54,11 @@ async def get_distinct_tags(legislation_ids: List[int]) -> Dict[int, List[str]]:
 
     # Aliases for the tables
     lv_alias = aliased(LegislationVersion)
-    lct_alias = aliased(LegislationContentTag)
-    lc_alias = aliased(LegislationContent)
+    lvt_alias = aliased(LegislationVersionTag)
 
     # Main query to get distinct tags
     query = (
-        select(Legislation.legislation_id, lct_alias.tags)
+        select(Legislation.legislation_id, lvt_alias.tags)
         .select_from(
             join(
                 Legislation,
@@ -68,12 +69,8 @@ async def get_distinct_tags(legislation_ids: List[int]) -> Dict[int, List[str]]:
                 lv_alias, lv_alias.legislation_version_id == subquery.c.max_version_id
             )
             .join(
-                lc_alias,
-                lv_alias.legislation_version_id == lc_alias.legislation_version_id,
-            )
-            .join(
-                lct_alias,
-                lc_alias.legislation_content_id == lct_alias.legislation_content_id,
+                lvt_alias,
+                lv_alias.legislation_version_id == lvt_alias.legislation_version_id,
             )
         )
         .where(Legislation.legislation_id.in_(legislation_ids))
@@ -184,6 +181,7 @@ async def get_bill_appropriations(legislation_ids: List[int]) -> Dict[int, float
     results = await database.fetch_all(query)
     return {result["legislation_id"]: int(result["amount"]) for result in results}
 
+
 async def get_bill_sponsor(legislation_ids: List[int]):
     database = await get_database()
 
@@ -195,17 +193,17 @@ async def get_bill_sponsor(legislation_ids: List[int]):
         )
         .join(
             LegislationSponsorship,
-            LegislationSponsorship.legislator_bioguide_id == Legislator.bioguide_id
+            LegislationSponsorship.legislator_bioguide_id == Legislator.bioguide_id,
         )
         .where(
             LegislationSponsorship.legislation_id.in_(legislation_ids),
-            LegislationSponsorship.cosponsor == False
+            LegislationSponsorship.cosponsor == False,
         )
         .group_by(
             LegislationSponsorship.legislation_id,
             Legislator.legislator_id,
             Legislator.bioguide_id,
-            LegislationSponsorship.cosponsor
+            LegislationSponsorship.cosponsor,
         )
         .order_by(LegislationSponsorship.cosponsor, Legislator.bioguide_id)
     )
@@ -213,28 +211,34 @@ async def get_bill_sponsor(legislation_ids: List[int]):
     results = await database.fetch_all(query)
     return {result["legislation_id"]: dict(result) for result in results}
 
+
 async def search_legislation(
     congress: str,
     chamber: str,
     versions: str,
     text: str,
     sort: str,
+    direction: str,
     page: int,
     page_size: int,
 ) -> Tuple[List[SearchResult], int]:
     if congress:
         congress = [int(c) for c in congress.split(",")]
 
+    sort_order = asc(sort)
+    if direction == "desc":
+        sort_order = desc(sort)
+
     database = await get_database()
     lv_alias = aliased(LegislationVersion)
     subquery = (
-            select([1])
-            .select_from(LegislationVersion)
-            .where(
-                (LegislationVersion.legislation_id == Legislation.legislation_id) &
-                (LegislationVersion.legislation_version.in_(versions.upper().split(",")))
-            )
+        select([1])
+        .select_from(LegislationVersion)
+        .where(
+            (LegislationVersion.legislation_id == Legislation.legislation_id)
+            & (LegislationVersion.legislation_version.in_(versions.upper().split(",")))
         )
+    )
     legis_query = (
         select(
             Legislation.legislation_id,
@@ -263,7 +267,7 @@ async def search_legislation(
             Legislation.chamber,
         )
         .having(exists(subquery))
-        .order_by(sort, Legislation.legislation_id)
+        .order_by(sort_order, Legislation.legislation_id)
         .limit(page_size)
         .offset((page - 1) * page_size)
     )
@@ -271,9 +275,32 @@ async def search_legislation(
         legis_query = legis_query.where(Congress.session_number.in_(congress))
     if chamber:
         legis_query = legis_query.where(Legislation.chamber.in_(chamber.split(",")))
-
     if text:
-        legis_query = legis_query.where(Legislation.title.ilike(f"%{text}%"))
+        number_match = re.search(r"(H\.?R\.?|S\.?)\s?(\d+)", text, re.IGNORECASE)
+        if number_match:
+            chamber_lookup = {
+                "H.R.": "House",
+                "HR": "House",
+                "S.": "Senate",
+                "S": "Senate",
+            }
+            legis_query = legis_query.where(
+                Legislation.chamber == chamber_lookup[number_match.group(1).upper()]
+            )
+            legis_query = legis_query.where(
+                Legislation.number == int(number_match.group(2))
+            )
+        else:
+            try:
+                legis_query = legis_query.where(
+                    or_(
+                        Legislation.title.ilike(f"%{text}%"),
+                        Legislation.number == int(text),
+                    )
+                )
+            except ValueError:
+                legis_query = legis_query.where(Legislation.title.ilike(f"%{text}%"))
+
     results = await database.fetch_all(legis_query)
     results = [dict(result) for result in results]
 
@@ -313,8 +340,7 @@ async def search_legislation(
                 Legislation,
                 lv_alias,
                 Legislation.legislation_id == lv_alias.legislation_id,
-            )
-            .join(Congress, Legislation.congress_id == Congress.congress_id)
+            ).join(Congress, Legislation.congress_id == Congress.congress_id)
         )
         .group_by(
             Legislation.legislation_id,
@@ -324,8 +350,31 @@ async def search_legislation(
         count_query = count_query.where(Congress.session_number.in_(congress))
     if chamber:
         count_query = count_query.where(Legislation.chamber.in_(chamber.split(",")))
-
     if text:
-        count_query = count_query.where(Legislation.title.ilike(f"%{text}%"))
+        number_match = re.search(r"(H\.?R\.?|S\.?)\s?(\d+)", text, re.IGNORECASE)
+        if number_match:
+            chamber_lookup = {
+                "H.R.": "House",
+                "HR": "House",
+                "S.": "Senate",
+                "S": "Senate",
+            }
+            count_query = count_query.where(
+                Legislation.chamber == chamber_lookup[number_match.group(1).upper()]
+            )
+            count_query = count_query.where(
+                Legislation.number == int(number_match.group(2))
+            )
+        else:
+            try:
+                count_query = count_query.where(
+                    or_(
+                        Legislation.title.ilike(f"%{text}%"),
+                        Legislation.number == int(text),
+                    )
+                )
+            except ValueError:
+                count_query = count_query.where(Legislation.title.ilike(f"%{text}%"))
+
     count_results = await database.fetch_all(count_query)
     return objs, len(count_results)

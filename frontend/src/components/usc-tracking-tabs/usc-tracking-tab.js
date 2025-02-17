@@ -14,6 +14,5 @@ export default function USCTrackingTabs({ folderId }) {
     if (bills.length === 0) {
         return <div>None...</div>;
     }
-    console.log(bills);
     return <BillTable bills={bills} />;
 }

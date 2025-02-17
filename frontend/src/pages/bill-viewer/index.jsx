@@ -1,7 +1,14 @@
 import React, { useEffect, useState, useRef } from "react";
 import lodash from "lodash";
 import { useHistory } from "react-router-dom";
-import { Callout, Section, SectionCard } from "@blueprintjs/core";
+import {
+    Callout,
+    Section,
+    SectionCard,
+    Popover,
+    Button,
+    PopperPlacements
+} from "@blueprintjs/core";
 
 import { BillContext } from "context";
 
@@ -13,7 +20,12 @@ import {
     getBillVersionTextv2,
 } from "common/api";
 
-import { BillDisplay, BillViewSidebar, BillViewToolbar } from "components";
+import {
+    BillDisplay,
+    BillViewSidebar,
+    BillViewToolbar,
+    TalkToBill,
+} from "components";
 
 // Default bill versions to choose
 // TODO: These should be enums
@@ -242,6 +254,18 @@ function BillViewer(props) {
                     </Section>
                 </SectionCard>
             </Section>
+
+            <Popover
+                placement="top-end"
+                position="top"
+                content={
+                    <>
+                        <TalkToBill />
+                    </>
+                }
+            >
+                <Button className="chat-popover-trigger" icon="chat" />
+            </Popover>
         </BillContext.Provider>
     );
 }

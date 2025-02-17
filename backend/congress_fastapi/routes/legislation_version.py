@@ -1,5 +1,8 @@
 from typing import Dict, List
 
+from billparser.db.models import User
+from billparser.prompt_runners.utils import get_legis_by_parent_and_id, print_clause
+from congress_fastapi.handlers.user import get_llm_query_result, insert_llm_query_result
 from congress_fastapi.models.legislation.content import LegislationContent
 from congress_fastapi.handlers.legislation.actions import (
     get_legislation_version_actions_by_legislation_id,
@@ -7,22 +10,29 @@ from congress_fastapi.handlers.legislation.actions import (
 from congress_fastapi.handlers.legislation.content import (
     get_legislation_content_by_legislation_version_id,
 )
+from congress_fastapi.handlers.legislation_metadata import (
+    get_legislation_metadata_by_version_id,
+)
 from congress_fastapi.models.legislation.actions import LegislationActionParse
-from fastapi import APIRouter, HTTPException, Query, status
+from congress_fastapi.models.legislation.llm import LLMRequest, LLMResponse
+from congress_fastapi.routes.user import user_from_cookie
+from congress_fastapi.utils.limiter import limiter
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 
 from congress_fastapi.handlers.legislation_version import (
     get_legislation_version_tags_by_legislation_id,
     get_legislation_version_summaries_by_legislation_id,
     get_legislation_version_summary_by_version,
+    run_talk_to_bill_prompt,
 )
 from congress_fastapi.models.errors import Error
 from congress_fastapi.models.legislation import (
-    LegislationClauseTag,
+    LegislationVersionTag,
     LegislationClauseSummary,
     LegislationVersionMetadata,
 )
 
-router = APIRouter()
+router = APIRouter(tags=["Legislation", "Legislation Version"])
 
 
 @router.get(
@@ -33,15 +43,15 @@ router = APIRouter()
             "detail": "Legislation not found",
         },
         status.HTTP_200_OK: {
-            "model": List[LegislationClauseTag],
+            "model": List[LegislationVersionTag],
             "detail": "Tags for the clauses in the legislation",
         },
     },
 )
 async def get_legislation_version_tags(
     legislation_version_id: int,
-) -> List[LegislationClauseTag]:
-    """Returns a list of LegislationClauseTag objects for a given legislation_id"""
+) -> List[LegislationVersionTag]:
+    """Returns a list of LegislationVersionTag objects for a given legislation_id"""
     obj = await get_legislation_version_tags_by_legislation_id(legislation_version_id)
     if obj is None:
         raise HTTPException(
@@ -58,7 +68,7 @@ async def get_legislation_version_tags(
             "detail": "Legislation not found",
         },
         status.HTTP_200_OK: {
-            "model": List[LegislationClauseTag],
+            "model": List[LegislationClauseSummary],
             "detail": "Summaries for the sections in the legislation",
         },
     },
@@ -146,11 +156,6 @@ async def get_legislation_version_text(
     return content_list
 
 
-
-
-
-
-
 @router.get(
     "/legislation_version/{legislation_version_id}/summary",
     responses={
@@ -176,5 +181,56 @@ async def get_legislation_version_summary(
     return obj
 
 
+@router.post(
+    "/legislation_version/{legislation_version_id}/llm",
+)
+@limiter.limit("5/5minutes")
+async def post_legislation_version_llm(
+    legislation_version_id: int,
+    query_request: LLMRequest,
+    request: Request,
+    user: User = Depends(user_from_cookie),
+) -> LLMResponse:
+    """Returns a list of LegislationContent objects for a given legislation_id"""
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Not logged in"
+        )
 
+    # Check if the query already exists
+    response = await get_llm_query_result(legislation_version_id, query_request.query)
+    if response is not None:
+        print("Returning cached response")
+        return LLMResponse(response=response, tokens=0, time=0)
 
+    legis_content = await get_legislation_content_by_legislation_version_id(
+        legislation_version_id
+    )
+    legis_by_parent, legis_by_id = get_legis_by_parent_and_id(legis_content)
+    legis_body = legis_by_parent[None][0]
+    content = print_clause(
+        legis_by_id, legis_by_parent, legis_body.legislation_content_id
+    )
+
+    metadata = await get_legislation_metadata_by_version_id(legislation_version_id)
+    metadata_context = """== Sponsor ==
+{sponsor}
+== Cosponsors ==
+{cosponsors}
+    """.format(
+        sponsor=f"{metadata.sponsor.first_name} {metadata.sponsor.last_name}",
+        cosponsors=",".join(
+            [
+                f"{cosponsor.first_name} {cosponsor.last_name}"
+                for cosponsor in metadata.cosponsors
+            ]
+        ),
+    )
+    response = await run_talk_to_bill_prompt(
+        query_request.query, content, metadata_context
+    )
+    await insert_llm_query_result(
+        legislation_version_id, query_request.query, response.response
+    )
+
+    return response
