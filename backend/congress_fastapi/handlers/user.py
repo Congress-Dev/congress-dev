@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import hashlib
 from typing import List
 
-from sqlalchemy import select, update, join, delete, func, literal
+from sqlalchemy import select, update, join, delete, func, literal, or_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import aliased
 
