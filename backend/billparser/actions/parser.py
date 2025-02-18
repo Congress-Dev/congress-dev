@@ -87,7 +87,7 @@ def strike_emulation(
     # target = remove_citations(target)
     if "$" not in to_strike:
         return re.sub(
-            r"{}({})(?:\b)".format(start_boi, re.escape(to_strike)),
+            r"{}({})(?:\b)?".format(start_boi, re.escape(to_strike)),
             to_replace,
             target,
         )
