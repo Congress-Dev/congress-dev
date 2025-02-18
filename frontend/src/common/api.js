@@ -162,14 +162,14 @@ export const userRemoveLegislator = (bioGuideId) => {
 export const statsGetLegislationCalendar = () => {
     return fetch(`${endPv2}/stats/legislation_calendar`)
         .then(handleStatus)
-        .catch(toastError)
-}
+        .catch(toastError);
+};
 
 export const statsGetLegislationFunnel = () => {
     return fetch(`${endPv2}/stats/legislation_funnel`)
         .then(handleStatus)
-        .catch(toastError)
-}
+        .catch(toastError);
+};
 
 export const getBill = (congress, chamber, billNumber) => {
     return fetch(
@@ -370,6 +370,10 @@ export const getUSCSectionContent = (
         .catch(toastError);
 };
 
+export const getSearchTagOptions = () => {
+    return fetch(`${endPv2}/legislation/search-tags`);
+};
+
 export const getCongressSearch = (
     congress,
     chamber,
@@ -442,11 +446,11 @@ export const getMemberSearch = (
     pageSize,
 ) => {
     return fetch(
-        `${endPv2}/members?name=${name || ""}&congress=${congress?.join('&congress=') || ""}&chamber=${chamber?.join('&chamber=') || ""}&party=${party?.join("&party=") || ""}&state=${state?.join("&state=") || ""}&sort=${sort}&direction=${direction}&page=${page}&pageSize=${pageSize}`,
+        `${endPv2}/members?name=${name || ""}&congress=${congress?.join("&congress=") || ""}&chamber=${chamber?.join("&chamber=") || ""}&party=${party?.join("&party=") || ""}&state=${state?.join("&state=") || ""}&sort=${sort}&direction=${direction}&page=${page}&pageSize=${pageSize}`,
     )
         .then(handleStatus)
         .catch(toastError);
-}
+};
 
 export const getMemberInfo = (bioGuideId) => {
     return fetch(`${endPv2}/member/${bioGuideId}`)
@@ -468,7 +472,6 @@ export const talkToBill = (legislationVersionId, query) => {
             "Content-Type": "application/json",
         },
         credentials: "include",
-    })
-        .then(handleStatus)
-        // .catch(toastError);
-}
+    }).then(handleStatus);
+    // .catch(toastError);
+};
