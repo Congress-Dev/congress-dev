@@ -12,7 +12,7 @@ SEC_TITLE_REGEX = re.compile(
 )
 
 SUB_SEC_REGEX = re.compile(
-    r"(?:section|subsection|paragraph|clause)\s(\d?\((?:.)\))", re.IGNORECASE
+    r"(?:section|subsection|paragraph|clause)\s(\d?(?:\([^()]*\))+)", re.IGNORECASE
 )
 
 SUCH_TITLE_REGEX = re.compile(
@@ -124,6 +124,7 @@ def parse_text_for_cite(text: str) -> List[CiteObject]:
     else:
         regex_match = SUCH_TITLE_REGEX.search(text)
         if regex_match:
+            print("1")
             cites_found.append(
                 {
                     "text": text,
@@ -133,11 +134,21 @@ def parse_text_for_cite(text: str) -> List[CiteObject]:
             )
         else:
             regex_match = SUB_SEC_REGEX.search(text)
+            print("2", regex_match)
             if regex_match:
+                # We are splitting and replacing here to handle cases like
+                # subsection (a)(1)
+                # We split on )( so we can get between all the letters, then we remove the edge parens, and put / between them all
                 cites_found.append(
                     {
                         "text": text,
-                        "cite": "/" + regex_match[1].replace("(", "").replace(")", ""),
+                        "cite": "/"
+                        + "/".join(
+                            [
+                                x.replace("(", "").replace(")", "")
+                                for x in regex_match[1].split(")(")
+                            ]
+                        ),
                         "complete": False,
                     }
                 )

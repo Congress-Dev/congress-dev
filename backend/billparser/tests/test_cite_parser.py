@@ -137,6 +137,12 @@ class TestParseTextForCite(TestCase):
         self.assertEqual(len(res), 1)
         self.assertEqual(res[0]["cite"], "/us/usc/t20/s6311/g/2")
 
+    def test_119_hr_22__double_paren(self):
+        text = """in subsection (a)(1), by striking "Each State motor vehicle driver's license application" and inserting "Subject to the requirements under section 8(j), each State motor vehicle driver's license application"""
+        res = parse_text_for_cite(text)
+        self.assertEqual(len(res), 1)
+        self.assertEqual(res[0]["cite"], "/a/1")
+
 
 class TestExtractUSCCite(TestCase):
     def test_118_hr_5__is_amended(self):

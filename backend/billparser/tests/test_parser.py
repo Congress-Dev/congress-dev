@@ -10,3 +10,16 @@ class TestStrikeEmulation(TestCase):
             result,
             "Except as provided in subsection (c), notwithstanding any other Federal or State law, in addition to any other method of voter registration provided for under State law, each State shall establish procedures to register to vote in elections for Federal office-",
         )
+
+    def test_119_hr_22_2(self):
+        text = "Each State motor vehicle driver's license application (including any renewal application) submitted to the appropriate State motor vehicle authority under State law shall serve as an application for voter registration with respect to elections for Federal office unless the applicant fails to sign the voter registration application."
+        result = strike_emulation(
+            "Each State motor vehicle driver's license application",
+            "Subject to the requirements under section 8(j), each State motor vehicle driver's license application",
+            text,
+            False,
+        )
+        self.assertEqual(
+            result,
+            "Subject to the requirements under section 8(j), each State motor vehicle driver's license application (including any renewal application) submitted to the appropriate State motor vehicle authority under State law shall serve as an application for voter registration with respect to elections for Federal office unless the applicant fails to sign the voter registration application.",
+        )
