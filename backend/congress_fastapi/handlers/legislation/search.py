@@ -2,7 +2,20 @@ import re
 from collections import defaultdict
 from typing import Dict, List, Tuple
 
-from sqlalchemy import select, join, func, distinct, exists, asc, desc, or_
+from sqlalchemy import (
+    select,
+    join,
+    func,
+    distinct,
+    exists,
+    asc,
+    desc,
+    or_,
+    any_,
+    cast,
+    String,
+)
+import sqlalchemy
 from sqlalchemy.orm import aliased
 from congress_fastapi.db.postgres import get_database
 from billparser.db.models import (
@@ -217,6 +230,7 @@ async def search_legislation(
     chamber: str,
     versions: str,
     text: str,
+    tags: str,
     sort: str,
     direction: str,
     page: int,
@@ -237,6 +251,11 @@ async def search_legislation(
         .where(
             (LegislationVersion.legislation_id == Legislation.legislation_id)
             & (LegislationVersion.legislation_version.in_(versions.upper().split(",")))
+        )
+        .join(
+            LegislationVersionTag,
+            LegislationVersion.legislation_version_id
+            == LegislationVersionTag.legislation_version_id,
         )
     )
     legis_query = (
@@ -275,6 +294,15 @@ async def search_legislation(
         legis_query = legis_query.where(Congress.session_number.in_(congress))
     if chamber:
         legis_query = legis_query.where(Legislation.chamber.in_(chamber.split(",")))
+    if tags:
+        subquery = subquery.where(
+            or_(
+                *[
+                    LegislationVersionTag.tags.any(cast(tag, String))
+                    for tag in tags.split(",")
+                ]
+            )
+        )
     if text:
         number_match = re.search(r"(H\.?R\.?|S\.?)\s?(\d+)", text, re.IGNORECASE)
         if number_match:
@@ -378,3 +406,10 @@ async def search_legislation(
 
     count_results = await database.fetch_all(count_query)
     return objs, len(count_results)
+
+
+async def get_legislation_tag_options() -> List[str]:
+    database = await get_database()
+    query = select([distinct(LegislationVersionTag.tags)])
+    results = await database.fetch_all(query)
+    return list(set([tag for result in results for tag in result[0]]))

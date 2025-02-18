@@ -24,6 +24,7 @@ import qs from "query-string";
 import { PreferenceEnum, PreferenceContext, ThemeContext } from "context";
 
 import { initialVersionToFull, versionToFull } from "common/lookups";
+import { getSearchTagOptions } from "common/api";
 import { BillSearchContent, CollapsibleSection, Paginator } from "components";
 
 function BillSearch(props) {
@@ -36,13 +37,14 @@ function BillSearch(props) {
     const searchParams = new URLSearchParams(location.search);
 
     const decoded = decodeSelections(searchParams.get("selections"));
-
+    const [tagOptions, setTagOptions] = useState([]);
     const [isFirstRender, setFirstRender] = useState(true);
     const [resPageSize, setResPageSize] = useState(5);
     const [chamberButtons, setChamberButtons] = useState(decoded.chamber);
     const [versionButtons, setVersionButtons] = useState(decoded.versions);
     const [textBox, setTextBox] = useState(searchParams.get("text") || "");
     const [totalResults, setTotalResults] = useState(0);
+
 
     const [currentSearch, setCurrentSearch] = useState({
         congress: searchParams.get("congress") || "119",
@@ -168,7 +170,11 @@ function BillSearch(props) {
             versions,
         };
     }
-
+    useEffect(() => {
+        getSearchTagOptions().then((tags) => {
+            setTagOptions(tags);
+        });
+    }, []);
     useEffect(() => {
         let updated = false;
         const params = qs.parse(props.location.search);
