@@ -23,3 +23,16 @@ class TestStrikeEmulation(TestCase):
             result,
             "Subject to the requirements under section 8(j), each State motor vehicle driver's license application (including any renewal application) submitted to the appropriate State motor vehicle authority under State law shall serve as an application for voter registration with respect to elections for Federal office unless the applicant fails to sign the voter registration application.",
         )
+
+    def test_119_hr_22__parens(self):
+        text = """states each eligibility requirement (including citizenship);"""
+        result = strike_emulation(
+            "(including citizenship)",
+            ", including the requirement that the applicant provides documentary proof of United States citizenship",
+            text,
+            False,
+        )
+        self.assertEqual(
+            result,
+            "states each eligibility requirement, including the requirement that the applicant provides documentary proof of United States citizenship;",
+        )

@@ -85,14 +85,17 @@ def strike_emulation(
     """
     start_boi = r"(\b)"
     # target = remove_citations(target)
-    if "$" not in to_strike:
+    if "$" not in to_strike and ")" not in to_strike and "(" not in to_strike:
         return re.sub(
             r"{}({})(?:\b)?".format(start_boi, re.escape(to_strike)),
             to_replace,
             target,
         )
     elif to_strike in target:
-        return target.replace(to_strike, to_replace, -1 if multiple else 1)
+        # Remove spaces before commas?
+        return target.replace(to_strike, to_replace, -1 if multiple else 1).replace(
+            " ,", ","
+        )
     return target
 
 
@@ -442,8 +445,11 @@ def apply_action(
             extra={"citation": computed_citation},
         )
         return
-    logging.debug(f"Applying action to {computed_citation=}")
     actions = action.actions
+    logging.debug(
+        f"Applying action to {computed_citation=}", extra={"action": actions[0]}
+    )
+
     diffs: List[USCContentDiff] = []
     for act, act_obj in actions[0].items():
         try:
