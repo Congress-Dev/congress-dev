@@ -89,7 +89,7 @@ regex_holder = {
         r"At the end of (?P<target>.+?) of (?P<within>.+?),? insert the following:",
         r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended by adding at the end the following:$",
         r"in (?P<target>.*), by adding at the end the following new (?:sub)?paragraph:",
-        r"by adding at the end the following new (?:sub)?paragraph:",
+        r"by adding at the end the following new (?:sub)?(?:section|paragraph):",
         r"by adding at the end the following:$",
         r"by adding at the end following:$",
     ],

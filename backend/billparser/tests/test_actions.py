@@ -27,6 +27,11 @@ class TestDetermineAction(TestCase):
         result = determine_action(text)
         self.assertIn(ActionType.INSERT_TEXT_END, result)
 
+    def test_insert_subsection(self):
+        text = """by adding at the end the following new subsection:"""
+        result = determine_action(text)
+        self.assertIn(ActionType.INSERT_END, result)
+
     def test_strike_period(self):
         text = """by striking the period at the end and inserting "; and"."""
         result = determine_action(text)
