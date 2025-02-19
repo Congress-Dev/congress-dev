@@ -27,6 +27,11 @@ class TestDetermineAction(TestCase):
         result = determine_action(text)
         self.assertIn(ActionType.INSERT_TEXT_END, result)
 
+    def test_strike_period(self):
+        text = """by striking the period at the end and inserting "; and"."""
+        result = determine_action(text)
+        self.assertIn(ActionType.STRIKE_END, result)
+        self.assertIn("remove_period", result[ActionType.STRIKE_END])
 
 
 class TestEnactmentDates(TestCase):
@@ -101,7 +106,7 @@ class TestEnactmentDates(TestCase):
         result = result[ActionType.EFFECTIVE_DATE]
         self.assertEqual(result["amount"], "0")
         self.assertEqual(result["unit"], "days")
-    
+
     def test_same_date(self):
         text = """Effective beginning on the date of the enactment of this Act"""
         result = determine_action(text)

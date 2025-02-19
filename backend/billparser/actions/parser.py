@@ -106,7 +106,12 @@ def get_chapter_id(chapter: str) -> int:
 
 
 def strike_text(
-    action: ActionObject, citation: str, session: "Session", *, multiple: bool = False
+    action: ActionObject,
+    citation: str,
+    session: "Session",
+    *,
+    multiple: bool = False,
+    end: bool = False,
 ) -> List[USCContentDiff]:
     if multiple == False:
         query = select(USCContent).where(USCContent.usc_ident == citation)
@@ -122,6 +127,9 @@ def strike_text(
         content = content_[0]
         to_strike: Optional[str] = action.get("to_remove_text")
         to_replace: Optional[str] = action.get("to_replace")
+        if end:
+            if action.get("remove_period"):
+                to_strike = "."
         if to_strike is None:
             logging.debug("No strike text found")
             return []
@@ -132,21 +140,31 @@ def strike_text(
         )
 
         if content.heading:
-
             # We're modifying the heading
-            strike_result = strike_emulation(
-                to_strike, to_replace or "", content.heading, multiple
-            )
+            if end:
+                if content.heading.endswith(to_strike):
+                    strike_result = content.heading[: -len(to_strike)] + (
+                        to_replace or ""
+                    )
+            else:
+                strike_result = strike_emulation(
+                    to_strike, to_replace or "", content.heading, multiple
+                )
 
             # If they're different, store it
             if strike_result != content.heading:
                 diff.heading = strike_result
 
         if content.content_str:
-
-            strike_result = strike_emulation(
-                to_strike, to_replace or "", content.content_str, multiple
-            )
+            if end:
+                if content.content_str.endswith(to_strike):
+                    strike_result = content.content_str[: -len(to_strike)] + (
+                        to_replace or ""
+                    )
+            else:
+                strike_result = strike_emulation(
+                    to_strike, to_replace or "", content.content_str, multiple
+                )
 
             # If they're different, store it
             if strike_result != content.content_str:
@@ -458,6 +476,16 @@ def apply_action(
                     diffs.extend(
                         strike_text(
                             act_obj, computed_citation, PARSER_SESSION, multiple=False
+                        )
+                    )
+                elif act == ActionType.STRIKE_END:
+                    diffs.extend(
+                        strike_text(
+                            act_obj,
+                            computed_citation,
+                            PARSER_SESSION,
+                            multiple=False,
+                            end=True,
                         )
                     )
                 if act == ActionType.STRIKE_TEXT_MULTIPLE:
