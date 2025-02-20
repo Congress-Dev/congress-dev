@@ -1,0 +1,8 @@
+on:
+  pushes: branches
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: Pull
+        uses: actions/checkout@v4
