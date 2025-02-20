@@ -13,6 +13,6 @@ jobs:
           cache-dependency-path: |
             requirements.txt
             requirements-frozen.txt
-          install-cmd: cd backend && pip install -r requirements.txt -r requirements-fastapi.txt
+          install-cmd: cd backend && pip install -r requirements.txt -r requirements-fastapi.txt -r requirements-test.txt
       - name: Run tests
-        run: cd backend && . ${{ steps.venv.outputs.venv-path }}/bin/pytest
+        run: cd backend && pytest billparser
