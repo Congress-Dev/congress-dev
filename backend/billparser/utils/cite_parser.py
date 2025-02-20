@@ -1,7 +1,8 @@
-from typing import List, Optional, TypedDict, Any
+from typing import Dict, List, Optional, TypedDict, Any
 import re
 import logging
 
+from billparser.actions import Action, ActionType
 from unidecode import unidecode
 
 cite_contexts = {"last_title": None}
@@ -84,7 +85,8 @@ class CiteObject(TypedDict):
     complete: bool = False
 
 
-def parse_text_for_cite(text: str) -> List[CiteObject]:
+def parse_text_for_cite(text: str, action_dict: Dict[ActionType, Action] = None) -> List[CiteObject]:
+    action_dict = action_dict or {}
     cites_found: List[CiteObject] = []
     cite = extract_usc_cite(text)
     if cite:
@@ -124,7 +126,6 @@ def parse_text_for_cite(text: str) -> List[CiteObject]:
     else:
         regex_match = SUCH_TITLE_REGEX.search(text)
         if regex_match:
-            print("1")
             cites_found.append(
                 {
                     "text": text,
@@ -134,7 +135,6 @@ def parse_text_for_cite(text: str) -> List[CiteObject]:
             )
         else:
             regex_match = SUB_SEC_REGEX.search(text)
-            print("2", regex_match)
             if regex_match:
                 # We are splitting and replacing here to handle cases like
                 # subsection (a)(1)
@@ -193,6 +193,8 @@ def parse_action_for_cite(action_object: ActionObject, parent_cite: str = "") ->
 
             # If we have a full cite, lets just check for "Clause (i) of" type references
             extra_cite = find_extra_clause_references(elem_text)
+            print(f"{extra_cite=}")
+            print(f"{cite=}")
             if len(extra_cite) > 0:
                 if cite:
                     cite += "/" + "/".join(extra_cite)

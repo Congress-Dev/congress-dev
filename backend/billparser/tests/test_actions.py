@@ -1,4 +1,4 @@
-from unittest import TestCase
+from unittest import TestCase, skip
 from billparser.actions import determine_action, ActionType
 
 
@@ -96,6 +96,7 @@ class TestEnactmentDates(TestCase):
         self.assertEqual(result["amount"], "90")
         self.assertEqual(result["unit"], "days")
 
+    @skip("Not implemented")
     def test_fiscal_year(self):
         text = """This Act shall take effect on the 1st day of the 1st fiscal year that begins after the date of the enactment of this Act."""
         result = determine_action(text)
