@@ -1,5 +1,5 @@
 from unittest import TestCase
-from billparser.actions.parser import strike_emulation
+from billparser.actions.utils import strike_emulation
 
 
 class TestStrikeEmulation(TestCase):

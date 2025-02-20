@@ -1,7 +1,6 @@
-import re
 from billparser.utils.logger import LogContext
 from billparser.actions import ActionObject, ActionType, determine_action
-from billparser.run_through import convert_to_text
+from billparser.actions.utils import strike_emulation
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import Select
 from sqlalchemy import Table
@@ -11,7 +10,7 @@ from billparser.utils.cite_parser import (
     parse_action_for_cite,
     parse_text_for_cite,
 )
-from billparser.db.handler import Session, get_scoped_session, init_session
+from billparser.db.handler import Session, get_scoped_session
 
 from sqlalchemy import select
 from sqlalchemy.orm import aliased
@@ -67,37 +66,6 @@ def get_bill_contents(legislation_version_id: int) -> List[LegislationContent]:
     results = PARSER_SESSION.execute(query).all()
     # Unpack the results
     return [x[0] for x in results]
-
-
-def strike_emulation(
-    to_strike: str, to_replace: str, target: str, multiple: bool = True
-) -> str:
-    """
-    Handles emulating the strike text behavior for a given string
-
-    Args:
-        to_strike (str): Text to search for
-        to_replace (str): Text to replace with, if any
-        target (str): Text to look in
-
-    Returns:
-        str: The result of the replacement
-    """
-    start_boi = r"(\b)"
-    # target = remove_citations(target)
-    if "$" not in to_strike and ")" not in to_strike and "(" not in to_strike:
-        return re.sub(
-            r"{}({})(?:\b)?".format(start_boi, re.escape(to_strike)),
-            to_replace,
-            target,
-        )
-    elif to_strike in target:
-        # Remove spaces before commas?
-        return target.replace(to_strike, to_replace, -1 if multiple else 1).replace(
-            " ,", ","
-        )
-    return target
-
 
 def get_chapter_id(chapter: str) -> int:
     query = select(USCChapter).where(USCChapter.short_title == chapter.zfill(2))
@@ -557,7 +525,7 @@ def recursively_extract_actions(
         if content.content_str is not None and content.content_str.strip() != "":
             # If it has content, then we can extract actions from it
             action_dict = determine_action(content.content_str)
-            cite_list = parse_text_for_cite(content.content_str)
+            cite_list = parse_text_for_cite(content.content_str, action_dict)
             if action_dict != {} or cite_list != []:
                 new_action = LegislationActionParse(
                     legislation_content_id=content.legislation_content_id,
