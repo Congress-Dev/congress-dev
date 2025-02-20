@@ -1,8 +1,18 @@
 on:
-  pushes: branches
+  push:
 jobs:
-  deploy:
+  Tests:
     runs-on: self-hosted
     steps:
       - name: Pull
         uses: actions/checkout@v4
+      - uses: getsentry/action-setup-venv@v2.1.1
+        id: venv
+        with:
+          python-version: 3.9
+          cache-dependency-path: |
+            requirements.txt
+            requirements-frozen.txt
+          install-cmd: cd backend && pip install -r requirements.txt -r requirements-fastapi.txt
+      - name: Run tests
+        run: cd backend && . ${{ steps.venv.outputs.venv-path }}/bin/pytest
