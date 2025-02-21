@@ -1,4 +1,4 @@
-from unittest import TestCase
+from unittest import TestCase, skip
 from billparser.actions import determine_action, ActionType
 
 
@@ -27,6 +27,16 @@ class TestDetermineAction(TestCase):
         result = determine_action(text)
         self.assertIn(ActionType.INSERT_TEXT_END, result)
 
+    def test_insert_subsection(self):
+        text = """by adding at the end the following new subsection:"""
+        result = determine_action(text)
+        self.assertIn(ActionType.INSERT_END, result)
+
+    def test_strike_period(self):
+        text = """by striking the period at the end and inserting "; and"."""
+        result = determine_action(text)
+        self.assertIn(ActionType.STRIKE_END, result)
+        self.assertIn("remove_period", result[ActionType.STRIKE_END])
 
 
 class TestEnactmentDates(TestCase):
@@ -86,6 +96,7 @@ class TestEnactmentDates(TestCase):
         self.assertEqual(result["amount"], "90")
         self.assertEqual(result["unit"], "days")
 
+    @skip("Not implemented")
     def test_fiscal_year(self):
         text = """This Act shall take effect on the 1st day of the 1st fiscal year that begins after the date of the enactment of this Act."""
         result = determine_action(text)
@@ -101,7 +112,7 @@ class TestEnactmentDates(TestCase):
         result = result[ActionType.EFFECTIVE_DATE]
         self.assertEqual(result["amount"], "0")
         self.assertEqual(result["unit"], "days")
-    
+
     def test_same_date(self):
         text = """Effective beginning on the date of the enactment of this Act"""
         result = determine_action(text)

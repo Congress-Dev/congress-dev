@@ -13,6 +13,7 @@ class ActionType(str, Enum):
     IN_CONTEXT = "IN-CONTEXT"
     AMEND_MULTIPLE = "AMEND-MULTIPLE"
     STRIKE_TEXT = "STRIKE-TEXT"
+    STRIKE_END = "STRIKE-END"
     STRIKE_TEXT_MULTIPLE = "STRIKE-TEXT-MULTIPLE"
     STRIKE_TEXT_INSERT = "STRIKE-TEXT-INSERT"
     INSERT_SECTION_AFTER = "INSERT-SECTION-AFTER"
@@ -70,6 +71,9 @@ regex_holder = {
         r"in (?P<target>.*) by striking \"(?P<to_remove_text>.+?)\" and inserting \"(?P<to_replace>.+?)\"(?:, and)?",
         r"in (?P<target>.*), by striking \"(?P<to_remove_text>.+?)\" and all that follows and inserting a (?P<to_replace>.+?); and",
     ],
+    ActionType.STRIKE_END: [
+        r"by striking the (?P<remove_period>period) at the end and inserting \"(?P<to_replace>.+?)\""
+    ],
     ActionType.STRIKE_TEXT_MULTIPLE: [
         r"in (?P<target>.+?), by striking \"(?P<to_remove_text>.+?)\" and inserting \"(?P<to_replace>.+?)\" each place the term appears;",
         r"by striking \"(?P<to_remove_text>.+?)\" each place such term appears and inserting \"(?P<to_replace>.+?)\"",
@@ -85,7 +89,7 @@ regex_holder = {
         r"At the end of (?P<target>.+?) of (?P<within>.+?),? insert the following:",
         r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended by adding at the end the following:$",
         r"in (?P<target>.*), by adding at the end the following new (?:sub)?paragraph:",
-        r"by adding at the end the following new (?:sub)?paragraph:",
+        r"by adding at the end the following new (?:sub)?(?:section|paragraph|clause):",
         r"by adding at the end the following:$",
         r"by adding at the end following:$",
     ],
@@ -101,6 +105,7 @@ regex_holder = {
     ActionType.INSERT_TEXT_END: [
         r"in (?P<target>.+?), by adding \"(?P<to_replace>.+?)\" at the end;",
         r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended.? by adding at the end the following: \"(?P<to_insert_text>.+?)\"(?:; and|\.)",
+        r"by adding at the end the following: \"(?P<to_replace>.+?)\""
     ],
     ActionType.STRIKE_SECTION_INSERT: [
         r"by striking (?P<target>(?:sub)?(?:section|paragraph) .+?) and inserting the following:"
@@ -122,9 +127,12 @@ regex_holder = {
         r"not later than (?P<amount>\d+) (?P<unit>(hour|day|week|month|year)s?) after the (?:date of )?(?:the )?enactment of (?:(this|the .*?)) Act",
         r"Beginning on the date that is (?P<amount>\d+) (?P<unit>(hour|day|week|month|year)s?) after the (?:date of )(?:the )?enactment of this Act",
         r"Effective on the date of the enactment of this Act",
+        r"Effective on the date of enactment of this Act",
+        r"Effective beginning on the date of the enactment of this Act",
         r"On and after the (?:date of )?(?:the )?enactment of this Act",
         r"within (?P<amount>\d+) (?P<unit>(hour|day|week|month|year)s?) after the (?:date of )?(?:the )?enactment of this Act",
         r"take effect (?P<amount>\d+) (?P<unit>(hour|day|week|month|year)s?) after the (?:date of )?(?:the )?enactment of this Act",
+        r"(?P<amount>\d+) (?P<unit>(hour|day|week|month|year)s?) after the effective date of this Act."
     ],
     ActionType.TABLE_OF_CONTENTS: [
         r"The table of contents (for|of) this Act is as follows:"
@@ -213,6 +221,10 @@ def determine_action(text: str) -> Dict[ActionType, Action]:
                 gg = res.groupdict()
                 if action == ActionType.DATE:
                     gg["_full_match"] = res.group(0)
+                if action == ActionType.EFFECTIVE_DATE:
+                    if gg.get("amount", None) is None and gg.get("unit", None) is None:
+                        gg["amount"] = "0"
+                        gg["unit"] = "days"
                 gg["REGEX"] = c
                 gg["action_type"] = action
                 actions[action] = gg

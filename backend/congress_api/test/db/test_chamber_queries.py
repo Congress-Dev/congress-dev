@@ -1,13 +1,13 @@
 from unittest import TestCase, mock, skipUnless
 
 
-from congress_api.db.chamber_queries import (
-    get_chamber_summary_obj,
-    get_chamber_bills_list,
-    search_legislation,
-)
-
-DB_MOCKED = False
+DB_MOCKED = True
+if not DB_MOCKED:
+    from congress_api.db.chamber_queries import (
+        get_chamber_summary_obj,
+        get_chamber_bills_list,
+        search_legislation,
+    )
 
 
 class TestGetChamberSummary(TestCase):

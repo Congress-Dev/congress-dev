@@ -1,7 +1,6 @@
-import re
 from billparser.utils.logger import LogContext
 from billparser.actions import ActionObject, ActionType, determine_action
-from billparser.run_through import convert_to_text
+from billparser.actions.utils import strike_emulation
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import Select
 from sqlalchemy import Table
@@ -11,7 +10,7 @@ from billparser.utils.cite_parser import (
     parse_action_for_cite,
     parse_text_for_cite,
 )
-from billparser.db.handler import Session, get_scoped_session, init_session
+from billparser.db.handler import Session, get_scoped_session
 
 from sqlalchemy import select
 from sqlalchemy.orm import aliased
@@ -68,34 +67,6 @@ def get_bill_contents(legislation_version_id: int) -> List[LegislationContent]:
     # Unpack the results
     return [x[0] for x in results]
 
-
-def strike_emulation(
-    to_strike: str, to_replace: str, target: str, multiple: bool = True
-) -> str:
-    """
-    Handles emulating the strike text behavior for a given string
-
-    Args:
-        to_strike (str): Text to search for
-        to_replace (str): Text to replace with, if any
-        target (str): Text to look in
-
-    Returns:
-        str: The result of the replacement
-    """
-    start_boi = r"(\b)"
-    # target = remove_citations(target)
-    if "$" not in to_strike:
-        return re.sub(
-            r"{}({})(?:\b)".format(start_boi, re.escape(to_strike)),
-            to_replace,
-            target,
-        )
-    elif to_strike in target:
-        return target.replace(to_strike, to_replace, -1 if multiple else 1)
-    return target
-
-
 def get_chapter_id(chapter: str) -> int:
     query = select(USCChapter).where(USCChapter.short_title == chapter.zfill(2))
     result = PARSER_SESSION.execute(query).first()[0]
@@ -103,7 +74,12 @@ def get_chapter_id(chapter: str) -> int:
 
 
 def strike_text(
-    action: ActionObject, citation: str, session: "Session", *, multiple: bool = False
+    action: ActionObject,
+    citation: str,
+    session: "Session",
+    *,
+    multiple: bool = False,
+    end: bool = False,
 ) -> List[USCContentDiff]:
     if multiple == False:
         query = select(USCContent).where(USCContent.usc_ident == citation)
@@ -119,6 +95,9 @@ def strike_text(
         content = content_[0]
         to_strike: Optional[str] = action.get("to_remove_text")
         to_replace: Optional[str] = action.get("to_replace")
+        if end:
+            if action.get("remove_period"):
+                to_strike = "."
         if to_strike is None:
             logging.debug("No strike text found")
             return []
@@ -129,21 +108,31 @@ def strike_text(
         )
 
         if content.heading:
-
             # We're modifying the heading
-            strike_result = strike_emulation(
-                to_strike, to_replace or "", content.heading, multiple
-            )
+            if end:
+                if content.heading.endswith(to_strike):
+                    strike_result = content.heading[: -len(to_strike)] + (
+                        to_replace or ""
+                    )
+            else:
+                strike_result = strike_emulation(
+                    to_strike, to_replace or "", content.heading, multiple
+                )
 
             # If they're different, store it
             if strike_result != content.heading:
                 diff.heading = strike_result
 
         if content.content_str:
-
-            strike_result = strike_emulation(
-                to_strike, to_replace or "", content.content_str, multiple
-            )
+            if end:
+                if content.content_str.endswith(to_strike):
+                    strike_result = content.content_str[: -len(to_strike)] + (
+                        to_replace or ""
+                    )
+            else:
+                strike_result = strike_emulation(
+                    to_strike, to_replace or "", content.content_str, multiple
+                )
 
             # If they're different, store it
             if strike_result != content.content_str:
@@ -442,8 +431,11 @@ def apply_action(
             extra={"citation": computed_citation},
         )
         return
-    logging.debug(f"Applying action to {computed_citation=}")
     actions = action.actions
+    logging.debug(
+        f"Applying action to {computed_citation=}", extra={"action": actions[0]}
+    )
+
     diffs: List[USCContentDiff] = []
     for act, act_obj in actions[0].items():
         try:
@@ -452,6 +444,16 @@ def apply_action(
                     diffs.extend(
                         strike_text(
                             act_obj, computed_citation, PARSER_SESSION, multiple=False
+                        )
+                    )
+                elif act == ActionType.STRIKE_END:
+                    diffs.extend(
+                        strike_text(
+                            act_obj,
+                            computed_citation,
+                            PARSER_SESSION,
+                            multiple=False,
+                            end=True,
                         )
                     )
                 if act == ActionType.STRIKE_TEXT_MULTIPLE:
@@ -523,7 +525,7 @@ def recursively_extract_actions(
         if content.content_str is not None and content.content_str.strip() != "":
             # If it has content, then we can extract actions from it
             action_dict = determine_action(content.content_str)
-            cite_list = parse_text_for_cite(content.content_str)
+            cite_list = parse_text_for_cite(content.content_str, action_dict)
             if action_dict != {} or cite_list != []:
                 new_action = LegislationActionParse(
                     legislation_content_id=content.legislation_content_id,
