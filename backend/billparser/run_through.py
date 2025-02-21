@@ -21,14 +21,8 @@ from sqlalchemy import desc
 
 from billparser.actions import ActionObject
 from billparser.actions import determine_action as determine_action2
-from billparser.actions.insert import (
-    insert_section_after,
-    insert_text_after,
-    insert_text_before,
-    insert_end,
-)
 from billparser.actions.redesignate import redesignate
-from billparser.actions.strike import strike_section, strike_text
+
 from billparser.db.models import (
     Legislation,
     LegislationContent,
@@ -106,82 +100,6 @@ def convert_to_text(element: Element, inside_quote: bool = False) -> str:
 
 ll = {"subsection": "ss", "paragraph": "p", "section": "s", "subparagraph": "sb"}
 
-
-def extract_actions(element: Element, path: str) -> List[dict]:
-    """
-    Looks at an element for textual clues to determine what actions it is implying
-    These actions will be extracted and passed to other functions to utilize.
-
-    This is a recursive function
-
-    Args:
-        element (Element): An XML element from a bill.
-        path (str): The path of this element in the document
-
-    Returns:
-        List[dict]: A flat list of the extracted actions of all the elements
-    """
-
-    res = []
-    try:
-        # Quoted blocks are usually the "inserty" things
-        if "quoted-block" in element.tag:
-            return res
-        tag_lookup = {}
-        for elem in element:
-            tag_lookup[elem.tag] = elem
-        # 90% sure they all have an enum tag for the first element
-        if len(element) > 0 and element[0].tag == "enum" and element.tag in ll:
-            spath = "{}/{}{}".format(
-                path, ll[element.tag], element[0].text.replace(".", "")
-            )
-            lxml_path = element.getroottree().getpath(element)
-            if element[1].tag == "header" and element[2].tag == "text":
-                text = convert_to_text(element[2])
-                next_elem = ""
-                if len(element) == 4:
-                    next_elem = element[3]
-                res.append(
-                    {
-                        "parent": path,
-                        "enum": spath,
-                        "lxml_path": lxml_path,
-                        "text": text,
-                        "text_element": element[2],
-                        "amended": "amended" in text,
-                        "next": next_elem,
-                    }
-                )
-                if len(element) > 3:
-                    for elem in element[3:]:
-                        res.extend(extract_actions(elem, spath))
-            elif element[1].tag == "text":
-                text = convert_to_text(element[1])
-                next_elem = ""
-                if len(element) == 3:
-                    next_elem = element[2]
-                res.append(
-                    {
-                        "parent": path,
-                        "enum": spath,
-                        "lxml_path": lxml_path,
-                        "text": text,
-                        "text_element": element[1],
-                        "amended": "amended" in text,
-                        "next": next_elem,
-                    }
-                )
-                if len(element) > 2:
-                    for elem in element[2:]:
-                        res.extend(extract_actions(elem, spath))
-            elif element[2].tag in ["paragraph", "subsection"]:
-                for elem in element[2:]:
-                    res.extend(extract_actions(elem, spath))
-    except Exception as e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        fname = os.path.split(exc_tb.tb_frame.f_code.co_filename)[1]
-        logging.error("{} {} {}".format(exc_type, fname, exc_tb.tb_lineno))
-    return res
 
 @lru_cache(maxsize=20)
 def get_congress_from_session_number(session_number: int, session) -> int:
@@ -550,98 +468,6 @@ def recursive_get_context(enb):
 
 
 last_title = None
-
-
-def run_action2(ACTION, new_bill_version, new_vers_id, session):
-    global last_title
-    # First set some linkage to the parent
-    parent_cites[ACTION.get("enum", "")] = ACTION
-    parsed_cite = ACTION.get("parsed_cite", "")
-    if parsed_cite != "":
-        last_title = "/".join(parsed_cite.split("/")[:4])
-        # print('Last title set to', last_title)
-    parent_cite = ""
-    if "usc" not in parsed_cite:
-        parent_cite = recursive_get_context(ACTION.get("enum", ""))
-
-    # Filter out the financial/date ones for now
-    actions = {
-        k: v
-        for k, v in ACTION.get("actions", {}).items()
-        if k not in ["FINANCIAL", "DATE"]
-    }
-    # print(action)
-    # print(actions.keys())
-    made_something = False
-    existing_diffs = (
-        session.query(USCContentDiff.usc_content_diff_id)
-        .filter(USCContentDiff.version_id == new_vers_id)
-        .count()
-    )
-    action_objs = []
-    if len(actions) == 1 or (len(actions) == 2 and "AMEND-MULTIPLE" in actions):
-        for action_key in actions:
-            action = actions.get(action_key)
-            action_object = ActionObject(
-                action_key=action_key,
-                parent_cite=parent_cite,
-                parsed_cite=parsed_cite,
-                version_id=new_vers_id,
-                last_title=last_title,
-                next=ACTION.get("next", None),
-                legislation_content=ACTION.get("legislation_content", None),
-            )
-
-            action_object.set_action(action)
-            ACTION["parsed_cite"] = action_object.parsed_cite
-            action_objs.append(action_object.to_dict())
-            if action_key == "AMEND-MULTIPLE" or action_object.parsed_cite == "":
-                continue
-            cited_content = (
-                session.query(USCContent)
-                .filter(
-                    USCContent.usc_ident == action_object.parsed_cite,
-                    USCContent.version_id == BASE_VERSION,
-                )
-                .all()
-            )
-            if len(cited_content) == 1:
-                action_object.cited_content = cited_content[0]
-                if action_key == "STRIKE-SUBSECTION":
-                    strike_section(action_object, session)
-                elif action_key == "REDESIGNATE":
-                    redesignate(action_object, session)
-                elif action_key == "STRIKE-TEXT":
-                    strike_text(action_object, session)
-                elif action_key == "INSERT-SECTION-AFTER":
-                    insert_section_after(action_object, session)
-                elif action_key == "INSERT-TEXT-AFTER":
-                    insert_text_after(action_object, session)
-                elif action_key == "REPLACE-SECTION":
-                    strike_section(action_object, session)
-                    insert_section_after(action_object, session)
-                elif action_key == "INSERT-TEXT":
-                    insert_text_before(action_object, session)
-                elif action_key == "INSERT-END":
-                    insert_end(action_object, session)
-                elif action_key == "INSERT-TEXT-END":
-                    insert_end(action_object, session)
-            else:
-                logging.debug(
-                    "Unable to find",
-                    len(cited_content),
-                    action_object.parsed_cite,
-                    BASE_VERSION,
-                )
-    ending_diff = (
-        session.query(USCContentDiff.usc_content_diff_id)
-        .filter(USCContentDiff.version_id == new_vers_id)
-        .count()
-    )
-    session.flush()
-    session.commit()
-    # print('=========')
-    return (existing_diffs < ending_diff), action_objs
 
 
 def ensure_congress(congress_number: int) -> None:
