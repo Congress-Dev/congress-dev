@@ -488,7 +488,7 @@ async def insert_llm_query_result(
     database = await get_database()
     query = insert(UserLLMQuery).values(
         legislation_version_id=legislation_version_id,
-        user_id: user,
+        user_id= user,
         query=query,
         response=response,
         safe=False,

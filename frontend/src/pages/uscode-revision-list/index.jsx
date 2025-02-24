@@ -28,8 +28,8 @@ function USCodeRevisionList() {
                 key={`search-result-${index}`}
                 className="search-result"
             >
-                <h3>{result.title}</h3>
-                <h4>{result.sectionHeader}</h4>
+                <h3>Ch. {result.usc_link.split("/")[0]} - {result.title}</h3>
+                <h4>S. {result.usc_link.split("/")[1]} - {result.section_display}</h4>
             </SectionCard>
         ));
     };
