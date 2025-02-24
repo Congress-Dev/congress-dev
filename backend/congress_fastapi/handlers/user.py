@@ -483,11 +483,12 @@ async def get_llm_query_result(
 
 
 async def insert_llm_query_result(
-    legislation_version_id: int, query: str, response: str
+    legislation_version_id: int, query: str, response: str, user: str
 ) -> None:
     database = await get_database()
     query = insert(UserLLMQuery).values(
         legislation_version_id=legislation_version_id,
+        user_id: user,
         query=query,
         response=response,
         safe=False,
