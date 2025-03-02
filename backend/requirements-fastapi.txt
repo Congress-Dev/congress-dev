@@ -19,3 +19,4 @@ spacy-legacy==3.0.12
 spacy-loggers==1.0.5
 litellm==1.35.5
 tokenizers==0.15.2
+chromadb~=0.6.3
