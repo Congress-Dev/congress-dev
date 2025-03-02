@@ -78,7 +78,6 @@ function USCodeRevisionList() {
                                 release={"latest"}
                                 section={result.usc_link.split("/")[1]}
                                 title={result.usc_link.split("/")[0]}
-                                
                             />
                         </div>
                     </Collapse>
@@ -94,11 +93,11 @@ function USCodeRevisionList() {
                                 textOverflow: "ellipsis",
                                 display: "-webkit-box",
                                 WebkitLineClamp: 2, // Number of lines to show
-                                WebkitBoxOrient: "vertical"
+                                WebkitBoxOrient: "vertical",
                             }}
                         >
-                          {console.log("hidden")}
-                           <USCView
+                            {console.log("hidden")}
+                            <USCView
                                 release={"latest"}
                                 section={result.usc_link.split("/")[1]}
                                 title={result.usc_link.split("/")[0]}
@@ -161,6 +160,11 @@ function USCodeRevisionList() {
                         placeholder="Enter search text..."
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                                executeSearch();
+                            }
+                        }}
                         rightElement={
                             <Button icon="search" onClick={executeSearch} />
                         }
