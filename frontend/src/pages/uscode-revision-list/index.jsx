@@ -78,6 +78,7 @@ function USCodeRevisionList() {
                                 release={"latest"}
                                 section={result.usc_link.split("/")[1]}
                                 title={result.usc_link.split("/")[0]}
+                                interactive={false}
                             />
                         </div>
                     </Collapse>
@@ -102,6 +103,7 @@ function USCodeRevisionList() {
                                 section={result.usc_link.split("/")[1]}
                                 title={result.usc_link.split("/")[0]}
                                 lines={3}
+                                interactive={false}
                             />
                         </div>
                     )}

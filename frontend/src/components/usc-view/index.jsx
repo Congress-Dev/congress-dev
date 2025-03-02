@@ -84,7 +84,7 @@ function USCView({
     depth = 0,
     lines = 0,
 }) {
-  let lineCount = 0;
+    let lineCount = 0;
     const history = useHistory();
 
     const [contentTree, setContentTree] = useState({});
@@ -262,10 +262,10 @@ function USCView({
         return (
             <>
                 {lodash.map(newChildren, (item, ind) => {
-                  lineCount++;
-                  if (lines && lineCount > lines) {
-                    return null;
-                  }
+                    lineCount++;
+                    if (lines && lineCount > lines) {
+                        return null;
+                    }
                     const {
                         usc_content_id,
                         usc_ident,
@@ -321,7 +321,7 @@ function USCView({
                                     {content_str}
                                 </span>
                             </span>
-                            {renderRecursive({ children}, rDepth + 1)}
+                            {renderRecursive({ children }, rDepth + 1)}
                         </div>
                     );
                 })}
@@ -331,6 +331,9 @@ function USCView({
 
     if (contentTree === undefined || contentTree?.loading) {
         return <Spinner intent="primary" />;
+    }
+    if (contentTree.message === "No Content Found") {
+        return <div>No content found</div>;
     }
     return <>{renderRecursive(contentTree)}</>;
 }

@@ -5,6 +5,8 @@ import { toastError } from "./utils";
 function handleStatus(res) {
     if (res.status === 200) {
         return res.json();
+    } else if (res.status === 404) {
+        return res.json();
     } else {
         console.error(res);
         const err = new Error(res);
@@ -336,6 +338,9 @@ export const getUSCSectionContent = (
         .then(handleStatus)
         .then((flatJson) => {
             if (flatJson) {
+                if (flatJson.message === "No Content Found") {
+                    return flatJson;
+                }
                 // Create a fake root
                 let looped = {
                     [null]: {
