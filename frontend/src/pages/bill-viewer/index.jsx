@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useContext } from "react";
 import lodash from "lodash";
 import { useHistory } from "react-router-dom";
 import {
@@ -7,10 +7,9 @@ import {
     SectionCard,
     Popover,
     Button,
-    PopperPlacements
 } from "@blueprintjs/core";
 
-import { BillContext } from "context";
+import { BillContext, LoginContext } from "context";
 
 import { chamberLookup, versionToFull } from "common/lookups";
 import {
@@ -40,6 +39,9 @@ function BillViewer(props) {
 
     const elementRef = useRef();
     const history = useHistory();
+
+    // DEBUG: Just to make it easier to debug bills
+    const { user } = useContext(LoginContext);
 
     // TODO: Add sidebar for viewing the differences that a bill will generate
     // TODO: Option for comparing two versions of the same bill and highlighting differences
@@ -231,7 +233,12 @@ function BillViewer(props) {
             <Section
                 className="page"
                 title={bill.title}
-                subtitle={`${chamberLookup[bill.chamber]} ${bill.number}`}
+                subtitle={
+                    (user && user.userId === "mustyoshi@gmail.com"
+                        ? `${billVersId} - `
+                        : null) +
+                    `${chamberLookup[bill.chamber]} ${bill.number}`
+                }
             >
                 <SectionCard>
                     <div className="sidebar">

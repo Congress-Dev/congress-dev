@@ -39,44 +39,52 @@ function findCommonSuffix(str1, str2) {
     return i;
 }
 
-function findDiffStrings(str1, str2, maxSuffixLen = 0){
-  const words1 = str1.split(' ');
-  const words2 = str2.split(' ');
-  
-  const minLength = Math.min(words1.length, words2.length);
-  const differences = [];
-  let start = null;
-  let end = 0;
-  for (let i = 0; i < minLength; i++) {
+function findDiffStrings(str1, str2, maxSuffixLen = 0) {
+    const words1 = str1.split(" ");
+    const words2 = str2.split(" ");
 
-      if (words1[i] !== words2[i]) {
-          if (start === null) {
-              start = i;
-          }
-          end = i;
-      } else {
-          if (start !== null) {
-              differences.push([start, end]);
-              start = null;
-          }
-      }
-  }
-  
-  if (start !== null) {
-      differences.push([start, end]);
-  }
-  
-  // Ensure there are at least 3 words between separate differences
-  const filteredDifferences = [];
-  for (let i = 0; i < differences.length; i++) {
-      if (i === 0 || differences[i][0] - differences[i - 1][1] > 3) {
-          filteredDifferences.push(differences[i]);
-      }
-  }
-  
-  return filteredDifferences;
+    const minLength = Math.min(words1.length, words2.length);
+    const differences = [];
+    let start = null;
+    let end = 0;
+    for (let i = 0; i < minLength; i++) {
+        if (words1[i] !== words2[i]) {
+            if (start === null) {
+                start = i;
+            }
+            end = i;
+        } else {
+            if (start !== null) {
+                differences.push([start, end]);
+                start = null;
+            }
+        }
+    }
+
+    if (start !== null) {
+        differences.push([start, end]);
+    }
+
+    // Ensure there are at least 3 words between separate differences
+    const filteredDifferences = [];
+    for (let i = 0; i < differences.length; i++) {
+        if (i === 0 || differences[i][0] - differences[i - 1][1] > 3) {
+            filteredDifferences.push(differences[i]);
+        }
+    }
+
+    return filteredDifferences;
 }
-function USCView({ release, title, section, diffs = {}, interactive = true }) {
+function USCView({
+    release,
+    title,
+    section,
+    diffs = {},
+    interactive = true,
+    depth = 0,
+    lines = 0,
+}) {
+  let lineCount = 0;
     const history = useHistory();
 
     const [contentTree, setContentTree] = useState({});
@@ -169,8 +177,7 @@ function USCView({ release, title, section, diffs = {}, interactive = true }) {
                     itemDiff[key] !== undefined &&
                     itemDiff[key] !== item[key]
                 ) {
-
-                  const diffStart = findCommonPrefix(
+                    const diffStart = findCommonPrefix(
                         item[key],
                         itemDiff[key],
                     );
@@ -243,7 +250,10 @@ function USCView({ release, title, section, diffs = {}, interactive = true }) {
         }
     }
 
-    function renderRecursive(node) {
+    function renderRecursive(node, rDepth = 0) {
+        if (depth && rDepth > depth) {
+            return null;
+        }
         const newChildren = lodash
             .chain(node.children || [])
             .map(computeDiff)
@@ -252,6 +262,10 @@ function USCView({ release, title, section, diffs = {}, interactive = true }) {
         return (
             <>
                 {lodash.map(newChildren, (item, ind) => {
+                  lineCount++;
+                  if (lines && lineCount > lines) {
+                    return null;
+                  }
                     const {
                         usc_content_id,
                         usc_ident,
@@ -307,7 +321,7 @@ function USCView({ release, title, section, diffs = {}, interactive = true }) {
                                     {content_str}
                                 </span>
                             </span>
-                            {renderRecursive({ children })}
+                            {renderRecursive({ children}, rDepth + 1)}
                         </div>
                     );
                 })}
