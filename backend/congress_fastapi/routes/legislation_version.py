@@ -176,7 +176,8 @@ async def get_legislation_version_summary(
     obj = await get_legislation_version_summary_by_version(legislation_version_id)
     if obj is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Legislation version session not found"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Legislation version session not found",
         )
     return obj
 
@@ -230,7 +231,7 @@ async def post_legislation_version_llm(
         query_request.query, content, metadata_context
     )
     await insert_llm_query_result(
-        legislation_version_id, query_request.query, response.response
+        legislation_version_id, query_request.query, response.response, user.user_id
     )
 
     return response

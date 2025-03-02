@@ -475,3 +475,16 @@ export const talkToBill = (legislationVersionId, query) => {
     }).then(handleStatus);
     // .catch(toastError);
 };
+
+export const getUSCodeSearch = (query) => {
+    return fetch(`${endPv2}/uscode/search`, {
+        method: "POST",
+        body: JSON.stringify({ query, results: 10 }),
+        headers: {
+            "Content-Type": "application/json",
+        },
+        credentials: "include",
+    })
+        .then(handleStatus)
+        .catch(toastError);
+};

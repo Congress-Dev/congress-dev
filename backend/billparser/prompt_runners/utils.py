@@ -1,8 +1,8 @@
 from collections import defaultdict
 import time
 import logging
-from typing import Dict, List, Optional, Tuple
-from billparser.db.models import LegislationContent, Prompt, PromptBatch
+from typing import Dict, List, Optional, Tuple, Union
+from billparser.db.models import LegislationContent, Prompt, PromptBatch, USCContent
 from litellm import completion
 import litellm
 import os
@@ -12,7 +12,14 @@ litellm._logging._disable_debugging()
 
 llm_host = os.environ.get("LLM_HOST", "http://10.0.0.120:11434")
 
-def run_query(query: str, model: str = "ollama/qwen2.5:32b", *, num_ctx: int = 2048, json: bool = True) -> dict:
+
+def run_query(
+    query: str,
+    model: str = "ollama/qwen2.5:32b",
+    *,
+    num_ctx: int = 2048,
+    json: bool = True,
+) -> dict:
     start_time = time.time()
     response = completion(
         model=model,
@@ -50,7 +57,7 @@ def indent_block(block: str) -> str:
     return "\n".join(f"{prefix}{line}" for line in block.splitlines())
 
 
-def get_my_row_content(lc: LegislationContent) -> str:
+def get_my_row_content(lc: Union[LegislationContent, USCContent]) -> str:
     """
     Return a string that represents the lc's text
     take care not to print too many newlines or tabs
@@ -69,7 +76,9 @@ def get_my_row_content(lc: LegislationContent) -> str:
     return row
 
 
-def recurse(parents: Dict[int, LegislationContent], lc_id: int) -> str:
+def recurse(
+    parents: Dict[int, Union[LegislationContent, USCContent]], lc_id: int
+) -> str:
     printed_str = ""
     tab = "\t"
     newline_no_tab = "\n"
@@ -78,7 +87,14 @@ def recurse(parents: Dict[int, LegislationContent], lc_id: int) -> str:
             printed_str += get_my_row_content(lc)
         else:
             printed_str += "```\n"
-        res = recurse(parents, lc.legislation_content_id)
+        res = recurse(
+            parents,
+            (
+                lc.legislation_content_id
+                if isinstance(lc, LegislationContent)
+                else lc.usc_content_id
+            ),
+        )
         if res.strip() != "":
             if lc.content_type == "quoted-block":
                 printed_str += res
@@ -151,3 +167,18 @@ def get_legis_by_parent_and_id(
     for keys, values in legis_by_parent.items():
         values.sort(key=lambda x: x.legislation_content_id)
     return legis_by_parent, legis_by_id
+
+
+def get_usc_content_by_parent_and_id(
+    usc_content: List[USCContent],
+) -> Tuple[Dict[int, List[USCContent]], Dict[int, USCContent]]:
+    usc_by_parent = defaultdict(list)
+    usc_by_id = {}
+    for usc in usc_content:
+        if usc is None:
+            continue
+        usc_by_parent[usc.parent_id].append(usc)
+        usc_by_id[usc.usc_content_id] = usc
+    for keys, values in usc_by_parent.items():
+        values.sort(key=lambda x: x.usc_content_id)
+    return usc_by_parent, usc_by_id
