@@ -642,6 +642,26 @@ class LegislationContentSummary(Base):
     )
 
 
+class LegislationAction(Base):
+    """
+    Actions parsed from the bill status xml
+    """
+
+    __tablename__ = "legislation_action"
+    legislation_action_id = Column(Integer, primary_key=True)
+
+    action_date = Column(Date)
+    text = Column(String)
+    action_type = Column(String)
+    action_code = Column(String)
+
+    source_code = Column(String)
+    source_name = Column(String)
+
+    raw = Column(JSONB)
+    created_at = Column(DateTime(timezone=False), server_default=func.now())
+
+
 class USCRelease(Base):
     """
     Represents a release point of the USCode, as described by the prior release points page
