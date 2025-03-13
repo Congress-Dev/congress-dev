@@ -649,7 +649,11 @@ class LegislationAction(Base):
 
     __tablename__ = "legislation_action"
     legislation_action_id = Column(Integer, primary_key=True)
-
+    legislation_id = Column(
+        Integer,
+        ForeignKey("legislation.legislation_id", ondelete="CASCADE"),
+        index=True,
+    )
     action_date = Column(Date)
     text = Column(String)
     action_type = Column(String)
