@@ -91,7 +91,7 @@ def recurse(
             parents,
             (
                 lc.legislation_content_id
-                if isinstance(lc, LegislationContent)
+                if hasattr(lc, "legislation_content_id")
                 else lc.usc_content_id
             ),
         )
