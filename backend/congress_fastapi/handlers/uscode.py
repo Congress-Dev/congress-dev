@@ -10,6 +10,7 @@ from congress_fastapi.db.postgres import get_database
 from billparser.db.models import (
     USCContent,
     USCChapter,
+    USCSection,
 )
 
 chroma_host = (
@@ -59,6 +60,20 @@ async def get_usc_chapter_by_short_titles(short_titles: List[str]) -> List[USCCh
     )
     results = await database.fetch_all(query)
     return results
+
+
+async def read_usc_content(congress_id: int, citation: str) -> List[USCContent]:
+    database = await get_database()
+    query = (
+        select(USCContent)
+        .join(USCChapter, USCChapter.usc_release_id == congress_id)
+        .join(USCSection, USCSection.usc_chapter_id == USCChapter.usc_chapter_id)
+        .where(
+            USCContent.usc_section_id == USCSection.usc_section_id,
+                USCContent.usc_ident.ilike(citation),
+        )
+    )
+    return await database.fetch_all(query)
 
 
 async def search_chroma(query: str, num: int) -> List[dict]:

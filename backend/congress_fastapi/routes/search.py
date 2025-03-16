@@ -21,9 +21,7 @@ async def get_search_tags() -> List[str]:
     return await get_legislation_tag_options()
 
 
-@router.get(
-    "/legislation/search",
-)
+@router.get("/legislation/search", tags=["MCP"])
 async def get_search_legislation(
     text: str = Query(None),
     congress: str = Query(None),
