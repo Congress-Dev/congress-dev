@@ -22,7 +22,7 @@ SUCH_TITLE_REGEX = re.compile(
 )
 
 USC_CITE_REGEX = re.compile(
-    r"\((?P<title>\d+?) U\.S\.C\. (?P<section>.*?)\)(?:\s|,)",
+    r"\((?P<title>\d+?) U\.S\.C\. (?P<section>.*?)\)(?:\s|,|\.)",
     re.IGNORECASE,
 )
 SUB_OF_REGEX = re.compile(r"sub(?:section)?\s\((.)\)", re.IGNORECASE)
@@ -51,12 +51,15 @@ def extract_usc_cite(text: str) -> Optional[str]:
         #  - (22 U.S.C. 2671(b)(2)(A)(ii))
         #  - (52 U.S.C. 20504)
         cite = "/us/usc/t{}".format(regex_match["title"])
-        cite += "/s{}".format(regex_match["section"].split("(")[0])
+
+        cite += "/s{}".format(regex_match["section"].replace("note", "").strip().split("(")[0])
         if "(" in regex_match["section"]:
             possibles = split_section_text(regex_match["section"].split("(", 1)[1])
 
             if len(possibles) > 0:
                 cite += "/" + "/".join(possibles)
+        if "note" in regex_match["section"]:
+            cite += "/note"
         return cite
     return None
 

@@ -56,3 +56,8 @@ class TestExtractUSCCite(TestCase):
         text = """in section 603(c)(2)(B) (16 U.S.C. 6591b(c)(2)(B)), by striking "Fire Regime Groups I, II, or III" and inserting "Fire Regime I, Fire Regime II, Fire Regime III, Fire Regime IV, or Fire Regime V"""
         cite = extract_usc_cite(text)
         self.assertEqual(cite, "/us/usc/t16/s6591b/c/2/B")
+
+    def test_119_s_23_term_def_ref(self):
+        text = """The term budget justification materials has the meaning given that term in section 3(b)(2)(A) of the Federal Funding Accountability and Transparency Act of 2006 (31 U.S.C. 6101 note)."""
+        cite = extract_usc_cite(text)
+        self.assertEqual(cite, "/us/usc/t31/s6101/note")
