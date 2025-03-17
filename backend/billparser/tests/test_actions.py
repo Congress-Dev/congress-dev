@@ -38,6 +38,12 @@ class TestDetermineAction(TestCase):
         self.assertIn(ActionType.STRIKE_END, result)
         self.assertIn("remove_period", result[ActionType.STRIKE_END])
 
+    def test_strike_comma(self):
+        text = """in subparagraph (D), by striking the comma at the end and inserting ", or"; and"""
+        result = determine_action(text)
+        self.assertIn(ActionType.STRIKE_END, result)
+        self.assertIn("remove_comma", result[ActionType.STRIKE_END])
+
 
 class TestEnactmentDates(TestCase):
     def test_not_later_days(self):

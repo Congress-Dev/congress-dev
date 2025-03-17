@@ -98,6 +98,8 @@ def strike_text(
         if end:
             if action.get("remove_period"):
                 to_strike = "."
+            elif action.get("remove_comma"):
+                to_strike = ","
         if to_strike is None:
             logging.debug("No strike text found")
             return []

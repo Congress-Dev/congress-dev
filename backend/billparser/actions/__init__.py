@@ -73,7 +73,8 @@ regex_holder = {
         r"in (?P<target>.*), by striking \"(?P<to_remove_text>.+?)\" and all that follows and inserting a (?P<to_replace>.+?); and",
     ],
     ActionType.STRIKE_END: [
-        r"by striking the (?P<remove_period>period) at the end and inserting \"(?P<to_replace>.+?)\""
+        r"by striking the (?P<remove_period>period) at the end and inserting \"(?P<to_replace>.+?)\"",
+        r"by striking the (?P<remove_comma>comma) at the end and inserting \"(?P<to_replace>.+?)\""
     ],
     ActionType.STRIKE_TEXT_MULTIPLE: [
         r"in (?P<target>.+?), by striking \"(?P<to_remove_text>.+?)\" and inserting \"(?P<to_replace>.+?)\" each place the term appears;",
