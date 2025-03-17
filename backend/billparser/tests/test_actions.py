@@ -128,3 +128,12 @@ class TestEnactmentDates(TestCase):
         result = result[ActionType.EFFECTIVE_DATE]
         self.assertEqual(result["amount"], "2")
         self.assertEqual(result["unit"], "years")
+
+
+class TestTermDefinitionRef(TestCase):
+    def test_in_popular_name(self):
+        text = """The term budget justification materials has the meaning given that term in section 3(b)(2)(A) of the Federal Funding Accountability and Transparency Act of 2006 (31 U.S.C. 6101 note)."""
+        result = determine_action(text)
+        self.assertIn(ActionType.TERM_DEFINITION_REF, result)
+        result = result[ActionType.TERM_DEFINITION_REF]
+        self.assertEqual(result["term"], "budget justification materials")

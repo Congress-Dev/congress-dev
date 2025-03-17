@@ -33,6 +33,7 @@ class ActionType(str, Enum):
     INSERT_CHAPTER_AT_END = "INSERT-CHAPTER-AT-END"
     TERM_DEFINITION = "TERM-DEFINITION"
     TERM_DEFINITION_SECTION = "TERM-DEFINITION-SECTION"
+    TERM_DEFINITION_REF = "TERM-DEFINITION-REF"
     DATE = "DATE"
     FINANCIAL = "FINANCIAL"
     TRANSFER_FUNDS = "TRANSFER-FUNDS"
@@ -147,6 +148,10 @@ regex_holder = {
     ],
     ActionType.TERM_DEFINITION_SECTION: [
         r"The term (?P<term>.+?) means-",
+    ],
+    ActionType.TERM_DEFINITION_REF: [
+        r"The term \"(?P<term>.+?)\" has the meaning given that term in",
+        r"The term (?P<term>.+?) has the meaning given that term in",
     ],
     ActionType.DATE: [
         r"(?:(?P<month>(?:Jan|Febr)uary|March|April|May|Ju(?:ne|ly)|August|(?:Septem|Octo|Novem|Decem)ber) (?P<day>\d\d?)\, (?P<year>\d\d\d\d))"
