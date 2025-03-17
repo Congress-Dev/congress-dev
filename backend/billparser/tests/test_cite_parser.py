@@ -61,3 +61,13 @@ class TestExtractUSCCite(TestCase):
         text = """The term budget justification materials has the meaning given that term in section 3(b)(2)(A) of the Federal Funding Accountability and Transparency Act of 2006 (31 U.S.C. 6101 note)."""
         cite = extract_usc_cite(text)
         self.assertEqual(cite, "/us/usc/t31/s6101/note")
+
+    def test_119_hr_29_single_digit_title(self):
+        text = """Section 241(a)(2) of the Immigration and Nationality Act (8 U.S.C. 1231(a)(2)) is amended-"""
+        cite = extract_usc_cite(text)
+        self.assertEqual(cite, "/us/usc/t08/s1231/a/2")
+
+    def test_119_hr_29_single_digit_title_zfill(self):
+        text = """Section 241(a)(2) of the Immigration and Nationality Act (5A U.S.C. 1231(a)(2)) is amended-"""
+        cite = extract_usc_cite(text)
+        self.assertEqual(cite, "/us/usc/t05A/s1231/a/2")
