@@ -148,6 +148,8 @@ regex_holder = {
     ],
     ActionType.TERM_DEFINITION_SECTION: [
         r"The term (?P<term>.+?) means-",
+        r"the term (?P<term>.+?) means-",
+        r"the term (?P<term>.+?)-$",
     ],
     ActionType.TERM_DEFINITION_REF: [
         r"The term \"(?P<term>.+?)\" has the meaning given that term in",

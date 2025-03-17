@@ -137,3 +137,12 @@ class TestTermDefinitionRef(TestCase):
         self.assertIn(ActionType.TERM_DEFINITION_REF, result)
         result = result[ActionType.TERM_DEFINITION_REF]
         self.assertEqual(result["term"], "budget justification materials")
+
+
+class TestTermDefSection(TestCase):
+    def test_regular(self):
+        text = """As used in this Act, the term covered device-"""
+        result = determine_action(text)
+        self.assertIn(ActionType.TERM_DEFINITION_SECTION, result)
+        result = result[ActionType.TERM_DEFINITION_SECTION]
+        self.assertEqual(result["term"], "covered device")
