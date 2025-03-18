@@ -19,6 +19,7 @@ class ActionType(str, Enum):
     INSERT_SECTION_AFTER = "INSERT-SECTION-AFTER"
     INSERT_END = "INSERT-END"
     INSERT_TEXT_AFTER = "INSERT-TEXT-AFTER"
+    INSERT_TEXT_BEFORE = "INSERT-TEXT-BEFORE"
     INSERT_TEXT = "INSERT-TEXT"
     INSERT_TEXT_END = "INSERT-TEXT-END"
     STRIKE_INSERT_SECTION = "STRIKE-INSERT-SECTION"
@@ -92,7 +93,7 @@ regex_holder = {
         r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended by adding at the end the following:$",
         r"in (?P<target>.*), by adding at the end the following new (?:sub)?paragraph:",
         r"by adding at the end the following new (?:sub)?(?:section|paragraph|clause):",
-        r"by adding at the end the following:$",
+        r"by adding at the end the following:",
         r"by adding at the end following:$",
     ],
     ActionType.INSERT_TEXT_AFTER: [
@@ -100,6 +101,9 @@ regex_holder = {
         r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended.? by inserting after \"(?P<to_remove_text>.+?)\" the following: \"(?P<to_insert_text>.+?)\"(?:; and|\.)",
         r"^in (?P<target>.+?), by inserting \"(?P<to_insert_text>.+?)\" after \"(?P<to_remove_text>.+?)\";?",
         r"^by inserting \"(?P<to_insert_text>.+?)\" after \"(?P<to_remove_text>.+?)\";?",
+    ],
+    ActionType.INSERT_TEXT_BEFORE: [
+       r"in (?P<target>.+?), by inserting before the (?P<period_at_end>period at the end) the following\s*\"(?P<to_insert_text>.+?)\";?\s*(?:and)?"
     ],
     ActionType.INSERT_TEXT: [
         r"(?:(?P<target>.+?) of (?P<within>.+?) is amended )?by inserting \"(?P<to_insert_text>.+?)\" before \"(?P<target_text>.+?)\".?"
@@ -237,6 +241,9 @@ def determine_action(text: str) -> Dict[ActionType, Action]:
                     if gg.get("amount", None) is None and gg.get("unit", None) is None:
                         gg["amount"] = "0"
                         gg["unit"] = "days"
+                if action == ActionType.INSERT_TEXT_BEFORE:
+                    if gg.get("period_at_end", None) is None:
+                        gg["period_at_end"] = True
                 gg["REGEX"] = c
                 gg["action_type"] = action
                 actions[action] = gg

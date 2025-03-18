@@ -62,6 +62,12 @@ class TestDetermineAction(TestCase):
         self.assertEqual(action["target"], "subsection (b)")
         self.assertEqual(action["redesignation"], "subsection (c)")
 
+    def test_insert_before_period(self):
+        text = """in clause (i), by inserting before the period at the end the following ", and includes any crime that constitutes domestic violence, as such term is defined in section 40002(a) of the Violent Crime Control and Law Enforcement Act of 1994 (34 U.S.C. 12291(a)), regardless of whether the jurisdiction receives grant funding under that Act"; and"""
+        result = determine_action(text)
+        self.assertIn(ActionType.INSERT_TEXT_BEFORE, result)
+        self.assertIn("period_at_end", result[ActionType.INSERT_TEXT_BEFORE])
+
 
 class TestEnactmentDates(TestCase):
     def test_not_later_days(self):
