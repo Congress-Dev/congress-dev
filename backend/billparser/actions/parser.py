@@ -98,6 +98,8 @@ def strike_text(
         if end:
             if action.get("remove_period"):
                 to_strike = "."
+            elif action.get("remove_comma"):
+                to_strike = ","
         if to_strike is None:
             logging.debug("No strike text found")
             return []
@@ -470,6 +472,19 @@ def apply_action(
                     diffs.extend(
                         insert_section_end(
                             act_obj,
+                            action,
+                            computed_citation,
+                            content_by_parent_id,
+                            version_id,
+                            PARSER_SESSION,
+                        )
+                    )
+                elif act == ActionType.INSERT_SECTION_AFTER:
+                    query = select(USCContent).where(USCContent.usc_ident == computed_citation.rsplit("/", 1)[0])
+                    parent_content = PARSER_SESSION.execute(query).first()[0]
+                    diffs.extend(
+                        insert_section_after(
+                            parent_content,
                             action,
                             computed_citation,
                             content_by_parent_id,

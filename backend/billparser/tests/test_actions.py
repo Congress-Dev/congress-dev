@@ -38,6 +38,36 @@ class TestDetermineAction(TestCase):
         self.assertIn(ActionType.STRIKE_END, result)
         self.assertIn("remove_period", result[ActionType.STRIKE_END])
 
+    def test_strike_comma(self):
+        text = """in subparagraph (D), by striking the comma at the end and inserting ", or"; and"""
+        result = determine_action(text)
+        self.assertIn(ActionType.STRIKE_END, result)
+        self.assertIn("remove_comma", result[ActionType.STRIKE_END])
+
+    def test_insert_section_after(self):
+        text = """inserting after subsection (a) the following:"""
+        result = determine_action(text)
+        self.assertIn(ActionType.INSERT_SECTION_AFTER, result)
+
+    def test_repeal(self):
+        text = """Section 3 of the Uniform Time Act of 1966 (15 U.S.C. 260a) is hereby repealed."""
+        result = determine_action(text)
+        self.assertIn(ActionType.REPEAL, result)
+
+    def test_redesignate_subsection(self):
+        text = "redesignating subsection (b) as subsection (c); and"
+        result = determine_action(text)
+        self.assertIn(ActionType.REDESIGNATE, result)
+        action = result[ActionType.REDESIGNATE]
+        self.assertEqual(action["target"], "subsection (b)")
+        self.assertEqual(action["redesignation"], "subsection (c)")
+
+    def test_insert_before_period(self):
+        text = """in clause (i), by inserting before the period at the end the following ", and includes any crime that constitutes domestic violence, as such term is defined in section 40002(a) of the Violent Crime Control and Law Enforcement Act of 1994 (34 U.S.C. 12291(a)), regardless of whether the jurisdiction receives grant funding under that Act"; and"""
+        result = determine_action(text)
+        self.assertIn(ActionType.INSERT_TEXT_BEFORE, result)
+        self.assertIn("period_at_end", result[ActionType.INSERT_TEXT_BEFORE])
+
 
 class TestEnactmentDates(TestCase):
     def test_not_later_days(self):
@@ -128,3 +158,21 @@ class TestEnactmentDates(TestCase):
         result = result[ActionType.EFFECTIVE_DATE]
         self.assertEqual(result["amount"], "2")
         self.assertEqual(result["unit"], "years")
+
+
+class TestTermDefinitionRef(TestCase):
+    def test_in_popular_name(self):
+        text = """The term budget justification materials has the meaning given that term in section 3(b)(2)(A) of the Federal Funding Accountability and Transparency Act of 2006 (31 U.S.C. 6101 note)."""
+        result = determine_action(text)
+        self.assertIn(ActionType.TERM_DEFINITION_REF, result)
+        result = result[ActionType.TERM_DEFINITION_REF]
+        self.assertEqual(result["term"], "budget justification materials")
+
+
+class TestTermDefSection(TestCase):
+    def test_regular(self):
+        text = """As used in this Act, the term covered device-"""
+        result = determine_action(text)
+        self.assertIn(ActionType.TERM_DEFINITION_SECTION, result)
+        result = result[ActionType.TERM_DEFINITION_SECTION]
+        self.assertEqual(result["term"], "covered device")

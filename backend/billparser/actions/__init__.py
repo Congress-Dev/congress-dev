@@ -19,6 +19,7 @@ class ActionType(str, Enum):
     INSERT_SECTION_AFTER = "INSERT-SECTION-AFTER"
     INSERT_END = "INSERT-END"
     INSERT_TEXT_AFTER = "INSERT-TEXT-AFTER"
+    INSERT_TEXT_BEFORE = "INSERT-TEXT-BEFORE"
     INSERT_TEXT = "INSERT-TEXT"
     INSERT_TEXT_END = "INSERT-TEXT-END"
     STRIKE_INSERT_SECTION = "STRIKE-INSERT-SECTION"
@@ -33,6 +34,7 @@ class ActionType(str, Enum):
     INSERT_CHAPTER_AT_END = "INSERT-CHAPTER-AT-END"
     TERM_DEFINITION = "TERM-DEFINITION"
     TERM_DEFINITION_SECTION = "TERM-DEFINITION-SECTION"
+    TERM_DEFINITION_REF = "TERM-DEFINITION-REF"
     DATE = "DATE"
     FINANCIAL = "FINANCIAL"
     TRANSFER_FUNDS = "TRANSFER-FUNDS"
@@ -72,7 +74,8 @@ regex_holder = {
         r"in (?P<target>.*), by striking \"(?P<to_remove_text>.+?)\" and all that follows and inserting a (?P<to_replace>.+?); and",
     ],
     ActionType.STRIKE_END: [
-        r"by striking the (?P<remove_period>period) at the end and inserting \"(?P<to_replace>.+?)\""
+        r"by striking the (?P<remove_period>period) at the end and inserting \"(?P<to_replace>.+?)\"",
+        r"by striking the (?P<remove_comma>comma) at the end and inserting \"(?P<to_replace>.+?)\"",
     ],
     ActionType.STRIKE_TEXT_MULTIPLE: [
         r"in (?P<target>.+?), by striking \"(?P<to_remove_text>.+?)\" and inserting \"(?P<to_replace>.+?)\" each place the term appears;",
@@ -83,14 +86,14 @@ regex_holder = {
     ],
     ActionType.INSERT_SECTION_AFTER: [
         r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended by inserting after (?P<target_section>(?:sub)?(?:section|paragraph) .+?) the following(?: new (paragraph|section)s?)?:",
-        r"by inserting after (?P<target>(?:sub)?(?:section|paragraph) .+?) the following(?: (?:new )?(?:sub)?(?:section|paragraph)s?)?:",
+        r"(?:by )?inserting after (?P<target>(?:sub)?(?:section|paragraph) .+?) the following(?: (?:new )?(?:sub)?(?:section|paragraph)s?)?:",
     ],
     ActionType.INSERT_END: [
         r"At the end of (?P<target>.+?) of (?P<within>.+?),? insert the following:",
         r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended by adding at the end the following:$",
         r"in (?P<target>.*), by adding at the end the following new (?:sub)?paragraph:",
         r"by adding at the end the following new (?:sub)?(?:section|paragraph|clause):",
-        r"by adding at the end the following:$",
+        r"by adding at the end the following:",
         r"by adding at the end following:$",
     ],
     ActionType.INSERT_TEXT_AFTER: [
@@ -99,13 +102,16 @@ regex_holder = {
         r"^in (?P<target>.+?), by inserting \"(?P<to_insert_text>.+?)\" after \"(?P<to_remove_text>.+?)\";?",
         r"^by inserting \"(?P<to_insert_text>.+?)\" after \"(?P<to_remove_text>.+?)\";?",
     ],
+    ActionType.INSERT_TEXT_BEFORE: [
+       r"in (?P<target>.+?), by inserting before the (?P<period_at_end>period at the end) the following\s*\"(?P<to_insert_text>.+?)\";?\s*(?:and)?"
+    ],
     ActionType.INSERT_TEXT: [
         r"(?:(?P<target>.+?) of (?P<within>.+?) is amended )?by inserting \"(?P<to_insert_text>.+?)\" before \"(?P<target_text>.+?)\".?"
     ],
     ActionType.INSERT_TEXT_END: [
         r"in (?P<target>.+?), by adding \"(?P<to_replace>.+?)\" at the end;",
         r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is (?:further )?amended.? by adding at the end the following: \"(?P<to_insert_text>.+?)\"(?:; and|\.)",
-        r"by adding at the end the following: \"(?P<to_replace>.+?)\""
+        r"by adding at the end the following: \"(?P<to_replace>.+?)\"",
     ],
     ActionType.STRIKE_SECTION_INSERT: [
         r"by striking (?P<target>(?:sub)?(?:section|paragraph) .+?) and inserting the following:"
@@ -118,9 +124,13 @@ regex_holder = {
         r"by striking paragraphs (?P<to_remove_sections>.+?)(?:;|\.)"
     ],
     ActionType.REDESIGNATE: [  # Done
-        r"by redesignating (?P<target>.+?) as (?P<redesignation>.+?)(;|\.)"
+        r"by redesignating (?P<target>.+?) as (?P<redesignation>.+?)(;|\.)",
+        r"redesignating\s+(?P<target>.+?)\s+as\s+(?P<redesignation>.+?);\s*(?:and)?"
     ],
-    ActionType.REPEAL: [r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is repealed.?"],
+    ActionType.REPEAL: [
+        r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is repealed.?",
+        r"(?P<target>Section\s+\d+)(?:\s+of\s+(?P<within>.+?))?\s+is(?: hereby)? repealed\.",
+    ],
     ActionType.EFFECTIVE_DATE: [
         r"The amendments made by this section shall apply to taxable years beginning after (?P<effective_date>.+?)\.",
         r"not later than (?P<amount>\d+) (?P<unit>(hour|day|week|month|year)s?) after the (?:date of )?(?:the )?enactment of (?:(this|the .*?)) Act",
@@ -132,7 +142,7 @@ regex_holder = {
         r"On and after the (?:date of )?(?:the )?enactment of this Act",
         r"within (?P<amount>\d+) (?P<unit>(hour|day|week|month|year)s?) after the (?:date of )?(?:the )?enactment of this Act",
         r"take effect (?P<amount>\d+) (?P<unit>(hour|day|week|month|year)s?) after the (?:date of )?(?:the )?enactment of this Act",
-        r"(?P<amount>\d+) (?P<unit>(hour|day|week|month|year)s?) after the effective date of this Act."
+        r"(?P<amount>\d+) (?P<unit>(hour|day|week|month|year)s?) after the effective date of this Act.",
     ],
     ActionType.TABLE_OF_CONTENTS: [
         r"The table of contents (for|of) this Act is as follows:"
@@ -147,6 +157,12 @@ regex_holder = {
     ],
     ActionType.TERM_DEFINITION_SECTION: [
         r"The term (?P<term>.+?) means-",
+        r"the term (?P<term>.+?) means-",
+        r"the term (?P<term>.+?)-$",
+    ],
+    ActionType.TERM_DEFINITION_REF: [
+        r"The term \"(?P<term>.+?)\" has the meaning given that term in",
+        r"The term (?P<term>.+?) has the meaning given that term in",
     ],
     ActionType.DATE: [
         r"(?:(?P<month>(?:Jan|Febr)uary|March|April|May|Ju(?:ne|ly)|August|(?:Septem|Octo|Novem|Decem)ber) (?P<day>\d\d?)\, (?P<year>\d\d\d\d))"
@@ -225,6 +241,9 @@ def determine_action(text: str) -> Dict[ActionType, Action]:
                     if gg.get("amount", None) is None and gg.get("unit", None) is None:
                         gg["amount"] = "0"
                         gg["unit"] = "days"
+                if action == ActionType.INSERT_TEXT_BEFORE:
+                    if gg.get("period_at_end", None) is None:
+                        gg["period_at_end"] = True
                 gg["REGEX"] = c
                 gg["action_type"] = action
                 actions[action] = gg
