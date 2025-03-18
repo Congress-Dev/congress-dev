@@ -49,6 +49,11 @@ class TestDetermineAction(TestCase):
         result = determine_action(text)
         self.assertIn(ActionType.INSERT_SECTION_AFTER, result)
 
+    def test_repeal(self):
+        text = """Section 3 of the Uniform Time Act of 1966 (15 U.S.C. 260a) is hereby repealed."""
+        result = determine_action(text)
+        self.assertIn(ActionType.REPEAL, result)
+        
 
 class TestEnactmentDates(TestCase):
     def test_not_later_days(self):

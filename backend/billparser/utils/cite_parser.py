@@ -56,7 +56,7 @@ def extract_usc_cite(text: str) -> Optional[str]:
                 return "0" + inp
             return inp
 
-        cite = "/us/usc/t{}".format(leading_zeros(regex_match["title"]))
+        cite = "/us/usc/t{}".format(regex_match["title"])
 
         cite += "/s{}".format(
             regex_match["section"].replace("note", "").strip().split("(")[0]
