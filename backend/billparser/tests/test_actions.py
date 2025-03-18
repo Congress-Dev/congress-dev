@@ -44,6 +44,11 @@ class TestDetermineAction(TestCase):
         self.assertIn(ActionType.STRIKE_END, result)
         self.assertIn("remove_comma", result[ActionType.STRIKE_END])
 
+    def test_insert_section_after(self):
+        text = """inserting after subsection (a) the following:"""
+        result = determine_action(text)
+        self.assertIn(ActionType.INSERT_SECTION_AFTER, result)
+
 
 class TestEnactmentDates(TestCase):
     def test_not_later_days(self):
