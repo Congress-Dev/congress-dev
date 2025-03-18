@@ -479,6 +479,19 @@ def apply_action(
                             PARSER_SESSION,
                         )
                     )
+                elif act == ActionType.INSERT_SECTION_AFTER:
+                    query = select(USCContent).where(USCContent.usc_ident == computed_citation.rsplit("/", 1)[0])
+                    parent_content = PARSER_SESSION.execute(query).first()[0]
+                    diffs.extend(
+                        insert_section_after(
+                            parent_content,
+                            action,
+                            computed_citation,
+                            content_by_parent_id,
+                            version_id,
+                            PARSER_SESSION,
+                        )
+                    )
                 elif act == ActionType.STRIKE_SUBSECTION:
                     diffs.extend(
                         strike_section(act_obj, computed_citation, PARSER_SESSION)
