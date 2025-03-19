@@ -12,7 +12,7 @@ from billparser.utils.cite_parser import (
 )
 from billparser.db.handler import Session, get_scoped_session
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.orm import aliased
 from sqlalchemy.sql import func
 
@@ -21,6 +21,7 @@ import logging
 from collections import defaultdict
 from typing import Dict, List, Optional, Tuple
 from billparser.db.models import (
+    Legislation,
     LegislationContent,
     LegislationActionParse,
     LegislationVersion,
@@ -49,7 +50,7 @@ class QueryInjector:
 
     def _execute_with_injection(self, query, *args, **kwargs):
         if isinstance(query, Select) and any(
-            self.target_table.name == x.name for x in query.froms
+            self.target_table.name == x.name for x in query.froms if hasattr(x, "name")
         ):
             query = query.where(self.where_clause)
             compiled_query = query.compile(
@@ -66,6 +67,7 @@ def get_bill_contents(legislation_version_id: int) -> List[LegislationContent]:
     results = PARSER_SESSION.execute(query).all()
     # Unpack the results
     return [x[0] for x in results]
+
 
 def get_chapter_id(chapter: str) -> int:
     query = select(USCChapter).where(USCChapter.short_title == chapter.zfill(2))
@@ -424,15 +426,6 @@ def apply_action(
             if parent_action.citations:
                 parent_cite = parent_action.citations[0]
                 computed_citation += parent_cite["cite"]
-    if computed_citation is None:
-        logging.warning("No citation found for action")
-        return
-    if not computed_citation.startswith("/us"):
-        logging.error(
-            f"Citation is not complete? {computed_citation=}",
-            extra={"citation": computed_citation},
-        )
-        return
     actions = action.actions
     logging.debug(
         f"Applying action to {computed_citation=}", extra={"action": actions[0]}
@@ -441,6 +434,29 @@ def apply_action(
     diffs: List[USCContentDiff] = []
     for act, act_obj in actions[0].items():
         try:
+            if act == ActionType.SHORT_TITLE:
+                if act_obj.get("short_title") is not None:
+                    get_legislation = (
+                        select(Legislation)
+                        .join(
+                            LegislationVersion,
+                            LegislationVersion.legislation_id
+                            == Legislation.legislation_id,
+                        )
+                        .where(
+                            LegislationVersion.legislation_version_id
+                            == action.legislation_version_id
+                        )
+                    )
+                    legislation = PARSER_SESSION.execute(get_legislation).first()[0]
+                    query = (
+                        update(Legislation)
+                        .where(Legislation.legislation_id == legislation.legislation_id)
+                        .values(title=f"{act_obj['title']} ({act_obj['short_title']})")
+                    )
+                    PARSER_SESSION.execute(query)
+            if computed_citation is None or not computed_citation.startswith("/us"):
+                continue
             if act != ActionType.AMEND_MULTIPLE:
                 if act == ActionType.STRIKE_TEXT:
                     diffs.extend(
@@ -480,7 +496,9 @@ def apply_action(
                         )
                     )
                 elif act == ActionType.INSERT_SECTION_AFTER:
-                    query = select(USCContent).where(USCContent.usc_ident == computed_citation.rsplit("/", 1)[0])
+                    query = select(USCContent).where(
+                        USCContent.usc_ident == computed_citation.rsplit("/", 1)[0]
+                    )
                     parent_content = PARSER_SESSION.execute(query).first()[0]
                     diffs.extend(
                         insert_section_after(
@@ -493,6 +511,10 @@ def apply_action(
                         )
                     )
                 elif act == ActionType.STRIKE_SUBSECTION:
+                    diffs.extend(
+                        strike_section(act_obj, computed_citation, PARSER_SESSION)
+                    )
+                elif act == ActionType.REPEAL:
                     diffs.extend(
                         strike_section(act_obj, computed_citation, PARSER_SESSION)
                     )

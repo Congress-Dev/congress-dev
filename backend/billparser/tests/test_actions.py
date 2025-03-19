@@ -68,6 +68,16 @@ class TestDetermineAction(TestCase):
         self.assertIn(ActionType.INSERT_TEXT_BEFORE, result)
         self.assertIn("period_at_end", result[ActionType.INSERT_TEXT_BEFORE])
 
+    def test_long_short_title(self):
+        text = """This Act may be cited as the "Requiring Effective Management and Oversight of Teleworking Employees Act" or the "REMOTE Act"."""
+        result = determine_action(text)
+        self.assertIn(ActionType.SHORT_TITLE, result)
+        self.assertEqual(
+            result[ActionType.SHORT_TITLE]["title"],
+            "Requiring Effective Management and Oversight of Teleworking Employees Act",
+        )
+        self.assertEqual( result[ActionType.SHORT_TITLE]["short_title"], "REMOTE Act")
+
 
 class TestEnactmentDates(TestCase):
     def test_not_later_days(self):
