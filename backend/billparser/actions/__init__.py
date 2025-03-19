@@ -48,7 +48,8 @@ class ActionType(str, Enum):
 # The capture groups are typically consistent, especially when the same functions are used between different 'actions'
 regex_holder = {
     ActionType.SHORT_TITLE: [
-        r"This (?P<context_type>(?:act|(?:sub)?title|part)) may be cited as the \"?(?P<title>.+?)\"?\.",
+        r"This (?P<context_type>(?:Act|(?:sub)?title|part)) may be cited as the \"?(?P<title>.+?)\"? or the \"?(?P<short_title>.+?)\"?\.",
+        r"This (?P<context_type>(?:Act|(?:sub)?title|part)) may be cited as the \"?(?P<title>.+?)\"?\.",
     ],
     ActionType.PURPOSE: [r"The purpose of this Act is (?P<purpose>.+)\."],
     ActionType.CONGRESS_FINDS: [r"Congress finds the following:"],
