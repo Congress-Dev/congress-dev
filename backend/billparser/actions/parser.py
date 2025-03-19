@@ -113,6 +113,7 @@ def strike_text(
 
         if content.heading:
             # We're modifying the heading
+            strike_result = ""
             if end:
                 if content.heading.endswith(to_strike):
                     strike_result = content.heading[: -len(to_strike)] + (
@@ -332,7 +333,11 @@ def strike_section(
 ) -> List[USCContentDiff]:
     # Create USCContentDiffs with the content_str and heading set to ""
     query = select(USCContent).where(USCContent.usc_ident == citation)
-    target_section = session.execute(query).first()[0]
+    target_section = session.execute(query).first()
+    if target_section is None:
+        logging.warning("Could not find target section", extra={"usc_ident": citation})
+        return []
+    target_section = target_section[0]
     parent = aliased(USCContent)
     child = aliased(USCContent)
 
@@ -499,7 +504,14 @@ def apply_action(
                     query = select(USCContent).where(
                         USCContent.usc_ident == computed_citation.rsplit("/", 1)[0]
                     )
-                    parent_content = PARSER_SESSION.execute(query).first()[0]
+                    parent_content = PARSER_SESSION.execute(query).first()
+                    if parent_content is None:
+                        logging.warning(
+                            "Could not find parent content",
+                            extra={"usc_ident": computed_citation},
+                        )
+                        continue
+                    parent_content = parent_content[0]
                     diffs.extend(
                         insert_section_after(
                             parent_content,
