@@ -110,10 +110,9 @@ def strike_text(
             usc_section_id=content.usc_section_id,
             usc_chapter_id=get_chapter_id(citation.split("/")[3].replace("t", "")),
         )
-
+        strike_result = ""
         if content.heading:
             # We're modifying the heading
-            strike_result = ""
             if end:
                 if content.heading.endswith(to_strike):
                     strike_result = content.heading[: -len(to_strike)] + (
