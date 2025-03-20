@@ -14,7 +14,11 @@ from billparser.db.models import (
     LegislationContentTag,
     LegislationContentSummary,
     Legislator,
-    LegislationVersionTag
+    LegislationVersionTag,
+    LegislativePolicyArea,
+    LegislativePolicyAreaAssociation,
+    LegislativeSubject,
+    LegislativeSubjectAssociation,
 )
 from congress_fastapi.models.abstract import MappableBase
 
@@ -118,6 +122,9 @@ class LegislationMetadata(MappableBase):
 
     votes: Optional[List[LegislationVoteMetadata]]
 
+    policy_areas: Optional[List[str]]
+    subjects: Optional[List[str]]
+
 
 class LegislationClauseTag(MappableBase):
 
@@ -125,10 +132,12 @@ class LegislationClauseTag(MappableBase):
     tags: Annotated[List[str], LegislationContentTag.tags]
     prompt_batch_id: Annotated[Optional[int], LegislationContentTag.prompt_batch_id]
 
+
 class LegislationVersionTag(MappableBase):
     legislation_version_id: Annotated[int, LegislationVersionTag.legislation_version_id]
     tags: Annotated[List[str], LegislationVersionTag.tags]
     prompt_batch_id: Annotated[Optional[int], LegislationVersionTag.prompt_batch_id]
+
 
 class LegislationClauseSummary(MappableBase):
     legislation_content_id: Annotated[
@@ -138,3 +147,9 @@ class LegislationClauseSummary(MappableBase):
     prompt_batch_id: Annotated[Optional[int], LegislationContentSummary.prompt_batch_id]
 
 
+class LegislationPolicyArea(MappableBase):
+    name: Annotated[str, LegislativePolicyArea.name]
+
+
+class LegislationSubject(MappableBase):
+    subject: Annotated[str, LegislativeSubject.subject]

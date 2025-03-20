@@ -176,6 +176,14 @@ async def get_legislation_metadata_by_version_id(
         sponsor=sponsor_objs[0] if len(sponsor_objs) > 0 else None,
         cosponsors=sponsor_objs[1:] if len(sponsor_objs) > 0 else None,
         votes=vote_objs,
+        policy_areas=[
+            x.name
+            for x in await get_legislation_policy_area(legislation.legislation_id)
+        ],
+        subjects=[
+            x.subject
+            for x in await get_legislation_subjects(legislation.legislation_id)
+        ],
         **result,
     )
 
@@ -196,4 +204,12 @@ async def get_legislation_metadata_by_legislation_id(
             matching_vers = version.legislation_version_id
             break
     # TODO: Right now we only get the first one
-    return await get_legislation_metadata_by_version_id(matching_vers, legis_versions)
+    metadata = await get_legislation_metadata_by_version_id(
+        matching_vers, legis_versions
+    )
+    if metadata is not None:
+        policy_area = await get_legislation_policy_area(legislation_id)
+        metadata.policy_areas = [x.name for x in policy_area]
+        subjects = await get_legislation_subjects(legislation_id)
+        metadata.subjects = [x.subject for x in subjects]
+    return metadata

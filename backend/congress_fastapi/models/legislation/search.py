@@ -25,6 +25,9 @@ class SearchResult(BaseModel):
     appropriations: Optional[float]
     sponsor: Optional[LegislatorMetadata]
 
+    policy_areas: Optional[List[str]]
+    subjects: Optional[List[str]]
+
 
 class SearchResponse(BaseModel):
     legislation: List[SearchResult]
