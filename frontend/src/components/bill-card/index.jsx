@@ -54,7 +54,33 @@ function BillCard({ bill }) {
             </>
         );
     }
-
+    function renderPolicyArea() {
+        if (bill.policy_areas == null || bill.policy_areas.length == 0) {
+            return;
+        }
+        return (
+            <>
+                <span style={{ fontWeight: "bold" }}>Policy Areas:</span>
+                {bill.policy_areas.map((policy_area) => (
+                    <>
+                        <Tag minimal={true} round={true} intent={"success"}>
+                            {policy_area}
+                        </Tag>
+                        {"  "}
+                    </>
+                ))}
+                {bill.subjects?.map((subject) => (
+                    <>
+                        <Tag minimal={true} round={true} intent={"primary"}>
+                            {subject}
+                        </Tag>
+                        {"  "}
+                    </>
+                ))}
+                <br />
+            </>
+        );
+    }
     return (
         <SectionCard padded={false} className="bill-card">
             <Callout>
@@ -91,6 +117,7 @@ function BillCard({ bill }) {
                 )}
 
                 {preferences[PreferenceEnum.SHOW_TAGS] && renderTags()}
+                {preferences[PreferenceEnum.SHOW_TAGS] && renderPolicyArea()}
 
                 {preferences[PreferenceEnum.SHOW_APPROPRIATIONS] &&
                 bill.appropriations ? (
