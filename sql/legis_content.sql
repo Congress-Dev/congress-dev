@@ -1,0 +1,1 @@
+SELECT Count(*) FROM legislation_content WHERE legislation_content.content_str ilike '%enactment of this act%';

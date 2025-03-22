@@ -1,0 +1,1 @@
+SELECT *  FROM public.usc_content WHERE usc_ident = '/us/usc/t52/s20503/a'; 

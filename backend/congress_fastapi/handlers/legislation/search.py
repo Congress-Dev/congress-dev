@@ -15,6 +15,7 @@ from sqlalchemy import (
     cast,
     String,
 )
+from sqlalchemy.dialects import postgresql
 import sqlalchemy
 from sqlalchemy.orm import aliased
 from congress_fastapi.db.postgres import get_database
@@ -31,6 +32,10 @@ from billparser.db.models import (
     LegislationVersion,
     LegislationVersionEnum,
     Legislator,
+    LegislativeSubjectAssociation,
+    LegislativePolicyAreaAssociation,
+    LegislativeSubject,
+    LegislativePolicyArea,
 )
 from congress_fastapi.models.legislation.metadata import (
     LegislatorMetadata,
@@ -262,6 +267,7 @@ async def search_legislation(
             == LegislationVersionTag.legislation_version_id,
         )
     )
+
     legis_query = (
         select(
             Legislation.legislation_id,
@@ -323,18 +329,53 @@ async def search_legislation(
                 Legislation.number == int(number_match.group(2))
             )
         else:
+            # Subject search
+            legis_query = legis_query.join(
+                LegislativeSubjectAssociation,
+                Legislation.legislation_id
+                == LegislativeSubjectAssociation.legislation_id,
+                isouter=True,
+            ).join(
+                LegislativeSubject,
+                LegislativeSubject.legislative_subject_id
+                == LegislativeSubjectAssociation.legislative_subject_id,
+                isouter=True,
+            )
+
+            legis_query = legis_query.join(
+                LegislativePolicyAreaAssociation,
+                Legislation.legislation_id
+                == LegislativePolicyAreaAssociation.legislation_id,
+                isouter=True,
+            ).join(
+                LegislativePolicyArea,
+                LegislativePolicyArea.legislative_policy_area_id
+                == LegislativePolicyAreaAssociation.legislative_policy_area_id,
+                isouter=True,
+            )
             try:
+
                 legis_query = legis_query.where(
                     or_(
                         Legislation.title.ilike(f"%{text}%"),
                         Legislation.number == int(text),
+                        LegislativeSubject.subject.ilike(f"%{text}%"),
+                        LegislativePolicyArea.name.ilike(f"%{text}%"),
                     )
                 )
             except ValueError:
-                legis_query = legis_query.where(Legislation.title.ilike(f"%{text}%"))
+                legis_query = legis_query.where(
+                    or_(
+                        Legislation.title.ilike(f"%{text}%"),
+                        LegislativeSubject.subject.ilike(f"%{text}%"),
+                        LegislativePolicyArea.name.ilike(f"%{text}%"),
+                    )
+                )
 
     results = await database.fetch_all(legis_query)
     results = [dict(result) for result in results]
+
+    # Perform same search against policy areas and subjects
 
     legislation_ids = [result["legislation_id"] for result in results]
 
@@ -373,7 +414,7 @@ async def search_legislation(
 
     count_query = (
         select(
-            func.count(Legislation.legislation_id),
+            func.count(distinct(Legislation.legislation_id)),
         )
         .select_from(
             join(
@@ -406,15 +447,45 @@ async def search_legislation(
                 Legislation.number == int(number_match.group(2))
             )
         else:
+            count_query = count_query.join(
+                LegislativeSubjectAssociation,
+                Legislation.legislation_id
+                == LegislativeSubjectAssociation.legislation_id,
+                isouter=True,
+            ).join(
+                LegislativeSubject,
+                LegislativeSubject.legislative_subject_id
+                == LegislativeSubjectAssociation.legislative_subject_id,
+            )
+
+            count_query = count_query.join(
+                LegislativePolicyAreaAssociation,
+                Legislation.legislation_id
+                == LegislativePolicyAreaAssociation.legislation_id,
+                isouter=True,
+            ).join(
+                LegislativePolicyArea,
+                LegislativePolicyArea.legislative_policy_area_id
+                == LegislativePolicyAreaAssociation.legislative_policy_area_id,
+                isouter=True,
+            )
             try:
                 count_query = count_query.where(
                     or_(
                         Legislation.title.ilike(f"%{text}%"),
                         Legislation.number == int(text),
+                        LegislativeSubject.subject.ilike(f"%{text}%"),
+                        LegislativePolicyArea.name.ilike(f"%{text}%"),
                     )
                 )
             except ValueError:
-                count_query = count_query.where(Legislation.title.ilike(f"%{text}%"))
+                count_query = count_query.where(
+                    or_(
+                        Legislation.title.ilike(f"%{text}%"),
+                        LegislativeSubject.subject.ilike(f"%{text}%"),
+                        LegislativePolicyArea.name.ilike(f"%{text}%"),
+                    )
+                )
 
     count_results = await database.fetch_all(count_query)
     return objs, len(count_results)
