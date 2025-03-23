@@ -182,7 +182,7 @@ async def get_legislation_metadata_by_version_id(
         votes=vote_objs,
         policy_areas=[
             x.name
-            for x in await get_legislation_policy_area(legislation.legislation_id)
+            for x in (await get_legislation_policy_area(legislation.legislation_id))
         ],
         subjects=[
             x.subject
