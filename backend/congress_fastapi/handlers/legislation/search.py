@@ -400,14 +400,18 @@ async def search_legislation(
             appropriations=appropriations_by_id.get(result["legislation_id"], None),
             sponsor=sponsors_by_id.get(result["legislation_id"], None),
             effective_date=result.get("effective_date"),
-            policy_areas=[
-                x.name
-                for x in await get_legislation_policy_area(result["legislation_id"])
-            ],
-            subjects=[
-                x.subject
-                for x in await get_legislation_subjects(result["legislation_id"])
-            ],
+            policy_areas=sorted(
+                [
+                    x.name
+                    for x in await get_legislation_policy_area(result["legislation_id"])
+                ]
+            ),
+            subjects=sorted(
+                [
+                    x.subject
+                    for x in await get_legislation_subjects(result["legislation_id"])
+                ]
+            ),
         )
         for result in results
     ]
