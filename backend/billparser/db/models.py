@@ -152,6 +152,12 @@ class LegislationVersionEnum(str, enum.Enum):
         else:
             raise ValueError(f"Invalid version: {string}")
 
+    def __eq__(self, value):
+        return self.value == value
+
+    def __hash__(self):
+        return hash(self.value)
+
 
 class LegislationVote(Base):
     __tablename__ = "legislation_vote"
