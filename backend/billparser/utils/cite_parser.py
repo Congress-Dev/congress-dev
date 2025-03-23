@@ -8,7 +8,11 @@ from unidecode import unidecode
 cite_contexts = {"last_title": None}
 
 SEC_TITLE_REGEX = re.compile(
-    r"(?:(?:Subsection|paragraph) \((?P<finalsub>.*?)\) of )?Section (?P<section>.*?) of title (?P<title>[0-9A]*), United States Code",
+    r"(?:(?:Subsection|paragraph) \((?P<finalsub>.*?)\) of )?Section (?P<section>.*?) of title (?P<title>[0-9Aa]*), United States Code",
+    re.IGNORECASE,
+)
+TITLE_SEC_REGEX = re.compile(
+    r"title (?P<title>[0-9Aa]*), United States Code, .*?section (?P<section>.*?)\s",
     re.IGNORECASE,
 )
 
@@ -103,6 +107,7 @@ def parse_text_for_cite(
     cites_found: List[CiteObject] = []
     cite = extract_usc_cite(text)
     if cite:
+        print(cite)
         # If we have a full cite, lets just check for "Clause (i) of" type references
         extra_cite = find_extra_clause_references(text)
         if len(extra_cite) > 0:
@@ -112,7 +117,8 @@ def parse_text_for_cite(
         else:
             cites_found.append({"text": text, "cite": cite, "complete": True})
             return cites_found
-    regex_match = SEC_TITLE_REGEX.search(text)
+    regex_match = SEC_TITLE_REGEX.search(text) or TITLE_SEC_REGEX.search(text)
+    print(regex_match)
     if regex_match:
         cite = "/us/usc/t{}/s{}".format(
             regex_match["title"], regex_match["section"].split("(")[0]
@@ -125,7 +131,7 @@ def parse_text_for_cite(
                 cite += "/" + "/".join(possibles)
 
         # Maybe there was an additional subclause
-        if regex_match["finalsub"]:
+        if regex_match.groupdict().get("finalsub"):
             possibles = split_section_text(regex_match["finalsub"].split("(", 1)[0])
             if len(possibles) > 0:
                 cite += "/" + "/".join(possibles)
@@ -133,9 +139,10 @@ def parse_text_for_cite(
             {
                 "text": text,
                 "cite": cite,
-                "complete": False,
+                "complete": True,
             }
         )
+        print(cites_found)
     else:
         regex_match = SUCH_TITLE_REGEX.search(text)
         if regex_match:
