@@ -169,6 +169,14 @@ class TestEnactmentDates(TestCase):
         self.assertEqual(result["amount"], "2")
         self.assertEqual(result["unit"], "years")
 
+    def test_one_day(self):
+        text = """This Act shall take effect one day after the date of enactment."""
+        result = determine_action(text)
+        self.assertIn(ActionType.EFFECTIVE_DATE, result)
+        result = result[ActionType.EFFECTIVE_DATE]
+        self.assertEqual(result["amount"], "1")
+        self.assertEqual(result["unit"], "day")
+
 
 class TestTermDefinitionRef(TestCase):
     def test_in_popular_name(self):

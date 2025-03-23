@@ -104,7 +104,7 @@ regex_holder = {
         r"^by inserting \"(?P<to_insert_text>.+?)\" after \"(?P<to_remove_text>.+?)\";?",
     ],
     ActionType.INSERT_TEXT_BEFORE: [
-       r"in (?P<target>.+?), by inserting before the (?P<period_at_end>period at the end) the following\s*\"(?P<to_insert_text>.+?)\";?\s*(?:and)?"
+        r"in (?P<target>.+?), by inserting before the (?P<period_at_end>period at the end) the following\s*\"(?P<to_insert_text>.+?)\";?\s*(?:and)?"
     ],
     ActionType.INSERT_TEXT: [
         r"(?:(?P<target>.+?) of (?P<within>.+?) is amended )?by inserting \"(?P<to_insert_text>.+?)\" before \"(?P<target_text>.+?)\".?"
@@ -126,7 +126,7 @@ regex_holder = {
     ],
     ActionType.REDESIGNATE: [  # Done
         r"by redesignating (?P<target>.+?) as (?P<redesignation>.+?)(;|\.)",
-        r"redesignating\s+(?P<target>.+?)\s+as\s+(?P<redesignation>.+?);\s*(?:and)?"
+        r"redesignating\s+(?P<target>.+?)\s+as\s+(?P<redesignation>.+?);\s*(?:and)?",
     ],
     ActionType.REPEAL: [
         r"(?P<target>.+?)(?: of (?P<within>.+?),?)? is repealed.?",
@@ -144,6 +144,7 @@ regex_holder = {
         r"within (?P<amount>\d+) (?P<unit>(hour|day|week|month|year)s?) after the (?:date of )?(?:the )?enactment of this Act",
         r"take effect (?P<amount>\d+) (?P<unit>(hour|day|week|month|year)s?) after the (?:date of )?(?:the )?enactment of this Act",
         r"(?P<amount>\d+) (?P<unit>(hour|day|week|month|year)s?) after the effective date of this Act.",
+        r"This Act shall take effect (?P<amount>one) (?P<unit>(hour|day|week|month|year)s?) after the date of enactment.",
     ],
     ActionType.TABLE_OF_CONTENTS: [
         r"The table of contents (for|of) this Act is as follows:"
@@ -242,6 +243,11 @@ def determine_action(text: str) -> Dict[ActionType, Action]:
                     if gg.get("amount", None) is None and gg.get("unit", None) is None:
                         gg["amount"] = "0"
                         gg["unit"] = "days"
+                    try:
+                        gg["amount"] = str(int(gg["amount"]))
+                    except:
+                        if gg["amount"] == "one":
+                            gg["amount"] = "1"
                 if action == ActionType.INSERT_TEXT_BEFORE:
                     if gg.get("period_at_end", None) is None:
                         gg["period_at_end"] = True

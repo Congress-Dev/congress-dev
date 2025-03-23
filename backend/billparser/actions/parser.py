@@ -245,7 +245,22 @@ def _recursively_insert_content(
     return new_content, new_diffs
 
 
-def insert_section_after(
+def insert_section(
+    action: ActionObject,
+    action_parse: LegislationActionParse,
+    citation: str,
+    content_by_parent_id: Dict[int, List[LegislationContent]],
+    version_id: int,
+    session: "Session",
+) -> List[USCContentDiff]:
+    """
+    Inserts a blank USCSection into the database, and then produces the diffs for it.
+    """
+    created_diffs: List[USCContentDiff] = []
+    return created_diffs
+
+
+def insert_subsection_after(
     parent_content: USCContent,
     action_parse: LegislationActionParse,
     citation: str,
@@ -294,7 +309,7 @@ def insert_section_after(
     return created_diffs
 
 
-def insert_section_end(
+def insert_subsection_end(
     action: ActionObject,
     action_parse: LegislationActionParse,
     citation: str,
@@ -317,7 +332,7 @@ def insert_section_end(
         logging.warning("No children found for section", extra={"usc_ident": citation})
         return []
     last_content = results[0][0]
-    return insert_section_after(
+    return insert_subsection_after(
         target_section,
         action_parse,
         last_content.usc_ident,
@@ -388,7 +403,7 @@ def replace_section(
     query = select(USCContent).where(USCContent.usc_ident == citation)
     target_section = session.execute(query).first()[0]
     diffs.extend(
-        insert_section_after(
+        insert_subsection_after(
             target_section,
             action_parse,
             citation,
@@ -490,7 +505,7 @@ def apply_action(
                     )
                 elif act == ActionType.INSERT_END:
                     diffs.extend(
-                        insert_section_end(
+                        insert_subsection_end(
                             act_obj,
                             action,
                             computed_citation,
@@ -500,27 +515,32 @@ def apply_action(
                         )
                     )
                 elif act == ActionType.INSERT_SECTION_AFTER:
-                    query = select(USCContent).where(
-                        USCContent.usc_ident == computed_citation.rsplit("/", 1)[0]
-                    )
-                    parent_content = PARSER_SESSION.execute(query).first()
-                    if parent_content is None:
-                        logging.warning(
-                            "Could not find parent content",
-                            extra={"usc_ident": computed_citation},
+                    # If this is actually a subsection, we need to insert it after the parent
+                    if not computed_citation.rsplit("/", 1)[-1].startswith("s"):
+                        query = select(USCContent).where(
+                            USCContent.usc_ident == computed_citation.rsplit("/", 1)[0]
                         )
-                        continue
-                    parent_content = parent_content[0]
-                    diffs.extend(
-                        insert_section_after(
-                            parent_content,
-                            action,
-                            computed_citation,
-                            content_by_parent_id,
-                            version_id,
-                            PARSER_SESSION,
+                        parent_content = PARSER_SESSION.execute(query).first()
+                        if parent_content is None:
+                            logging.warning(
+                                "Could not find parent content",
+                                extra={"usc_ident": computed_citation},
+                            )
+                            continue
+                        parent_content = parent_content[0]
+                        diffs.extend(
+                            insert_subsection_after(
+                                parent_content,
+                                action,
+                                computed_citation,
+                                content_by_parent_id,
+                                version_id,
+                                PARSER_SESSION,
+                            )
                         )
-                    )
+                    else:
+                        # But if it's actually inserting a new section, that is a bit different
+                        pass
                 elif act == ActionType.STRIKE_SUBSECTION:
                     diffs.extend(
                         strike_section(act_obj, computed_citation, PARSER_SESSION)
