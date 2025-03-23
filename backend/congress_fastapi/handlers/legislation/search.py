@@ -392,9 +392,9 @@ async def search_legislation(
             title=result["title"],
             chamber=result["chamber"],
             congress=str(result["session_number"]),
-            legislation_versions=set([
-                LegislationVersionEnum(x.upper()) for x in result["versions"]
-            ]),
+            legislation_versions=list(
+                set([LegislationVersionEnum(x.upper()) for x in result["versions"]])
+            ),
             tags=sorted(tags_by_id.get(result["legislation_id"], [])),
             summary=summaries_by_id.get(result["legislation_id"], None),
             appropriations=appropriations_by_id.get(result["legislation_id"], None),

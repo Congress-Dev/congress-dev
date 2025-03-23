@@ -1,6 +1,10 @@
 import traceback
 from typing import List, Optional
 
+from congress_fastapi.handlers.legislation.policy_subject import (
+    get_legislation_policy_area,
+    get_legislation_subjects,
+)
 from sqlalchemy import select
 
 from billparser.db.models import (

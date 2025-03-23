@@ -29,12 +29,9 @@ async def get_legislation_version_tags_by_legislation_id(
     legislation_version_id: int,
 ) -> List[LegislationVersionTag]:
     database = await get_database()
-    query = (
-        select(
-            *LegislationVersionTag.sqlalchemy_columns(),
-        )
-        .where(LegislationVersionTag.legislation_version_id == legislation_version_id)
-    )
+    query = select(
+        *LegislationVersionTag.sqlalchemy_columns(),
+    ).where(LegislationVersionTag.legislation_version_id == legislation_version_id)
     results = list(await database.fetch_all(query))
     if results is None or len(results) == 0:
         return None
@@ -85,7 +82,9 @@ async def get_legislation_version_summary_by_version(
     if results is None or len(results) == 0:
         return None
     return [
-        LegislationVersionMetadata.from_sqlalchemy(result) for result in results if result
+        LegislationVersionMetadata.from_sqlalchemy(result)
+        for result in results
+        if result
     ]
 
 
