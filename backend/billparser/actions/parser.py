@@ -700,6 +700,10 @@ def parse_bill_for_actions(legislation_version: LegislationVersion):
             Version.version_id == legislation_version.version_id
         )
         result = PARSER_SESSION.execute(base_version).first()[0]
+
+        # These make sure we always select the correct version
+        # it works by injecting this additional where clause for queries
+        # involving the given table
         with QueryInjector(
             PARSER_SESSION,
             USCContent.version_id == result.base_id,

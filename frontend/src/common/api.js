@@ -339,7 +339,7 @@ export const getUSCSectionContent = (
         .then((flatJson) => {
             if (flatJson) {
                 if (flatJson.message === "No Content Found") {
-                    return flatJson;
+                    return {};
                 }
                 // Create a fake root
                 let looped = {
