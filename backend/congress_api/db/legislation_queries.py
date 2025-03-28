@@ -7,7 +7,7 @@ from flask_sqlalchemy_session import current_session
 from sqlalchemy.orm import load_only
 from sqlalchemy import distinct
 from sqlalchemy.sql.functions import func
-
+from sqlalchemy.dialects import postgresql
 from billparser.db.models import (
     Congress,
     Legislation,
@@ -192,7 +192,11 @@ def get_legislation_version_text(
         .filter(Legislation.chamber == chamber)
         .filter(Legislation.number == bill_number)
         .order_by(Legislation.number)
-        .options(load_only(Legislation.legislation_id,))
+        .options(
+            load_only(
+                Legislation.legislation_id,
+            )
+        )
         .limit(1)
     )
 
@@ -205,7 +209,11 @@ def get_legislation_version_text(
         current_session.query(LegislationVersion)
         .filter(LegislationVersion.legislation_id == bill.legislation_id)
         .filter(LegislationVersion.legislation_version == legislation_version)
-        .options(load_only(LegislationVersion.legislation_version_id,))
+        .options(
+            load_only(
+                LegislationVersion.legislation_version_id,
+            )
+        )
         .limit(1)
         .all()
     )
@@ -245,7 +253,7 @@ def get_legislation_version_text(
         return str2
 
     diff_lookup = {}
-    for (lci, u1, u2) in diffs:
+    for lci, u1, u2 in diffs:
         diff_lookup[lci] = get_shortest(diff_lookup.get(lci, ""), u1 or u2 or "")
     return BillTextResponse(
         legislation_id=bill.legislation_id,
@@ -260,15 +268,18 @@ def get_legislation_version_text(
                 heading=t.heading,
                 content_str=t.content_str,
                 content_type=t.content_type,
-                action=[
-                    # {**x, "cite_link": diff_lookup.get(t.legislation_content_id)}
-                    # for x in t.action_parse or []
-                ]
-                if include_parsed
-                else [],
+                action=(
+                    [
+                        # {**x, "cite_link": diff_lookup.get(t.legislation_content_id)}
+                        # for x in t.action_parse or []
+                    ]
+                    if include_parsed
+                    else []
+                ),
                 lc_ident=t.lc_ident,
             )
-            for (t) in text if t
+            for (t) in text
+            if t
         ],
     )
 
@@ -287,7 +298,11 @@ def get_legislation_version_diffs(
         .filter(Legislation.chamber == chamber)
         .filter(Legislation.number == bill_number)
         .order_by(Legislation.number)
-        .options(load_only(Legislation.legislation_id,))
+        .options(
+            load_only(
+                Legislation.legislation_id,
+            )
+        )
         .limit(1)
     )
 
@@ -311,16 +326,16 @@ def get_legislation_version_diffs(
 
     if len(legis_versions) == 0:
         return None
-
-    diffs = (
+    diff_query = (
         current_session.query(USCContentDiff)
         .join(USCSection, USCSection.number == section_number)
         .join(USCChapter, USCChapter.short_title == short_title)
         .filter(USCChapter.usc_chapter_id == USCSection.usc_chapter_id)
         .filter(USCContentDiff.version_id == legis_versions[0].version_id)
         .filter(USCContentDiff.usc_section_id == USCSection.usc_section_id)
-        .all()
     )
+    diffs = diff_query.all()
+
     return BillContentDiffList(
         legislation_version_id=legis_versions[0].legislation_version_id,
         diffs=[
@@ -357,7 +372,11 @@ def get_legislation_version_diff_metadata(
         .filter(Legislation.chamber == chamber)
         .filter(Legislation.number == bill_number)
         .order_by(Legislation.number)
-        .options(load_only(Legislation.legislation_id,))
+        .options(
+            load_only(
+                Legislation.legislation_id,
+            )
+        )
         .limit(1)
     )
 
@@ -405,7 +424,7 @@ SELECT DISTINCT usc_chapter.short_title, usc_chapter.long_title, usc_section.num
             )
         )
     ret = []
-    for (key, value) in res.items():
+    for key, value in res.items():
         ret.append(
             BillDiffList(
                 legislation_version_id=legis_versions[0].legislation_version_id,

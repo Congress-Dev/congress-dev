@@ -59,7 +59,7 @@ def get_usc_release_text(
     try:
         resp = get_section_text(release_vers, short_title, section_number)
         if resp is None:
-            return ErrorResponse(message="No Content Found"), 404
+            return ErrorResponse(message="No Content Found"), 200
         return resp
     except Exception as e:
         return ErrorResponse(message=str(e)), 500

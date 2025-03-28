@@ -84,9 +84,11 @@ def get_available_titles(release_vers: str) -> USCTitleList:
     else:
         target_rp_id = int(release_vers)
 
-    titles: List[USCChapter] = current_session.query(USCChapter).filter(
-        USCChapter.usc_release_id == target_rp_id
-    ).all()
+    titles: List[USCChapter] = (
+        current_session.query(USCChapter)
+        .filter(USCChapter.usc_release_id == target_rp_id)
+        .all()
+    )
     rp_titles = []
     for chap in titles:
         rp_titles.append(
@@ -114,9 +116,12 @@ def get_title_sections(release_vers: str, short_title: str) -> USCSectionList:
     if title_obj is None:
         return None
 
-    sections: List[USCSection] = current_session.query(USCSection).filter(
-        USCSection.usc_chapter_id == title_obj.usc_chapter_id
-    ).filter(USCSection.content_type == "section").all()
+    sections: List[USCSection] = (
+        current_session.query(USCSection)
+        .filter(USCSection.usc_chapter_id == title_obj.usc_chapter_id)
+        .filter(USCSection.content_type == "section")
+        .all()
+    )
     sect_list = []
     for sect in sections:
         sect_list.append(
@@ -154,9 +159,11 @@ def get_section_text(
     if sect_obj is None:
         return None
 
-    content: List[USCContent] = current_session.query(USCContent).filter(
-        USCContent.usc_section_id == sect_obj.usc_section_id
-    ).all()
+    content: List[USCContent] = (
+        current_session.query(USCContent)
+        .filter(USCContent.usc_section_id == sect_obj.usc_section_id)
+        .all()
+    )
 
     cont_list = []
     for cont in content:
@@ -274,4 +281,3 @@ def get_section_lineage(
             for sect in sect_list
         ],
     )
-
