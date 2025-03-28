@@ -35,6 +35,13 @@ class TestParseTextForCite(TestCase):
         self.assertEqual(res[0]["cite"], "/a/1")
 
 
+    def test_119_s_6_title(self):
+        text = """Chapter 74 of title 18, United States Code, is amended by inserting after section 1531 the following:"""
+        res = parse_text_for_cite(text)
+        self.assertEqual(len(res), 1)
+        self.assertEqual(res[0]["cite"], "/us/usc/t18/s1531")
+
+
 class TestExtractUSCCite(TestCase):
     def test_118_hr_5__is_amended(self):
         text = "Section 1111(g)(2) of the Elementary and Secondary Education Act of 1965 (20 U.S.C. 6311(g)(2)) is amended-"

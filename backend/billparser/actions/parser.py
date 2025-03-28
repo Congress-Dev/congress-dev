@@ -28,6 +28,7 @@ from billparser.db.models import (
     USCChapter,
     USCContent,
     USCContentDiff,
+    USCSection,
     Version,
 )
 
@@ -246,6 +247,76 @@ def _recursively_insert_content(
 
 
 def insert_section_after(
+    action: ActionObject,
+    action_parse: LegislationActionParse,
+    citation: str,
+    content_by_parent_id: Dict[int, List[LegislationContent]],
+    version_id: int,
+    session: "Session",
+) -> List[USCContentDiff]:
+    """
+    Inserts a blank USCSection into the database, and then produces the diffs for it.
+    """
+    quote_block = content_by_parent_id[action_parse.legislation_content_id][0]
+    assert quote_block.content_type == "quoted-block"
+    root = content_by_parent_id[quote_block.legislation_content_id][0]
+
+    created_diffs: List[USCContentDiff] = []
+    query = select(USCSection).where(USCSection.usc_ident == citation)
+    results = session.execute(query).all()
+    if len(results) == 0:
+        logging.debug("Could not find section", extra={"usc_ident": citation})
+        return []
+    target_section: USCSection = results[0][0]
+    parent_id = target_section.parent_id
+    new_citation = (
+        f"{target_section.usc_ident.rsplit('/', 1)[0]}/s{root.section_display}"
+    )
+    if new_citation.endswith("."):
+        new_citation = new_citation[:-1]
+    # Create the new section
+    new_section = USCSection(
+        usc_ident=new_citation,
+        parent_id=parent_id,
+        heading=root.heading,
+        number=root.section_display.replace(".", "").strip(),
+        version_id=version_id,
+        section_display=root.section_display,
+        usc_chapter_id=target_section.usc_chapter_id,
+        content_type="section",
+    )
+    PARSER_SESSION.add(new_section)
+    PARSER_SESSION.flush()
+    new_section_content = USCContent(
+        usc_ident=new_citation,
+        usc_section_id=new_section.usc_section_id,
+        content_type="{http://xml.house.gov/schemas/uslm/1.0}section",
+        parent_id=None,
+        order_number=0,
+        heading=root.heading,
+        content_str=None,
+        version_id=version_id,
+    )
+    PARSER_SESSION.add(new_section_content)
+    PARSER_SESSION.flush()
+    current_sibling = None
+    for child in content_by_parent_id[root.legislation_content_id]:
+        contents, diffs = _recursively_insert_content(
+            current_sibling,
+            new_section_content,
+            child,
+            content_by_parent_id,
+            action_parse,
+            version_id,
+            session,
+        )
+        # Update the sibling since we have just inserted a new content
+        current_sibling = contents[0]
+        created_diffs.extend(diffs)
+    return created_diffs
+
+
+def insert_subsection_after(
     parent_content: USCContent,
     action_parse: LegislationActionParse,
     citation: str,
@@ -294,7 +365,7 @@ def insert_section_after(
     return created_diffs
 
 
-def insert_section_end(
+def insert_subsection_end(
     action: ActionObject,
     action_parse: LegislationActionParse,
     citation: str,
@@ -317,7 +388,7 @@ def insert_section_end(
         logging.warning("No children found for section", extra={"usc_ident": citation})
         return []
     last_content = results[0][0]
-    return insert_section_after(
+    return insert_subsection_after(
         target_section,
         action_parse,
         last_content.usc_ident,
@@ -388,7 +459,7 @@ def replace_section(
     query = select(USCContent).where(USCContent.usc_ident == citation)
     target_section = session.execute(query).first()[0]
     diffs.extend(
-        insert_section_after(
+        insert_subsection_after(
             target_section,
             action_parse,
             citation,
@@ -490,7 +561,7 @@ def apply_action(
                     )
                 elif act == ActionType.INSERT_END:
                     diffs.extend(
-                        insert_section_end(
+                        insert_subsection_end(
                             act_obj,
                             action,
                             computed_citation,
@@ -500,27 +571,42 @@ def apply_action(
                         )
                     )
                 elif act == ActionType.INSERT_SECTION_AFTER:
-                    query = select(USCContent).where(
-                        USCContent.usc_ident == computed_citation.rsplit("/", 1)[0]
-                    )
-                    parent_content = PARSER_SESSION.execute(query).first()
-                    if parent_content is None:
-                        logging.warning(
-                            "Could not find parent content",
-                            extra={"usc_ident": computed_citation},
+                    # If this is actually a subsection, we need to insert it after the parent
+                    if not computed_citation.rsplit("/", 1)[-1].startswith("s"):
+                        print("subsection")
+                        query = select(USCContent).where(
+                            USCContent.usc_ident == computed_citation.rsplit("/", 1)[0]
                         )
-                        continue
-                    parent_content = parent_content[0]
-                    diffs.extend(
-                        insert_section_after(
-                            parent_content,
-                            action,
-                            computed_citation,
-                            content_by_parent_id,
-                            version_id,
-                            PARSER_SESSION,
+                        parent_content = PARSER_SESSION.execute(query).first()
+                        if parent_content is None:
+                            logging.warning(
+                                "Could not find parent content",
+                                extra={"usc_ident": computed_citation},
+                            )
+                            continue
+                        parent_content = parent_content[0]
+                        diffs.extend(
+                            insert_subsection_after(
+                                parent_content,
+                                action,
+                                computed_citation,
+                                content_by_parent_id,
+                                version_id,
+                                PARSER_SESSION,
+                            )
                         )
-                    )
+                    else:
+                        # But if it's actually inserting a new section, that is a bit different
+                        diffs.extend(
+                            insert_section_after(
+                                act_obj,
+                                action,
+                                computed_citation,
+                                content_by_parent_id,
+                                version_id,
+                                PARSER_SESSION,
+                            )
+                        )
                 elif act == ActionType.STRIKE_SUBSECTION:
                     diffs.extend(
                         strike_section(act_obj, computed_citation, PARSER_SESSION)
@@ -614,32 +700,41 @@ def parse_bill_for_actions(legislation_version: LegislationVersion):
             Version.version_id == legislation_version.version_id
         )
         result = PARSER_SESSION.execute(base_version).first()[0]
+
+        # These make sure we always select the correct version
+        # it works by injecting this additional where clause for queries
+        # involving the given table
         with QueryInjector(
             PARSER_SESSION,
             USCContent.version_id == result.base_id,
             USCContent.__table__,
         ):
-            # Retrieve all the content for the legislation version
-            contents = get_bill_contents(legislation_version.legislation_version_id)
+            with QueryInjector(
+                PARSER_SESSION,
+                USCSection.version_id == result.base_id,
+                USCSection.__table__,
+            ):
+                # Retrieve all the content for the legislation version
+                contents = get_bill_contents(legislation_version.legislation_version_id)
 
-            # Put into a dict by parent
-            # This will constitute our traversal of the tree
-            content_by_parent_id: Dict[int, List[LegislationContent]] = defaultdict(
-                list
-            )
-            for content in contents:
-                content_by_parent_id[content.parent_id].append(content)
-
-            # Sort the lists now so we can proceed in a depth first manner
-            for parent_id, content_list in content_by_parent_id.items():
-                content_list.sort(key=lambda x: x.legislation_content_id)
-
-            root_content = content_by_parent_id[None]
-
-            # Iterate over the root children
-            for content in root_content:
-                recursively_extract_actions(
-                    content_by_parent_id, content, [], legislation_version.version_id
+                # Put into a dict by parent
+                # This will constitute our traversal of the tree
+                content_by_parent_id: Dict[int, List[LegislationContent]] = defaultdict(
+                    list
                 )
-            PARSER_SESSION.flush()
-            PARSER_SESSION.commit()
+                for content in contents:
+                    content_by_parent_id[content.parent_id].append(content)
+
+                # Sort the lists now so we can proceed in a depth first manner
+                for parent_id, content_list in content_by_parent_id.items():
+                    content_list.sort(key=lambda x: x.legislation_content_id)
+
+                root_content = content_by_parent_id[None]
+
+                # Iterate over the root children
+                for content in root_content:
+                    recursively_extract_actions(
+                        content_by_parent_id, content, [], legislation_version.version_id
+                    )
+                PARSER_SESSION.flush()
+                PARSER_SESSION.commit()
