@@ -236,7 +236,7 @@ function BillViewer(props) {
                 subtitle={
                     (user && user.userId === "mustyoshi@gmail.com"
                         ? `${billVersId} - `
-                        : null) +
+                        : '') +
                     `${chamberLookup[bill.chamber]} ${bill.number}`
                 }
             >
