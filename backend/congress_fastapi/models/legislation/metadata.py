@@ -1,4 +1,5 @@
 from typing import Annotated, List, Optional
+from congress_fastapi.models.legislation.actions import LegislationAction
 from pydantic import root_validator
 from datetime import datetime
 import json
@@ -124,6 +125,7 @@ class LegislationMetadata(MappableBase):
 
     policy_areas: Optional[List[str]]
     subjects: Optional[List[str]]
+    actions: Optional[List[LegislationAction]]
 
 
 class LegislationClauseTag(MappableBase):

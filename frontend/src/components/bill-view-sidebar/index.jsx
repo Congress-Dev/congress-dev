@@ -11,6 +11,7 @@ import {
     AppropriationTree,
     LegislatorChip,
     TalkToBill,
+    BillActions,
 } from "components";
 
 function BillViewSidebar() {
@@ -80,6 +81,13 @@ function BillViewSidebar() {
                         id="votes"
                         title="Votes"
                         panel={<BillVotes />}
+                    />
+                )}
+                {bill2?.actions?.length > 0 && (
+                    <Tab
+                        id="actions"
+                        title="Actions"
+                        panel={<BillActions />}
                     />
                 )}
             </Tabs>

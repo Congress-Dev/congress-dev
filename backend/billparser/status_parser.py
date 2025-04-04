@@ -6,6 +6,7 @@ from lxml.etree import Element
 from dateutil.parser import parse
 
 from billparser.db.models import (
+    LegislationAction,
     LegislationCommittee,
     Legislation,
     LegislationCommitteeAssociation,
@@ -41,6 +42,69 @@ def _ensure_committee_link(committee_id, legislation_id, referred_date, discharg
     else:
         existing_obj.discharge_date = parse(discharge_date)
     session.commit()
+
+
+def _nested_dict(element: Element):
+    """
+    Recursively converts an xml element to a nested dictionary
+    """
+    return {e.tag: e.text if len(e) == 0 else _nested_dict(e) for e in element}
+
+
+def parse_status_actions(actions: List[Element], bill_object: Legislation):
+    """
+        Parses xml elements
+        <item>
+    <actionDate>2025-01-20</actionDate>
+    <sourceSystem>
+    <name>Senate</name>
+    </sourceSystem>
+    <text>Passed Senate with an amendment by Yea-Nay Vote. 64 - 35. Record Vote Number: 7. (text: CR S250-251)</text>
+    <type>Floor</type>
+    <recordedVotes>
+    <recordedVote>
+    <rollNumber>7</rollNumber>
+    <url>https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00007.xml</url>
+    <chamber>Senate</chamber>
+    <congress>119</congress>
+    <date>2025-01-20T23:30:58Z</date>
+    <sessionNumber>1</sessionNumber>
+    </recordedVote>
+    </recordedVotes>
+    </item>
+    """
+
+    # Convert the element to a nested dictionary
+    session = Session()
+    existing_actions = (
+        session.query(LegislationAction)
+        .filter(LegislationAction.legislation_id == bill_object.legislation_id)
+        .all()
+    )
+
+    for action in actions:
+        action_dict = _nested_dict(action)
+        try:
+            # Don't insert duplicates
+            if any(action_dict == a.raw for a in existing_actions):
+                continue
+            session.add(
+                LegislationAction(
+                    legislation_id=bill_object.legislation_id,
+                    action_date=parse(action_dict.get("actionDate")),
+                    text=action_dict.get("text"),
+                    action_type=action_dict.get("type"),
+                    action_code=action_dict.get("actionCode"),
+                    source_code=action_dict.get("sourceSystem", {}).get("code"),
+                    source_name=action_dict.get("sourceSystem", {}).get("name"),
+                    raw=action_dict,
+                )
+            )
+        except Exception as e:
+            print(e)
+            print(action_dict)
+    session.commit()
+    pass
 
 
 def handle_committees(committee_elements: List[Element], bill_object: Legislation):
@@ -230,6 +294,9 @@ def parse_status(input_str: str):
             return
             # matching_bill = Legislation(legislation_id=1)
         handle_committees(committees, matching_bill)
+
+        parse_status_actions(actions, matching_bill)
+
         if policy_area:
             handle_policy_area(policy_area[0], matching_bill)
         for subject in subjects:
