@@ -6,6 +6,9 @@ from billparser.prompt_runners.utils import (
     get_usc_content_by_parent_and_id,
     print_clause,
 )
+from congress_fastapi.handlers.legislation.actions import (
+    get_legislation_actions_by_legislation_id,
+)
 from congress_fastapi.handlers.legislation.content import (
     get_legislation_content_by_legislation_version_id,
 )
@@ -17,8 +20,19 @@ from congress_fastapi.handlers.legislation_metadata import (
 )
 from congress_fastapi.models.errors import Error
 from congress_fastapi.models.legislation import LegislationMetadata
+from congress_fastapi.models.legislation.actions import LegislationAction
 
 router = APIRouter(tags=["Legislation"])
+
+
+@router.get(
+    "/legislation/{legislation_id}/actions",
+)
+async def get_legislation_actions(
+    legislation_id: int,
+) -> List[LegislationAction]:
+    """Returns a list of actions for a given legislation_id"""
+    return await get_legislation_actions_by_legislation_id(legislation_id)
 
 
 @router.get(

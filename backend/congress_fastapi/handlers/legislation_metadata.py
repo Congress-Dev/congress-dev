@@ -1,6 +1,9 @@
 import traceback
 from typing import List, Optional
 
+from congress_fastapi.handlers.legislation.actions import (
+    get_legislation_actions_by_legislation_id,
+)
 from congress_fastapi.handlers.legislation.policy_subject import (
     get_legislation_policy_area,
     get_legislation_subjects,
@@ -188,6 +191,12 @@ async def get_legislation_metadata_by_version_id(
             x.subject
             for x in await get_legislation_subjects(legislation.legislation_id)
         ],
+        actions=[
+            x
+            for x in await get_legislation_actions_by_legislation_id(
+                legislation.legislation_id
+            )
+        ],
         **result,
     )
 
@@ -216,4 +225,6 @@ async def get_legislation_metadata_by_legislation_id(
         metadata.policy_areas = [x.name for x in policy_area]
         subjects = await get_legislation_subjects(legislation_id)
         metadata.subjects = [x.subject for x in subjects]
+        actions = await get_legislation_actions_by_legislation_id(legislation_id)
+        metadata.actions = actions
     return metadata
