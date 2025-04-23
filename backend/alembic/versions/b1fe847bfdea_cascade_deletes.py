@@ -34,22 +34,8 @@ def upgrade() -> None:
         ["legislation_version_id"],
         ondelete="CASCADE",
     )
-    op.drop_index(
-        "ix_legislation_committee_association_legsilation_id",
-        table_name="legislation_committee_association",
-    )
     op.drop_constraint(
         "legislation_committee_association_legislation_committee_id_fkey",
-        "legislation_committee_association",
-        type_="foreignkey",
-    )
-    op.drop_constraint(
-        "legislation_committee_association_legislation_id_fkey",
-        "legislation_committee_association",
-        type_="foreignkey",
-    )
-    op.drop_constraint(
-        "legislation_committee_association_legsilation_id_fkey",
         "legislation_committee_association",
         type_="foreignkey",
     )
@@ -68,13 +54,6 @@ def upgrade() -> None:
         ["legislation_id"],
         ["legislation_id"],
         ondelete="CASCADE",
-    )
-    op.drop_column("legislation_committee_association", "legsilation_id")
-    op.create_index(
-        op.f("ix_legislation_content_tag_prompt_batch_id"),
-        "legislation_content_tag",
-        ["prompt_batch_id"],
-        unique=False,
     )
     op.drop_constraint(
         "usc_content_diff_usc_content_id_fkey", "usc_content_diff", type_="foreignkey"
