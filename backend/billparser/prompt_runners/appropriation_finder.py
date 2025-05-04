@@ -83,7 +83,7 @@ def appropriation_finder(
                         continue
                     query = prompt_text.format(clause=content.content_str)
                     try:
-                        response = run_query(query, model="ollama/qwen2.5:32b")
+                        response = run_query(query, model=prompt.model or "ollama/qwen2.5:32b")
                         obj = json.loads(
                             response.json()["choices"][0]["message"]["content"]
                         )

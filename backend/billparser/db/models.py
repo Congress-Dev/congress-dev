@@ -382,6 +382,7 @@ class Prompt(PromptsBase):
     title = Column(String, nullable=False)
     description = Column(String, nullable=True)
     prompt = Column(String, nullable=False)
+    model = Column(String, nullable=False)
 
 
 class Legislation(Base):

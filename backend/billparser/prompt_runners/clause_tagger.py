@@ -81,7 +81,7 @@ def clause_tagger(legis_version_id: int, prompt_id: int):
                         legis_by_id, legis_by_parent, lc.legislation_content_id
                     )
                     query = prompt_text.format(clause=clause)
-                    response = run_query(query)
+                    response = run_query(query, prompt.model or "ollama/qwen2.5:32b")
                     resp_dict = json.loads(response.choices[0].message.content)
                     jsonschema.validate(resp_dict, SCHEMA)
                     tags = normalize_tags(resp_dict["tags"])
