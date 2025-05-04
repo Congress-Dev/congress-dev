@@ -22,8 +22,9 @@ print(DATABASE_URI)
 engine = create_engine(
     DATABASE_URI, poolclass=NullPool, connect_args={"sslmode": "disable"}
 )
-
-Base.metadata.create_all(engine)
+# PromptsBase.metadata.create_all(engine)
+# AppropriationsBase.metadata.create_all(engine)
+# Base.metadata.create_all(engine)
 
 ribber = string.ascii_letters + string.digits
 Session = scoped_session(sessionmaker(bind=engine))

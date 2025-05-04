@@ -83,7 +83,7 @@ def appropriation_finder(
                         continue
                     query = prompt_text.format(clause=content.content_str)
                     try:
-                        response = run_query(query, model="ollama/qwen2.5:32b")
+                        response = run_query(query, model=prompt.model or "ollama/qwen2.5:32b")
                         obj = json.loads(
                             response.json()["choices"][0]["message"]["content"]
                         )
@@ -100,18 +100,22 @@ def appropriation_finder(
                         if initial_amount == new_amount:
                             net_change = new_amount
                             new_spending = True
-                        approp = Appropriation(
-                            amount=net_change,
-                            fiscal_years=a.get("fiscal_years", []),
-                            until_expended=a.get("until_expended", False),
-                            new_spending=new_spending,
-                            legislation_content_id=content.legislation_content_id,
-                            legislation_version_id=legislation_version_id,
-                            parent_id=parent_id,
-                            prompt_batch_id=prompt_batch.prompt_batch_id,
-                            purpose=a.get("brief_purpose", ""),
-                        )
-                        session.add(approp)
+                        try:
+                            approp = Appropriation(
+                                amount=net_change,
+                                fiscal_years=a.get("fiscal_years", []),
+                                until_expended=a.get("until_expended", False),
+                                new_spending=new_spending,
+                                legislation_content_id=content.legislation_content_id,
+                                legislation_version_id=legislation_version_id,
+                                parent_id=parent_id,
+                                prompt_batch_id=prompt_batch.prompt_batch_id,
+                                purpose=a.get("brief_purpose", ""),
+                            )
+                            session.add(approp)
+                        except:
+                            logging.exception("Failed to parse appropriation")
+                            prompt_batch.failed += 1
                         # Make sure to commit before we try to do the appropriation parent
                         if len(a.get("sub_appropriations", [])) > 0:
                             session.commit()
@@ -189,4 +193,7 @@ def appropriation_finder(
                     except:
                         logging.exception("Failed to parse with better model")
             prompt_batch.completed_at = datetime.now()
-            session.commit()
+            try:
+                session.commit()
+            except:
+                pass

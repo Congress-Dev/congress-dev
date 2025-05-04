@@ -11,7 +11,7 @@ services:
     - db_host=congress_postgres:5432
     - db_user=parser
     - db_pass=parser
-    - db_table=us_code_2023
+    - db_table=us_code_2025
     build:
       context: ../backend
       dockerfile: .docker/Dockerfile
@@ -38,7 +38,7 @@ services:
     - db_host=congress_postgres:5432
     - db_user=parser
     - db_pass=parser
-    - db_table=us_code_2023
+    - db_table=us_code_2025
     build:
       context: ../backend
       dockerfile: .docker/Dockerfile.fastapi

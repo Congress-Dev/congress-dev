@@ -82,7 +82,7 @@ def bill_tagger(legis_version_id: int, prompt_id: int):
             query = prompt_text.format(clause=clause)
             response = run_query(
                 query,
-                "ollama/hf.co/bartowski/Qwen2.5-14B-Instruct-1M-GGUF:latest",
+                prompt.model or "ollama/hf.co/bartowski/Qwen2.5-14B-Instruct-1M-GGUF:latest",
                 num_ctx=100000,
             )
             resp_dict = json.loads(response.choices[0].message.content)

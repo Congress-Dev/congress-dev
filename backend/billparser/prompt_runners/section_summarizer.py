@@ -93,7 +93,7 @@ def section_summarizer(
                         )
                         query = section_prompt.format(section=section_text)
                         try:
-                            response = run_query(query, model="ollama/gemma2:27b")
+                            response = run_query(query, model=prompt.model or "ollama/gemma2:27b")
                             obj = json.loads(
                                 response.json()["choices"][0]["message"]["content"]
                             )
