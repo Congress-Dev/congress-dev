@@ -10,22 +10,30 @@ class _LogExtraData:
     _data: Dict[str, Any] = {}
     _thread_data: threading.local = threading.local()
 
+    def _ensure_thread_data(self):
+        if not hasattr(self._thread_data, "data"):
+            self._thread_data.data = {}
+
     def __init__(self):
-        self._thread_data.data = {}
+        self._ensure_thread_data()
+
 
     def add_data(self, data: dict, data_id: int, thread: bool = False):
+        self._ensure_thread_data()
         if thread is True:
             self._thread_data.data[data_id] = data
         else:
             self._data[data_id] = data
 
     def remove_data(self, data_id: int):
+        self._ensure_thread_data()
         if data_id in self._data:
             del self._data[data_id]
         if data_id in self._thread_data.data:
             del self._thread_data.data[data_id]
 
     def get_all_data(self) -> Dict[str, Any]:
+        self._ensure_thread_data()
         data_items = [*list(self._data.items()), *list(self._thread_data.data.items())]
         sorted_items = sorted(data_items, key=lambda x: x[0])
         combined = {}

@@ -11,7 +11,9 @@ from sqlalchemy.orm import sessionmaker
 
 from billparser.db.handler import DATABASE_URI
 from congress_api import encoder
+from billparser.utils.logger import initialize_logger
 
+initialize_logger()
 CACHE_HEADER_TIME = int(os.environ.get("CACHE_HEADER_TIME", 0))
 app = connexion.App(__name__, specification_dir="./openapi/")
 
