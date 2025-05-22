@@ -5,7 +5,7 @@ from collections import defaultdict
 
 from billparser.prompt_runners.utils import run_query
 from congress_fastapi.models.legislation.llm import LLMResponse
-from sqlalchemy import or_, select, text
+from sqlalchemy import select, text, and_, or_
 from sqlalchemy.orm import Session, load_only
 
 from congress_fastapi.db.postgres import get_database
@@ -148,38 +148,7 @@ async def get_legislation_version_diff_metadata_fastapi(
     if not legis_version:
         return []
 
-    # Step 1: Identify USCContentDiff entries with section_display IS NULL for the current version
-    null_display_diffs_query = (
-        select(
-            USCContentDiff.usc_content_id,
-            USCContentDiff.usc_section_id
-        )
-        .where(
-            USCContentDiff.version_id == legis_version.version_id,
-            or_(USCContentDiff.section_display.is_(None), USCContentDiff.section_display == '')
-        )
-    )
-    null_display_diff_results = await database.fetch_all(null_display_diffs_query)
-
-    truly_repealed_section_ids = set()
-    if null_display_diff_results:
-        content_ids_with_null_display = {row[0] for row in null_display_diff_results}
-        
-        # Step 2: For those USCContentDiff entries, check the corresponding USCContent's parent_id
-        # and collect the usc_section_ids
-        if content_ids_with_null_display:
-            parent_check_query = (
-                select(USCContent.usc_section_id)
-                .where(
-                    USCContent.usc_content_id.in_(content_ids_with_null_display),
-                    USCContent.parent_id.is_(None)
-                )
-            )
-            parent_check_results = await database.fetch_all(parent_check_query)
-            truly_repealed_section_ids = {row[0] for row in parent_check_results}
-
-
-    # Original query to get section metadata
+    # Using a parameterized query for security
     query = (
         select(
             USCChapter.short_title,
@@ -187,7 +156,7 @@ async def get_legislation_version_diff_metadata_fastapi(
             USCSection.number,
             USCSection.heading,
             USCSection.section_display,
-            USCSection.usc_section_id
+            USCSection.usc_section_id,
         )
         .distinct()
         .select_from(USCContentDiff)
@@ -197,24 +166,49 @@ async def get_legislation_version_diff_metadata_fastapi(
         .order_by(USCChapter.short_title, USCSection.number)
     )
     diff_sections = await database.fetch_all(query)
+    
+    # Get a list of all section_ids to query for repealed status
+    section_ids = [row[5] for row in diff_sections]
+    
+    # Query to check for repealed sections
+    repealed_sections = {}
+    if section_ids:
+        query_repealed = (
+            select(
+                USCContentDiff.usc_section_id,
+            )
+            .select_from(USCContentDiff)
+            .where(
+                and_(
+                    USCContentDiff.version_id == legis_version.version_id,
+                    USCContentDiff.usc_section_id.in_(section_ids),
+                    or_(USCContentDiff.section_display.is_(None), USCContentDiff.section_display == '')
+                )
+            )
+        )
+        repealed_results = await database.fetch_all(query_repealed)
+        
+        # Create a dictionary of section_id -> repealed status
+        for row in repealed_results:
+            repealed_sections[row[0]] = True
 
     res_typed = defaultdict(lambda: {"long_title": None, "sections": []})
     for row in diff_sections:
         short_title = row[0]
-        usc_section_id_val = row[5]
-
+        section_id = row[5]
         if res_typed[short_title]["long_title"] is None:
             res_typed[short_title]["long_title"] = row[1]
         
-        is_repealed = usc_section_id_val in truly_repealed_section_ids 
-
+        # Check if this section is repealed
+        is_repealed = repealed_sections.get(section_id, False)
+        
         res_typed[short_title]["sections"].append(
             BillContentDiffMetadata(
                 long_title=row[1],
                 section_number=str(row[2]) if row[2] is not None else None,
                 heading=row[3],
                 display=row[4],
-                repealed=is_repealed
+                repealed=is_repealed,
             )
         )
 
