@@ -404,14 +404,13 @@ export const getBillActionsv2 = (legislationVersionId) => {
         .then(handleStatus)
         .catch(toastError);
 };
-export const getBillVersionDiffSummary = (session, chamber, bill, version) => {
-    return fetch(
-        `${endpoint}/congress/${session}/${chamber.toLowerCase()}-bill/${bill}/${version}/diffs`,
-    )
-        .then(handleStatus)
-        .catch(toastError);
+export const getBillVersionDiffSummaryv2 = (legislationVersionId) => {
+  return fetch(
+      `${endPv2}/legislation_version/${legislationVersionId}/diffs`,
+  )
+      .then(handleStatus)
+      .catch(toastError);
 };
-
 export const getBillVersionDiffForSection = (
     session,
     chamber,

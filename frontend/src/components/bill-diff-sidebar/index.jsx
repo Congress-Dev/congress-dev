@@ -5,10 +5,11 @@ import { Tree, Drawer, Spinner } from "@blueprintjs/core";
 
 import { ThemeContext, BillContext } from "context";
 import {
-    getBillVersionDiffSummary,
     getBillVersionDiffForSection,
+    getBillVersionDiffSummaryv2,
 } from "common/api";
 import { USCView } from "components";
+import "./styles.css";
 
 function BillDiffSidebar() {
     const [tree, setTree] = useState([]);
@@ -19,7 +20,7 @@ function BillDiffSidebar() {
     const [results, setResults] = useState(false);
     const { isDarkMode } = useContext(ThemeContext);
 
-    const { congress, chamber, billNumber, bill, billVersion } =
+    const { congress, chamber, billNumber, bill, billVersion, billVersionId } =
         useContext(BillContext);
 
     function navigateToSection(node) {
@@ -44,12 +45,9 @@ function BillDiffSidebar() {
     }
 
     useEffect(() => {
-        if (congress && chamber && billNumber && billVersion) {
-            getBillVersionDiffSummary(
-                congress,
-                chamber,
-                billNumber,
-                billVersion,
+        if (billVersionId) {
+            getBillVersionDiffSummaryv2(
+              billVersionId
             ).then((res) => {
                 if (res == null || res.length == 0) {
                     setResults(false);
@@ -59,27 +57,27 @@ function BillDiffSidebar() {
                 setResults(true);
                 let n = 0;
                 // TODO: Fix sorting for the amendment titles
-                const sorted = lodash.sortBy(res, (x) => x.short_title);
+                const sorted = lodash.sortBy(res, (x) => x.shortTitle);
                 const children = lodash.map(
                     sorted,
-                    ({ sections, short_title, long_title }, ind) => {
+                    ({ sections, shortTitle, longTitle }, ind) => {
                         const titleSects = lodash.sortBy(
                             sections,
-                            (x) => x.section_number,
+                            (x) => x.sectionNumber,
                         );
                         n += 1;
                         return {
                             id: n,
                             icon: "book",
                             isExpanded: treeExpansion[n] === true,
-                            label: `${short_title} - ${long_title}`,
+                            label: `${shortTitle} - ${longTitle}`,
                             childNodes: lodash.map(titleSects, (obj, ind2) => {
                                 n += 1;
                                 return {
                                     id: n,
-                                    label: `${obj.display.replace(/SS/g, "§")} ${obj.heading}`,
-                                    className: "section-tree",
-                                    diffLocation: { ...obj, short_title },
+                                    label: `${obj.display.replace(/SS/g, "§")} ${obj.heading}${obj.repealed === true ? " (Repealed)" : ""}`,
+                                    className: `section-tree${obj.repealed === true ? " repealed-section" : ""}`,
+                                    diffLocation: { ...obj, shortTitle },
                                 };
                             }),
                         };
@@ -98,7 +96,7 @@ function BillDiffSidebar() {
                 ]);
             });
         }
-    }, [congress, chamber, billNumber, billVersion, treeExpansion]);
+    }, [billVersionId, treeExpansion]);
 
     function onExpand(node) {
         setTreeExpansion({ ...treeExpansion, [node.id]: true });
@@ -123,15 +121,15 @@ function BillDiffSidebar() {
                 isCloseButtonShown={true}
                 title={
                     diffLocation != null
-                        ? `USC - ${diffLocation.short_title}. ${diffLocation.long_title}`
+                        ? `USC - ${diffLocation.shortTitle}. ${diffLocation.longTitle}`
                         : ""
                 }
             >
                 {diffs != null && diffLocation != null ? (
                     <USCView
                         release={bill.usc_release_id || "latest"}
-                        section={diffLocation.section_number}
-                        title={diffLocation.short_title}
+                        section={diffLocation.sectionNumber}
+                        title={diffLocation.shortTitle}
                         diffs={diffs}
                         interactive={false}
                     />
