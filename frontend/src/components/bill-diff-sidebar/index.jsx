@@ -37,8 +37,8 @@ function BillDiffSidebar() {
             chamber,
             billNumber,
             billVersion,
-            node.diffLocation.short_title,
-            node.diffLocation.section_number,
+            node.diffLocation.shortTitle,
+            node.diffLocation.sectionNumber,
         ).then((diffs) => {
             setDiffs(diffs);
         });

@@ -169,6 +169,14 @@ async def get_legislation_version_diff_metadata_fastapi(
     
     # Get a list of all section_ids to query for repealed status
     section_ids = [row[5] for row in diff_sections]
+    query_contents = select(
+        USCContent.usc_content_id,
+    ).where(
+        USCContent.usc_section_id.in_(section_ids),
+        USCContent.parent_id.is_(None)
+    )
+    content_ids = [row[0] for row in await database.fetch_all(query_contents)]
+
     
     # Query to check for repealed sections
     repealed_sections = {}
@@ -181,8 +189,9 @@ async def get_legislation_version_diff_metadata_fastapi(
             .where(
                 and_(
                     USCContentDiff.version_id == legis_version.version_id,
-                    USCContentDiff.usc_section_id.in_(section_ids),
-                    or_(USCContentDiff.section_display.is_(None), USCContentDiff.section_display == '')
+                    USCContentDiff.usc_content_id.in_(content_ids),
+                    or_(USCContentDiff.section_display.is_(None), USCContentDiff.section_display == ''),
+                    or_(USCContentDiff.content_str.is_(None), USCContentDiff.content_str == '')
                 )
             )
         )
