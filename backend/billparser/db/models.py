@@ -964,19 +964,33 @@ class LegislationCommittee(Base):
     __tablename__ = "legislation_committee"
 
     legislation_committee_id = Column(Integer, primary_key=True)
+    congress_id = Column(
+        Integer, ForeignKey("congress.congress_id", ondelete="CASCADE"), index=True
+    )
 
+    thomas_id = Column(String, index=True)
+    committee_id = Column(String, index=True)
     system_code = Column(String)  # Correspond to the systemCode tag in the statuses xml
     chamber = Column(Enum(LegislationChamber))
     name = Column(String)
 
     committee_type = Column(String)  # Dunno what this is yet
-    subcommittee = Column(
+    parent_id = Column(
         Integer,
         ForeignKey(
             "legislation_committee.legislation_committee_id", ondelete="CASCADE"
         ),
         index=True,
     )
+
+    # New fields from YAML
+    url = Column(String)
+    minority_url = Column(String)
+    address = Column(String)
+    phone = Column(String)
+    rss_url = Column(String)
+    jurisdiction = Column(String)
+    youtube_id = Column(String)
 
 
 class LegislationCommitteeAssociation(Base):
