@@ -22,6 +22,7 @@ class LegislationCommitteeInfo(MappableBase):
     name: Annotated[Optional[str], LegislationCommittee.name]
     committee_type: Annotated[Optional[str], LegislationCommittee.committee_type]
     parent_id: Annotated[Optional[int], LegislationCommittee.parent_id]
+    parent_name: Optional[str] = None
     url: Annotated[Optional[str], LegislationCommittee.url]
     minority_url: Annotated[Optional[str], LegislationCommittee.minority_url]
     address: Annotated[Optional[str], LegislationCommittee.address]

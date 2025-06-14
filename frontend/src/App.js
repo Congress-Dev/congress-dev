@@ -8,6 +8,8 @@ import {
     AboutUs,
     BillSearch,
     BillViewer,
+    CommitteeSearch,
+    CommitteeViewer,
     Home,
     Learn,
     MemberViewer,
@@ -46,6 +48,18 @@ function App() {
                                     path="/uscode"
                                     component={USCodeRevisionList}
                                 />
+                                
+                                <Route
+                                    exact
+                                    path="/committees"
+                                    component={CommitteeSearch}
+                                />
+                                <Route
+                                    exact
+                                    path="/committee/:committeeId"
+                                    component={CommitteeViewer}
+                                />
+                                
                                 <Route
                                 exact
                                     path="/members"

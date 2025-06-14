@@ -1,6 +1,7 @@
 from typing import List, Optional, Tuple
 
 from sqlalchemy import select, and_, or_, func, asc, desc, insert, update, delete
+from sqlalchemy.orm import aliased
 
 from billparser.db.models import (
     LegislationCommittee,
@@ -10,8 +11,6 @@ from billparser.db.models import (
 from congress_fastapi.db.postgres import get_database
 from congress_fastapi.models.committees import (
     LegislationCommitteeInfo,
-    LegislationCommitteeCreate,
-    LegislationCommitteeUpdate,
 )
 
 
@@ -50,9 +49,9 @@ async def get_committees(
             query = query.where(LegislationCommittee.chamber.in_(chamber_enums))
 
     if congress:
-        congress_ids = [int(c) for c in congress if c.isdigit()]
-        if congress_ids:
-            query = query.where(LegislationCommittee.congress_id.in_(congress_ids))
+        congress_numbers = [int(c) for c in congress if c.isdigit()]
+        if congress_numbers:
+            query = query.join(Congress).where(Congress.session_number.in_(congress_numbers))
 
     if committee_type:
         query = query.where(
@@ -65,6 +64,24 @@ async def get_committees(
     query = query.offset((page - 1) * page_size)
 
     result = await database.fetch_all(query)
+
+    # Get parent names for committees that have parent_id
+    committee_results = [dict(r) for r in result]
+    parent_ids = [r["parentId"] for r in committee_results if r.get("parentId") is not None]
+    
+    parent_names = {}
+    if parent_ids:
+        parent_query = select(
+            LegislationCommittee.legislation_committee_id,
+            LegislationCommittee.name
+        ).where(LegislationCommittee.legislation_committee_id.in_(parent_ids))
+        
+        parent_result = await database.fetch_all(parent_query)
+        parent_names = {r["legislation_committee_id"]: r["name"] for r in parent_result}
+
+    # Add parent names to results
+    for committee in committee_results:
+        committee["parent_name"] = parent_names.get(committee.get("parentId"))
 
     # Get total count
     count_query = select(
@@ -96,7 +113,7 @@ async def get_committees(
 
     count_result = await database.fetch_one(count_query)
 
-    return [LegislationCommitteeInfo(**r) for r in result], count_result[0]
+    return [LegislationCommitteeInfo(**r) for r in committee_results], count_result[0]
 
 
 async def get_committee_by_id(committee_id: int) -> Optional[LegislationCommitteeInfo]:

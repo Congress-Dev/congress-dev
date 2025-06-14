@@ -89,6 +89,15 @@ function AppBar() {
                 />
                 <Button
                     className={Classes.MINIMAL}
+                    icon="office"
+                    text="Committees"
+                    onClick={() => {
+                        handleClose();
+                        history.push("/committees");
+                    }}
+                />
+                <Button
+                    className={Classes.MINIMAL}
                     icon="info-sign"
                     text="About Us"
                     onClick={() => {
