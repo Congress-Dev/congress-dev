@@ -1,10 +1,12 @@
 import json
 import time
 from typing import List
+from collections import defaultdict
 
 from billparser.prompt_runners.utils import run_query
 from congress_fastapi.models.legislation.llm import LLMResponse
-from sqlalchemy import select
+from sqlalchemy import select, text, and_, or_
+from sqlalchemy.orm import Session, load_only
 
 from congress_fastapi.db.postgres import get_database
 from billparser.db.models import (
@@ -15,6 +17,10 @@ from billparser.db.models import (
     LegislationVersion,
     Congress,
     LegislationVersionTag as DBLegislationVersionTag,
+    USCContentDiff,
+    USCChapter,
+    USCSection,
+    USCContent,
 )
 
 from congress_fastapi.models.legislation import (
@@ -23,6 +29,7 @@ from congress_fastapi.models.legislation import (
     LegislationVersionMetadata,
     LegislationVersionTag,
 )
+from congress_fastapi.models.legislation.diff import BillDiffMetadataList, BillContentDiffMetadata
 
 
 async def get_legislation_version_tags_by_legislation_id(
@@ -127,3 +134,103 @@ async def run_talk_to_bill_prompt(
         ),
         time=end_time - start_time,
     )
+
+
+async def get_legislation_version_diff_metadata_fastapi(
+    legislation_version_id: int,
+) -> List[BillDiffMetadataList]:
+    database = await get_database()
+
+    legis_version = await database.fetch_one(
+        select(LegislationVersion).where(LegislationVersion.legislation_version_id == legislation_version_id)
+    )
+
+    if not legis_version:
+        return []
+
+    # Using a parameterized query for security
+    query = (
+        select(
+            USCChapter.short_title,
+            USCChapter.long_title,
+            USCSection.number,
+            USCSection.heading,
+            USCSection.section_display,
+            USCSection.usc_section_id,
+        )
+        .distinct()
+        .select_from(USCContentDiff)
+        .join(USCChapter, USCChapter.usc_chapter_id == USCContentDiff.usc_chapter_id)
+        .join(USCSection, USCContentDiff.usc_section_id == USCSection.usc_section_id)
+        .where(USCContentDiff.version_id == legis_version.version_id)
+        .order_by(USCChapter.short_title, USCSection.number)
+    )
+    diff_sections = await database.fetch_all(query)
+    
+    # Get a list of all section_ids to query for repealed status
+    section_ids = [row[5] for row in diff_sections]
+    query_contents = select(
+        USCContent.usc_content_id,
+    ).where(
+        USCContent.usc_section_id.in_(section_ids),
+        USCContent.parent_id.is_(None)
+    )
+    content_ids = [row[0] for row in await database.fetch_all(query_contents)]
+
+    
+    # Query to check for repealed sections
+    repealed_sections = {}
+    if section_ids:
+        query_repealed = (
+            select(
+                USCContentDiff.usc_section_id,
+            )
+            .select_from(USCContentDiff)
+            .where(
+                and_(
+                    USCContentDiff.version_id == legis_version.version_id,
+                    USCContentDiff.usc_content_id.in_(content_ids),
+                    or_(USCContentDiff.section_display.is_(None), USCContentDiff.section_display == ''),
+                    or_(USCContentDiff.content_str.is_(None), USCContentDiff.content_str == '')
+                )
+            )
+        )
+        repealed_results = await database.fetch_all(query_repealed)
+        
+        # Create a dictionary of section_id -> repealed status
+        for row in repealed_results:
+            repealed_sections[row[0]] = True
+
+    res_typed = defaultdict(lambda: {"long_title": None, "sections": []})
+    for row in diff_sections:
+        short_title = row[0]
+        section_id = row[5]
+        if res_typed[short_title]["long_title"] is None:
+            res_typed[short_title]["long_title"] = row[1]
+        
+        # Check if this section is repealed
+        is_repealed = repealed_sections.get(section_id, False)
+        
+        res_typed[short_title]["sections"].append(
+            BillContentDiffMetadata(
+                long_title=row[1],
+                section_number=str(row[2]) if row[2] is not None else None,
+                heading=row[3],
+                display=row[4],
+                repealed=is_repealed,
+            )
+        )
+
+    output_list: List[BillDiffMetadataList] = []
+    for short_title_key, data in res_typed.items():
+        output_list.append(
+            BillDiffMetadataList(
+                legislation_version_id=legis_version.legislation_version_id,
+                short_title=short_title_key,
+                long_title=data["long_title"],
+                sections=data["sections"],
+            )
+        )
+        
+    return sorted(output_list, key=lambda x: x.short_title)
+

@@ -228,6 +228,7 @@ function BillViewer(props) {
                 scrollContentIdIntoView,
                 setBillVers,
                 textTree,
+                billVersionId: billVersId,
             }}
         >
             <Section

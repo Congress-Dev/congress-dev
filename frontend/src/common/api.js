@@ -404,14 +404,13 @@ export const getBillActionsv2 = (legislationVersionId) => {
         .then(handleStatus)
         .catch(toastError);
 };
-export const getBillVersionDiffSummary = (session, chamber, bill, version) => {
-    return fetch(
-        `${endpoint}/congress/${session}/${chamber.toLowerCase()}-bill/${bill}/${version}/diffs`,
-    )
-        .then(handleStatus)
-        .catch(toastError);
+export const getBillVersionDiffSummaryv2 = (legislationVersionId) => {
+  return fetch(
+      `${endPv2}/legislation_version/${legislationVersionId}/diffs`,
+  )
+      .then(handleStatus)
+      .catch(toastError);
 };
-
 export const getBillVersionDiffForSection = (
     session,
     chamber,
@@ -482,14 +481,67 @@ export const talkToBill = (legislationVersionId, query) => {
 };
 
 export const getUSCodeSearch = (query) => {
-    return fetch(`${endPv2}/uscode/search`, {
-        method: "POST",
-        body: JSON.stringify({ query, results: 10 }),
-        headers: {
-            "Content-Type": "application/json",
-        },
-        credentials: "include",
-    })
+  return fetch(`${endPv2}/uscode/search`, {
+    method: "POST",
+    body: JSON.stringify({ query, results: 10 }),
+    headers: {
+        "Content-Type": "application/json",
+    },
+    credentials: "include",
+})
+};
+
+
+export const getCommittees = (
+    name,
+    chamber,
+    congress,
+    committee_type,
+    sort,
+    direction,
+    page,
+    pageSize,
+) => {
+    let params = new URLSearchParams();
+    if (name) params.append("name", name);
+    
+    // Handle chamber as array for repeated query params
+    if (chamber) {
+        const chambers = Array.isArray(chamber) ? chamber : chamber.split(',').filter(Boolean);
+        chambers.forEach(c => params.append("chamber", c));
+    }
+    
+    // Handle congress as array for repeated query params
+    if (congress) {
+        const congresses = Array.isArray(congress) ? congress : congress.split(',').filter(Boolean);
+        congresses.forEach(c => params.append("congress", c));
+    }
+    
+    if (committee_type) params.append("committee_type", committee_type);
+    if (sort) params.append("sort", sort);
+    if (direction) params.append("direction", direction);
+    if (page) params.append("page", page);
+    if (pageSize) params.append("pageSize", pageSize);
+
+    return fetch(`${endPv2}/committees?${params.toString()}`)
+        .then(handleStatus)
+        .catch(toastError);
+};
+
+export const getCommitteeById = (committeeId) => {
+    return fetch(`${endPv2}/committee/${committeeId}`)
+        .then(handleStatus)
+        .catch(toastError);
+};
+
+export const getCommitteesByCongress = (congressId) => {
+    return fetch(`${endPv2}/congress/${congressId}/committees`)
+        .then(handleStatus)
+        .catch(toastError);
+};
+
+export const getSubcommittees = (committeeId) => {
+    return fetch(`${endPv2}/committee/${committeeId}/subcommittees`)
         .then(handleStatus)
         .catch(toastError);
 };

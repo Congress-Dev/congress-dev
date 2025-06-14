@@ -1,0 +1,243 @@
+.committee-viewer {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+
+    .committee-viewer-header {
+        margin-bottom: 2rem;
+
+        .back-button {
+            font-size: 1rem;
+        }
+    }
+
+    .committee-main-card {
+        padding: 2rem;
+        margin-bottom: 2rem;
+
+        .committee-title-section {
+            .committee-title {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 1rem;
+
+                h1 {
+                    margin: 0;
+                    color: var(--bp4-heading-color);
+                    font-size: 2rem;
+                    font-weight: 700;
+                    line-height: 1.2;
+                    flex: 1;
+                    margin-right: 2rem;
+                }
+
+                .committee-main-tags {
+                    display: flex;
+                    gap: 0.75rem;
+                    flex-wrap: wrap;
+                }
+            }
+        }
+
+        .committee-details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 2rem 0;
+
+            .committee-basic-info,
+            .committee-contact-info {
+                h3 {
+                    margin: 0 0 1rem 0;
+                    color: var(--bp4-heading-color);
+                    font-size: 1.2rem;
+                    font-weight: 600;
+                }
+
+                .info-table {
+                    width: 100%;
+                    
+                    td {
+                        padding: 0.75rem 0.5rem;
+                        vertical-align: top;
+                        color: var(--bp4-text-color);
+
+                        &:first-child {
+                            width: 40%;
+                            padding-left: 0;
+                        }
+
+                        &:last-child {
+                            padding-right: 0;
+                        }
+
+                        strong {
+                            color: var(--bp4-text-color);
+                        }
+                    }
+                }
+
+                .contact-details {
+                    .contact-item {
+                        margin-bottom: 1rem;
+
+                        strong {
+                            display: block;
+                            color: var(--bp4-text-color);
+                            margin-bottom: 0.25rem;
+                        }
+
+                        p {
+                            margin: 0;
+                            color: var(--bp4-text-color-muted);
+                            line-height: 1.4;
+                        }
+                    }
+                }
+            }
+        }
+
+        .committee-jurisdiction-section {
+            margin: 2rem 0;
+
+            h3 {
+                margin: 0 0 1rem 0;
+                color: var(--bp4-heading-color);
+                font-size: 1.2rem;
+                font-weight: 600;
+            }
+
+            .jurisdiction-callout {
+                background-color: var(--bp4-background-color-secondary);
+                border-left: 4px solid var(--bp4-intent-primary);
+                font-style: italic;
+                line-height: 1.6;
+            }
+        }
+
+        .committee-links-section {
+            margin: 2rem 0 0 0;
+
+            h3 {
+                margin: 0 0 1rem 0;
+                color: var(--bp4-heading-color);
+                font-size: 1.2rem;
+                font-weight: 600;
+            }
+
+            .committee-links {
+                display: flex;
+                gap: 1rem;
+                flex-wrap: wrap;
+            }
+        }
+    }
+
+    .subcommittees-section {
+        .bp4-card {
+            padding: 2rem;
+
+            h2 {
+                margin: 0 0 1.5rem 0;
+                color: var(--bp4-heading-color);
+                font-size: 1.5rem;
+                font-weight: 600;
+            }
+
+            .subcommittees-loading {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                padding: 2rem;
+                text-align: center;
+
+                p {
+                    margin-top: 1rem;
+                    color: var(--bp4-text-color-muted);
+                }
+            }
+
+            .subcommittees-list {
+                display: flex;
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    }
+}
+
+.committee-viewer-loading,
+.committee-viewer-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    text-align: center;
+
+    p {
+        margin-top: 1rem;
+        color: var(--bp4-text-color-muted);
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .committee-viewer {
+        padding: 1rem;
+
+        .committee-main-card {
+            padding: 1rem;
+
+            .committee-title-section {
+                .committee-title {
+                    flex-direction: column;
+                    align-items: flex-start;
+
+                    h1 {
+                        margin-right: 0;
+                        margin-bottom: 1rem;
+                        font-size: 1.5rem;
+                    }
+                }
+            }
+
+            .committee-details-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .committee-links-section {
+                .committee-links {
+                    flex-direction: column;
+
+                    button {
+                        width: 100%;
+                        justify-content: center;
+                    }
+                }
+            }
+        }
+
+        .subcommittees-section {
+            .bp4-card {
+                padding: 1rem;
+            }
+        }
+    }
+}
+
+@media (max-width: 480px) {
+    .committee-viewer {
+        .committee-title-section {
+            .committee-title {
+                .committee-main-tags {
+                    flex-direction: column;
+                    width: 100%;
+                }
+            }
+        }
+    }
+} 

@@ -1,5 +1,6 @@
 from typing import Dict, List
 
+from congress_fastapi.models.legislation.diff import BillDiffMetadataList
 from billparser.db.models import User
 from billparser.prompt_runners.utils import get_legis_by_parent_and_id, print_clause
 from congress_fastapi.handlers.user import get_llm_query_result, insert_llm_query_result
@@ -24,6 +25,7 @@ from congress_fastapi.handlers.legislation_version import (
     get_legislation_version_summaries_by_legislation_id,
     get_legislation_version_summary_by_version,
     run_talk_to_bill_prompt,
+    get_legislation_version_diff_metadata_fastapi
 )
 from congress_fastapi.models.errors import Error
 from congress_fastapi.models.legislation import (
@@ -235,3 +237,33 @@ async def post_legislation_version_llm(
     )
 
     return response
+
+
+@router.get(
+    "/legislation_version/{legislation_version_id}/diffs",
+    responses={
+        status.HTTP_404_NOT_FOUND: {
+            "model": Error,
+            "detail": "Legislation version not found",
+        },
+        status.HTTP_200_OK: {
+            "model": dict,
+            "detail": "Diffs for the legislation version",
+        },
+    },
+    response_model=List[BillDiffMetadataList],
+    response_model_exclude_unset=True,
+)
+async def get_legislation_version_diffs(
+    legislation_version_id: int,
+) -> List[BillDiffMetadataList]:
+    """Returns the diffs for a given legislation version"""
+    obj = await get_legislation_version_diff_metadata_fastapi(
+        legislation_version_id,
+    )
+    if obj is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Legislation version not found",
+        )
+    return obj
