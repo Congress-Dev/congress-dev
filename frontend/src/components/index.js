@@ -11,6 +11,8 @@ export { default as BillVersionsBreadcrumb } from "./bill-versions-breadcrumb";
 export { default as BillViewSidebar } from "./bill-view-sidebar";
 export { default as BillViewToolbar } from "./bill-view-toolbar";
 export { default as CollapsibleSection } from "./collapsible-section";
+export { default as EffectiveDateActions } from "./effective-date-actions";
+export { default as EffectiveDateItem } from "./effective-date-item";
 export { default as LegislatorChip } from "./legislator-chip";
 export { default as LegislatorProfile } from "./legislator-profile";
 export { default as Paginator } from "./paginator";

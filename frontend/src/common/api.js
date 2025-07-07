@@ -404,12 +404,13 @@ export const getBillActionsv2 = (legislationVersionId) => {
         .then(handleStatus)
         .catch(toastError);
 };
+
 export const getBillVersionDiffSummaryv2 = (legislationVersionId) => {
-  return fetch(
-      `${endPv2}/legislation_version/${legislationVersionId}/diffs`,
-  )
-      .then(handleStatus)
-      .catch(toastError);
+    return fetch(
+        `${endPv2}/legislation_version/${legislationVersionId}/diffs`,
+    )
+        .then(handleStatus)
+        .catch(toastError);
 };
 export const getBillVersionDiffForSection = (
     session,
