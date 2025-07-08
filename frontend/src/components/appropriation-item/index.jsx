@@ -1,4 +1,4 @@
-import { Callout, HTMLTable, Tag } from "@blueprintjs/core";
+import { Callout, HTMLTable, Tag, Icon } from "@blueprintjs/core";
 
 function AppropriationItem({ appropriation, onNavigate }) {
     return (
@@ -9,12 +9,14 @@ function AppropriationItem({ appropriation, onNavigate }) {
                     onClick={() =>
                         onNavigate(appropriation.legislationContentId)
                     }
+                    style={{ cursor: "pointer" }}
                 >
                     {appropriation.parentId ? "Sub " : ""}Appropriation #
                     {appropriation.appropriationId}{" "}
                     {appropriation.newSpending && (
                         <Tag intent="warning">New Spending</Tag>
                     )}
+                    <Icon icon="search" />
                 </h4>
                 <HTMLTable
                     compact={true}

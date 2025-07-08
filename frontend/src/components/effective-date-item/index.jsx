@@ -1,4 +1,4 @@
-import { Callout, HTMLTable, Tag } from "@blueprintjs/core";
+import { Callout, HTMLTable, Tag, Icon } from "@blueprintjs/core";
 
 function EffectiveDateItem({ action, onNavigate, contentLookup }) {
     const actions = action.actions?.[0] || {};
@@ -47,10 +47,10 @@ function EffectiveDateItem({ action, onNavigate, contentLookup }) {
             <Callout>
                 <h4
                     className="effective-date-title"
-                    onClick={() => onNavigate && onNavigate(action.legislation_content_id)}
+                    onClick={() => onNavigate && onNavigate(action.legislationContentId)}
                     style={{ cursor: "pointer" }}
                 >
-                    Effective Date Action{" "}
+                    Effective Date Action{" "}<Icon icon="search" />
                     {effectiveAction.amount === "0" && (
                         <Tag intent="success" minimal>Immediate</Tag>
                     )}
