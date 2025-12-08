@@ -73,6 +73,22 @@ services:
       parser:
     command:
     - "start.sh"
+  congress_hillstack:
+    image: congress_hillstack:latest
+    container_name: congress_hillstack
+    tty: true
+    stdin_open: true
+    build:
+      context: ../hillstack
+      dockerfile: .docker/Dockerfile
+    environment:
+    - DATABASE_URL=postgresql://parser:parser@congress_postgres:5432/us_code_2025
+    ports:
+    - "3001:3001"
+    depends_on:
+      - congress_postgres
+    networks:
+      parser:
   congress_postgres:
     image: postgres:16
     container_name: congress_postgres
