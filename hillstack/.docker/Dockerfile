@@ -26,7 +26,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 ENV NEXT_PUBLIC_APP_URL="https://beta.congress.dev"
-ENV DATABASE_URL="postgresql://parser:parser@10.0.0.248:5432:5432/us_code_2025"
+ENV DATABASE_URL="postgresql://parser:parser@10.0.0.248:5432/us_code_2025"
 
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
