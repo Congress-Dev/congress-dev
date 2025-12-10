@@ -73,13 +73,13 @@ const darkMode = createTheme({
 		caption: {
 			fontSize: 12,
 			color: '#8f99a8',
-			lineHeight: 1,
 		},
 		overline: {
 			fontSize: 13,
 			fontWeight: 'bold',
 			color: '#8f99a8',
 			textTransform: 'initial',
+			lineHeight: 1,
 		},
 	},
 	palette: {
@@ -229,13 +229,6 @@ export const theme = createTheme(darkMode, {
 			styleOverrides: {
 				root: {
 					textTransform: 'none',
-				},
-			},
-		},
-		MuiChip: {
-			styleOverrides: {
-				root: {
-					backgroundColor: darkMode.palette.brand.accent,
 				},
 			},
 		},

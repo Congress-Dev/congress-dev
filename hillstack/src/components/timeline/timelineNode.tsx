@@ -14,20 +14,27 @@ import type React from 'react';
 
 interface TimelineNodeProps {
 	title: string;
+	date: Date;
 	icon: React.ReactNode;
-	children: React.ReactNode;
+	children?: React.ReactNode;
+	variant?: 'compact';
 }
 
 const TimelineNodeBox = styled(Box)(() => ({
+	'&:first-child': {
+		'& .MuiDivider-vertical.first': {
+			display: 'block',
+		},
+	},
 	'&:last-child': {
-		'& .MuiDivider-vertical': {
+		'& .MuiDivider-vertical.last': {
 			display: 'none',
 		},
 	},
 }));
 
 export function TimelineNode(props: TimelineNodeProps) {
-	const { title, icon, children } = props;
+	const { title, date, icon, children, variant } = props;
 	const { palette } = useTheme();
 
 	return (
@@ -38,18 +45,25 @@ export function TimelineNode(props: TimelineNodeProps) {
 					flexDirection: 'column',
 					alignContent: 'center',
 					mr: 1,
+					minHeight: '50px',
+					minWidth: '30px',
 				}}
 			>
-				<Avatar
-					sx={{
-						width: '30px',
-						height: '30px',
-						backgroundColor: palette.brand.accentLight,
-					}}
-				>
-					{icon}
-				</Avatar>
+				{variant === 'compact' ? (
+					icon
+				) : (
+					<Avatar
+						sx={{
+							width: '30px',
+							height: '30px',
+							backgroundColor: palette.brand.accentLight,
+						}}
+					>
+						{icon}
+					</Avatar>
+				)}
 				<Divider
+					className='last'
 					orientation='vertical'
 					sx={{
 						mt: 1,
@@ -59,20 +73,46 @@ export function TimelineNode(props: TimelineNodeProps) {
 					}}
 				/>
 			</Box>
-			<Card sx={{ flex: 1, mb: 2 }} variant='outlined'>
-				<Toolbar
-					disableGutters
+
+			{variant === 'compact' && (
+				<Box
 					sx={{
-						height: '30px',
-						minHeight: '30px',
-						px: 1,
+						width: '100%',
+						display: 'flex',
+						pt: 0.5,
+						alignItems: 'flex-start',
 					}}
-					variant='dense'
 				>
-					<Typography variant='overline'>{title}</Typography>
-				</Toolbar>
-				<Box sx={{ p: 1 }}>{children}</Box>
-			</Card>
+					<Box sx={{ flex: 1 }}>
+						<Typography variant='subtitle2'>{title}</Typography>
+					</Box>
+					<Typography variant='caption'>
+						{date?.toLocaleDateString()}
+					</Typography>
+				</Box>
+			)}
+			{variant !== 'compact' && (
+				<Card sx={{ flex: 1, mb: 2 }} variant='outlined'>
+					<Toolbar
+						disableGutters
+						sx={{
+							height: '30px',
+							minHeight: '30px',
+							px: 1,
+							display: 'flex',
+						}}
+						variant='dense'
+					>
+						<Box sx={{ flex: 1 }}>
+							<Typography variant='overline'>{title}</Typography>
+						</Box>
+						<Typography variant='caption'>
+							{date?.toLocaleDateString()}
+						</Typography>
+					</Toolbar>
+					{children && <Box sx={{ p: 1 }}>{children}</Box>}
+				</Card>
+			)}
 		</TimelineNodeBox>
 	);
 }

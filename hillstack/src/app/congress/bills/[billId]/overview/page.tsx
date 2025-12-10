@@ -1,8 +1,10 @@
 import HowToVoteIcon from '@mui/icons-material/HowToVote';
+import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import SummarizeIcon from '@mui/icons-material/Summarize';
 import { Box, Chip, Divider, Typography } from '@mui/material';
 import type { Params } from 'next/dist/server/request/params';
 import { Timeline, TimelineNode } from '~/components/timeline';
+import { BillVersionEnum } from '~/enums';
 import { api, HydrateClient } from '~/trpc/server';
 
 export default async function BillPageOverview({
@@ -38,11 +40,29 @@ export default async function BillPageOverview({
 						icon={<SummarizeIcon />}
 						title='Summary'
 					>
+						{data?.legislation_version?.map((version) => (
+							<TimelineNode
+								date={
+									version.created_at ??
+									new Date(version.effective_date) ??
+									new Date()
+								}
+								icon={<ReadMoreIcon />}
+								key={version.legislation_version}
+								title={
+									version.legislation_version
+										? `Legislation has been ${BillVersionEnum[version.legislation_version]}`
+										: 'Unknown legislation action'
+								}
+								variant='compact'
+							/>
+						))}
 						{data?.legislation_vote?.map((vote) => {
 							const voteTotal = JSON.parse(vote.total as string);
 
 							return (
 								<TimelineNode
+									date={vote.datetime}
 									icon={<HowToVoteIcon />}
 									key={vote.id}
 									title={`${vote.chamber} voted on ${vote.question}`}

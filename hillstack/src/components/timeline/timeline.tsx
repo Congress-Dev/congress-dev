@@ -8,6 +8,7 @@ import {
 	Typography,
 	useTheme,
 } from '@mui/material';
+import { Children } from 'react';
 
 interface TimelineProps {
 	title: string;
@@ -19,6 +20,11 @@ interface TimelineProps {
 export function Timeline(props: TimelineProps) {
 	const { title, content, icon, children } = props;
 	const { palette } = useTheme();
+
+	const sortedChildren = Children.toArray(children);
+	sortedChildren.sort((a, b) => {
+		return a.props.date - b.props.date;
+	});
 
 	return (
 		<>
@@ -48,7 +54,7 @@ export function Timeline(props: TimelineProps) {
 					<Box sx={{ p: 2 }}>{content}</Box>
 				</Card>
 			</Box>
-			<Box sx={{ pl: 5, mt: 2 }}>{children}</Box>
+			<Box sx={{ pl: 5, mt: 2 }}>{sortedChildren}</Box>
 		</>
 	);
 }

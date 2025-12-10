@@ -22,6 +22,7 @@ export const billRouter = createTRPCRouter({
 					legislation_version: {
 						select: {
 							legislation_version: true,
+							created_at: true,
 							effective_date: true,
 							legislation_content: {
 								select: {
@@ -85,6 +86,7 @@ export const billRouter = createTRPCRouter({
 							total: true,
 							passed: true,
 							chamber: true,
+							datetime: true,
 						},
 					},
 					legislative_policy_area_association: {
