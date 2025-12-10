@@ -1,5 +1,6 @@
 import { Box, Chip, Container, Paper, Typography } from '@mui/material';
 import type { Params } from 'next/dist/server/request/params';
+import { BillTabs } from '~/app/congress/bills/[billId]/tabs';
 import { BillVersionEnum } from '~/enums';
 import { api, HydrateClient } from '~/trpc/server';
 
@@ -26,10 +27,13 @@ export default async function BillLayout({
 		<HydrateClient>
 			<Container maxWidth='xl'>
 				<Box sx={{ display: 'flex', alignItems: 'center' }}>
-					<Typography color='primary' sx={{ mr: 1 }} variant='h1'>
+					<Typography sx={{ mr: 1 }} variant='h1'>
 						{data?.title}
 					</Typography>
-					<Typography sx={{ fontWeight: 300 }} variant='h1'>
+					<Typography
+						sx={{ fontWeight: 100, color: '#8f99a8' }}
+						variant='h1'
+					>
 						{`#${data?.number}`}
 					</Typography>
 				</Box>
@@ -55,7 +59,17 @@ export default async function BillLayout({
 							: ''}
 					</Typography>
 				</Box>
-				<Paper elevation={0} sx={{ mt: 2, p: 2 }}>
+
+				<BillTabs />
+				<Paper
+					elevation={0}
+					sx={{
+						p: 2,
+						mb: 3,
+						borderTop: 'none',
+						borderTopLeftRadius: '0px',
+					}}
+				>
 					{children}
 				</Paper>
 			</Container>

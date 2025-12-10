@@ -16,19 +16,25 @@ export const committeeRouter = createTRPCRouter({
 			}),
 		)
 		.query(async ({ input, ctx }) => {
-			const { query, congress, chamber, committeeType, page, pageSize } = input;
+			const { query, congress, chamber, committeeType, page, pageSize } =
+				input;
 
 			const where = {
 				...(committeeType
 					? { committee_type: { in: committeeType } }
 					: {}),
 				...(congress
-					? { congress: { session_number: { in: congress }}}
+					? { congress: { session_number: { in: congress } } }
 					: {}),
-				...(chamber
-					? { chamber: { in: chamber }}
+				...(chamber ? { chamber: { in: chamber } } : {}),
+				...(query
+					? {
+							name: {
+								contains: query,
+								mode: Prisma.QueryMode.insensitive,
+							},
+						}
 					: {}),
-				...(query ? { name: { contains: query, mode: Prisma.QueryMode.insensitive,} } : {})
 			};
 
 			const totalResults = await ctx.db.legislation_committee.count({

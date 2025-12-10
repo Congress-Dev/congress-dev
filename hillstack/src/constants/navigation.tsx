@@ -50,6 +50,7 @@ export const congressTabs: NavigationTabs = {
 	},
 };
 
+import DifferenceIcon from '@mui/icons-material/Difference';
 import HistoryIcon from '@mui/icons-material/History';
 import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import ManageSearchIcon from '@mui/icons-material/ManageSearch';
@@ -62,35 +63,30 @@ export const congressBillTabs = ({
 	params: Params;
 }): NavigationTabs => {
 	return {
-		'/congress/bills': {
-			id: 0,
-			icon: <ChevronLeftOutlinedIcon />,
-			label: '',
-		},
 		[`/congress/bills/${params.billId}/overview`]: {
-			id: 1,
+			id: 0,
 			icon: <SmartButtonIcon />,
 			label: 'Overview',
 		},
 		[`/congress/bills/${params.billId}/text`]: {
-			id: 2,
+			id: 1,
 			icon: <ManageSearchIcon />,
 			label: 'Text',
 		},
+		[`/congress/bills/${params.billId}/changes`]: {
+			id: 4,
+			icon: <DifferenceIcon />,
+			label: 'Changes',
+		},
 		[`/congress/bills/${params.billId}/actions`]: {
-			id: 3,
+			id: 2,
 			icon: <HistoryIcon />,
 			label: 'Actions',
 		},
 		[`/congress/bills/${params.billId}/spending`]: {
-			id: 4,
+			id: 3,
 			icon: <LocalAtmIcon />,
 			label: 'Spending',
-		},
-		[`/congress/bills/${params.billId}/uscode`]: {
-			id: 5,
-			icon: <LocalPoliceIcon />,
-			label: 'U.S. Code',
 		},
 	};
 };

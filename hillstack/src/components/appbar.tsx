@@ -76,7 +76,7 @@ function ResponsiveAppBar() {
 								color: 'inherit',
 								textDecoration: 'none',
 							}}
-							variant='h6'
+							variant='h4'
 						>
 							Congress.Dev
 						</Typography>
@@ -156,7 +156,7 @@ function ResponsiveAppBar() {
 								color: 'inherit',
 								textDecoration: 'none',
 							}}
-							variant='h6'
+							variant='h4'
 						>
 							Congress.Dev
 						</Typography>

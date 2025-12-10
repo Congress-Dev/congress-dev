@@ -1,8 +1,9 @@
 import HowToVoteIcon from '@mui/icons-material/HowToVote';
 import SummarizeIcon from '@mui/icons-material/Summarize';
-import { Avatar, Box, Card, Divider, Toolbar, Typography } from '@mui/material';
+import { Box, Chip, Divider, Typography } from '@mui/material';
 import type { Params } from 'next/dist/server/request/params';
-import { api } from '~/trpc/server';
+import { Timeline, TimelineNode } from '~/components/timeline';
+import { api, HydrateClient } from '~/trpc/server';
 
 export default async function BillPageOverview({
 	params,
@@ -14,6 +15,9 @@ export default async function BillPageOverview({
 		id: Number(billId as string),
 	});
 
+	const latestVersion =
+		data.legislation_version[data.legislation_version.length - 1];
+
 	const sponsor = data.legislation_sponsorship.find(
 		(sponsor) => !sponsor.cosponsor,
 	);
@@ -22,127 +26,131 @@ export default async function BillPageOverview({
 		?.slice(0, 5);
 
 	return (
-		<Box sx={{ display: 'flex' }}>
-			<Box sx={{ flex: 1 }}>
-				<Box sx={{ display: 'flex' }}>
-					<Avatar sx={{ width: '40px', height: '40px', mr: 1 }}>
-						<SummarizeIcon />
-					</Avatar>
-					<Card sx={{ flex: 1 }} variant='outlined'>
-						<Toolbar
-							disableGutters
-							sx={{ height: '40px', minHeight: '40px', px: 2 }}
-							variant='dense'
-						>
-							{'Summary'}
-						</Toolbar>
-						<Box sx={{ p: 2 }}>
-							{data?.legislation_version[0]?.legislation_content.flatMap(
-								(s) =>
-									s.legislation_content_summary.flatMap(
-										(b) => b.summary,
-									)[0],
-							)}
-						</Box>
-					</Card>
-				</Box>
-				<Box sx={{ pl: 5, mt: 2 }}>
-					{data?.legislation_vote?.map((vote, index) => {
-						const voteTotal = JSON.parse(vote.total as string);
+		<HydrateClient>
+			<Box sx={{ display: 'flex' }}>
+				<Box sx={{ flex: 1 }}>
+					<Timeline
+						content={
+							data?.legislation_version[0]?.legislation_content[0]
+								?.legislation_content_summary[0]?.summary ??
+							'No summary was found for this bill'
+						}
+						icon={<SummarizeIcon />}
+						title='Summary'
+					>
+						{data?.legislation_vote?.map((vote) => {
+							const voteTotal = JSON.parse(vote.total as string);
 
-						return (
-							<Box key={vote.id} sx={{ display: 'flex', mb: 1 }}>
-								<Box
-									sx={{
-										display: 'flex',
-										flexDirection: 'column',
-										alignContent: 'center',
-										mr: 1,
-									}}
+							return (
+								<TimelineNode
+									icon={<HowToVoteIcon />}
+									key={vote.id}
+									title={`${vote.chamber} voted on ${vote.question}`}
 								>
-									<Avatar
-										sx={{
-											width: '30px',
-											height: '30px',
-										}}
-									>
-										<HowToVoteIcon />
-									</Avatar>
-									<Divider
-										orientation='vertical'
-										sx={{
-											mt: 1,
-											flex: 1,
-											width: 'calc(50% + 1px)',
-											borderRightWidth: '2px',
-											display:
-												index ===
-												data.legislation_vote.length - 1
-													? 'none'
-													: 'initial',
-										}}
-									/>
-								</Box>
-								<Card
-									sx={{ flex: 1, mb: 2 }}
-									variant='outlined'
-								>
-									<Toolbar
-										disableGutters
-										sx={{
-											height: '30px',
-											minHeight: '30px',
-											px: 1,
-										}}
-										variant='dense'
-									>
-										{`${vote.chamber} voted on ${vote.question}`}
-									</Toolbar>
-									<Box sx={{ p: 1 }}>
-										The vote{' '}
-										{vote.passed ? 'passed' : 'failed'}{' '}
-										{voteTotal.yay}
-										{`-`}
-										{voteTotal.nay}
-										{`, with `}
-										{voteTotal.abstain}
-										{` members not voting. `}
-									</Box>
-								</Card>
+									{`The vote ${vote.passed ? 'passed' : 'failed'} ${voteTotal.yay}-${voteTotal.nay}, with ${voteTotal.abstain} not voting.`}
+								</TimelineNode>
+							);
+						})}
+					</Timeline>
+				</Box>
+				<Box sx={{ width: '300px', pl: 3, pr: 2 }}>
+					<Box
+						sx={{
+							mb: 1,
+							display: 'flex',
+							flexDirection: 'column',
+						}}
+					>
+						<Typography variant='subtitle2'>Sponsor:</Typography>
+						<Typography variant='subtitle1'>
+							{sponsor?.legislator?.first_name}{' '}
+							{sponsor?.legislator?.last_name}
+						</Typography>
+					</Box>
+					<Divider />
+					<Box
+						sx={{
+							my: 1,
+							display: 'flex',
+							flexDirection: 'column',
+						}}
+					>
+						<Typography variant='subtitle2'>
+							Co-Sponsors:
+						</Typography>
+						<Typography variant='subtitle1'>
+							{cosponsors.length
+								? cosponsors?.map((sponsor) => (
+										<Box
+											key={
+												sponsor.legislator?.bioguide_id
+											}
+										>
+											{sponsor.legislator?.first_name}{' '}
+											{sponsor.legislator?.last_name}
+										</Box>
+									))
+								: 'None'}
+						</Typography>
+					</Box>
+					<Divider />
+					<Box
+						sx={{
+							my: 1,
+							display: 'flex',
+							flexDirection: 'column',
+						}}
+					>
+						<Typography variant='subtitle2'>Tags:</Typography>
+
+						{latestVersion?.legislation_version_tag.length ? (
+							<Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
+								{latestVersion?.legislation_version_tag[0]?.tags.map(
+									(tag) => (
+										<Chip
+											key={tag}
+											label={tag}
+											size='small'
+										/>
+									),
+								)}
 							</Box>
-						);
-					})}
+						) : (
+							'None'
+						)}
+					</Box>
+					<Divider />
+					<Box
+						sx={{ my: 1, display: 'flex', flexDirection: 'column' }}
+					>
+						<Typography variant='subtitle2'>
+							Policy Areas:
+						</Typography>
+
+						{data.legislative_policy_area_association.length ? (
+							<Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
+								{data.legislative_policy_area_association.map(
+									(assc) => (
+										<Chip
+											key={
+												assc.legislative_policy_area
+													?.name
+											}
+											label={
+												assc.legislative_policy_area
+													?.name
+											}
+											size='small'
+										/>
+									),
+								)}
+							</Box>
+						) : (
+							'None'
+						)}
+					</Box>
 				</Box>
 			</Box>
-			<Box sx={{ width: '300px', pl: 3, pr: 2 }}>
-				<Box sx={{ mb: 1 }}>
-					<Typography variant='subtitle2'>Sponsor:</Typography>
-					<Typography variant='subtitle1'>
-						{sponsor?.legislator?.first_name}{' '}
-						{sponsor?.legislator?.last_name}
-					</Typography>
-				</Box>
-				<Divider />
-				<Box sx={{ my: 1 }}>
-					<Typography variant='subtitle2'>Co-Sponsors:</Typography>
-					<Typography variant='subtitle1'>
-						{cosponsors?.map((sponsor) => (
-							<Box key={sponsor.legislator?.bioguide_id}>
-								{sponsor.legislator?.first_name}{' '}
-								{sponsor.legislator?.last_name}
-							</Box>
-						))}
-					</Typography>
-				</Box>
-				<Divider />
-				<Box sx={{ my: 1 }}>
-					<Typography variant='subtitle2'>Tags:</Typography>
-				</Box>
-				<Divider />
-				<Box sx={{ my: 1 }}>
-					<Typography variant='subtitle2'>Policy Areas:</Typography>
-				</Box>
-			</Box>
-		</Box>
+		</HydrateClient>
 	);
 }

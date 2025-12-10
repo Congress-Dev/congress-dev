@@ -12,9 +12,6 @@ export interface BillSearchResultProps {
 }
 
 export function BillSearchResult({ bill }: BillSearchResultProps) {
-	const latestVersion =
-		bill.legislation_version[bill.legislation_version.length - 1];
-
 	const legislator = bill.legislation_sponsorship[0]?.legislator;
 
 	return (

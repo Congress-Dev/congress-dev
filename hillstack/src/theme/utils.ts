@@ -1,5 +1,21 @@
 import { createTheme } from '@mui/material/styles';
 
+declare module '@mui/material/styles' {
+	interface PaletteBrandColorOptions {
+		accentDark: string;
+		accent: string;
+		accentLight: string;
+	}
+
+	interface Palette {
+		brand: PaletteBrandColorOptions;
+	}
+
+	interface PaletteOptions {
+		brand: PaletteBrandColorOptions;
+	}
+}
+
 const darkMode = createTheme({
 	typography: {
 		fontSize: 14,
@@ -60,7 +76,10 @@ const darkMode = createTheme({
 			lineHeight: 1,
 		},
 		overline: {
-			fontSize: 14,
+			fontSize: 13,
+			fontWeight: 'bold',
+			color: '#8f99a8',
+			textTransform: 'initial',
 		},
 	},
 	palette: {
@@ -113,6 +132,12 @@ const darkMode = createTheme({
 			paper: '#0f1214ff',
 		},
 
+		brand: {
+			accentDark: '#131b22',
+			accent: '#253644',
+			accentLight: '#7591a8ff',
+		},
+
 		text: {
 			primary: '#FFFFFFDE', // rgba(255,255,255,0.87)
 			secondary: '#FFFFFF99', // rgba(255,255,255,0.60)
@@ -145,11 +170,16 @@ export const theme = createTheme(darkMode, {
 				root: {
 					borderWidth: '0px',
 					borderBottomWidth: '1px',
+					backgroundColor: `${darkMode.palette.brand.accentDark} !important`,
+					backgroundImage: 'none',
 				},
 			},
 		},
 		MuiToolbar: {
 			styleOverrides: {
+				root: {
+					backgroundColor: darkMode.palette.brand.accentDark,
+				},
 				regular: {
 					minHeight: '50px !important',
 				},
@@ -158,9 +188,6 @@ export const theme = createTheme(darkMode, {
 					borderBottomColor: darkMode.palette.divider,
 					borderBottomWidth: '1px',
 					borderBottomStyle: 'solid',
-					backgroundColor: darkMode.palette.background.paper,
-					backgroundImage:
-						'linear-gradient(rgba(255, 255, 255, 0.092), rgba(255, 255, 255, 0.092))',
 				},
 			},
 		},
@@ -190,10 +217,25 @@ export const theme = createTheme(darkMode, {
 				},
 			},
 		},
+		MuiDrawer: {
+			styleOverrides: {
+				paper: {
+					backgroundColor: `${darkMode.palette.brand.accentDark} !important`,
+					backgroundImage: 'none',
+				},
+			},
+		},
 		MuiButton: {
 			styleOverrides: {
 				root: {
 					textTransform: 'none',
+				},
+			},
+		},
+		MuiChip: {
+			styleOverrides: {
+				root: {
+					backgroundColor: darkMode.palette.brand.accent,
 				},
 			},
 		},
