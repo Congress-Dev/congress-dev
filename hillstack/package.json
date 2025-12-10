@@ -15,7 +15,7 @@
 		"dev": "next dev --turbo -p 3001",
 		"postinstall": "prisma generate",
 		"preview": "next build && next start",
-		"start": "next start",
+		"start": "PORT=3001 node .next/standalone/server.js",
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
