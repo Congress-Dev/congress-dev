@@ -22,7 +22,9 @@ RUN \
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
+
 COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/generated ./generated
 COPY . .
 
 ENV NEXT_PUBLIC_APP_URL="https://beta.congress.dev"
