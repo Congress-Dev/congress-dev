@@ -63,7 +63,7 @@ export default async function BillPageOverview({
 
 							return (
 								<TimelineNode
-									date={vote.datetime}
+									date={vote.datetime ?? new Date()}
 									icon={<HowToVoteIcon />}
 									key={vote.id}
 									title={`${vote.chamber} voted on ${vote.question}`}
