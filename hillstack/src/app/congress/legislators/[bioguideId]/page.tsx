@@ -9,13 +9,11 @@ import {
 	Box,
 	Button,
 	Card,
-	Chip,
 	Container,
 	Divider,
 	List,
 	ListItem,
 	ListItemButton,
-	Paper,
 	Toolbar,
 	Typography,
 } from '@mui/material';
@@ -329,7 +327,7 @@ export default async function LegislatorPage({
 									>
 										<ListItemButton>
 											<Link
-												href={`/congress/bills/${bill.legislation_id}`}
+												href={`/congress/bills/${bill?.legislation_id}`}
 												style={{
 													width: '100%',
 													display: 'block',

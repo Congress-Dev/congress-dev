@@ -44,7 +44,7 @@ export default async function BillPageOverview({
 							<TimelineNode
 								date={
 									version.created_at ??
-									// @ts-ignore
+									// @ts-expect-error
 									new Date(version.effective_date) ??
 									new Date()
 								}

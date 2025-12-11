@@ -23,7 +23,7 @@ export function Timeline(props: TimelineProps) {
 
 	const sortedChildren = Children.toArray(children);
 	sortedChildren.sort((a, b) => {
-		// @ts-ignore
+		// @ts-expect-error
 		return a.props.date - b.props.date;
 	});
 
