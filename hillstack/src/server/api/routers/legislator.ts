@@ -4,6 +4,28 @@ import { z } from 'zod';
 import { createTRPCRouter, publicProcedure } from '~/server/api/trpc';
 
 export const legislatorRouter = createTRPCRouter({
+	get: publicProcedure
+		.input(
+			z.object({
+				bioguideId: z.string(),
+			}),
+		)
+		.query(async ({ input, ctx }) => {
+			const { bioguideId } = input;
+
+			return ctx.db.legislator.findFirstOrThrow({
+				select: {
+					first_name: true,
+					last_name: true,
+					middle_name: true,
+					image_url: true,
+					image_source: true,
+				},
+				where: {
+					bioguide_id: bioguideId,
+				},
+			});
+		}),
 	search: publicProcedure
 		.input(
 			z.object({
