@@ -376,6 +376,9 @@ def insert_subsection_end(
     # We assume our target citation is the parent section, so to insert at the end we need to find the last child
     query = select(USCContent).where(USCContent.usc_ident == citation)
     results = session.execute(query).all()
+    if len(results) == 0:
+        logging.warning("No target section found", extra={"usc_ident": citation})
+        return []
     target_section = results[0][0]
     query = (
         select(USCContent)
@@ -668,6 +671,7 @@ def recursively_extract_actions(
                     citations=cite_list,
                 )
                 PARSER_SESSION.add(new_action)
+                PARSER_SESSION.flush()
                 apply_action(
                     content_by_parent_id, new_action, parent_actions, version_id
                 )

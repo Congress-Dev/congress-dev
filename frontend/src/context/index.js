@@ -1,4 +1,4 @@
-export { BillContext } from "./bill";
+export { BillContext } from "./bill.tsx";
 export {
     PreferenceContext,
     PreferenceEnum,

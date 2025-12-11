@@ -177,6 +177,16 @@ class TestEnactmentDates(TestCase):
         self.assertEqual(result["amount"], "1")
         self.assertEqual(result["unit"], "day")
 
+    def test_amendments_take_effect_specific_date(self):
+        text = """The amendments made by paragraph (1) shall take effect on July 1, 2026, and shall apply with respect to award year 2026-2027 and each subsequent award year, as determined under the Higher Education Act of 1965."""
+        result = determine_action(text)
+        self.assertIn(ActionType.EFFECTIVE_DATE, result)
+        result = result[ActionType.EFFECTIVE_DATE]
+        self.assertEqual(result["target"], "paragraph (1)")
+        self.assertEqual(result["effective_date"], "July 1, 2026")
+        self.assertEqual(result["amount"], "0")
+        self.assertEqual(result["unit"], "days")
+
 
 class TestTermDefinitionRef(TestCase):
     def test_in_popular_name(self):
@@ -194,3 +204,85 @@ class TestTermDefSection(TestCase):
         self.assertIn(ActionType.TERM_DEFINITION_SECTION, result)
         result = result[ActionType.TERM_DEFINITION_SECTION]
         self.assertEqual(result["term"], "covered device")
+
+
+class TestRecission(TestCase):
+    def test_recission_with_stat_ref(self):
+        text = """The unobligated balances of amounts appropriated by section 21001(a) of Public Law 117-169 (136 Stat. 2015) are rescinded."""
+        result = determine_action(text)
+        self.assertIn(ActionType.RECISSION, result)
+        result = result[ActionType.RECISSION]
+        self.assertEqual(result["section_ref"], "section 21001(a) of Public Law 117-169")
+        self.assertEqual(result["stat_ref"], "136 Stat. 2015")
+        self.assertIn("unobligated balances", result["target"])
+
+    def test_recission_without_stat_ref(self):
+        text = """The unobligated balances of amounts appropriated by section 5001 of Public Law 118-42 are rescinded."""
+        result = determine_action(text)
+        self.assertIn(ActionType.RECISSION, result)
+        result = result[ActionType.RECISSION]
+        self.assertEqual(result["section_ref"], "section 5001 of Public Law 118-42")
+        self.assertIsNone(result.get("stat_ref"))
+        self.assertIn("unobligated balances", result["target"])
+
+
+class TestSunset(TestCase):
+    def test_sunset_cease_to_have_effect_on_date(self):
+        text = """This Act shall cease to have effect on December 31, 2025."""
+        result = determine_action(text)
+        self.assertIn(ActionType.SUNSET, result)
+        result = result[ActionType.SUNSET]
+        self.assertEqual(result["target"], "This Act")
+        self.assertEqual(result["sunset_date"], "December 31, 2025")
+
+    def test_sunset_expire_on_date(self):
+        text = """The program shall expire on September 30, 2026."""
+        result = determine_action(text)
+        self.assertIn(ActionType.SUNSET, result)
+        result = result[ActionType.SUNSET]
+        self.assertEqual(result["target"], "The program")
+        self.assertEqual(result["sunset_date"], "September 30, 2026")
+
+    def test_sunset_terminate_on_date(self):
+        text = """The temporary authority shall terminate on January 1, 2027."""
+        result = determine_action(text)
+        self.assertIn(ActionType.SUNSET, result)
+        result = result[ActionType.SUNSET]
+        self.assertEqual(result["target"], "The temporary authority")
+        self.assertEqual(result["sunset_date"], "January 1, 2027")
+
+    def test_sunset_with_time_period_after_trigger(self):
+        text = """The pilot program shall cease to be effective 3 years after the date of enactment of this Act."""
+        result = determine_action(text)
+        self.assertIn(ActionType.SUNSET, result)
+        result = result[ActionType.SUNSET]
+        self.assertEqual(result["target"], "The pilot program")
+        self.assertEqual(result["amount"], "3")
+        self.assertEqual(result["unit"], "years")
+        self.assertEqual(result["trigger_date"], "the date of enactment of this Act")
+
+    def test_sunset_authority_provided_by(self):
+        text = """The authority provided by this section shall expire on December 31, 2028."""
+        result = determine_action(text)
+        self.assertIn(ActionType.SUNSET, result)
+        result = result[ActionType.SUNSET]
+        self.assertEqual(result["target"], "this section")
+        self.assertEqual(result["sunset_date"], "December 31, 2028")
+
+    def test_sunset_authority_under(self):
+        text = """The authority under section 123 shall cease to have effect on June 30, 2025."""
+        result = determine_action(text)
+        self.assertIn(ActionType.SUNSET, result)
+        result = result[ActionType.SUNSET]
+        self.assertEqual(result["target"], "section 123")
+        self.assertEqual(result["sunset_date"], "June 30, 2025")
+
+    def test_sunset_with_days_after_trigger(self):
+        text = """The emergency powers shall terminate 90 days after the President declares the emergency over."""
+        result = determine_action(text)
+        self.assertIn(ActionType.SUNSET, result)
+        result = result[ActionType.SUNSET]
+        self.assertEqual(result["target"], "The emergency powers")
+        self.assertEqual(result["amount"], "90")
+        self.assertEqual(result["unit"], "days")
+        self.assertEqual(result["trigger_date"], "the President declares the emergency over")
