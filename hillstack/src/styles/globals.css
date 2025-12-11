@@ -24,3 +24,12 @@ a {
 * {
 	box-sizing: border-box;
 }
+
+ul {
+	margin: 0;
+	padding-left: 12px;
+}
+
+li {
+	line-height: 1.5;
+}

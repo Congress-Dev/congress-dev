@@ -20,6 +20,41 @@ export const legislatorRouter = createTRPCRouter({
 					middle_name: true,
 					image_url: true,
 					image_source: true,
+					job: true,
+					party: true,
+					profile: true,
+					state: true,
+					twitter: true,
+					facebook: true,
+					youtube: true,
+					instagram: true,
+					legislation_sponsorship: {
+						select: {
+							legislation: {
+								select: {
+									legislation_id: true,
+									title: true,
+									number: true,
+									chamber: true,
+									congress: {
+										select: {
+											session_number: true,
+										},
+									},
+								},
+							},
+						},
+						where: {
+							cosponsor: false,
+						},
+						orderBy: {
+							legislation: {
+								number: 'desc',
+							},
+						},
+						distinct: ['legislation_id'],
+						take: 10,
+					},
 				},
 				where: {
 					bioguide_id: bioguideId,
