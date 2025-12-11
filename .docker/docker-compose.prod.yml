@@ -29,6 +29,7 @@ services:
         NEXT_PUBLIC_APP_URL: https://beta.congress.dev
         DATABASE_URL: postgresql://parser:parser@10.0.0.248:5432/us_code_2025
     environment:
+    - NEXT_PUBLIC_APP_URL=https://beta.congress.dev
     - DATABASE_URL=postgresql://parser:parser@10.0.0.248:5432/us_code_2025
     restart: unless-stopped
   congress_postgres:
