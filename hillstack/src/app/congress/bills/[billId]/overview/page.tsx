@@ -20,6 +20,10 @@ export default async function BillPageOverview({
 	const latestVersion =
 		data.legislation_version[data.legislation_version.length - 1];
 
+	const summary = latestVersion?.legislation_content.find(
+		(content) => content.content_type === 'legis-body',
+	)?.legislation_content_summary[0]?.summary;
+
 	const sponsor = data.legislation_sponsorship.find(
 		(sponsor) => !sponsor.cosponsor,
 	);
@@ -33,9 +37,7 @@ export default async function BillPageOverview({
 				<Box sx={{ flex: 1 }}>
 					<Timeline
 						content={
-							data?.legislation_version[0]?.legislation_content[0]
-								?.legislation_content_summary[0]?.summary ??
-							'No summary was found for this bill'
+							summary ?? 'No summary was found for this bill'
 						}
 						icon={<SummarizeIcon />}
 						title='Summary'
@@ -74,7 +76,14 @@ export default async function BillPageOverview({
 						})}
 					</Timeline>
 				</Box>
-				<Box sx={{ width: '300px', pl: 3, pr: 2 }}>
+				<Box
+					sx={{
+						width: '300px',
+						pl: 3,
+						pr: 2,
+						display: { xs: 'none', md: 'block' },
+					}}
+				>
 					<Box
 						sx={{
 							mb: 1,

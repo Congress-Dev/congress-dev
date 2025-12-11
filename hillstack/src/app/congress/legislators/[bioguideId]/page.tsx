@@ -153,7 +153,7 @@ export default async function LegislatorPage({
 	return (
 		<HydrateClient>
 			<Container maxWidth='xl'>
-				<Box sx={{ display: 'flex', gap: 3 }}>
+				<Box sx={{ display: { xs: 'block', md: 'flex' }, gap: 3 }}>
 					<Box
 						sx={{
 							flexBasis: '300px',
@@ -161,10 +161,17 @@ export default async function LegislatorPage({
 							flexDirection: 'column',
 						}}
 					>
-						<Avatar
-							src={data.image_url ?? ''}
-							sx={{ width: '200px', height: '200px' }}
-						/>
+						<Box
+							sx={{
+								display: 'flex',
+								justifyContent: { xs: 'center', md: 'left' },
+							}}
+						>
+							<Avatar
+								src={data.image_url ?? ''}
+								sx={{ width: '200px', height: '200px' }}
+							/>
+						</Box>
 						<Box sx={{ mt: 3 }}>
 							<Typography variant='h1'>{`${data.first_name} ${data.last_name}`}</Typography>
 							<Typography
@@ -305,7 +312,7 @@ export default async function LegislatorPage({
 							)}
 						</Box>
 					</Box>
-					<Box sx={{ flexGrow: 1 }}>
+					<Box sx={{ flexGrow: 1, my: { xs: 3 } }}>
 						<Card variant='outlined'>
 							<Toolbar
 								disableGutters

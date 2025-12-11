@@ -38,14 +38,14 @@ export function TimelineNode(props: TimelineNodeProps) {
 	const { palette } = useTheme();
 
 	return (
-		<TimelineNodeBox sx={{ display: 'flex', mb: 1 }}>
+		<TimelineNodeBox sx={{ display: 'flex', mb: 0 }}>
 			<Box
 				sx={{
 					display: 'flex',
 					flexDirection: 'column',
 					alignContent: 'center',
 					mr: 1,
-					minHeight: '50px',
+					minHeight: '40px',
 					minWidth: '30px',
 				}}
 			>
@@ -66,7 +66,6 @@ export function TimelineNode(props: TimelineNodeProps) {
 					className='last'
 					orientation='vertical'
 					sx={{
-						mt: 1,
 						flex: 1,
 						width: 'calc(50% + 1px)',
 						borderRightWidth: '2px',
@@ -79,12 +78,13 @@ export function TimelineNode(props: TimelineNodeProps) {
 					sx={{
 						width: '100%',
 						display: 'flex',
-						pt: 0.5,
 						alignItems: 'flex-start',
 					}}
 				>
 					<Box sx={{ flex: 1 }}>
-						<Typography variant='subtitle2'>{title}</Typography>
+						<Typography sx={{ fontSize: '14px' }} variant='caption'>
+							{title}
+						</Typography>
 					</Box>
 					<Typography variant='caption'>
 						{date?.toLocaleDateString()}

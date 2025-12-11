@@ -32,6 +32,7 @@ export const billRouter = createTRPCRouter({
 									section_display: true,
 									parent_id: true,
 									order_number: true,
+									legislation_version_id: true,
 									legislation_content_id: true,
 									legislation_content_summary: {
 										select: {
@@ -41,14 +42,16 @@ export const billRouter = createTRPCRouter({
 											legislation_content_id: 'asc',
 										},
 									},
+									legislation_action_parse: {
+										select: {
+											actions: true,
+											citations: true,
+										},
+									},
 								},
 								orderBy: [
-									{
-										parent_id: 'asc',
-									},
-									{
-										order_number: 'asc',
-									},
+									{ legislation_content_id: 'asc' },
+									{ parent_id: 'asc' },
 								],
 							},
 							legislation_version_tag: {

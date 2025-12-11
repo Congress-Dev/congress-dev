@@ -50,8 +50,10 @@ export function BillTabs() {
 	return (
 		<PageTabs
 			allowScrollButtonsMobile
+			scrollButtons={false}
 			slotProps={{}}
 			value={tabs[pathname]?.id ?? 0}
+			variant='scrollable'
 		>
 			{Object.keys(tabs).map((href) => {
 				const { label, icon } = tabs[href] ?? {};
