@@ -6,6 +6,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import type { inferRouterOutputs } from '@trpc/server';
+import Link from 'next/link';
 import type { AppRouter } from '~/server/api/root';
 
 export interface LegislatorSearchResultProps {
@@ -27,10 +28,17 @@ export function LegislatorSearchResult({
 									sx={{ width: '75px', height: '75px' }}
 								/>
 								<Box flexGrow={1} sx={{ pl: 2 }}>
-									<Typography color='primary' variant='h4'>
-										{legislator.last_name},{' '}
-										{legislator.first_name}
-									</Typography>
+									<Link
+										href={`/congress/legislators/${legislator.bioguide_id}`}
+									>
+										<Typography
+											color='primary'
+											variant='h4'
+										>
+											{legislator.last_name},{' '}
+											{legislator.first_name}
+										</Typography>
+									</Link>
 									<Box>
 										<Typography variant='subtitle2'>
 											Job:
