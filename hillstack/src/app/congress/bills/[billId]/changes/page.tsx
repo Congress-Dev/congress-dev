@@ -27,20 +27,26 @@ export const ContentDisplay = (content) => {
 		<Box>
 			<Box sx={{ display: 'flex' }}>
 				<Typography
-					sx={{ mr: 0.5, fontFamily: 'monospace' }}
+					sx={{ mr: 0.5, fontFamily: 'monospace', fontSize: '12px' }}
 					variant={'subtitle2'}
 				>
 					{content.section_display}
 				</Typography>
-				<Typography sx={{ flex: 1, fontFamily: 'monospace' }}>
-					{content.heading ?? cleanStr(content.content_str)}
+				<Typography
+					sx={{ flex: 1, fontFamily: 'monospace', fontSize: '12px' }}
+				>
+					{content.heading && content.heading?.trim() !== ''
+						? content.heading
+						: cleanStr(content.content_str)}
 				</Typography>
 			</Box>
-			{content.heading && (
-				<Typography sx={{ ml: 3, fontFamily: 'monospace' }}>
+			{content.heading && content.heading?.trim() !== '' ? (
+				<Typography
+					sx={{ ml: 3, fontFamily: 'monospace', fontSize: '12px' }}
+				>
 					{cleanStr(content.content_str)}
 				</Typography>
-			)}
+			) : null}
 		</Box>
 	);
 };
@@ -70,7 +76,7 @@ export const DiffTreeNode: React.FC<NodeProps> = ({
 	// console.log(node, hasChildren);
 
 	return (
-		<div style={{}}>
+		<div style={{ marginTop: 2 }}>
 			{/* Row */}
 			{!newContent && (
 				<div
@@ -134,7 +140,7 @@ export const DiffTreeNode: React.FC<NodeProps> = ({
 
 			{/* Children */}
 			{!collapsed && hasChildren && (
-				<div style={{ marginTop: 2 }}>
+				<div style={{}}>
 					{node.children.map((child) => (
 						<DiffTreeNode
 							depth={depth + 1}
