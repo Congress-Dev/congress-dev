@@ -65,7 +65,7 @@ export default async function BillPage({
 								<Box
 									key={content.legislation_content_id}
 									sx={{
-										ml: indent * 3,
+										ml: indent * 2 + 2,
 									}}
 								>
 									<Box
@@ -86,13 +86,18 @@ export default async function BillPage({
 													sx={{
 														fontSize: '18px',
 														mr: 1,
+														ml: -2.5,
 													}}
 												/>
 											</Tooltip>
 										) : null}
 										<Box sx={{ display: 'flex' }}>
 											<Typography
-												sx={{ mr: 0.5 }}
+												sx={{
+													mr: 0.5,
+													fontFamily: 'monospace',
+													fontSize: '12px',
+												}}
 												variant={'subtitle2'}
 												{...(sectionHeading
 													? { color: 'primary' }
@@ -101,7 +106,11 @@ export default async function BillPage({
 												{content.section_display}
 											</Typography>
 											<Typography
-												sx={{ flex: 1 }}
+												sx={{
+													flex: 1,
+													fontFamily: 'monospace',
+													fontSize: '12px',
+												}}
 												variant={
 													sectionHeading
 														? 'subtitle2'
@@ -117,7 +126,13 @@ export default async function BillPage({
 										</Box>
 									</Box>
 									{content.heading && (
-										<Typography sx={{ ml: 3 }}>
+										<Typography
+											sx={{
+												ml: 3,
+												fontFamily: 'monospace',
+												fontSize: '12px',
+											}}
+										>
 											{content.content_str}
 										</Typography>
 									)}
