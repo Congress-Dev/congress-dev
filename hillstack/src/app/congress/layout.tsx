@@ -23,7 +23,9 @@ export default function CongressLayout({
 			<Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
 				<Tabs
 					allowScrollButtonsMobile
+					scrollButtons={false}
 					value={congressTabs[activePath]?.id ?? 0}
+					variant='scrollable'
 				>
 					{Object.keys(congressTabs).map((href, idx) => {
 						const { label, icon } = congressTabs[href] ?? {};

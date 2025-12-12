@@ -32,6 +32,7 @@ export const billRouter = createTRPCRouter({
 									section_display: true,
 									parent_id: true,
 									order_number: true,
+									legislation_version_id: true,
 									legislation_content_id: true,
 									legislation_content_summary: {
 										select: {
@@ -41,14 +42,16 @@ export const billRouter = createTRPCRouter({
 											legislation_content_id: 'asc',
 										},
 									},
+									legislation_action_parse: {
+										select: {
+											actions: true,
+											citations: true,
+										},
+									},
 								},
 								orderBy: [
-									{
-										parent_id: 'asc',
-									},
-									{
-										order_number: 'asc',
-									},
+									{ legislation_content_id: 'asc' },
+									{ parent_id: 'asc' },
 								],
 							},
 							legislation_version_tag: {
@@ -187,6 +190,307 @@ export const billRouter = createTRPCRouter({
 			return {
 				legislation,
 				totalResults,
+			};
+		}),
+	diffs: publicProcedure
+		.input(
+			z.object({
+				id: z.number(),
+			}),
+		)
+		.query(async ({ input, ctx }) => {
+			const legislation = await ctx.db.legislation.findUniqueOrThrow({
+				select: {
+					legislation_version: {
+						select: {
+							version_id: true,
+						},
+					},
+				},
+				where: { legislation_id: input.id },
+			});
+
+			const latestVersion =
+				legislation.legislation_version[
+					legislation.legislation_version.length - 1
+				];
+
+			const diffs = await ctx.db.usc_content_diff.findMany({
+				select: {
+					usc_content_id: true,
+					usc_content_diff_id: true,
+					section_display: true,
+					heading: true,
+					content_str: true,
+					usc_chapter: {
+						select: {
+							short_title: true,
+							long_title: true,
+						},
+					},
+					usc_section: {
+						select: {
+							number: true,
+							heading: true,
+						},
+					},
+				},
+				where: {
+					version_id: latestVersion?.version_id,
+					// usc_section: {
+					// 	number: '1182',
+					// },
+				},
+				orderBy: [
+					{ usc_chapter: { short_title: 'asc' } },
+					{ usc_section: { number: 'asc' } },
+					{ usc_content_id: 'asc' },
+				],
+				// skip: 3,
+			});
+
+			/**
+			 * Fetches the full parent chain for a given USC Content ID.
+			 * Returns array from root -> leaf (target item).
+			 */
+			async function fetchParentChain(uscContentId: number) {
+				const chain = [];
+				let current: number | null = uscContentId;
+
+				while (current) {
+					const node = await ctx.db.usc_content.findUnique({
+						where: { usc_content_id: current },
+						select: {
+							usc_content_id: true,
+							parent_id: true,
+							content_str: true,
+							heading: true,
+							section_display: true,
+						},
+					});
+
+					if (!node) break;
+
+					chain.push(node);
+					current = node.parent_id;
+				}
+
+				return chain.reverse();
+			}
+
+			/**
+			 * Given a node, fetch all children (direct descendants).
+			 */
+			async function fetchChildren(parentId: number | null) {
+				return ctx.db.usc_content.findMany({
+					where: { parent_id: parentId },
+					select: {
+						parent_id: true,
+						heading: true,
+						content_str: true,
+						usc_content_id: true,
+						section_display: true,
+					},
+					orderBy: { usc_content_id: 'asc' },
+				});
+			}
+
+			/**
+			 * Slice siblings so only ±3 around the target remain.
+			 */
+			function sliceSiblingsAroundTarget(
+				siblings: any[],
+				targetId: number,
+			) {
+				const idx = siblings.findIndex(
+					(s) => s.usc_content_id === targetId,
+				);
+				if (idx === -1) return siblings;
+
+				const start = Math.max(idx - 3, 0);
+				const end = Math.min(idx + 3, siblings.length - 1);
+
+				return siblings.slice(start, end + 1);
+			}
+
+			/**
+			 * Build a nested structure from the root to the target.
+			 * Only include siblings within ±3 range at each level.
+			 */
+			async function buildNestedTree(chain: any[], targetId: number) {
+				let cursor: TreeNode | null = null;
+				let rootNode: TreeNode | null = null;
+
+				for (let i = 0; i < chain.length; i++) {
+					const node = chain[i];
+
+					let visibleSiblings = [node];
+
+					if (i === chain.length - 1) {
+						// Fetch siblings at this parent level
+						const siblings = await fetchChildren(node.parent_id);
+
+						// Only keep ±3 siblings around the current chain node
+						visibleSiblings = sliceSiblingsAroundTarget(
+							siblings,
+							node.usc_content_id,
+						);
+					}
+
+					const children: TreeNode[] = visibleSiblings.map((sib) => ({
+						id: sib.usc_content_id,
+						usc_content_id: sib.usc_content_id,
+						parent_id: sib.parent_id,
+						content_str: sib.content_str,
+						section_display: sib.section_display,
+						heading: sib.heading,
+						children: [],
+						isTarget: sib.usc_content_id === targetId,
+						isOnPath: sib.usc_content_id === node.usc_content_id,
+						isCollapsed: sib.usc_content_id !== node.usc_content_id, // collapse siblings except the one on the path
+					}));
+
+					const thisNode = children.find(
+						(c) => c.usc_content_id === node.usc_content_id,
+					)!;
+
+					if (!cursor) {
+						// this is the root
+						rootNode = thisNode;
+						cursor = thisNode;
+					} else {
+						// attach to previous cursor
+						cursor.children = children;
+						cursor = thisNode;
+					}
+				}
+
+				return rootNode!;
+			}
+
+			/**
+			 * Main function: builds a nested "GitHub-like collapsed tree" for each diff.
+			 */
+			async function buildNestedDiffTrees() {
+				const results = [];
+
+				for (const diff of diffs) {
+					const chain = await fetchParentChain(diff.usc_content_id);
+					const tree = await buildNestedTree(
+						chain,
+						diff.usc_content_id,
+					);
+
+					results.push({
+						diffId: diff.usc_content_id,
+						metadata: {
+							usc_chapter: diff.usc_chapter,
+							usc_section: diff.usc_section,
+						},
+						tree,
+					});
+				}
+
+				return results;
+			}
+
+			interface TreeNodeOutput {
+				id: number; // or usc_content_id
+				parent_id: number | null;
+				content: string; // or content_str
+				children: TreeNodeOutput[];
+				isTarget: boolean;
+				isOnPath: boolean;
+				diffIds?: number[];
+			}
+
+			/**
+			 * Merge multiple diff trees (with associated diffId) into one unified tree
+			 */
+			function mergeDiffTrees(
+				treesWithDiffId: { diffId: number; tree: TreeNodeOutput }[],
+			): TreeNodeOutput[] {
+				const nodeMap = new Map<number, TreeNodeOutput>();
+
+				function mergeNode(
+					node: TreeNodeOutput,
+					diffId: number,
+					metadata: any,
+				) {
+					if (nodeMap.has(node.id)) {
+						const existing = nodeMap.get(node.id)!;
+
+						// Merge children recursively
+						node.children.forEach((child) => {
+							mergeNodeInto(child, existing.children, diffId);
+						});
+
+						// Merge diffIds if this node is a target
+						if (node.isTarget) {
+							if (!existing.diffIds) existing.diffIds = [];
+							if (!existing.diffIds.includes(diffId))
+								existing.diffIds.push(diffId);
+						}
+
+						// Merge isOnPath
+						existing.isOnPath = existing.isOnPath || node.isOnPath;
+					} else {
+						// Clone node and attach diffId if target
+						const copy: TreeNodeOutput = {
+							...node,
+							children: [...node.children],
+							diffIds: node.isTarget ? [diffId] : [],
+							metadata,
+						};
+						nodeMap.set(copy.id, copy);
+					}
+				}
+
+				function mergeNodeInto(
+					node: TreeNodeOutput,
+					children: TreeNodeOutput[],
+					diffId: number,
+				) {
+					const existing = children.find((c) => c.id === node.id);
+					if (existing) {
+						node.children.forEach((child) =>
+							mergeNodeInto(child, existing.children, diffId),
+						);
+						if (node.isTarget) {
+							if (!existing.diffIds) existing.diffIds = [];
+							if (!existing.diffIds.includes(diffId))
+								existing.diffIds.push(diffId);
+						}
+						existing.isOnPath = existing.isOnPath || node.isOnPath;
+					} else {
+						children.push({
+							...node,
+							children: [...node.children],
+							diffIds: node.isTarget ? [diffId] : [],
+						});
+					}
+				}
+
+				// Merge all trees
+				for (const { diffId, tree, metadata } of treesWithDiffId) {
+					mergeNode(tree, diffId, metadata);
+				}
+
+				// Return top-level roots (parent_id === null)
+				return Array.from(nodeMap.values()).filter(
+					(n) => n.parent_id === null,
+				);
+			}
+
+			const allDiffTrees = await buildNestedDiffTrees();
+			const mergedTree = mergeDiffTrees(allDiffTrees);
+			// const data = await buildMergedDiffTree();
+			return {
+				diffs: diffs.reduce((acc, diff) => {
+					acc[diff.usc_content_id] = diff;
+					return acc;
+				}, {}),
+				mergedTree,
 			};
 		}),
 });
