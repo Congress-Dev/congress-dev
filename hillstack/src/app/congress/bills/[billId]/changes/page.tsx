@@ -4,7 +4,7 @@ import type { Params } from 'next/dist/server/request/params';
 import { api } from '~/trpc/server';
 
 const cleanStr = (input: string) =>
-	input.replace(/<usccite\b[^>]*>(.*?)<\/usccite>/gs, '$1');
+	input?.replace(/<usccite\b[^>]*>(.*?)<\/usccite>/gs, '$1');
 
 export interface TreeNode {
 	id: number;
@@ -57,9 +57,9 @@ export const DiffTreeNode: React.FC<NodeProps> = ({
 	const isTarget = node.isTarget;
 	const isOnPath = node.isOnPath;
 
-	if (!node.heading && !node.content_str) {
-		return;
-	}
+	// if (!node.heading && !node.content_str) {
+	// 	return;
+	// }
 
 	// console.log(node, hasChildren);
 
@@ -81,7 +81,7 @@ export const DiffTreeNode: React.FC<NodeProps> = ({
 					cursor: hasChildren ? 'pointer' : 'default',
 					fontFamily: 'monospace',
 					fontSize: '14px',
-					display: 'flex',
+					display: node.heading || node.content_str ? 'flex' : 'none',
 					alignItems: 'center',
 				}}
 			>
@@ -118,7 +118,7 @@ export const DiffTreeNode: React.FC<NodeProps> = ({
 			>
 				{/* Content */}
 				<span>
-					<ContentDisplay {...{ ...node, content_str: diff }} />
+					<ContentDisplay {...diff} />
 				</span>
 			</div>
 
@@ -164,25 +164,14 @@ export default async function BillChangesPage({
 	console.log(data);
 
 	return data.map((level) => (
-		<Box key={level.diffId} sx={{ mb: 2 }}>
+		<Box key={level.diff.usc_content_diff_id} sx={{ mb: 2 }}>
 			<Card>
-				<Toolbar
-					sx={{
-						py: 1,
-						display: 'flex',
-						flexDirection: 'column',
-						alignItems: 'flex-start',
-					}}
-					variant='dense'
-				>
+				<Toolbar variant='dense'>
 					<Typography sx={{ mr: 1 }} variant='subtitle1'>
 						{`${level.usc_chapter?.short_title} - ${level.usc_chapter?.long_title}`}
 					</Typography>
-					<Typography variant='subtitle2'>
-						{`§ ${level.usc_section.number}. ${level.usc_section.heading}`}
-					</Typography>
 				</Toolbar>
-				<DiffTree diff={level.diffStr} tree={level.tree} />
+				<DiffTree diff={level.diff} tree={level.tree} />
 			</Card>
 		</Box>
 	));

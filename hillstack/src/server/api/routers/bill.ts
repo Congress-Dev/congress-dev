@@ -217,37 +217,31 @@ export const billRouter = createTRPCRouter({
 
 			const diffs = await ctx.db.usc_content_diff.findMany({
 				select: {
+					usc_content_id: true,
 					usc_content_diff_id: true,
+					section_display: true,
+					heading: true,
 					content_str: true,
 					usc_chapter: {
 						select: {
 							short_title: true,
 							long_title: true,
-							usc_chapter_id: true,
 						},
 					},
 					usc_section: {
 						select: {
 							number: true,
 							heading: true,
-							section_display: true,
-							usc_section_id: true,
-						},
-					},
-					usc_content: {
-						select: {
-							parent_id: true,
-							usc_ident: true,
-							usc_content_id: true,
-							content_str: true,
-							version_id: true,
 						},
 					},
 				},
 				where: {
 					version_id: latestVersion?.version_id,
+					usc_section: {
+						number: '1182',
+					},
 				},
-				orderBy: {},
+				// skip: 3,
 			});
 
 			/**
@@ -292,6 +286,7 @@ export const billRouter = createTRPCRouter({
 						usc_content_id: true,
 						section_display: true,
 					},
+					orderBy: { usc_content_id: 'asc' },
 				});
 			}
 
@@ -321,17 +316,21 @@ export const billRouter = createTRPCRouter({
 				let cursor: TreeNode | null = null;
 				let rootNode: TreeNode | null = null;
 
-				for (let i = 1; i < chain.length; i++) {
+				for (let i = 0; i < chain.length; i++) {
 					const node = chain[i];
 
-					// Fetch siblings at this parent level
-					const siblings = await fetchChildren(node.parent_id);
+					let visibleSiblings = [node];
 
-					// Only keep ±3 siblings around the current chain node
-					const visibleSiblings = sliceSiblingsAroundTarget(
-						siblings,
-						node.usc_content_id,
-					);
+					if (i === chain.length - 1) {
+						// Fetch siblings at this parent level
+						const siblings = await fetchChildren(node.parent_id);
+
+						// Only keep ±3 siblings around the current chain node
+						visibleSiblings = sliceSiblingsAroundTarget(
+							siblings,
+							node.usc_content_id,
+						);
+					}
 
 					const children: TreeNode[] = visibleSiblings.map((sib) => ({
 						id: sib.usc_content_id,
@@ -368,28 +367,6 @@ export const billRouter = createTRPCRouter({
 			 * Main function: builds a nested "GitHub-like collapsed tree" for each diff.
 			 */
 			async function buildNestedDiffTrees() {
-				const diffs = await ctx.db.usc_content_diff.findMany({
-					select: {
-						usc_content_id: true,
-						content_str: true,
-						usc_chapter: {
-							select: {
-								short_title: true,
-								long_title: true,
-							},
-						},
-						usc_section: {
-							select: {
-								number: true,
-								heading: true,
-							},
-						},
-					},
-					where: {
-						version_id: latestVersion?.version_id,
-					},
-				});
-
 				const results = [];
 
 				for (const diff of diffs) {
@@ -400,6 +377,12 @@ export const billRouter = createTRPCRouter({
 					);
 
 					results.push({
+						diff: {
+							usc_content_diff_id: diff.usc_content_diff_id,
+							section_display: diff.section_display,
+							heading: diff.heading,
+							content_str: diff.content_str,
+						},
 						diffId: diff.usc_content_id,
 						diffStr: diff.content_str,
 						usc_chapter: diff.usc_chapter,
@@ -413,158 +396,7 @@ export const billRouter = createTRPCRouter({
 			}
 
 			const data = await buildNestedDiffTrees();
+			// const data = await buildMergedDiffTree();
 			return data;
-			// I want to do the following.
-			// - Group each diff by its parent usc chapter
-			// - For each diff, I want to pull the tree structure up to the parent (start of chapter)
-			// - I want to create a tree structure where each diff is placed in the correct level
-			// - For the last level of parents, (i.e right above the diff level), I want to pull all surrounding content
-
-			// const chapters = Array.from(
-			// 	new Set(diffs.map((diff) => diff.usc_chapter?.usc_chapter_id)),
-			// );
-			// const tree = {};
-
-			// await Promise.all(
-			// 	diffs.map(async (diff) => {
-			// 		const { usc_chapter, usc_section, usc_content } = diff;
-			// 		const chapterId = usc_chapter?.usc_chapter_id;
-			// 		const sectionId = usc_section?.usc_section_id;
-
-			// 		console.log(usc_chapter?.long_title);
-			// 		console.log(usc_section?.heading);
-			// 		console.log('___');
-
-			// 		tree[chapterId] ??= { usc_chapter, children: {} };
-			// 		tree[chapterId].children[sectionId] ??= {
-			// 			usc_section,
-			// 			children: {},
-			// 		};
-
-			// 		const result = await ctx.db.$queryRawUnsafe(
-			// 			`
-			// 		WITH RECURSIVE cte AS (
-			// 			SELECT *
-			// 			FROM "usc_content"
-			// 			WHERE usc_content_id = $1 AND version_id=1
-			// 			UNION ALL
-			// 			SELECT c.*
-			// 			FROM "usc_content" c
-			// 			JOIN cte ON cte."parent_id" = c.usc_content_id
-			// 		)
-			// 		SELECT * FROM cte;
-			// 		`,
-			// 			usc_content?.parent_id,
-			// 		);
-
-			// 		result.reverse();
-			// 		result.push(diff);
-			// 		result.splice(0, 1);
-
-			// 		const firstHeader = result[0];
-
-			// 		tree[chapterId].children[sectionId].children[
-			// 			firstHeader.usc_content_id
-			// 		] = result;
-			// 	}),
-			// );
-
-			// return tree;
-
-			// const diffParentMap = diffs.reduce((acc, diff) => {
-			// 	acc[diff.usc_content?.parent_id] ??= [];
-			// 	acc[diff.usc_content?.parent_id].push(diff);
-			// 	return acc;
-			// }, {}); // = diffs.map((diff) => diff.usc_content?.parent_id);
-
-			// console.log(Object.keys(diffParentMap));
-
-			// const surrounding = await ctx.db.usc_content.findMany({
-			// 	select: {
-			// 		parent_id: true,
-			// 		usc_content_id: true,
-			// 		content_str: true,
-			// 		heading: true,
-			// 		usc_ident: true,
-			// 	},
-			// 	where: {
-			// 		parent_id: {
-			// 			in: Object.keys(diffParentMap).map((key) =>
-			// 				Number(key),
-			// 			),
-			// 		},
-			// 		version_id: 1,
-			// 	},
-			// });
-
-			// const parents = await ctx.db.usc_content.findMany({
-			// 	select: {
-			// 		parent_id: true,
-			// 		usc_content_id: true,
-			// 		content_str: true,
-			// 		heading: true,
-			// 		usc_ident: true,
-			// 	},
-			// 	where: {
-			// 		usc_content_id: {
-			// 			in: Object.keys(diffParentMap).map((key) =>
-			// 				Number(key),
-			// 			),
-			// 		},
-			// 		version_id: 1,
-			// 	},
-			// });
-
-			// const parentMap = parents.reduce((acc, parent) => {
-			// 	acc[parent.usc_content_id] = parent;
-			// 	return acc;
-			// }, {});
-
-			// const extras = surrounding.reduce((acc, content) => {
-			// 	acc[content.parent_id] ??= {
-			// 		diff: diffParentMap[content.parent_id],
-			// 		sections: [],
-			// 		parent: parentMap[content.parent_id],
-			// 	};
-			// 	acc[content.parent_id].sections.push(content);
-			// 	return acc;
-			// }, {});
-
-			// const result = await ctx.db.$queryRawUnsafe(
-			// 	`
-			// 	WITH RECURSIVE cte AS (
-			// 		SELECT *
-			// 		FROM "usc_content"
-			// 		WHERE usc_content_id = $1
-			// 		UNION ALL
-			// 		SELECT c.*
-			// 		FROM "usc_content" c
-			// 		JOIN cte ON cte."parent_id" = c.usc_content_id
-			// 	)
-			// 	SELECT * FROM cte;
-			// 	`,
-			// 	diffs[0]?.usc_content?.parent_id,
-			// );
-
-			// // const surrounding = await ctx.db.usc_content.findMany({
-			// // 	select: {
-			// // 		content_str: true,
-			// // 	},
-			// // 	where: {
-			// // 		usc_content_id: {
-			// // 			in: [
-			// // 				diffs[0]?.usc_content?.usc_content_id - 1,
-			// // 				diffs[0]?.usc_content?.usc_content_id + 1,
-			// // 			],
-			// // 		},
-			// // 	},
-			// // });
-
-			// return {
-			// 	version_id: latestVersion?.version_id,
-			// 	diffs,
-			// 	extras,
-			// 	result,
-			// };
 		}),
 });
