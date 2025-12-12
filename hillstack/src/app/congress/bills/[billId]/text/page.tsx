@@ -127,9 +127,9 @@ export default async function BillPage({
 					</Box>
 				</Card>
 			</Box>
-			<Box sx={{ width: '300px', display: { xs: 'none', md: 'block' } }}>
-				test
-			</Box>
+			<Box
+				sx={{ width: '300px', display: { xs: 'none', md: 'block' } }}
+			></Box>
 		</Box>
 	);
 }
