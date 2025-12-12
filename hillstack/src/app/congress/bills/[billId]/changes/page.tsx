@@ -47,7 +47,7 @@ export const ContentDisplay = (content) => {
 
 export const DiffTreeNode: React.FC<NodeProps> = ({
 	node,
-	diff,
+	diffs,
 	depth = 0,
 }) => {
 	// const [collapsed, setCollapsed] = useState(node.isCollapsed);
@@ -56,6 +56,12 @@ export const DiffTreeNode: React.FC<NodeProps> = ({
 	const hasChildren = node.children && node.children.length > 0;
 	const isTarget = node.isTarget;
 	const isOnPath = node.isOnPath;
+	const hasChange = !!diffs[node.usc_content_id];
+	const theDiff = diffs[node.usc_content_id];
+	const newContent =
+		!node.section_display && !node.heading && !node.content_str;
+	const hasDiff =
+		theDiff?.section_display || theDiff?.heading || theDiff?.content_str;
 
 	// if (!node.heading && !node.content_str) {
 	// 	return;
@@ -64,63 +70,67 @@ export const DiffTreeNode: React.FC<NodeProps> = ({
 	// console.log(node, hasChildren);
 
 	return (
-		<div style={{ marginLeft: depth * INDENT }}>
+		<div style={{}}>
 			{/* Row */}
-			<div
-				// onClick={() => hasChildren && setCollapsed(!collapsed)}
-				style={{
-					padding: '4px 6px',
-					background: isTarget
-						? 'rgba(255, 200, 0, 0.25)'
-						: isOnPath
-							? 'rgba(0, 120, 255, 0.12)'
+			{!newContent && (
+				<div
+					// onClick={() => hasChildren && setCollapsed(!collapsed)}
+					style={{
+						padding: '4px 6px',
+						paddingLeft: depth * INDENT,
+						background: hasChange
+							? 'rgba(255, 0, 0, 0.09)'
 							: 'transparent',
-					borderLeft: isTarget
-						? '3px solid #d97706'
-						: '3px solid transparent',
-					cursor: hasChildren ? 'pointer' : 'default',
-					fontFamily: 'monospace',
-					fontSize: '14px',
-					display: node.heading || node.content_str ? 'flex' : 'none',
-					alignItems: 'center',
-				}}
-			>
-				{/* ▾ / ▸ arrow */}
-				{hasChildren ? (
-					<span style={{ marginRight: 4, userSelect: 'none' }}>
+						borderLeft: hasChange
+							? '3px solid #d90606ff'
+							: '3px solid transparent',
+						cursor: hasChildren ? 'pointer' : 'default',
+						fontFamily: 'monospace',
+						fontSize: '14px',
+						display: 'flex',
+						alignItems: 'center',
+					}}
+				>
+					{hasChildren ? (
+						<span style={{ marginRight: 4, userSelect: 'none' }}>
+							<ContentDisplay {...node} />
+						</span>
+					) : (
 						<ContentDisplay {...node} />
-					</span>
-				) : (
-					<ContentDisplay {...node} />
-				)}
-
-				{/* Content */}
-			</div>
-			<div
-				// onClick={() => hasChildren && setCollapsed(!collapsed)}
-				style={{
-					padding: '4px 6px',
-					background: isTarget
-						? 'rgba(30, 255, 0, 0.25)'
-						: isOnPath
-							? 'rgba(0, 120, 255, 0.12)'
+					)}
+				</div>
+			)}
+			{hasDiff && (
+				<div
+					style={{
+						padding: '4px 6px',
+						paddingLeft: depth * INDENT,
+						background: hasDiff
+							? 'rgba(30, 255, 0, 0.09)'
 							: 'transparent',
-					borderLeft: isTarget
-						? '3px solid #18d906ff'
-						: '3px solid transparent',
-					cursor: hasChildren ? 'pointer' : 'default',
-					fontFamily: 'monospace',
-					fontSize: '14px',
-					display: isTarget ? 'flex' : 'none',
-					alignItems: 'center',
-					marginTop: 2,
-				}}
-			>
-				{/* Content */}
-				<span>
-					<ContentDisplay {...diff} />
-				</span>
-			</div>
+						borderLeft: hasDiff
+							? '3px solid #18d906ff'
+							: '3px solid transparent',
+						fontFamily: 'monospace',
+						fontSize: '14px',
+						display: 'flex',
+						alignItems: 'center',
+						marginTop: 2,
+					}}
+				>
+					<span>
+						<ContentDisplay
+							{...{
+								...theDiff,
+								section_display:
+									theDiff.section_display ??
+									node.section_display,
+								heading: theDiff.heading ?? node.heading,
+							}}
+						/>
+					</span>
+				</div>
+			)}
 
 			{/* Children */}
 			{!collapsed && hasChildren && (
@@ -128,7 +138,7 @@ export const DiffTreeNode: React.FC<NodeProps> = ({
 					{node.children.map((child) => (
 						<DiffTreeNode
 							depth={depth + 1}
-							diff={diff}
+							diffs={diffs}
 							key={child.id}
 							node={child}
 						/>
@@ -142,10 +152,10 @@ export const DiffTreeNode: React.FC<NodeProps> = ({
 /**
  * Tree renderer root
  */
-export const DiffTree: React.FC<{ tree: TreeNode }> = ({ tree, diff }) => {
+export const DiffTree: React.FC<{ tree: TreeNode }> = ({ tree, diffs }) => {
 	return (
 		<div style={{ padding: '8px 0' }}>
-			<DiffTreeNode diff={diff} node={tree} />
+			<DiffTreeNode diffs={diffs} node={tree} />
 		</div>
 	);
 };
@@ -160,18 +170,19 @@ export default async function BillChangesPage({
 	const data = await api.bill.diffs({
 		id: Number(billId as string),
 	});
-
 	console.log(data);
 
-	return data.map((level) => (
-		<Box key={level.diff.usc_content_diff_id} sx={{ mb: 2 }}>
+	return data.mergedTree.map((level) => (
+		<Box key={level.id} sx={{ mb: 2 }}>
 			<Card>
 				<Toolbar variant='dense'>
 					<Typography sx={{ mr: 1 }} variant='subtitle1'>
-						{`${level.usc_chapter?.short_title} - ${level.usc_chapter?.long_title}`}
+						{`U.S.C ${level.metadata.usc_chapter?.short_title} - ${level.metadata.usc_chapter?.long_title}`}
 					</Typography>
 				</Toolbar>
-				<DiffTree diff={level.diff} tree={level.tree} />
+				<Box sx={{ px: 2 }}>
+					<DiffTree diffs={data.diffs} tree={level} />
+				</Box>
 			</Card>
 		</Box>
 	));

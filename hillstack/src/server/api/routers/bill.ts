@@ -237,10 +237,15 @@ export const billRouter = createTRPCRouter({
 				},
 				where: {
 					version_id: latestVersion?.version_id,
-					usc_section: {
-						number: '1182',
-					},
+					// usc_section: {
+					// 	number: '1182',
+					// },
 				},
+				orderBy: [
+					{ usc_chapter: { short_title: 'asc' } },
+					{ usc_section: { number: 'asc' } },
+					{ usc_content_id: 'asc' },
+				],
 				// skip: 3,
 			});
 
@@ -377,17 +382,11 @@ export const billRouter = createTRPCRouter({
 					);
 
 					results.push({
-						diff: {
-							usc_content_diff_id: diff.usc_content_diff_id,
-							section_display: diff.section_display,
-							heading: diff.heading,
-							content_str: diff.content_str,
-						},
 						diffId: diff.usc_content_id,
-						diffStr: diff.content_str,
-						usc_chapter: diff.usc_chapter,
-						usc_section: diff.usc_section,
-						usc_content_id: diff.usc_content_id,
+						metadata: {
+							usc_chapter: diff.usc_chapter,
+							usc_section: diff.usc_section,
+						},
 						tree,
 					});
 				}
@@ -395,8 +394,103 @@ export const billRouter = createTRPCRouter({
 				return results;
 			}
 
-			const data = await buildNestedDiffTrees();
+			interface TreeNodeOutput {
+				id: number; // or usc_content_id
+				parent_id: number | null;
+				content: string; // or content_str
+				children: TreeNodeOutput[];
+				isTarget: boolean;
+				isOnPath: boolean;
+				diffIds?: number[];
+			}
+
+			/**
+			 * Merge multiple diff trees (with associated diffId) into one unified tree
+			 */
+			function mergeDiffTrees(
+				treesWithDiffId: { diffId: number; tree: TreeNodeOutput }[],
+			): TreeNodeOutput[] {
+				const nodeMap = new Map<number, TreeNodeOutput>();
+
+				function mergeNode(
+					node: TreeNodeOutput,
+					diffId: number,
+					metadata: any,
+				) {
+					if (nodeMap.has(node.id)) {
+						const existing = nodeMap.get(node.id)!;
+
+						// Merge children recursively
+						node.children.forEach((child) => {
+							mergeNodeInto(child, existing.children, diffId);
+						});
+
+						// Merge diffIds if this node is a target
+						if (node.isTarget) {
+							if (!existing.diffIds) existing.diffIds = [];
+							if (!existing.diffIds.includes(diffId))
+								existing.diffIds.push(diffId);
+						}
+
+						// Merge isOnPath
+						existing.isOnPath = existing.isOnPath || node.isOnPath;
+					} else {
+						// Clone node and attach diffId if target
+						const copy: TreeNodeOutput = {
+							...node,
+							children: [...node.children],
+							diffIds: node.isTarget ? [diffId] : [],
+							metadata,
+						};
+						nodeMap.set(copy.id, copy);
+					}
+				}
+
+				function mergeNodeInto(
+					node: TreeNodeOutput,
+					children: TreeNodeOutput[],
+					diffId: number,
+				) {
+					const existing = children.find((c) => c.id === node.id);
+					if (existing) {
+						node.children.forEach((child) =>
+							mergeNodeInto(child, existing.children, diffId),
+						);
+						if (node.isTarget) {
+							if (!existing.diffIds) existing.diffIds = [];
+							if (!existing.diffIds.includes(diffId))
+								existing.diffIds.push(diffId);
+						}
+						existing.isOnPath = existing.isOnPath || node.isOnPath;
+					} else {
+						children.push({
+							...node,
+							children: [...node.children],
+							diffIds: node.isTarget ? [diffId] : [],
+						});
+					}
+				}
+
+				// Merge all trees
+				for (const { diffId, tree, metadata } of treesWithDiffId) {
+					mergeNode(tree, diffId, metadata);
+				}
+
+				// Return top-level roots (parent_id === null)
+				return Array.from(nodeMap.values()).filter(
+					(n) => n.parent_id === null,
+				);
+			}
+
+			const allDiffTrees = await buildNestedDiffTrees();
+			const mergedTree = mergeDiffTrees(allDiffTrees);
 			// const data = await buildMergedDiffTree();
-			return data;
+			return {
+				diffs: diffs.reduce((acc, diff) => {
+					acc[diff.usc_content_id] = diff;
+					return acc;
+				}, {}),
+				mergedTree,
+			};
 		}),
 });
