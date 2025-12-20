@@ -1,3 +1,4 @@
+import EventSeatIcon from '@mui/icons-material/EventSeat';
 import HowToVoteIcon from '@mui/icons-material/HowToVote';
 import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import SummarizeIcon from '@mui/icons-material/Summarize';
@@ -7,7 +8,7 @@ import { Timeline, TimelineNode } from '~/components/timeline';
 import { BillVersionEnum } from '~/enums';
 import { api, HydrateClient } from '~/trpc/server';
 
-export default async function BillPageOverview({
+export default async function BillOverviewPage({
 	params,
 }: {
 	params: Promise<Params>;
@@ -30,6 +31,8 @@ export default async function BillPageOverview({
 	const cosponsors = data.legislation_sponsorship
 		.filter((sponsor) => sponsor.cosponsor)
 		?.slice(0, 5);
+
+	console.log(latestVersion);
 
 	return (
 		<HydrateClient>
@@ -55,7 +58,7 @@ export default async function BillPageOverview({
 								title={
 									version.legislation_version
 										? `Legislation has been ${BillVersionEnum[version.legislation_version]}`
-										: 'Unknown legislation action'
+										: 'Unknown legislation version'
 								}
 								variant='compact'
 							/>
@@ -72,6 +75,20 @@ export default async function BillPageOverview({
 								>
 									{`The vote ${vote.passed ? 'passed' : 'failed'} ${voteTotal.yay}-${voteTotal.nay}, with ${voteTotal.abstain} not voting.`}
 								</TimelineNode>
+							);
+						})}
+						{data?.legislation_action?.map((action) => {
+							return (
+								<TimelineNode
+									date={action.action_date ?? new Date()}
+									icon={<EventSeatIcon />}
+									key={action.legislation_action_id}
+									title={
+										action.text ??
+										'Unknown legislation action'
+									}
+									variant='compact'
+								/>
 							);
 						})}
 					</Timeline>
@@ -138,9 +155,11 @@ export default async function BillPageOverview({
 								{latestVersion?.legislation_version_tag[0]?.tags.map(
 									(tag) => (
 										<Chip
+											color='primary'
 											key={tag}
 											label={tag}
 											size='small'
+											variant='outlined'
 										/>
 									),
 								)}
@@ -162,6 +181,7 @@ export default async function BillPageOverview({
 								{data.legislative_policy_area_association.map(
 									(assc) => (
 										<Chip
+											color='primary'
 											key={
 												assc.legislative_policy_area
 													?.name
@@ -171,6 +191,7 @@ export default async function BillPageOverview({
 													?.name
 											}
 											size='small'
+											variant='outlined'
 										/>
 									),
 								)}

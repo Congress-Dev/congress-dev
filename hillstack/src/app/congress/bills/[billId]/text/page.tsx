@@ -4,7 +4,7 @@ import type { Params } from 'next/dist/server/request/params';
 import { BillVersionEnum } from '~/enums';
 import { api } from '~/trpc/server';
 
-export default async function BillPage({
+export default async function BillTextPage({
 	params,
 }: {
 	params: Promise<Params>;

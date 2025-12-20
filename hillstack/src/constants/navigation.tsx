@@ -78,13 +78,8 @@ export const congressBillTabs = ({
 			icon: <DifferenceIcon />,
 			label: 'Changes',
 		},
-		[`/congress/bills/${params.billId}/actions`]: {
-			id: 3,
-			icon: <HistoryIcon />,
-			label: 'Actions',
-		},
 		[`/congress/bills/${params.billId}/spending`]: {
-			id: 4,
+			id: 3,
 			icon: <LocalAtmIcon />,
 			label: 'Spending',
 		},

@@ -50,7 +50,7 @@ export function TimelineNode(props: TimelineNodeProps) {
 				}}
 			>
 				{variant === 'compact' ? (
-					icon
+					<Box sx={{ ml: '3px' }}>{icon}</Box>
 				) : (
 					<Avatar
 						sx={{
