@@ -1,3 +1,7 @@
+import CommitIcon from '@mui/icons-material/Commit';
+import MergeTypeIcon from '@mui/icons-material/MergeType';
+
+import { ListItemIcon } from '@mui/material';
 import Divider from '@mui/material/Divider';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
@@ -18,6 +22,13 @@ export function BillSearchResult({ bill }: BillSearchResultProps) {
 		<>
 			<ListItem component='div' disablePadding>
 				<ListItemButton>
+					<ListItemIcon sx={{ ml: -0.5, mr: -2.5 }}>
+						{bill.signed ? (
+							<MergeTypeIcon color='disabled' />
+						) : (
+							<CommitIcon color='disabled' />
+						)}
+					</ListItemIcon>
 					<ListItemText
 						primary={
 							<Link

@@ -1,13 +1,19 @@
+import type { SvgIconComponent } from '@mui/icons-material';
+import Diversity2Icon from '@mui/icons-material/Diversity2';
+import EventSeatIcon from '@mui/icons-material/EventSeat';
 import HowToVoteIcon from '@mui/icons-material/HowToVote';
+import InfoOutlineIcon from '@mui/icons-material/InfoOutline';
 import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import SummarizeIcon from '@mui/icons-material/Summarize';
 import { Box, Chip, Divider, Typography } from '@mui/material';
 import type { Params } from 'next/dist/server/request/params';
+import type React from 'react';
+import type { JSX } from 'react';
 import { Timeline, TimelineNode } from '~/components/timeline';
 import { BillVersionEnum } from '~/enums';
 import { api, HydrateClient } from '~/trpc/server';
 
-export default async function BillPageOverview({
+export default async function BillOverviewPage({
 	params,
 }: {
 	params: Promise<Params>;
@@ -20,6 +26,10 @@ export default async function BillPageOverview({
 	const latestVersion =
 		data.legislation_version[data.legislation_version.length - 1];
 
+	const summary = latestVersion?.legislation_content.find(
+		(content) => content.content_type === 'legis-body',
+	)?.legislation_content_summary[0]?.summary;
+
 	const sponsor = data.legislation_sponsorship.find(
 		(sponsor) => !sponsor.cosponsor,
 	);
@@ -27,33 +37,28 @@ export default async function BillPageOverview({
 		.filter((sponsor) => sponsor.cosponsor)
 		?.slice(0, 5);
 
+	console.log(latestVersion);
+
 	return (
 		<HydrateClient>
 			<Box sx={{ display: 'flex' }}>
 				<Box sx={{ flex: 1 }}>
 					<Timeline
 						content={
-							data?.legislation_version[0]?.legislation_content[0]
-								?.legislation_content_summary[0]?.summary ??
-							'No summary was found for this bill'
+							summary ?? 'No summary was found for this bill'
 						}
 						icon={<SummarizeIcon />}
 						title='Summary'
 					>
 						{data?.legislation_version?.map((version) => (
 							<TimelineNode
-								date={
-									version.created_at ??
-									// @ts-expect-error
-									new Date(version.effective_date) ??
-									new Date()
-								}
-								icon={<ReadMoreIcon />}
+								date={version.effective_date ?? new Date()}
+								icon={ReadMoreIcon}
 								key={version.legislation_version}
 								title={
 									version.legislation_version
 										? `Legislation has been ${BillVersionEnum[version.legislation_version]}`
-										: 'Unknown legislation action'
+										: 'Unknown legislation version'
 								}
 								variant='compact'
 							/>
@@ -64,7 +69,7 @@ export default async function BillPageOverview({
 							return (
 								<TimelineNode
 									date={vote.datetime ?? new Date()}
-									icon={<HowToVoteIcon />}
+									icon={HowToVoteIcon}
 									key={vote.id}
 									title={`${vote.chamber} voted on ${vote.question}`}
 								>
@@ -72,9 +77,49 @@ export default async function BillPageOverview({
 								</TimelineNode>
 							);
 						})}
+						{data?.legislation_action?.map((action) => {
+							const iconMap: Record<string, SvgIconComponent> = {
+								President: EventSeatIcon,
+								Committee: Diversity2Icon,
+								IntroReferral: Diversity2Icon,
+							};
+
+							let icon: SvgIconComponent = InfoOutlineIcon;
+
+							if (
+								action.action_type &&
+								iconMap[action.action_type]
+							) {
+								const iconCandidate =
+									iconMap[action.action_type];
+								if (iconCandidate) {
+									icon = iconCandidate;
+								}
+							}
+
+							return (
+								<TimelineNode
+									date={action.action_date ?? new Date()}
+									icon={icon}
+									key={action.legislation_action_id}
+									title={
+										action.text ??
+										'Unknown legislation action'
+									}
+									variant='compact'
+								/>
+							);
+						})}
 					</Timeline>
 				</Box>
-				<Box sx={{ width: '300px', pl: 3, pr: 2 }}>
+				<Box
+					sx={{
+						width: '300px',
+						pl: 3,
+						pr: 2,
+						display: { xs: 'none', md: 'block' },
+					}}
+				>
 					<Box
 						sx={{
 							mb: 1,
@@ -129,9 +174,11 @@ export default async function BillPageOverview({
 								{latestVersion?.legislation_version_tag[0]?.tags.map(
 									(tag) => (
 										<Chip
+											color='primary'
 											key={tag}
 											label={tag}
 											size='small'
+											variant='outlined'
 										/>
 									),
 								)}
@@ -153,6 +200,7 @@ export default async function BillPageOverview({
 								{data.legislative_policy_area_association.map(
 									(assc) => (
 										<Chip
+											color='primary'
 											key={
 												assc.legislative_policy_area
 													?.name
@@ -162,6 +210,7 @@ export default async function BillPageOverview({
 													?.name
 											}
 											size='small'
+											variant='outlined'
 										/>
 									),
 								)}

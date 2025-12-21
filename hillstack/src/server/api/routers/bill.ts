@@ -1,6 +1,10 @@
 import { Prisma } from 'generated/prisma/client';
 import { legislationchamber } from 'generated/prisma/enums';
 import { z } from 'zod';
+import {
+	buildNestedDiffTrees,
+	mergeDiffTrees,
+} from '~/server/api/helpers/bill';
 import { createTRPCRouter, publicProcedure } from '~/server/api/trpc';
 
 export const billRouter = createTRPCRouter({
@@ -21,6 +25,7 @@ export const billRouter = createTRPCRouter({
 					chamber: true,
 					legislation_version: {
 						select: {
+							legislation_version_id: true,
 							legislation_version: true,
 							created_at: true,
 							effective_date: true,
@@ -32,6 +37,7 @@ export const billRouter = createTRPCRouter({
 									section_display: true,
 									parent_id: true,
 									order_number: true,
+									legislation_version_id: true,
 									legislation_content_id: true,
 									legislation_content_summary: {
 										select: {
@@ -41,14 +47,16 @@ export const billRouter = createTRPCRouter({
 											legislation_content_id: 'asc',
 										},
 									},
+									legislation_action_parse: {
+										select: {
+											actions: true,
+											citations: true,
+										},
+									},
 								},
 								orderBy: [
-									{
-										parent_id: 'asc',
-									},
-									{
-										order_number: 'asc',
-									},
+									{ legislation_content_id: 'asc' },
+									{ parent_id: 'asc' },
 								],
 							},
 							legislation_version_tag: {
@@ -98,11 +106,56 @@ export const billRouter = createTRPCRouter({
 							},
 						},
 					},
+					legislation_action: {
+						select: {
+							legislation_action_id: true,
+							action_date: true,
+							action_type: true,
+							action_code: true,
+							text: true,
+						},
+						where: {
+							text: { not: null },
+							OR: [
+								{
+									action_type: {
+										in: ['President'],
+									},
+								},
+								{
+									action_type: {
+										in: ['Committee'],
+									},
+									text: {
+										startsWith: 'Referred',
+									},
+								},
+								{
+									action_type: {
+										in: ['IntroReferral'],
+									},
+									action_code: 'H11100',
+								},
+							],
+						},
+						distinct: ['text'],
+					},
 				},
 				where: { legislation_id: id },
 			});
 
-			return bill;
+			const signed = bill.legislation_action.find(
+				(action) => action.action_code === 'E40000',
+			);
+
+			const latestVersion =
+				bill.legislation_version[bill.legislation_version.length - 1];
+
+			return {
+				...bill,
+				signed,
+				latestVersion,
+			};
 		}),
 	search: publicProcedure
 		.input(
@@ -170,6 +223,14 @@ export const billRouter = createTRPCRouter({
 							},
 						},
 					},
+					legislation_action: {
+						select: {
+							legislation_action_id: true,
+						},
+						where: {
+							action_code: 'E40000',
+						},
+					},
 					congress: {
 						select: {
 							session_number: true,
@@ -185,8 +246,126 @@ export const billRouter = createTRPCRouter({
 			});
 
 			return {
-				legislation,
+				legislation: legislation.map((legislation) => ({
+					...legislation,
+					signed: legislation.legislation_action[0],
+				})),
 				totalResults,
+			};
+		}),
+	appropriations: publicProcedure
+		.input(
+			z.object({
+				id: z.number(),
+			}),
+		)
+		.query(async ({ input, ctx }) => {
+			const legislation = await ctx.db.legislation.findUniqueOrThrow({
+				select: {
+					legislation_version: {
+						select: {
+							legislation_version_id: true,
+						},
+					},
+				},
+				where: { legislation_id: input.id },
+			});
+
+			const latestVersion =
+				legislation.legislation_version[
+					legislation.legislation_version.length - 1
+				];
+
+			const appropriations = await ctx.db.appropriation.findMany({
+				select: {
+					appropriation_id: true,
+					purpose: true,
+					amount: true,
+					until_expended: true,
+					new_spending: true,
+					fiscal_years: true,
+				},
+				where: {
+					legislation_version_id:
+						latestVersion?.legislation_version_id,
+				},
+			});
+
+			return appropriations.map((appropriation) => ({
+				...appropriation,
+				id: appropriation.appropriation_id,
+				amount: Number(appropriation.amount),
+			}));
+		}),
+	diffs: publicProcedure
+		.input(
+			z.object({
+				id: z.number(),
+			}),
+		)
+		.query(async ({ input, ctx }) => {
+			const legislation = await ctx.db.legislation.findUniqueOrThrow({
+				select: {
+					legislation_version: {
+						select: {
+							version_id: true,
+						},
+					},
+				},
+				where: { legislation_id: input.id },
+			});
+
+			const latestVersion =
+				legislation.legislation_version[
+					legislation.legislation_version.length - 1
+				];
+
+			if (!latestVersion) {
+				return { diffs: [], mergedTree: null };
+			}
+
+			const diffs = await ctx.db.usc_content_diff.findMany({
+				select: {
+					usc_content_id: true,
+					usc_content_diff_id: true,
+					section_display: true,
+					heading: true,
+					content_str: true,
+					usc_chapter: {
+						select: {
+							short_title: true,
+							long_title: true,
+						},
+					},
+					usc_section: {
+						select: {
+							number: true,
+							heading: true,
+						},
+					},
+				},
+				where: {
+					version_id: latestVersion.version_id,
+				},
+				orderBy: [
+					{ usc_chapter: { short_title: 'asc' } },
+					{ usc_section: { number: 'asc' } },
+					{ usc_content_id: 'asc' },
+				],
+			});
+
+			const allDiffTrees = await buildNestedDiffTrees(ctx.db, diffs);
+			const mergedTree = mergeDiffTrees(allDiffTrees);
+
+			return {
+				diffs: diffs.reduce(
+					(acc, diff) => {
+						acc[diff.usc_content_id] = diff;
+						return acc;
+					},
+					{} as { [key: number]: (typeof diffs)[0] },
+				),
+				mergedTree,
 			};
 		}),
 });

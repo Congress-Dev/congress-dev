@@ -1,5 +1,6 @@
 'use client';
 
+import { keepPreviousData } from '@tanstack/react-query';
 import { OmniSearch } from '~/components/search';
 import { useOmniSearchQuery } from '~/contexts';
 import { api } from '~/trpc/react';
@@ -9,10 +10,12 @@ import { CommitteeSearchResult } from './result';
 export default function CommitteeSearch() {
 	const parameters = useOmniSearchQuery<FilterConfigType>();
 
-	const { data, isLoading } = api.committee.search.useQuery(parameters);
+	const { data, isFetching } = api.committee.search.useQuery(parameters, {
+		placeholderData: keepPreviousData,
+	});
 
 	return (
-		<OmniSearch isLoading={isLoading} results={data?.totalResults ?? 0}>
+		<OmniSearch isLoading={isFetching} results={data?.totalResults ?? 0}>
 			{data?.committees?.map((committee) => (
 				<CommitteeSearchResult
 					committee={committee}

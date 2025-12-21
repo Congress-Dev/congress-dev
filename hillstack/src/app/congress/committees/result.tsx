@@ -5,6 +5,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import type { inferRouterOutputs } from '@trpc/server';
+import Link from 'next/link';
 import type { AppRouter } from '~/server/api/root';
 
 export interface CommitteeSearchResultProps {
@@ -22,25 +23,21 @@ export function CommitteeSearchResult({
 						primary={
 							<Box sx={{ display: 'flex' }}>
 								<Box flexGrow={1} sx={{ pl: 2 }}>
-									<Typography color='primary' variant='h4'>
-										{committee.name}
-									</Typography>
-									<Box>
-										<Typography variant='subtitle2'>
-											Congress:
-										</Typography>{' '}
-										<Typography variant='subtitle1'>
-											{committee.congress_id}
+									<Link
+										href={`/congress/committees/${committee.legislation_committee_id}`}
+									>
+										<Typography
+											color='primary'
+											variant='h4'
+										>
+											{committee.name}
 										</Typography>
-									</Box>
-									<Box>
-										<Typography variant='subtitle2'>
-											Thomas Id:
-										</Typography>{' '}
-										<Typography variant='subtitle1'>
-											{committee.thomas_id}
+										<Typography variant='caption'>
+											{committee.chamber
+												? `U.S. ${committee.chamber}`
+												: 'Unknown Chamber'}
 										</Typography>
-									</Box>
+									</Link>
 								</Box>
 							</Box>
 						}

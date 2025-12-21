@@ -1,5 +1,6 @@
 'use client';
 
+import { Timeline as MUITimeline } from '@mui/lab';
 import {
 	Avatar,
 	Box,
@@ -55,7 +56,16 @@ export function Timeline(props: TimelineProps) {
 					<Box sx={{ p: 2 }}>{content}</Box>
 				</Card>
 			</Box>
-			<Box sx={{ pl: 5, mt: 2 }}>{sortedChildren}</Box>
+			<MUITimeline
+				position='right'
+				sx={{
+					pl: 6,
+					pr: 0,
+					'& .MuiTimelineItem-root:before': { flex: 0, padding: 0 },
+				}}
+			>
+				{sortedChildren}
+			</MUITimeline>
 		</>
 	);
 }

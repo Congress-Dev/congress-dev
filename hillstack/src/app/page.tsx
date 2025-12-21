@@ -16,7 +16,12 @@ export default async function Home() {
 		<HydrateClient>
 			<Box sx={{ width: '100%' }}>
 				<Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-					<Tabs value={0}>
+					<Tabs
+						allowScrollButtonsMobile
+						scrollButtons={false}
+						value={0}
+						variant='scrollable'
+					>
 						{navigationLinks.map((page) => {
 							const { label, href } = page;
 							return (
@@ -55,12 +60,19 @@ export default async function Home() {
 							engaged with the lawmaking process.
 						</Typography>
 
-						<Box sx={{ display: 'flex', mt: 2, gap: 2 }}>
+						<Box
+							sx={{
+								display: { xs: 'block', md: 'flex' },
+								mt: 2,
+								gap: 2,
+							}}
+						>
 							<Paper
 								elevation={3}
 								sx={{
 									flexBasis: '20%',
 									alignSelf: 'flex-start',
+									mb: { xs: 1 },
 								}}
 							>
 								<Box sx={{ p: 2 }}>
@@ -125,11 +137,20 @@ export default async function Home() {
 										resource can keep you connected to the
 										legislative process.
 									</p>
-									<Box sx={{ display: 'flex', gap: 2 }}>
+									<Box
+										sx={{
+											display: {
+												xs: 'block',
+												md: 'flex',
+											},
+											gap: 2,
+										}}
+									>
 										<Paper
 											sx={{
 												flexBasis: '33%',
 												p: 2,
+												mb: { xs: 1 },
 											}}
 										>
 											<Box

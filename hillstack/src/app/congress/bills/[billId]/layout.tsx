@@ -1,3 +1,6 @@
+import CommitIcon from '@mui/icons-material/Commit';
+import MergeTypeIcon from '@mui/icons-material/MergeType';
+
 import { Box, Chip, Container, Paper, Typography } from '@mui/material';
 import type { Params } from 'next/dist/server/request/params';
 import { BillTabs } from '~/app/congress/bills/[billId]/tabs';
@@ -16,6 +19,8 @@ export default async function BillLayout({
 	const data = await api.bill.get({
 		id: Number(billId as string),
 	});
+
+	console.log(data.legislation_action);
 
 	const latestVersion =
 		data.legislation_version[data.legislation_version.length - 1];
@@ -38,26 +43,70 @@ export default async function BillLayout({
 					</Typography>
 				</Box>
 				<Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
-					<Chip
-						label={
-							latestVersion?.legislation_version
-								? BillVersionEnum[
-										latestVersion?.legislation_version
-									]
-								: 'Unknown'
-						}
-						size='small'
-						sx={{ px: 1, mr: 1 }}
-					/>
-					<Typography variant='caption'>
-						Proposed by{' '}
-						{legislator?.job === 'Senator' ? 'Sen.' : 'Rep.'}{' '}
-						{`${legislator?.first_name} ${legislator?.last_name}`}{' '}
-						in the {data.chamber}
-						{latestVersion?.effective_date
-							? `, effective ${latestVersion?.effective_date.toLocaleDateString()}`
-							: ''}
-					</Typography>
+					{data.signed ? (
+						<>
+							<Chip
+								color='info'
+								label={
+									<Box
+										sx={{
+											display: 'flex',
+											alignItems: 'center',
+										}}
+									>
+										<MergeTypeIcon
+											fontSize='small'
+											sx={{ ml: -1, mr: 0.5 }}
+										/>
+										{'Signed'}
+									</Box>
+								}
+								size='small'
+								sx={{ px: 1, mr: 1 }}
+							/>
+							<Typography variant='caption'>
+								{data.signed.text}
+							</Typography>
+						</>
+					) : (
+						<>
+							<Chip
+								color='warning'
+								label={
+									<Box
+										sx={{
+											display: 'flex',
+											alignItems: 'center',
+										}}
+									>
+										<CommitIcon
+											fontSize='small'
+											sx={{ ml: -1, mr: 0.5 }}
+										/>
+										{latestVersion?.legislation_version
+											? BillVersionEnum[
+													latestVersion
+														?.legislation_version
+												]
+											: 'Unknown'}
+									</Box>
+								}
+								size='small'
+								sx={{ px: 1, mr: 1 }}
+							/>
+							<Typography variant='caption'>
+								Proposed by{' '}
+								{legislator?.job === 'Senator'
+									? 'Sen.'
+									: 'Rep.'}{' '}
+								{`${legislator?.first_name} ${legislator?.last_name}`}{' '}
+								in the {data.chamber}
+								{latestVersion?.effective_date
+									? `, effective ${latestVersion?.effective_date.toLocaleDateString()}`
+									: ''}
+							</Typography>
+						</>
+					)}
 				</Box>
 
 				<BillTabs />
