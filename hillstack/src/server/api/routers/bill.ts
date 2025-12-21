@@ -110,15 +110,35 @@ export const billRouter = createTRPCRouter({
 						select: {
 							legislation_action_id: true,
 							action_date: true,
+							action_type: true,
 							action_code: true,
 							text: true,
 						},
 						where: {
 							text: { not: null },
-							action_type: {
-								in: ['President'],
-							},
+							OR: [
+								{
+									action_type: {
+										in: ['President'],
+									},
+								},
+								{
+									action_type: {
+										in: ['Committee'],
+									},
+									text: {
+										startsWith: 'Referred',
+									},
+								},
+								{
+									action_type: {
+										in: ['IntroReferral'],
+									},
+									action_code: 'H11100',
+								},
+							],
 						},
+						distinct: ['text'],
 					},
 				},
 				where: { legislation_id: id },

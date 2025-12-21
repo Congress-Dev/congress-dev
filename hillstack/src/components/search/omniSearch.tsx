@@ -43,7 +43,7 @@ export function OmniSearch({ results, isLoading, children }: OmniSearchProps) {
 				<Box>
 					<Toolbar filters={filters} results={results} />
 					{isLoading && <LinearProgress />}
-					<List sx={{ pb: 0 }}>
+					<List sx={{ py: 0 }}>
 						{Children.count(children) > 0 ? (
 							children
 						) : (

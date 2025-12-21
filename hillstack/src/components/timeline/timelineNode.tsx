@@ -1,5 +1,6 @@
 'use client';
 
+import type { SvgIconComponent } from '@mui/icons-material';
 import {
 	Avatar,
 	Box,
@@ -15,7 +16,7 @@ import type React from 'react';
 interface TimelineNodeProps {
 	title: string;
 	date: Date;
-	icon: React.ReactNode;
+	icon: SvgIconComponent;
 	children?: React.ReactNode;
 	variant?: 'compact';
 }
@@ -34,11 +35,11 @@ const TimelineNodeBox = styled(Box)(() => ({
 }));
 
 export function TimelineNode(props: TimelineNodeProps) {
-	const { title, date, icon, children, variant } = props;
+	const { title, date, icon: Icon, children, variant } = props;
 	const { palette } = useTheme();
 
 	return (
-		<TimelineNodeBox sx={{ display: 'flex', mb: 0 }}>
+		<TimelineNodeBox sx={{ display: 'flex', mb: 0.5 }}>
 			<Box
 				sx={{
 					display: 'flex',
@@ -50,7 +51,9 @@ export function TimelineNode(props: TimelineNodeProps) {
 				}}
 			>
 				{variant === 'compact' ? (
-					<Box sx={{ ml: '3px' }}>{icon}</Box>
+					<Box sx={{ ml: '3px' }}>
+						<Icon color='disabled' />
+					</Box>
 				) : (
 					<Avatar
 						sx={{
@@ -59,7 +62,7 @@ export function TimelineNode(props: TimelineNodeProps) {
 							backgroundColor: palette.brand.accentLight,
 						}}
 					>
-						{icon}
+						<Icon />
 					</Avatar>
 				)}
 				<Divider
@@ -79,6 +82,7 @@ export function TimelineNode(props: TimelineNodeProps) {
 						width: '100%',
 						display: 'flex',
 						alignItems: 'flex-start',
+						pb: 2,
 					}}
 				>
 					<Box sx={{ flex: 1 }}>

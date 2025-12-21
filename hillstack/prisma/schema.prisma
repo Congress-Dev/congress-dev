@@ -137,7 +137,7 @@ model legislation_committee {
   legislation_committee_id          Int                                 @id @default(autoincrement())
   system_code                       String?                             @db.VarChar
   chamber                           legislationchamber?
-  name                              String?                             @db.VarChar
+  name                              String                             @db.VarChar
   committee_type                    String?                             @db.VarChar
   congress_id                       Int?
   thomas_id                         String?                             @db.VarChar

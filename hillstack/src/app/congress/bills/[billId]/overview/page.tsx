@@ -1,9 +1,14 @@
+import type { SvgIconComponent } from '@mui/icons-material';
+import Diversity2Icon from '@mui/icons-material/Diversity2';
 import EventSeatIcon from '@mui/icons-material/EventSeat';
 import HowToVoteIcon from '@mui/icons-material/HowToVote';
+import InfoOutlineIcon from '@mui/icons-material/InfoOutline';
 import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import SummarizeIcon from '@mui/icons-material/Summarize';
 import { Box, Chip, Divider, Typography } from '@mui/material';
 import type { Params } from 'next/dist/server/request/params';
+import type React from 'react';
+import type { JSX } from 'react';
 import { Timeline, TimelineNode } from '~/components/timeline';
 import { BillVersionEnum } from '~/enums';
 import { api, HydrateClient } from '~/trpc/server';
@@ -47,13 +52,8 @@ export default async function BillOverviewPage({
 					>
 						{data?.legislation_version?.map((version) => (
 							<TimelineNode
-								date={
-									version.created_at ??
-									// @ts-expect-error
-									new Date(version.effective_date) ??
-									new Date()
-								}
-								icon={<ReadMoreIcon />}
+								date={version.effective_date ?? new Date()}
+								icon={ReadMoreIcon}
 								key={version.legislation_version}
 								title={
 									version.legislation_version
@@ -69,7 +69,7 @@ export default async function BillOverviewPage({
 							return (
 								<TimelineNode
 									date={vote.datetime ?? new Date()}
-									icon={<HowToVoteIcon />}
+									icon={HowToVoteIcon}
 									key={vote.id}
 									title={`${vote.chamber} voted on ${vote.question}`}
 								>
@@ -78,10 +78,29 @@ export default async function BillOverviewPage({
 							);
 						})}
 						{data?.legislation_action?.map((action) => {
+							const iconMap: Record<string, SvgIconComponent> = {
+								President: EventSeatIcon,
+								Committee: Diversity2Icon,
+								IntroReferral: Diversity2Icon,
+							};
+
+							let icon: SvgIconComponent = InfoOutlineIcon;
+
+							if (
+								action.action_type &&
+								iconMap[action.action_type]
+							) {
+								const iconCandidate =
+									iconMap[action.action_type];
+								if (iconCandidate) {
+									icon = iconCandidate;
+								}
+							}
+
 							return (
 								<TimelineNode
 									date={action.action_date ?? new Date()}
-									icon={<EventSeatIcon />}
+									icon={icon}
 									key={action.legislation_action_id}
 									title={
 										action.text ??
