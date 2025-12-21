@@ -1,10 +1,24 @@
 'use client';
 
-import { Checkbox, Chip, TablePagination } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
+import { Checkbox, Chip } from '@mui/material';
+import { DataGrid, type GridColDef, type GridRowsProp } from '@mui/x-data-grid';
 
-export default function BillSpendingTable({ rows }: { rows: object[] }) {
-	const columns = [
+interface Appropriation {
+	id: number;
+	amount: number;
+	purpose: string | null;
+	fiscal_years: number[];
+	until_expended: boolean;
+	new_spending: boolean;
+	appropriation_id: number;
+}
+
+export default function BillSpendingTable({
+	rows,
+}: {
+	rows: GridRowsProp<Appropriation>;
+}) {
+	const columns: GridColDef[] = [
 		{
 			field: 'amount',
 			headerName: 'Amount',

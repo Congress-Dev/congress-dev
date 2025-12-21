@@ -1,28 +1,59 @@
 import { Box, Card, Toolbar, Typography } from '@mui/material';
 import type { Params } from 'next/dist/server/request/params';
-// import { useState } from 'react';
 import { api } from '~/trpc/server';
 
 const cleanStr = (input: string) =>
 	input?.replace(/<usccite\b[^>]*>(.*?)<\/usccite>/gs, '$1');
 
-export interface TreeNode {
+interface TreeNode {
 	id: number;
-	content: string;
+	usc_content_id: number;
+	section_display: string;
+	heading: string;
+	parent_id: number | null;
+	content_str: string;
 	children: TreeNode[];
 	isTarget: boolean;
 	isOnPath: boolean;
-	isCollapsed: boolean;
+	diffIds?: number[];
+	metadata?: TreeNodeMetadata;
 }
 
+interface TreeNodeMetadata {
+	usc_chapter: {
+		short_title: string;
+		long_title: string;
+	} | null;
+	usc_section: {
+		number: string;
+		heading: string;
+	} | null;
+}
 interface NodeProps {
 	node: TreeNode;
+	diffs: Record<number, Diff>;
 	depth?: number;
+}
+
+interface Diff {
+	usc_content_id: number;
+	section_display: string;
+	heading: string;
+	content_str: string;
+	usc_section: {
+		number: string;
+		heading: string;
+	} | null;
+	usc_content_diff_id: number;
+	usc_chapter: {
+		short_title: string;
+		long_title: string;
+	} | null;
 }
 
 const INDENT = 18;
 
-export const ContentDisplay = (content) => {
+export const ContentDisplay = (content: TreeNode) => {
 	return (
 		<Box>
 			<Box sx={{ display: 'flex' }}>
@@ -56,12 +87,9 @@ export const DiffTreeNode: React.FC<NodeProps> = ({
 	diffs,
 	depth = 0,
 }) => {
-	// const [collapsed, setCollapsed] = useState(node.isCollapsed);
 	const collapsed = false;
 
 	const hasChildren = node.children && node.children.length > 0;
-	const isTarget = node.isTarget;
-	const isOnPath = node.isOnPath;
 	const hasChange = !!diffs[node.usc_content_id];
 	const theDiff = diffs[node.usc_content_id];
 	const newContent =
@@ -69,18 +97,10 @@ export const DiffTreeNode: React.FC<NodeProps> = ({
 	const hasDiff =
 		theDiff?.section_display || theDiff?.heading || theDiff?.content_str;
 
-	// if (!node.heading && !node.content_str) {
-	// 	return;
-	// }
-
-	// console.log(node, hasChildren);
-
 	return (
 		<div style={{ marginTop: 2 }}>
-			{/* Row */}
 			{!newContent && (
 				<div
-					// onClick={() => hasChildren && setCollapsed(!collapsed)}
 					style={{
 						padding: '4px 6px',
 						paddingLeft: depth * INDENT,
@@ -132,13 +152,17 @@ export const DiffTreeNode: React.FC<NodeProps> = ({
 									theDiff.section_display ??
 									node.section_display,
 								heading: theDiff.heading ?? node.heading,
+								id: 0,
+								parent_id: 0,
+								children: [],
+								isTarget: false,
+								isOnPath: false,
 							}}
 						/>
 					</span>
 				</div>
 			)}
 
-			{/* Children */}
 			{!collapsed && hasChildren && (
 				<div style={{}}>
 					{node.children.map((child) => (
@@ -158,7 +182,10 @@ export const DiffTreeNode: React.FC<NodeProps> = ({
 /**
  * Tree renderer root
  */
-export const DiffTree: React.FC<{ tree: TreeNode }> = ({ tree, diffs }) => {
+export const DiffTree: React.FC<{
+	tree: TreeNode;
+	diffs: Record<number, Diff>;
+}> = ({ tree, diffs }) => {
 	return (
 		<div style={{ padding: '8px 0' }}>
 			<DiffTreeNode diffs={diffs} node={tree} />
@@ -177,12 +204,12 @@ export default async function BillChangesPage({
 		id: Number(billId as string),
 	});
 
-	return data.mergedTree.map((level) => (
+	return data.mergedTree?.map((level) => (
 		<Box key={level.id} sx={{ mb: 2 }}>
 			<Card>
 				<Toolbar variant='dense'>
 					<Typography sx={{ mr: 1 }} variant='subtitle1'>
-						{`U.S.C ${level.metadata.usc_chapter?.short_title} - ${level.metadata.usc_chapter?.long_title}`}
+						{`U.S.C ${level.metadata?.usc_chapter?.short_title} - ${level.metadata?.usc_chapter?.long_title}`}
 					</Typography>
 				</Toolbar>
 				<Box sx={{ px: 2 }}>

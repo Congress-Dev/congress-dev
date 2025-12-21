@@ -15,9 +15,6 @@ export default async function BillTextPage({
 		id: Number(billId as string),
 	});
 
-	const latestVersion =
-		data.legislation_version[data.legislation_version.length - 1];
-
 	const parentMap: { [k: number]: number } = {};
 
 	return (
@@ -34,111 +31,117 @@ export default async function BillTextPage({
 						}}
 						variant='dense'
 					>
-						{BillVersionEnum[latestVersion?.legislation_version]}
+						{data.latestVersion?.legislation_version
+							? BillVersionEnum[
+									data.latestVersion?.legislation_version
+								]
+							: 'Unknown Version'}
 					</Toolbar>
 					<Box sx={{ py: 3, pr: 3 }}>
-						{latestVersion?.legislation_content.map((content) => {
-							if (
-								!content.parent_id ||
-								parentMap[content.parent_id] == null
-							) {
-								parentMap[content.legislation_content_id] = 0;
-							} else if (content.parent_id) {
-								parentMap[content.legislation_content_id] =
-									(parentMap[content.parent_id] ?? 0) + 1;
-							}
+						{data.latestVersion?.legislation_content.map(
+							(content) => {
+								if (
+									!content.parent_id ||
+									parentMap[content.parent_id] == null
+								) {
+									parentMap[content.legislation_content_id] =
+										0;
+								} else if (content.parent_id) {
+									parentMap[content.legislation_content_id] =
+										(parentMap[content.parent_id] ?? 0) + 1;
+								}
 
-							const indent =
-								parentMap[content.legislation_content_id] ?? 0;
+								const indent =
+									parentMap[content.legislation_content_id] ??
+									0;
 
-							const sectionHeading =
-								// content.section_display?.match(/^\d\./);
-								indent === 1;
+								const sectionHeading = indent === 1;
 
-							const sectionSummary =
-								content.legislation_content_summary
-									.map((summary) => summary.summary)
-									.join(' ');
+								const sectionSummary =
+									content.legislation_content_summary
+										.map((summary) => summary.summary)
+										.join(' ');
 
-							return content.heading?.length ||
-								content.content_str?.length ? (
-								<Box
-									key={content.legislation_content_id}
-									sx={{
-										ml: indent * 2 + 2,
-									}}
-								>
+								return content.heading?.length ||
+									content.content_str?.length ? (
 									<Box
+										key={content.legislation_content_id}
 										sx={{
-											display: 'flex',
-											alignItems: 'center',
+											ml: indent * 2 + 2,
 										}}
 									>
-										{sectionHeading &&
-										sectionSummary.length ? (
-											<Tooltip
-												arrow
-												placement='right-start'
-												title={sectionSummary}
-											>
-												<InfoOutlineIcon
-													color='primary'
-													sx={{
-														fontSize: '18px',
-														mr: 1,
-														ml: -2.5,
-													}}
-												/>
-											</Tooltip>
-										) : null}
-										<Box sx={{ display: 'flex' }}>
-											<Typography
-												sx={{
-													mr: 0.5,
-													fontFamily: 'monospace',
-													fontSize: '12px',
-												}}
-												variant={'subtitle2'}
-												{...(sectionHeading
-													? { color: 'primary' }
-													: {})}
-											>
-												{content.section_display}
-											</Typography>
-											<Typography
-												sx={{
-													flex: 1,
-													fontFamily: 'monospace',
-													fontSize: '12px',
-												}}
-												variant={
-													sectionHeading
-														? 'subtitle2'
-														: 'subtitle1'
-												}
-												{...(sectionHeading
-													? { color: 'primary' }
-													: {})}
-											>
-												{content.heading ??
-													content.content_str}
-											</Typography>
-										</Box>
-									</Box>
-									{content.heading && (
-										<Typography
+										<Box
 											sx={{
-												ml: 3,
-												fontFamily: 'monospace',
-												fontSize: '12px',
+												display: 'flex',
+												alignItems: 'center',
 											}}
 										>
-											{content.content_str}
-										</Typography>
-									)}
-								</Box>
-							) : null;
-						})}
+											{sectionHeading &&
+											sectionSummary.length ? (
+												<Tooltip
+													arrow
+													placement='right-start'
+													title={sectionSummary}
+												>
+													<InfoOutlineIcon
+														color='primary'
+														sx={{
+															fontSize: '18px',
+															mr: 1,
+															ml: -2.5,
+														}}
+													/>
+												</Tooltip>
+											) : null}
+											<Box sx={{ display: 'flex' }}>
+												<Typography
+													sx={{
+														mr: 0.5,
+														fontFamily: 'monospace',
+														fontSize: '12px',
+													}}
+													variant={'subtitle2'}
+													{...(sectionHeading
+														? { color: 'primary' }
+														: {})}
+												>
+													{content.section_display}
+												</Typography>
+												<Typography
+													sx={{
+														flex: 1,
+														fontFamily: 'monospace',
+														fontSize: '12px',
+													}}
+													variant={
+														sectionHeading
+															? 'subtitle2'
+															: 'subtitle1'
+													}
+													{...(sectionHeading
+														? { color: 'primary' }
+														: {})}
+												>
+													{content.heading ??
+														content.content_str}
+												</Typography>
+											</Box>
+										</Box>
+										{content.heading && (
+											<Typography
+												sx={{
+													ml: 3,
+													fontFamily: 'monospace',
+													fontSize: '12px',
+												}}
+											>
+												{content.content_str}
+											</Typography>
+										)}
+									</Box>
+								) : null;
+							},
+						)}
 					</Box>
 				</Card>
 			</Box>
