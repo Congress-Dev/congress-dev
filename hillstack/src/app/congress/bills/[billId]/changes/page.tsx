@@ -53,7 +53,7 @@ interface Diff {
 
 const INDENT = 18;
 
-export const ContentDisplay = (content: TreeNode) => {
+const ContentDisplay = (content: TreeNode) => {
 	return (
 		<Box>
 			<Box sx={{ display: 'flex' }}>
@@ -82,11 +82,7 @@ export const ContentDisplay = (content: TreeNode) => {
 	);
 };
 
-export const DiffTreeNode: React.FC<NodeProps> = ({
-	node,
-	diffs,
-	depth = 0,
-}) => {
+const DiffTreeNode: React.FC<NodeProps> = ({ node, diffs, depth = 0 }) => {
 	const collapsed = false;
 
 	const hasChildren = node.children && node.children.length > 0;
@@ -182,7 +178,7 @@ export const DiffTreeNode: React.FC<NodeProps> = ({
 /**
  * Tree renderer root
  */
-export const DiffTree: React.FC<{
+const DiffTree: React.FC<{
 	tree: TreeNode;
 	diffs: Record<number, Diff>;
 }> = ({ tree, diffs }) => {
