@@ -1,6 +1,8 @@
 'use client';
 
-import { Checkbox, Chip } from '@mui/material';
+import AddCardIcon from '@mui/icons-material/AddCard';
+import MoneyOffIcon from '@mui/icons-material/MoneyOff';
+import { Box, Tooltip, Typography } from '@mui/material';
 import { DataGrid, type GridColDef, type GridRowsProp } from '@mui/x-data-grid';
 
 interface Appropriation {
@@ -26,7 +28,7 @@ export default function BillSpendingTable({
 			type: 'number',
 			width: 200,
 			renderCell: ({ row: appropriation }) => (
-				<Chip
+				<Typography
 					color={
 						appropriation.amount === 0
 							? 'default'
@@ -34,12 +36,13 @@ export default function BillSpendingTable({
 								? 'error'
 								: 'success'
 					}
-					label={new Intl.NumberFormat('en-US', {
+					variant='subtitle1'
+				>
+					{new Intl.NumberFormat('en-US', {
 						style: 'currency',
 						currency: 'USD',
 					}).format(appropriation.amount ?? 0)}
-					size='small'
-				/>
+				</Typography>
 			),
 		},
 		{
@@ -52,25 +55,53 @@ export default function BillSpendingTable({
 			field: 'fiscal_years',
 			headerName: 'Fiscal Years',
 			editable: false,
+			width: 400,
 			renderCell: ({ row: appropriation }) =>
 				appropriation.fiscal_years.join(', '),
 		},
 		{
-			field: 'until_expended',
-			headerName: 'Until Expended',
+			field: 'Tags',
+			headerName: 'Tags',
 			editable: false,
+			width: 80,
 			renderCell: ({ row: appropriation }) => (
-				<Checkbox checked={appropriation.until_expended ?? false} />
+				<Box
+					sx={{
+						display: 'flex',
+						alignItems: 'center',
+						gap: 1,
+						height: '100%',
+					}}
+				>
+					{appropriation.until_expended && (
+						<Tooltip title='Until Expended'>
+							<MoneyOffIcon />
+						</Tooltip>
+					)}
+					{appropriation.new_spending && (
+						<Tooltip title='New Spending'>
+							<AddCardIcon />
+						</Tooltip>
+					)}
+				</Box>
 			),
 		},
-		{
-			field: 'new_spending',
-			headerName: 'New Spending',
-			editable: false,
-			renderCell: ({ row: appropriation }) => (
-				<Checkbox checked={appropriation.new_spending ?? false} />
-			),
-		},
+		// {
+		// 	field: 'until_expended',
+		// 	headerName: 'Until Expended',
+		// 	editable: false,
+		// 	renderCell: ({ row: appropriation }) => (
+		// 		<Checkbox checked={appropriation.until_expended ?? false} />
+		// 	),
+		// },
+		// {
+		// 	field: 'new_spending',
+		// 	headerName: 'New Spending',
+		// 	editable: false,
+		// 	renderCell: ({ row: appropriation }) => (
+		// 		<Checkbox checked={appropriation.new_spending ?? false} />
+		// 	),
+		// },
 	];
 
 	return (

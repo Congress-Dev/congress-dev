@@ -49,6 +49,22 @@ export const committeeRouter = createTRPCRouter({
 								contains: committee.name,
 								mode: Prisma.QueryMode.insensitive,
 							},
+							OR: [
+								{
+									action_type: {
+										in: ['Committee'],
+									},
+									text: {
+										startsWith: 'Referred',
+									},
+								},
+								{
+									action_type: {
+										in: ['IntroReferral'],
+									},
+									action_code: 'H11100',
+								},
+							],
 						},
 					},
 				},

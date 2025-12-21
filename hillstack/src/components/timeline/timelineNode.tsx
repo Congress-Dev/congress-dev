@@ -79,7 +79,6 @@ export function TimelineNode(props: TimelineNodeProps) {
 						<Toolbar
 							disableGutters
 							sx={{
-								height: '30px',
 								minHeight: '30px',
 								px: 1,
 								display: 'flex',

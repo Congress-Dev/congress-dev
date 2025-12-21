@@ -7,13 +7,11 @@ import { congressBillTabs } from '~/constants';
 
 const PageTabs = styled(Tabs)(({ theme }) => ({
 	marginTop: theme.spacing(3),
+	paddingBottom: theme.spacing(1),
 	minHeight: 0,
-	borderBottom: `1px solid ${theme.palette.divider}`,
+
 	overflow: 'visible',
 
-	'& .MuiTabs-scroller': {
-		overflow: 'visible !important',
-	},
 	'& .MuiTab-root': {
 		padding: theme.spacing(0.5),
 		paddingLeft: theme.spacing(1.5),
@@ -21,8 +19,7 @@ const PageTabs = styled(Tabs)(({ theme }) => ({
 	},
 	'& .Mui-selected': {
 		border: `1px solid ${theme.palette.divider}`,
-		borderBottom: 'none',
-		borderRadius: '4px 4px 0 0',
+		borderRadius: '4px',
 	},
 	'& .MuiTabs-indicator': {
 		bottom: '-2px',
@@ -39,6 +36,18 @@ const PageTabs = styled(Tabs)(({ theme }) => ({
 		display: 'block',
 		marginLeft: '1px',
 		height: '1px',
+	},
+
+	[theme.breakpoints.up('md')]: {
+		paddingBottom: 0,
+		borderBottom: `1px solid ${theme.palette.divider}`,
+		'& .MuiTabs-scroller': {
+			overflow: 'visible !important',
+		},
+		'& .Mui-selected': {
+			borderBottom: 'none',
+			borderRadius: '4px 4px 0 0',
+		},
 	},
 }));
 

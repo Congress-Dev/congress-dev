@@ -37,6 +37,7 @@ export function Timeline(props: TimelineProps) {
 						height: '40px',
 						mr: 1,
 						backgroundColor: palette.brand.accentLight,
+						display: { xs: 'none', md: 'flex' },
 					}}
 				>
 					{icon}
@@ -59,7 +60,7 @@ export function Timeline(props: TimelineProps) {
 			<MUITimeline
 				position='right'
 				sx={{
-					pl: 6,
+					pl: { xs: 0, md: 6 },
 					pr: 0,
 					'& .MuiTimelineItem-root:before': { flex: 0, padding: 0 },
 				}}

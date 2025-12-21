@@ -15,12 +15,12 @@ const CHAMBERS: ToolbarFilterOption<legislationchamber>[] = [
 	{ value: 'Senate', label: 'Senate' },
 ];
 
-const TYPES: ToolbarFilterOption<string>[] = [
-	{ value: 'Standing', label: 'Standing' },
-	{ value: 'Joint', label: 'Joint' },
-	{ value: 'Select', label: 'Select' },
-	{ value: 'Special', label: 'Special' },
-];
+// const TYPES: ToolbarFilterOption<string>[] = [
+// 	{ value: 'Standing', label: 'Standing' },
+// 	{ value: 'Joint', label: 'Joint' },
+// 	{ value: 'Select', label: 'Select' },
+// 	{ value: 'Special', label: 'Special' },
+// ];
 
 const filterConfig = {
 	congress: {
@@ -33,11 +33,11 @@ const filterConfig = {
 		options: CHAMBERS,
 		multiSelect: true as const,
 	},
-	committeeType: {
-		title: 'Type',
-		options: TYPES,
-		multiSelect: true as const,
-	},
+	// committeeType: {
+	// 	title: 'Type',
+	// 	options: TYPES,
+	// 	multiSelect: true as const,
+	// },
 };
 
 export type FilterConfigType = typeof filterConfig;

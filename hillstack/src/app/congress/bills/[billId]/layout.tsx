@@ -20,8 +20,6 @@ export default async function BillLayout({
 		id: Number(billId as string),
 	});
 
-	console.log(data.legislation_action);
-
 	const latestVersion =
 		data.legislation_version[data.legislation_version.length - 1];
 	const legislator = data.legislation_sponsorship.find(
@@ -32,17 +30,28 @@ export default async function BillLayout({
 		<HydrateClient>
 			<Container maxWidth='xl'>
 				<Box sx={{ display: 'flex', alignItems: 'center' }}>
-					<Typography sx={{ mr: 1 }} variant='h1'>
+					<Typography sx={{ mr: { xs: 0, md: 1 } }} variant='h1'>
 						{data?.title}
 					</Typography>
 					<Typography
-						sx={{ fontWeight: 100, color: '#8f99a8' }}
+						sx={{
+							fontWeight: 100,
+							color: '#8f99a8',
+							display: { xs: 'none', md: 'block' },
+						}}
 						variant='h1'
 					>
 						{`#${data?.number}`}
 					</Typography>
 				</Box>
-				<Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
+				<Box
+					sx={{
+						display: 'flex',
+						alignItems: { xs: 'flex-start', md: 'center' },
+						mt: { xs: 0, md: 0.5 },
+						flexDirection: { xs: 'column-reverse', md: 'row' },
+					}}
+				>
 					{data.signed ? (
 						<>
 							<Chip
@@ -62,7 +71,7 @@ export default async function BillLayout({
 									</Box>
 								}
 								size='small'
-								sx={{ px: 1, mr: 1 }}
+								sx={{ px: 1, mr: 1, mt: { xs: 0.5, md: 0 } }}
 							/>
 							<Typography variant='caption'>
 								{data.signed.text}
@@ -92,7 +101,7 @@ export default async function BillLayout({
 									</Box>
 								}
 								size='small'
-								sx={{ px: 1, mr: 1 }}
+								sx={{ px: 1, mr: 1, mt: { xs: 0.5, md: 0 } }}
 							/>
 							<Typography variant='caption'>
 								Proposed by{' '}
@@ -115,8 +124,9 @@ export default async function BillLayout({
 					sx={{
 						p: 2,
 						mb: 3,
-						borderTop: 'none',
-						borderTopLeftRadius: '0px',
+						borderTop: { md: 'none' },
+						borderTopLeftRadius: { md: '0px' },
+						borderTopRightRadius: { md: '0px' },
 					}}
 				>
 					{children}

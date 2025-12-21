@@ -51,7 +51,6 @@ export const congressTabs: NavigationTabs = {
 };
 
 import DifferenceIcon from '@mui/icons-material/Difference';
-import HistoryIcon from '@mui/icons-material/History';
 import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import ManageSearchIcon from '@mui/icons-material/ManageSearch';
 import SmartButtonIcon from '@mui/icons-material/SmartButton';

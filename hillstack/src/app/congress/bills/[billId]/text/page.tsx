@@ -1,7 +1,6 @@
 import InfoOutlineIcon from '@mui/icons-material/InfoOutline';
-import { Box, Card, Toolbar, Tooltip, Typography } from '@mui/material';
+import { Box, Tooltip, Typography } from '@mui/material';
 import type { Params } from 'next/dist/server/request/params';
-import { BillVersionEnum } from '~/enums';
 import { api } from '~/trpc/server';
 
 export default async function BillTextPage({
@@ -11,143 +10,110 @@ export default async function BillTextPage({
 }) {
 	const { billId } = await params;
 
-	const data = await api.bill.get({
+	const data = await api.bill.text({
 		id: Number(billId as string),
 	});
 
 	const parentMap: { [k: number]: number } = {};
 
 	return (
-		<Box sx={{ display: 'flex', gap: 3 }}>
-			<Box sx={{ flex: 1 }}>
-				<Card variant='outlined'>
-					<Toolbar
-						disableGutters
+		<>
+			{data.latestVersion?.legislation_content.map((content) => {
+				if (
+					!content.parent_id ||
+					parentMap[content.parent_id] == null
+				) {
+					parentMap[content.legislation_content_id] = 0;
+				} else if (content.parent_id) {
+					parentMap[content.legislation_content_id] =
+						(parentMap[content.parent_id] ?? 0) + 1;
+				}
+
+				const indent = parentMap[content.legislation_content_id] ?? 0;
+
+				const sectionHeading = indent === 1;
+
+				const sectionSummary = content.legislation_content_summary
+					.map((summary) => summary.summary)
+					.join(' ');
+
+				return content.heading?.length ||
+					content.content_str?.length ? (
+					<Box
+						key={content.legislation_content_id}
 						sx={{
-							height: '30px',
-							minHeight: '30px',
-							px: 2,
-							display: 'flex',
+							ml: { xs: indent * 0.5 + 0.5, md: indent * 2 + 2 },
 						}}
-						variant='dense'
 					>
-						{data.latestVersion?.legislation_version
-							? BillVersionEnum[
-									data.latestVersion?.legislation_version
-								]
-							: 'Unknown Version'}
-					</Toolbar>
-					<Box sx={{ py: 3, pr: 3 }}>
-						{data.latestVersion?.legislation_content.map(
-							(content) => {
-								if (
-									!content.parent_id ||
-									parentMap[content.parent_id] == null
-								) {
-									parentMap[content.legislation_content_id] =
-										0;
-								} else if (content.parent_id) {
-									parentMap[content.legislation_content_id] =
-										(parentMap[content.parent_id] ?? 0) + 1;
-								}
-
-								const indent =
-									parentMap[content.legislation_content_id] ??
-									0;
-
-								const sectionHeading = indent === 1;
-
-								const sectionSummary =
-									content.legislation_content_summary
-										.map((summary) => summary.summary)
-										.join(' ');
-
-								return content.heading?.length ||
-									content.content_str?.length ? (
-									<Box
-										key={content.legislation_content_id}
+						<Box
+							sx={{
+								display: 'flex',
+								alignItems: 'center',
+							}}
+						>
+							{sectionHeading && sectionSummary.length ? (
+								<Tooltip
+									arrow
+									placement='right-start'
+									title={sectionSummary}
+								>
+									<InfoOutlineIcon
+										color='primary'
 										sx={{
-											ml: indent * 2 + 2,
+											fontSize: '18px',
+											mr: 1,
+											ml: -2.5,
 										}}
-									>
-										<Box
-											sx={{
-												display: 'flex',
-												alignItems: 'center',
-											}}
-										>
-											{sectionHeading &&
-											sectionSummary.length ? (
-												<Tooltip
-													arrow
-													placement='right-start'
-													title={sectionSummary}
-												>
-													<InfoOutlineIcon
-														color='primary'
-														sx={{
-															fontSize: '18px',
-															mr: 1,
-															ml: -2.5,
-														}}
-													/>
-												</Tooltip>
-											) : null}
-											<Box sx={{ display: 'flex' }}>
-												<Typography
-													sx={{
-														mr: 0.5,
-														fontFamily: 'monospace',
-														fontSize: '12px',
-													}}
-													variant={'subtitle2'}
-													{...(sectionHeading
-														? { color: 'primary' }
-														: {})}
-												>
-													{content.section_display}
-												</Typography>
-												<Typography
-													sx={{
-														flex: 1,
-														fontFamily: 'monospace',
-														fontSize: '12px',
-													}}
-													variant={
-														sectionHeading
-															? 'subtitle2'
-															: 'subtitle1'
-													}
-													{...(sectionHeading
-														? { color: 'primary' }
-														: {})}
-												>
-													{content.heading ??
-														content.content_str}
-												</Typography>
-											</Box>
-										</Box>
-										{content.heading && (
-											<Typography
-												sx={{
-													ml: 3,
-													fontFamily: 'monospace',
-													fontSize: '12px',
-												}}
-											>
-												{content.content_str}
-											</Typography>
-										)}
-									</Box>
-								) : null;
-							},
+									/>
+								</Tooltip>
+							) : null}
+							<Box sx={{ display: 'flex' }}>
+								<Typography
+									sx={{
+										mr: 0.5,
+										fontFamily: 'monospace',
+										fontSize: '12px',
+									}}
+									variant={'subtitle2'}
+									{...(sectionHeading
+										? { color: 'primary' }
+										: {})}
+								>
+									{content.section_display}
+								</Typography>
+								<Typography
+									sx={{
+										flex: 1,
+										fontFamily: 'monospace',
+										fontSize: '12px',
+									}}
+									variant={
+										sectionHeading
+											? 'subtitle2'
+											: 'subtitle1'
+									}
+									{...(sectionHeading
+										? { color: 'primary' }
+										: {})}
+								>
+									{content.heading ?? content.content_str}
+								</Typography>
+							</Box>
+						</Box>
+						{content.heading && (
+							<Typography
+								sx={{
+									ml: 3,
+									fontFamily: 'monospace',
+									fontSize: '12px',
+								}}
+							>
+								{content.content_str}
+							</Typography>
 						)}
 					</Box>
-				</Card>
-			</Box>
-			<Box
-				sx={{ width: '300px', display: { xs: 'none', md: 'block' } }}
-			></Box>
-		</Box>
+				) : null;
+			})}
+		</>
 	);
 }

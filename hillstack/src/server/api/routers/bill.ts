@@ -31,14 +31,6 @@ export const billRouter = createTRPCRouter({
 							effective_date: true,
 							legislation_content: {
 								select: {
-									heading: true,
-									content_str: true,
-									content_type: true,
-									section_display: true,
-									parent_id: true,
-									order_number: true,
-									legislation_version_id: true,
-									legislation_content_id: true,
 									legislation_content_summary: {
 										select: {
 											summary: true,
@@ -47,17 +39,10 @@ export const billRouter = createTRPCRouter({
 											legislation_content_id: 'asc',
 										},
 									},
-									legislation_action_parse: {
-										select: {
-											actions: true,
-											citations: true,
-										},
-									},
 								},
-								orderBy: [
-									{ legislation_content_id: 'asc' },
-									{ parent_id: 'asc' },
-								],
+								where: {
+									content_type: 'legis-body',
+								},
 							},
 							legislation_version_tag: {
 								select: {
@@ -154,6 +139,73 @@ export const billRouter = createTRPCRouter({
 			return {
 				...bill,
 				signed,
+				latestVersion,
+			};
+		}),
+	text: publicProcedure
+		.input(
+			z.object({
+				id: z.number(),
+				version: z.optional(z.number()),
+			}),
+		)
+		.query(async ({ input, ctx }) => {
+			const { id, version } = input;
+
+			const bill = await ctx.db.legislation.findUniqueOrThrow({
+				select: {
+					legislation_version: {
+						select: {
+							legislation_version: true,
+							legislation_content: {
+								select: {
+									heading: true,
+									content_str: true,
+									content_type: true,
+									section_display: true,
+									parent_id: true,
+									order_number: true,
+									legislation_version_id: true,
+									legislation_content_id: true,
+									legislation_content_summary: {
+										select: {
+											summary: true,
+										},
+										orderBy: {
+											legislation_content_id: 'asc',
+										},
+									},
+									legislation_action_parse: {
+										select: {
+											actions: true,
+											citations: true,
+										},
+									},
+								},
+								orderBy: [
+									{ legislation_content_id: 'asc' },
+									{ parent_id: 'asc' },
+								],
+							},
+							legislation_version_tag: {
+								select: {
+									tags: true,
+								},
+							},
+						},
+						where: {
+							...(version && { legislation_version_id: version }),
+						},
+					},
+				},
+				where: { legislation_id: id },
+			});
+
+			const latestVersion =
+				bill.legislation_version[bill.legislation_version.length - 1];
+
+			return {
+				...bill,
 				latestVersion,
 			};
 		}),
@@ -288,6 +340,7 @@ export const billRouter = createTRPCRouter({
 				where: {
 					legislation_version_id:
 						latestVersion?.legislation_version_id,
+					amount: { not: 0 },
 				},
 			});
 

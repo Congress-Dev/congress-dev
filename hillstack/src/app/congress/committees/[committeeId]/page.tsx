@@ -28,8 +28,6 @@ export default async function CommitteePage({
 		id: Number(committeeId),
 	});
 
-	console.log(data.legislation);
-
 	return (
 		<HydrateClient>
 			<Container maxWidth='xl'>

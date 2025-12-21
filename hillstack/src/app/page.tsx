@@ -79,7 +79,7 @@ export default async function Home() {
 									<Typography variant='h2'>
 										Key Features
 									</Typography>
-									<ul style={{ padding: '0 20px' }}>
+									<ul style={{ padding: '14px 20px' }}>
 										<li>
 											<b>Search Bills & Laws</b>
 											<br />
@@ -180,7 +180,13 @@ export default async function Home() {
 											</Link>
 										</Paper>
 
-										<Paper sx={{ flexBasis: '33%', p: 2 }}>
+										<Paper
+											sx={{
+												flexBasis: '33%',
+												p: 2,
+												mb: { xs: 1 },
+											}}
+										>
 											<Box
 												sx={{
 													display: 'flex',
@@ -198,13 +204,15 @@ export default async function Home() {
 												Track the legislation and
 												lawmakers that matter to you.
 											</p>
-											<Button
-												color='primary'
-												size='small'
-												variant='contained'
-											>
-												Login
-											</Button>
+											<Link href='#'>
+												<Button
+													color='primary'
+													size='small'
+													variant='contained'
+												>
+													Login
+												</Button>
+											</Link>
 										</Paper>
 									</Box>
 								</Box>

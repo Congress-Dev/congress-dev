@@ -7,8 +7,6 @@ import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import SummarizeIcon from '@mui/icons-material/Summarize';
 import { Box, Chip, Divider, Typography } from '@mui/material';
 import type { Params } from 'next/dist/server/request/params';
-import type React from 'react';
-import type { JSX } from 'react';
 import { Timeline, TimelineNode } from '~/components/timeline';
 import { BillVersionEnum } from '~/enums';
 import { api, HydrateClient } from '~/trpc/server';
@@ -26,9 +24,9 @@ export default async function BillOverviewPage({
 	const latestVersion =
 		data.legislation_version[data.legislation_version.length - 1];
 
-	const summary = latestVersion?.legislation_content.find(
-		(content) => content.content_type === 'legis-body',
-	)?.legislation_content_summary[0]?.summary;
+	const summary =
+		latestVersion?.legislation_content[0]?.legislation_content_summary[0]
+			?.summary;
 
 	const sponsor = data.legislation_sponsorship.find(
 		(sponsor) => !sponsor.cosponsor,
@@ -36,8 +34,6 @@ export default async function BillOverviewPage({
 	const cosponsors = data.legislation_sponsorship
 		.filter((sponsor) => sponsor.cosponsor)
 		?.slice(0, 5);
-
-	console.log(latestVersion);
 
 	return (
 		<HydrateClient>
@@ -170,7 +166,14 @@ export default async function BillOverviewPage({
 						<Typography variant='subtitle2'>Tags:</Typography>
 
 						{latestVersion?.legislation_version_tag.length ? (
-							<Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
+							<Box
+								sx={{
+									display: 'flex',
+									gap: 0.5,
+									mt: 0.5,
+									flexWrap: 'wrap',
+								}}
+							>
 								{latestVersion?.legislation_version_tag[0]?.tags.map(
 									(tag) => (
 										<Chip
@@ -196,7 +199,14 @@ export default async function BillOverviewPage({
 						</Typography>
 
 						{data.legislative_policy_area_association.length ? (
-							<Box sx={{ display: 'flex', gap: 0.5, mt: 0.5 }}>
+							<Box
+								sx={{
+									display: 'flex',
+									gap: 0.5,
+									mt: 0.5,
+									flexWrap: 'wrap',
+								}}
+							>
 								{data.legislative_policy_area_association.map(
 									(assc) => (
 										<Chip

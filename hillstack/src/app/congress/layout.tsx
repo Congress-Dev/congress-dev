@@ -44,7 +44,7 @@ export default function CongressLayout({
 					})}
 				</Tabs>
 			</Box>
-			<Container maxWidth='xl'>
+			<Container maxWidth='xl' sx={{ px: { xs: 0 } }}>
 				<Box sx={{ pt: 3 }}>{children}</Box>
 			</Container>
 		</Box>

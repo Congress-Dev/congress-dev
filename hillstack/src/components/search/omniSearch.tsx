@@ -32,14 +32,14 @@ export function OmniSearch({ results, isLoading, children }: OmniSearchProps) {
 	} = useOmniSearchContext();
 
 	return (
-		<>
+		<Box sx={{ mx: { xs: 2, md: 0 } }}>
 			<OmniSearchBox
 				onQueryChange={setQuery}
 				onRemoveTag={removeTag}
 				query={query}
 				tags={tags}
 			/>
-			<Paper elevation={1}>
+			<Paper elevation={1} sx={{ mb: 2 }}>
 				<Box>
 					<Toolbar filters={filters} results={results} />
 					{isLoading && <LinearProgress />}
@@ -77,6 +77,6 @@ export function OmniSearch({ results, isLoading, children }: OmniSearchProps) {
 					)}
 				</Box>
 			</Paper>
-		</>
+		</Box>
 	);
 }
