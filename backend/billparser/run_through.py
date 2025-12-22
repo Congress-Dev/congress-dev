@@ -48,7 +48,7 @@ from billparser.db.handler import Session, init_session
 from billparser.translater import translate_paragraph
 
 from joblib import Parallel, delayed
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from functools import lru_cache
 
 text_paths = ["legis-body/section/subsection/text", "legis-body/section/text"]
@@ -266,7 +266,7 @@ def recursive_bill_content(
     return res
 
 
-def check_for_existing_legislation_version(bill_obj: object) -> bool:
+def check_for_existing_legislation_version(bill_obj: object) -> Optional[LegislationVersion]:
     session = Session()
     # Check to see if we've already ingested this bill
     existing_legis = (
@@ -291,7 +291,7 @@ def check_for_existing_legislation_version(bill_obj: object) -> bool:
         )
         .all()
     )
-    return len(result) > 0
+    return result[0] if len(result) > 0 else None
 
 
 def retrieve_existing_legislations(session) -> List[dict]:
@@ -348,6 +348,22 @@ def parse_bill(
             found = check_for_existing_legislation_version(bill_obj)
             if found:
                 logging.info(f"Skipping {archive_obj.get('file')}")
+                if found.effective_date is None:
+                    logging.info("Missing effective date, re-parsing")
+                    # Certain versions use a different date format
+                    form_dates = root.xpath("//form/action/action-date") + root.xpath("//form/action/date")
+                    if len(form_dates) > 0:
+                        last_date = form_dates[-1]
+                        try:
+                            found.effective_date = parser.parse(
+                                last_date.get("date")
+                            )
+                        except:
+                            try:
+                                found.effective_date = parser.parse(last_date.text)
+                            except:
+                                logging.error("Unable to parse date")
+                    session.commit()
                 return []
 
             root: Element = etree.fromstring(f)
@@ -376,7 +392,7 @@ def parse_bill(
 
             new_vers_id = new_bill_version.version_id
             logging.debug(f"New bill has id {new_vers_id}")
-            form_dates = root.xpath("//form/action/action-date")
+            form_dates = root.xpath("//form/action/action-date") + root.xpath("//form/action/date")
             if len(form_dates) > 0:
                 last_date = form_dates[-1]
                 try:
