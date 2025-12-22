@@ -344,7 +344,7 @@ def parse_bill(
             int(bill_obj["congress_session"]), session
         )
         try:
-
+            root: Element = etree.fromstring(f)
             found = check_for_existing_legislation_version(bill_obj)
             if found:
                 logging.info(f"Skipping {archive_obj.get('file')}")
@@ -364,9 +364,10 @@ def parse_bill(
                             except:
                                 logging.error("Unable to parse date")
                     session.commit()
+                    session.flush()
                 return []
 
-            root: Element = etree.fromstring(f)
+            
             try:
                 title = root.xpath("//dublinCore")[0][0].text
                 if ":" in title:
@@ -668,7 +669,7 @@ def parse_archives(
     names = sorted(names, key=lambda x: x["bill_number"])
     # names = names[50:55]
     # names = [x for x in names if (x.get('bill_version') == 'enr')]
-
+    print("Names", len(names))
     def filter_logic(x):
         if chamber_filter is not None and x["chamber"] != chamber_filter:
             return False
@@ -692,6 +693,7 @@ def parse_archives(
         ].append(LegislationVersionEnum(leg["bill_version"]))
 
     def filter_existing_legislation(x):
+        return True
         if x["chamber"] in legis_lookup:
             if (
                 LegislationVersionEnum(x["bill_version"])
@@ -700,8 +702,8 @@ def parse_archives(
                 return False
         return True
 
-    names = [x for x in names if filter_logic(x) and filter_existing_legislation(x)]
-    print("New legislation", len(names))
+    # names = [x for x in names if filter_logic(x) and filter_existing_legislation(x)]
+    print("New legislation hmm", len(names))
 
     frec = Parallel(n_jobs=THREADS, backend="loky", verbose=5)(
         delayed(parse_bill)(

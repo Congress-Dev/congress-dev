@@ -17,16 +17,16 @@ parser.add_argument("--bill", type=str, help="Which bill you want to reprocess")
 PATH_TEMPLATE = "https://www.govinfo.gov/bulkdata/BILLS/{congress}/{session}/{chamber}/BILLS-{congress}-{session}-{chamber}.zip"
 
 
-def download_path(url: str):
-    os.makedirs("bills", exist_ok=True)
+def download_path(url: str, *, dir_name: str = "bills"):
+    os.makedirs(dir_name, exist_ok=True)
     output_name = url.split("/")[-1]
-    if os.path.exists(f"bills/{output_name}"):
-        return f"bills/{output_name}"
+    if os.path.exists(f"{dir_name}/{output_name}"):
+        return f"{dir_name}/{output_name}"
     res = requests.head(url)
     if res.status_code == 404:
         return None
-    os.system(f"wget {url} --output-document bills/{output_name}")
-    return f"bills/{output_name}"
+    os.system(f"wget {url} --output-document {dir_name}/{output_name}")
+    return f"{dir_name}/{output_name}"
 
 
 def calculate_congress_from_year() -> int:
