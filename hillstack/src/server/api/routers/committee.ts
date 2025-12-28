@@ -42,32 +42,32 @@ export const committeeRouter = createTRPCRouter({
 						},
 					},
 				},
-				where: {
-					legislation_action: {
-						some: {
-							text: {
-								contains: committee.name,
-								mode: Prisma.QueryMode.insensitive,
-							},
-							OR: [
-								{
-									action_type: {
-										in: ['Committee'],
-									},
-									text: {
-										startsWith: 'Referred',
-									},
-								},
-								{
-									action_type: {
-										in: ['IntroReferral'],
-									},
-									action_code: 'H11100',
-								},
-							],
-						},
-					},
-				},
+				// where: {
+				// 	legislation_action: {
+				// 		some: {
+				// 			text: {
+				// 				contains: committee.name,
+				// 				mode: Prisma.QueryMode.insensitive,
+				// 			},
+				// 			OR: [
+				// 				{
+				// 					action_type: {
+				// 						in: ['Committee'],
+				// 					},
+				// 					text: {
+				// 						startsWith: 'Referred',
+				// 					},
+				// 				},
+				// 				{
+				// 					action_type: {
+				// 						in: ['IntroReferral'],
+				// 					},
+				// 					action_code: 'H11100',
+				// 				},
+				// 			],
+				// 		},
+				// 	},
+				// },
 				take: 10,
 			});
 

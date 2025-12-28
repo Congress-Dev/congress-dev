@@ -24,6 +24,20 @@ Base = declarative_base()
 # This will hold various things related to my appropriation parsing
 AppropriationsBase = declarative_base(metadata=MetaData(schema="appropriations"))
 PromptsBase = declarative_base(metadata=MetaData(schema="prompts"))
+SensitiveBase = declarative_base(metadata=MetaData(schema="sensitive"))
+AuthenticationBase = declarative_base(metadata=MetaData(schema="authentication"))
+
+def merge_metadata(*metadata):
+    merged = MetaData()
+    for metadatum in metadata:
+        for table in metadatum.tables.values():
+            table.to_metadata(merged)
+    return merged
+
+merge_metadata(Base.metadata, AppropriationsBase.metadata)
+merge_metadata(Base.metadata, PromptsBase.metadata)
+merge_metadata(Base.metadata, SensitiveBase.metadata)
+merge_metadata(Base.metadata, AuthenticationBase.metadata)
 
 
 class CastingArray(ARRAY):
@@ -202,13 +216,12 @@ class LegislatorVote(Base):
     vote = Column(Enum(LegislatorVoteType))
 
 
-class User(Base):
+class User(SensitiveBase):
     """
     Holds the relationships for the website user
     """
 
     __tablename__ = "user_ident"
-    __table_args__ = {"schema": "sensitive"}
 
     user_id = Column(String, primary_key=True)
     user_first_name = Column(String, nullable=False)
@@ -222,13 +235,12 @@ class User(Base):
     user_auth_cookie = Column(String, nullable=True)
 
 
-class UserLegislation(Base):
+class UserLegislation(SensitiveBase):
     """
     Holds the relationship between User and favorited Legislation
     """
 
     __tablename__ = "user_legislation"
-    __table_args__ = {"schema": "sensitive"}
 
     user_legislation_id = Column(Integer, primary_key=True)
 
@@ -245,13 +257,12 @@ class UserLegislation(Base):
     )
 
 
-class UserLegislator(Base):
+class UserLegislator(SensitiveBase):
     """
     Holds the relationship between User and favorited Legislator
     """
 
     __tablename__ = "user_legislator"
-    __table_args__ = {"schema": "sensitive"}
 
     user_legislator_id = Column(Integer, primary_key=True)
 
@@ -266,13 +277,12 @@ class UserLegislator(Base):
     )
 
 
-class UserUSCContentFolder(Base):
+class UserUSCContentFolder(SensitiveBase):
     """
     Folders for grouping tracked sections
     """
 
     __tablename__ = "user_usc_content_folder"
-    __table_args__ = {"schema": "sensitive"}
 
     user_usc_content_folder_id = Column(Integer, primary_key=True)
 
@@ -285,13 +295,12 @@ class UserUSCContentFolder(Base):
     name = Column(String, nullable=False)
 
 
-class UserUSCContent(Base):
+class UserUSCContent(SensitiveBase):
     """
     Tracks which sections of the USC a user has favorited
     """
 
     __tablename__ = "user_usc_content"
-    __table_args__ = {"schema": "sensitive"}
 
     user_usc_content_id = Column(Integer, primary_key=True)
 
@@ -312,13 +321,12 @@ class UserUSCContent(Base):
     usc_ident = Column(String)
 
 
-class UserLLMQuery(Base):
+class UserLLMQuery(SensitiveBase):
     """
     Acts as a log of all user queries into legislation, for tracking purposes
     """
 
     __tablename__ = "user_llm_query"
-    __table_args__ = {"schema": "sensitive"}
 
     user_llm_query_id = Column(Integer, primary_key=True)
 
@@ -856,17 +864,20 @@ class USCContentDiff(Base):
         Integer,
         ForeignKey("usc_content.usc_content_id", ondelete="CASCADE"),
         index=True,
+        nullable=False,
     )
 
     usc_section_id = Column(
         Integer,
         ForeignKey("usc_section.usc_section_id", ondelete="CASCADE"),
         index=True,
+        nullable=False,
     )
     usc_chapter_id = Column(
         Integer,
         ForeignKey("usc_chapter.usc_chapter_id", ondelete="CASCADE"),
         index=True,
+        nullable=False,
     )
     legislation_content_id = Column(
         Integer,
@@ -972,7 +983,7 @@ class LegislationCommittee(Base):
     committee_id = Column(String, index=True)
     system_code = Column(String)  # Correspond to the systemCode tag in the statuses xml
     chamber = Column(Enum(LegislationChamber))
-    name = Column(String)
+    name = Column(String, nullable=False)
 
     committee_type = Column(String)  # Dunno what this is yet
     parent_id = Column(
@@ -1167,18 +1178,6 @@ class LegislativePolicyAreaAssociation(Base):
         index=True,
     )
 
-
-def merge_metadata(*metadata):
-    merged = MetaData()
-    for metadatum in metadata:
-        for table in metadatum.tables.values():
-            table.to_metadata(merged)
-    return merged
-
-
-merge_metadata(Base.metadata, AppropriationsBase.metadata)
-
-
 class Appropriation(AppropriationsBase):
     """
     A table for holding detected appropriations
@@ -1220,4 +1219,65 @@ class Appropriation(AppropriationsBase):
     purpose = Column(String, default="")
 
 
-merge_metadata(Base.metadata, PromptsBase.metadata)
+class User(AuthenticationBase):
+    __tablename__ = "user"
+
+    id = Column(String, primary_key=True, default=lambda: str(func.gen_random_uuid()))
+    name = Column(String, nullable=True)
+    email = Column(String, unique=True, nullable=False)
+    email_verified = Column(DateTime, nullable=True)
+    image = Column(String, nullable=True)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    accounts = relationship("Account", back_populates="user", cascade="all, delete-orphan")
+    sessions = relationship("Session", back_populates="user", cascade="all, delete-orphan")
+
+
+class Account(AuthenticationBase):
+    __tablename__ = "account"
+    __table_args__ = (
+        UniqueConstraint("provider", "provider_account_id", name="account_pk"),
+    )
+
+    provider = Column(String, primary_key=True)
+    provider_account_id = Column(String, primary_key=True)
+    user_id = Column(String, ForeignKey("authentication.user.id", ondelete="CASCADE"), nullable=False)
+    type = Column(String, nullable=False)
+    refresh_token = Column(String, nullable=True)
+    access_token = Column(String, nullable=True)
+    expires_at = Column(Integer, nullable=True)
+    token_type = Column(String, nullable=True)
+    scope = Column(String, nullable=True)
+    id_token = Column(String, nullable=True)
+    session_state = Column(String, nullable=True)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    user = relationship("User", back_populates="accounts")
+
+
+class Session(AuthenticationBase):
+    __tablename__ = "session"
+
+    session_token = Column(String, primary_key=True, unique=True)
+    user_id = Column(String, ForeignKey("authentication.user.id", ondelete="CASCADE"), nullable=False)
+    expires = Column(DateTime(timezone=True), nullable=False)
+
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    user = relationship("User", back_populates="sessions")
+
+
+class VerificationToken(AuthenticationBase):
+    __tablename__ = "verification_token"
+    __table_args__ = (
+        UniqueConstraint("identifier", "token", name="verification_token_pk"),
+    )
+
+    identifier = Column(String, primary_key=True)
+    token = Column(String, primary_key=True)
+    expires = Column(DateTime(timezone=True), nullable=False)

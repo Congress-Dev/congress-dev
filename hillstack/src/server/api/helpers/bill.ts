@@ -16,36 +16,36 @@ interface TreeNode {
 
 interface TreeNodeMetadata {
 	usc_chapter: {
-		short_title: string;
-		long_title: string;
+		short_title: string | null;
+		long_title: string | null;
 	} | null;
 	usc_section: {
-		number: string;
-		heading: string;
+		number: string | null;
+		heading: string | null;
 	} | null;
 }
 
 interface Diff {
 	usc_content_id: number;
-	section_display: string;
-	heading: string;
-	content_str: string;
+	section_display: string | null;
+	heading: string | null;
+	content_str: string | null;
 	usc_section: {
-		number: string;
-		heading: string;
+		number: string | null;
+		heading: string | null;
 	} | null;
-	usc_content_diff_id: number;
+	usc_content_diff_id: number | null;
 	usc_chapter: {
-		short_title: string;
-		long_title: string;
+		short_title: string | null;
+		long_title: string | null;
 	} | null;
 }
 
 interface Sibling {
 	parent_id: number | null;
-	section_display: string;
-	heading: string;
-	content_str: string;
+	section_display: string | null;
+	heading: string | null;
+	content_str: string | null;
 	usc_content_id: number;
 }
 
