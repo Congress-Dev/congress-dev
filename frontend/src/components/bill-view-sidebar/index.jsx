@@ -9,6 +9,7 @@ import {
     BillVersionsBreadcrumb,
     BillVotes,
     AppropriationTree,
+    EffectiveDateActions,
     LegislatorChip,
     TalkToBill,
     BillActions,
@@ -74,6 +75,12 @@ function BillViewSidebar() {
                     id="dollarlist"
                     title="Spending"
                     panel={<AppropriationTree />}
+                />
+
+                <Tab
+                    id="effective-dates"
+                    title="Effective Dates"
+                    panel={<EffectiveDateActions />}
                 />
 
                 {bill2?.votes?.length > 0 && (

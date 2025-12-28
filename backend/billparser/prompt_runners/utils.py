@@ -17,8 +17,9 @@ def run_query(
     query: str,
     model: str = "ollama/qwen2.5:32b",
     *,
-    num_ctx: int = 2048,
+    num_ctx: int = 4096,
     json: bool = True,
+    max_tokens: int = 10000,
 ) -> dict:
     start_time = time.time()
     response = completion(
@@ -27,7 +28,7 @@ def run_query(
         api_base=llm_host,
         format="json" if json else None,
         timeout=60,
-        max_tokens=10000,
+        max_tokens=max_tokens,
         num_ctx=num_ctx,
     )
     end_time = time.time()

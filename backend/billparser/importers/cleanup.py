@@ -87,5 +87,5 @@ def cleanup_legislation():
 if __name__ == "__main__":
     session = Session()
 
-    cleanup_legislation()
+    # cleanup_legislation()
     cleanup_usc_release(session)
