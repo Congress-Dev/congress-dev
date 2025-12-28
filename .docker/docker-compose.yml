@@ -81,8 +81,6 @@ services:
     build:
       context: ../hillstack
       dockerfile: .docker/Dockerfile
-    environment:
-    - DATABASE_URL=postgresql://parser:parser@congress_postgres:5432/us_code_2025
     ports:
     - "3001:3001"
     depends_on:

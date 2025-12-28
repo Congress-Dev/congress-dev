@@ -27,13 +27,6 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/generated ./generated
 COPY . .
 
-ARG NEXT_PUBLIC_APP_URL
-ARG DATABASE_URL
-ARG AUTH_SECRET
-ARG GOOGLE_CLIENT_ID
-ARG GOOGLE_CLIENT_SECRET
-ARG NEXTAUTH_URL
-
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line in case you want to disable telemetry during the build.
@@ -70,13 +63,6 @@ USER nextjs
 EXPOSE 3001
 
 ENV PORT=3001
-
-ARG NEXT_PUBLIC_APP_URL
-ARG DATABASE_URL
-ARG AUTH_SECRET
-ARG GOOGLE_CLIENT_ID
-ARG GOOGLE_CLIENT_SECRET
-ARG NEXTAUTH_URL
 
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/config/next-config-js/output
