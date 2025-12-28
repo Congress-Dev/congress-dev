@@ -35,7 +35,7 @@ export function OmniSearchBox<T extends ToolbarFilterOptionMap>({
 							{Object.keys(tags).map((tag) =>
 								tags[tag]?.map((subtag) => (
 									<Chip
-										color='primary'
+										color={tag === 'sort' ? 'warning' : 'primary'}
 										key={subtag.label}
 										label={`${tag}:${subtag.label}`}
 										onDelete={() => {

@@ -1,8 +1,12 @@
 'use client';
 
 import type { legislationchamber } from 'generated/prisma/enums';
+import type { LegislationScalarFieldEnum } from 'generated/prisma/internal/prismaNamespace';
 import { OmniSearchProvider } from '~/contexts';
-import type { ToolbarFilterOption } from '~/types/components';
+import type {
+	ToolbarFilterOption,
+	ToolbarFilterSortMap,
+} from '~/types/components';
 
 // const AUTHORS: ToolbarFilterOption<string>[] = [
 // 	{ value: '0', label: 'Alma Adams' },
@@ -37,6 +41,13 @@ const CHAMBERS: ToolbarFilterOption<legislationchamber>[] = [
 	{ value: 'Senate', label: 'Senate' },
 ];
 
+const SORT: ToolbarFilterOption<
+	ToolbarFilterSortMap<LegislationScalarFieldEnum>
+>[] = [
+	{ value: { number: 'asc' }, label: 'Date (A-Z)' },
+	{ value: { number: 'desc' }, label: 'Date (Z-A)' },
+];
+
 const filterConfig = {
 	// author: {
 	// 	title: 'Author',
@@ -52,6 +63,12 @@ const filterConfig = {
 		title: 'Chamber',
 		options: CHAMBERS,
 		multiSelect: true as const,
+	},
+	sort: {
+		title: 'Sort',
+		options: SORT,
+		multiSelect: false as const,
+		searchable: false,
 	},
 	// version: {
 	// 	title: 'Status',

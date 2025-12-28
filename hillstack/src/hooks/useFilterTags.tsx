@@ -42,6 +42,7 @@ export function useFilterTags<T extends ToolbarFilterOptionMap>(
 							>[]
 						}
 						prop={key}
+						searchable={config[key].searchable}
 						title={config[key].title}
 						value={tags[key]}
 					/>

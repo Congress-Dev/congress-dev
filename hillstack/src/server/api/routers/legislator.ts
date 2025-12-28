@@ -1,5 +1,6 @@
 import { Prisma } from 'generated/prisma/client';
 import type { legislatorjob } from 'generated/prisma/enums';
+import { SortOrder } from 'generated/prisma/internal/prismaNamespace';
 import { z } from 'zod';
 import { createTRPCRouter, publicProcedure } from '~/server/api/trpc';
 
@@ -67,17 +68,30 @@ export const legislatorRouter = createTRPCRouter({
 				query: z.optional(z.string()),
 				congress: z.optional(z.array(z.number())),
 				chamber: z.optional(z.array(z.string())),
+				sort: z.optional(
+					z.array(
+						z.object({
+							first_name: z.optional(z.enum(['asc', 'desc'])),
+							last_name: z.optional(z.enum(['asc', 'desc'])),
+						}),
+					),
+				),
 				page: z.number(),
 				pageSize: z.number(),
 			}),
 		)
 		.query(async ({ input, ctx }) => {
-			const { query, congress, chamber, page, pageSize } = input;
+			const { query, congress, chamber, sort, page, pageSize } = input;
 
 			const jobLookup: { [key: string]: legislatorjob } = {
 				House: 'Representative',
 				Senate: 'Senator',
 			};
+
+			const defaultSort = [
+				{ last_name: SortOrder.asc },
+				{ first_name: SortOrder.desc },
+			];
 
 			const where = {
 				...(congress
@@ -130,7 +144,7 @@ export const legislatorRouter = createTRPCRouter({
 					job: true,
 				},
 				where,
-				orderBy: [{ last_name: 'asc' }, { first_name: 'asc' }],
+				orderBy: sort ?? defaultSort,
 				skip: (page - 1) * pageSize,
 				take: pageSize,
 			});

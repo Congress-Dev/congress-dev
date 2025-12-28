@@ -1,3 +1,7 @@
+export type ToolbarFilterSortMap<K extends string> = {
+	[P in K]?: 'asc' | 'desc';
+};
+
 // biome-ignore lint:suspicious/noExplicitAny
 export type ToolbarFilterOptionMap = Record<string, any>;
 
@@ -19,5 +23,6 @@ export type ToolbarFilterConfig<T extends ToolbarFilterOptionMap> = {
 		title: string;
 		options: ToolbarFilterOptions<T[K]>;
 		multiSelect: boolean;
+		searchable?: boolean;
 	};
 };

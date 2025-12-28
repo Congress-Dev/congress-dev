@@ -116,7 +116,7 @@ const darkMode = createTheme({
 		info: {
 			main: '#8929f6ff',
 			light: '#8a4ff7ff',
-			dark: '#5c02d1ff',
+			dark: '#8929f6ff',
 			contrastText: '#000000',
 		},
 

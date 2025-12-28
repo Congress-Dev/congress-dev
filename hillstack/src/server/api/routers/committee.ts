@@ -1,5 +1,6 @@
 import { Prisma } from 'generated/prisma/client';
 import { legislationchamber } from 'generated/prisma/enums';
+import { SortOrder } from 'generated/prisma/internal/prismaNamespace';
 import { z } from 'zod';
 import { createTRPCRouter, publicProcedure } from '~/server/api/trpc';
 
@@ -84,13 +85,27 @@ export const committeeRouter = createTRPCRouter({
 				congress: z.optional(z.array(z.number())),
 				chamber: z.optional(z.array(z.nativeEnum(legislationchamber))),
 				committeeType: z.optional(z.array(z.string())),
+				sort: z.optional(
+					z.array(
+						z.object({
+							name: z.optional(z.enum(['asc', 'desc'])),
+						}),
+					),
+				),
 				page: z.number(),
 				pageSize: z.number(),
 			}),
 		)
 		.query(async ({ input, ctx }) => {
-			const { query, congress, chamber, committeeType, page, pageSize } =
-				input;
+			const {
+				query,
+				congress,
+				chamber,
+				committeeType,
+				sort,
+				page,
+				pageSize,
+			} = input;
 
 			const where = {
 				...(committeeType
@@ -110,6 +125,10 @@ export const committeeRouter = createTRPCRouter({
 					: {}),
 			};
 
+			const defaultSort = {
+				name: SortOrder.asc,
+			};
+
 			const totalResults = await ctx.db.legislation_committee.count({
 				where,
 			});
@@ -123,7 +142,7 @@ export const committeeRouter = createTRPCRouter({
 					chamber: true,
 				},
 				where,
-				orderBy: { name: 'asc' },
+				orderBy: sort ?? defaultSort,
 				skip: (page - 1) * pageSize,
 				take: pageSize,
 			});

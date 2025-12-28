@@ -11,6 +11,7 @@ export interface ToolbarFilterProps<T> {
 	value: ToolbarFilterOption<T>[] | undefined;
 	options: ToolbarFilterOption<T>[];
 	multiSelect: boolean;
+	searchable?: boolean;
 	onTagChange: (
 		tag: string,
 		value: ToolbarFilterOption<T>[] | undefined,
@@ -24,6 +25,7 @@ export function ToolbarFilter<T>({
 	options,
 	onTagChange,
 	multiSelect,
+	searchable,
 }: ToolbarFilterProps<T>) {
 	const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(
 		null,
@@ -51,6 +53,7 @@ export function ToolbarFilter<T>({
 				onSelect={onTagChange}
 				options={options}
 				prop={prop}
+				searchable={searchable}
 				title={title}
 				value={value}
 			/>

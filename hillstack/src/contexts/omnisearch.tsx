@@ -17,7 +17,7 @@ import { useDebounce } from '~/utils';
 type OmniSearchQueryTagsType<TConfig extends ToolbarFilterOptionMap> = {
 	[K in keyof TConfig]?: TConfig[K]['multiSelect'] extends true
 		? TConfig[K]['options'][number]['value'][]
-		: TConfig[K]['options'][number]['value'];
+		: TConfig[K]['options'][number]['value'][];
 };
 
 type OmniSearchContextType<T extends ToolbarFilterOptionMap> = {

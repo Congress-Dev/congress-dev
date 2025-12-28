@@ -1,5 +1,6 @@
 import { Prisma } from 'generated/prisma/client';
 import { legislationchamber } from 'generated/prisma/enums';
+import { SortOrder } from 'generated/prisma/internal/prismaNamespace';
 import { z } from 'zod';
 import {
 	buildNestedDiffTrees,
@@ -215,13 +216,22 @@ export const billRouter = createTRPCRouter({
 				congress: z.optional(z.array(z.number())),
 				chamber: z.optional(z.array(z.nativeEnum(legislationchamber))),
 				versions: z.optional(z.array(z.string())),
+				sort: z.optional(
+					z.array(
+						z.object({
+							number: z.optional(z.enum(['asc', 'desc'])),
+						}),
+					),
+				),
 				query: z.optional(z.string()),
 				page: z.number(),
 				pageSize: z.number(),
 			}),
 		)
 		.query(async ({ input, ctx }) => {
-			const { query, congress, chamber, page, pageSize } = input;
+			const { query, congress, chamber, sort, page, pageSize } = input;
+
+			console.log(input);
 
 			const titleClause = query
 				? {
@@ -240,6 +250,10 @@ export const billRouter = createTRPCRouter({
 				...titleClause,
 				...congressClause,
 				...chamberClause,
+			};
+
+			const defaultSort = {
+				number: SortOrder.desc,
 			};
 
 			const totalResults = await ctx.db.legislation.count({
@@ -290,9 +304,7 @@ export const billRouter = createTRPCRouter({
 					},
 				},
 				where,
-				orderBy: {
-					number: 'asc',
-				},
+				orderBy: sort ? sort : defaultSort,
 				skip: (page - 1) * pageSize,
 				take: pageSize,
 			});

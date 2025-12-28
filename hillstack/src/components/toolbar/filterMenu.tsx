@@ -1,5 +1,5 @@
-import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
+import { Radio } from '@mui/material';
 import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
 import Divider from '@mui/material/Divider';
@@ -20,6 +20,7 @@ export interface ToolbarFilterMenuProps<T> {
 	value: ToolbarFilterOption<T>[] | undefined;
 	options: ToolbarFilterOption<T>[];
 	multiSelect: boolean;
+	searchable?: boolean;
 	anchor: HTMLElement | null;
 	onClose: () => void;
 	onSelect: (
@@ -34,6 +35,7 @@ export function ToolbarFilterMenu<T>({
 	value,
 	options,
 	multiSelect = false,
+	searchable = true,
 	anchor,
 	onClose,
 	onSelect,
@@ -43,12 +45,6 @@ export function ToolbarFilterMenu<T>({
 	const [query, setQuery] = useState('');
 	const availableOptions = useMemo(() => {
 		return options
-			.filter(
-				(option) =>
-					multiSelect === true ||
-					value == null ||
-					value?.find((val) => val.value !== option.value),
-			)
 			.filter(
 				(option) =>
 					query === '' ||
@@ -62,7 +58,7 @@ export function ToolbarFilterMenu<T>({
 				if (a.label > b.label) return 1;
 				return 0;
 			});
-	}, [value, options, query, multiSelect]);
+	}, [options, query]);
 
 	const handleSelect = (
 		prop: string,
@@ -136,7 +132,11 @@ export function ToolbarFilterMenu<T>({
 						lineHeight: '28px',
 					}}
 					variant='subtitle2'
-				>{`Filter by ${title.toLowerCase()}`}</Typography>
+				>
+					{title === 'Sort'
+						? title
+						: `Filter by ${title.toLowerCase()}`}
+				</Typography>
 
 				<IconButton onClick={onClose} size='small'>
 					<CloseIcon fontSize='inherit' />
@@ -150,34 +150,29 @@ export function ToolbarFilterMenu<T>({
 					onKeyDown={(e) => e.stopPropagation()}
 					placeholder='Search'
 					size='small'
+					sx={{ display: searchable ? 'block' : 'none' }}
 					value={query}
 					variant='outlined'
 				/>
 			</Box>
 			<Divider sx={{ mt: 1 }} />
-			{multiSelect === false && value && value[0] != null ? (
-				<MenuList dense sx={{ py: 0 }}>
-					<MenuItem onClick={() => handleSelect(prop, value[0])}>
-						<ListItemIcon>
-							<CheckIcon fontSize='inherit' />
-						</ListItemIcon>
-						{value[0].label}
-					</MenuItem>
-				</MenuList>
-			) : null}
-			{multiSelect === false && value && availableOptions.length > 0 ? (
-				<Divider />
-			) : null}
 			<MenuList dense sx={{ py: 0 }}>
 				{availableOptions.map((option) => (
 					<MenuItem
 						key={option.label}
 						onClick={() => handleSelect(prop, option)}
+						sx={{
+							backgroundColor: (theme) =>
+								Array.isArray(value) &&
+								value.find(
+									(val) => val.value === option.value,
+								) != null
+									? theme.palette.brand.accent
+									: 'none',
+						}}
 					>
-						{multiSelect === false ? (
-							<ListItemIcon />
-						) : (
-							<ListItemIcon>
+						<ListItemIcon>
+							{multiSelect ? (
 								<Checkbox
 									checked={
 										(Array.isArray(value) &&
@@ -190,8 +185,21 @@ export function ToolbarFilterMenu<T>({
 									size='small'
 									sx={{ px: 0, py: 0 }}
 								/>
-							</ListItemIcon>
-						)}
+							) : (
+								<Radio
+									checked={
+										(Array.isArray(value) &&
+											value.find(
+												(val) =>
+													val.value === option.value,
+											) != null) ||
+										false
+									}
+									size='small'
+									sx={{ px: 0, py: 0 }}
+								/>
+							)}
+						</ListItemIcon>
 						{option.label}
 					</MenuItem>
 				))}
