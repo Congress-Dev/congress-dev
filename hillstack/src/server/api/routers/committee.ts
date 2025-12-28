@@ -13,6 +13,9 @@ export const committeeRouter = createTRPCRouter({
 		.query(async ({ input, ctx }) => {
 			const committee =
 				await ctx.db.legislation_committee.findUniqueOrThrow({
+					include: {
+						legislation_committee: {},
+					},
 					where: {
 						legislation_committee_id: input.id,
 					},
@@ -68,7 +71,7 @@ export const committeeRouter = createTRPCRouter({
 						},
 					},
 				},
-				take: 10,
+				take: 5,
 			});
 
 			return {

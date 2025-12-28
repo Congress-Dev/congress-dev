@@ -1,6 +1,5 @@
 from billparser.db.models import LegislationChamber, LegislationCommittee
 from billparser.db.handler import Session
-from billparser.db.models import get_latest_congress_id
 import yaml
 import requests
 
@@ -108,6 +107,7 @@ def insert_committees_from_yaml(session, yaml_str, congress_id):
     thomas_id_to_committee = {}
     inserted_committees = []
     thomas_id_to_parent_id = {}
+    needs_parent_map = {}
     # First pass: insert all committees without parent relationships
     for committee_dict in committee_dicts:
         needs_parent = committee_dict.pop("needs_parent", None)
@@ -119,19 +119,23 @@ def insert_committees_from_yaml(session, yaml_str, congress_id):
         session.add(committee)
         session.flush()  # Flush to get the ID
 
+        thomas_id_to_parent_id[committee.thomas_id] = (
+            committee.legislation_committee_id
+        )
+    
         if needs_parent:
             # Remember this committee needs a parent
-            thomas_id_to_parent_id[committee.thomas_id] = (
-                committee.legislation_committee_id
-            )
+            needs_parent_map[committee.legislation_committee_id] = needs_parent
 
         inserted_committees.append(committee)
 
     # Second pass: update parent_id for subcommittees
     for committee in inserted_committees:
-        if thomas_id_to_parent_id.get(committee.thomas_id):
-            committee.parent_id = thomas_id_to_parent_id[committee.thomas_id]
-
+        if needs_parent_map.get(committee.legislation_committee_id):
+            parent_thomas_id = needs_parent_map[committee.legislation_committee_id]
+            if thomas_id_to_parent_id.get(parent_thomas_id):
+                committee.parent_id = thomas_id_to_parent_id[parent_thomas_id]
+    
     session.flush()
     print(f"Inserted {len(inserted_committees)} committees")
     return inserted_committees
@@ -141,7 +145,7 @@ if __name__ == "__main__":
     session = Session()
     try:
         yaml_str = fetch_committees_yaml()
-        insert_committees_from_yaml(session, yaml_str, get_latest_congress_id(session))
+        insert_committees_from_yaml(session, yaml_str, 1)
         session.commit()
         print("Successfully imported committees from GitHub repository")
     except requests.RequestException as e:

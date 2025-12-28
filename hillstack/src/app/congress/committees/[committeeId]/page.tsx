@@ -180,6 +180,63 @@ export default async function CommitteePage({
 						</Box>
 					</Box>
 					<Box sx={{ flexGrow: 1, my: { xs: 3 } }}>
+						{data.legislation_committee && (
+							<Card sx={{ mb: 2 }} variant='outlined'>
+								<Toolbar
+									disableGutters
+									sx={{
+										px: 2,
+										height: '35px',
+										minHeight: '35px',
+										display: 'flex',
+									}}
+									variant='dense'
+								>
+									Parent Committee
+								</Toolbar>
+								<List dense>
+									<ListItem
+										disablePadding
+										key={
+											data.legislation_committee
+												.legislation_committee_id
+										}
+									>
+										<ListItemButton>
+											<Link
+												href={`/congress/committees/${data.legislation_committee.legislation_committee_id}`}
+												style={{
+													width: '100%',
+													display: 'block',
+												}}
+											>
+												<Box
+													sx={{
+														display: 'flex',
+														flexDirection: 'column',
+													}}
+												>
+													<Typography color='primary'>
+														{
+															data
+																.legislation_committee
+																.name
+														}
+													</Typography>
+													<Typography variant='caption'>
+														{data
+															.legislation_committee
+															.chamber
+															? `U.S. ${data.legislation_committee.chamber}`
+															: 'Unknown Chamber'}
+													</Typography>
+												</Box>
+											</Link>
+										</ListItemButton>
+									</ListItem>
+								</List>
+							</Card>
+						)}
 						{data.subcommittees.length > 0 && (
 							<Card sx={{ mb: 2 }} variant='outlined'>
 								<Toolbar
