@@ -1,11 +1,4 @@
-import {
-	Box,
-	Divider,
-	List,
-	ListItem,
-	ListItemButton,
-	Typography,
-} from '@mui/material';
+import { Box, List, ListItem, ListItemButton, Typography } from '@mui/material';
 import Link from 'next/link';
 import { api } from '~/trpc/react';
 import { DashboardWidgetContent } from './';

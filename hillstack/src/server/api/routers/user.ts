@@ -15,7 +15,7 @@ export const userRouter = createTRPCRouter({
 				},
 				where: {
 					legislation_id: input.legislation_id,
-					user_id: ctx.session.user.email,
+					user_id: ctx.session?.user?.email,
 				},
 			});
 
@@ -34,7 +34,7 @@ export const userRouter = createTRPCRouter({
 				},
 				where: {
 					legislation_id: input.legislation_id,
-					user_id: ctx.session.user.email,
+					user_id: ctx.user.email,
 				},
 			});
 
@@ -48,7 +48,7 @@ export const userRouter = createTRPCRouter({
 				await ctx.db.user_legislation.create({
 					data: {
 						legislation_id: input.legislation_id,
-						user_id: ctx.session.user.email,
+						user_id: ctx.user.email,
 					},
 				});
 			}
@@ -66,7 +66,7 @@ export const userRouter = createTRPCRouter({
 				},
 				where: {
 					bioguide_id: input.bioguide_id,
-					user_id: ctx.session.user.email,
+					user_id: ctx.user.email,
 				},
 			});
 
@@ -85,7 +85,7 @@ export const userRouter = createTRPCRouter({
 				},
 				where: {
 					bioguide_id: input.bioguide_id,
-					user_id: ctx.session.user.email,
+					user_id: ctx.user.email,
 				},
 			});
 
@@ -99,7 +99,7 @@ export const userRouter = createTRPCRouter({
 				await ctx.db.user_legislator.create({
 					data: {
 						bioguide_id: input.bioguide_id,
-						user_id: ctx.session.user.email,
+						user_id: ctx.user.email,
 					},
 				});
 			}
@@ -135,7 +135,7 @@ export const userRouter = createTRPCRouter({
 				},
 			},
 			where: {
-				user_id: ctx.session.user.email,
+				user_id: ctx.user.email,
 			},
 			take: 10,
 		});
@@ -150,7 +150,7 @@ export const userRouter = createTRPCRouter({
 				bioguide_id: true,
 			},
 			where: {
-				user_id: ctx.session.user.email,
+				user_id: ctx.user.email,
 			},
 		});
 

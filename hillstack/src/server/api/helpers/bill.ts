@@ -4,9 +4,9 @@ interface TreeNode {
 	id: number;
 	usc_content_id: number;
 	parent_id: number | null;
-	content_str: string;
-	section_display: string;
-	heading: string;
+	content_str: string | null;
+	section_display: string | null;
+	heading: string | null;
 	children: TreeNode[];
 	isTarget: boolean;
 	isOnPath: boolean;
@@ -117,14 +117,14 @@ function sliceSiblingsAroundTarget(siblings: Sibling[], targetId: number) {
  */
 async function buildNestedTree(
 	prisma: PrismaClient,
-	chain: any[],
+	chain: Sibling[],
 	targetId: number | null,
 ) {
 	let cursor: TreeNode | null = null;
 	let rootNode: TreeNode | null = null;
 
 	for (let i = 0; i < chain.length; i++) {
-		const node = chain[i];
+		const node = chain[i] as Sibling;
 
 		let visibleSiblings = [node];
 
