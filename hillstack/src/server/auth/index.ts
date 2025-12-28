@@ -20,13 +20,14 @@ const {
 		}),
 	],
 	adapter: PrismaAdapter(db),
-	callbacks: {
-		async signIn({ user, account, profile }) {
+	events: {
+		async signIn({ user, account, profile, isNewUser }) {
 			const googleProfile = profile as GoogleProfile;
+
 			if (
 				account?.provider === 'google' &&
 				googleProfile?.picture &&
-				!user.image
+				isNewUser
 			) {
 				try {
 					const res = await fetch(googleProfile.picture);
@@ -41,8 +42,9 @@ const {
 					console.error('Failed to cache avatar', err);
 				}
 			}
-			return true;
 		},
+	},
+	callbacks: {
 		session: ({ session, user }) => ({
 			...session,
 			user: {

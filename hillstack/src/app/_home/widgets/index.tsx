@@ -9,7 +9,7 @@ function DashboardWidgetState({ children }: { children?: React.ReactNode }) {
 				display: 'flex',
 				alignItems: 'center',
 				justifyContent: 'center',
-				height: 200,
+				height: 220,
 			}}
 		>
 			{children}

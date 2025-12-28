@@ -1,5 +1,6 @@
 import { billRouter } from '~/server/api/routers/bill';
 import { statsRouter } from '~/server/api/routers/stats';
+import { userRouter } from '~/server/api/routers/user';
 import { createCallerFactory, createTRPCRouter } from '~/server/api/trpc';
 import { committeeRouter } from './routers/committee';
 import { legislatorRouter } from './routers/legislator';
@@ -14,6 +15,7 @@ export const appRouter = createTRPCRouter({
 	legislator: legislatorRouter,
 	committee: committeeRouter,
 	stats: statsRouter,
+	user: userRouter,
 });
 
 // export type definition of API

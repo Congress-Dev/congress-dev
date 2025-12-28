@@ -6,7 +6,9 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import type React from 'react';
 import { LegislationCalendar } from '~/app/_home/widgets/legislationCalendar';
+import { LegislationFollowed } from '~/app/_home/widgets/legislationFollowed';
 import { LegislationTags } from '~/app/_home/widgets/legislationTags';
+import { LegislatorFollowed } from '~/app/_home/widgets/legislatorFollowed';
 
 function DashboardWidget({
 	title,
@@ -28,7 +30,7 @@ function DashboardWidget({
 			>
 				{title}
 			</Toolbar>
-			<Box sx={{ px: 3, pt: 1, pb: 2, minHeight: 200 }}>{children}</Box>
+			<Box sx={{ minHeight: 230 }}>{children}</Box>
 		</Card>
 	);
 }
@@ -37,23 +39,27 @@ export function Dashboard() {
 	return (
 		<Box sx={{ minWidth: '100%' }}>
 			<Grid container spacing={2} sx={{ mt: 2 }}>
-				<Grid size={4}>
+				<Grid size={{ xs: 12, md: 4 }}>
 					<DashboardWidget title='Top Legislation Tags'>
 						<LegislationTags />
 					</DashboardWidget>
 				</Grid>
-				<Grid size={8}>
+				<Grid size={{ xs: 12, md: 8 }}>
 					<DashboardWidget title='Legislation Calendar'>
 						<LegislationCalendar />
 					</DashboardWidget>
 				</Grid>
-				<Grid size={6}>
-					<DashboardWidget title='Followed Legislation'></DashboardWidget>
+				<Grid size={{ xs: 12, md: 6 }}>
+					<DashboardWidget title='Followed Legislation'>
+						<LegislationFollowed />
+					</DashboardWidget>
 				</Grid>
-				<Grid size={6}>
-					<DashboardWidget title='Followed Legislators'></DashboardWidget>
+				<Grid size={{ xs: 12, md: 6 }}>
+					<DashboardWidget title='Followed Legislators'>
+						<LegislatorFollowed />
+					</DashboardWidget>
 				</Grid>
-				<Grid size={12}>
+				<Grid size={{ xs: 12, md: 12 }}>
 					<DashboardWidget title='USC Tracking'></DashboardWidget>
 				</Grid>
 			</Grid>

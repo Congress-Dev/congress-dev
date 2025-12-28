@@ -15,7 +15,7 @@ const TagRadarChart: React.FC<TagRadarChartProps> = ({ data }) => {
 	const maxValue = Math.max(...data.counts);
 
 	return (
-		<Box>
+		<Box sx={{ px: 3, pt: 1, pb: 2 }}>
 			<RadarChart
 				height={200}
 				radar={{
