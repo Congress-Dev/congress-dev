@@ -29,6 +29,9 @@ COPY . .
 
 ARG NEXT_PUBLIC_APP_URL
 ARG DATABASE_URL
+ARG AUTH_SECRET
+ARG GOOGLE_CLIENT_ID
+ARG GOOGLE_CLIENT_SECRET
 
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
@@ -69,6 +72,9 @@ ENV PORT=3001
 
 ARG NEXT_PUBLIC_APP_URL
 ARG DATABASE_URL
+ARG AUTH_SECRET
+ARG GOOGLE_CLIENT_ID
+ARG GOOGLE_CLIENT_SECRET
 
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/config/next-config-js/output
