@@ -96,6 +96,7 @@ export const committeeRouter = createTRPCRouter({
 				input;
 
 			const where = {
+				parent_id: null,
 				...(committeeType
 					? { committee_type: { in: committeeType } }
 					: {}),

@@ -180,6 +180,61 @@ export default async function CommitteePage({
 						</Box>
 					</Box>
 					<Box sx={{ flexGrow: 1, my: { xs: 3 } }}>
+						{data.legislation.length > 0 && (
+							<Card sx={{ mb: 2 }} variant='outlined'>
+								<Toolbar
+									disableGutters
+									sx={{
+										px: 2,
+										height: '35px',
+										minHeight: '35px',
+										display: 'flex',
+									}}
+									variant='dense'
+								>
+									Recent Legislation
+								</Toolbar>
+								<List dense>
+									{data.legislation.map((bill) => (
+										<ListItem
+											disablePadding
+											key={bill?.legislation_id}
+										>
+											<ListItemButton>
+												<Link
+													href={`/congress/bills/${bill?.legislation_id}`}
+													style={{
+														width: '100%',
+														display: 'block',
+													}}
+												>
+													<Box
+														sx={{
+															display: 'flex',
+															flexDirection:
+																'column',
+														}}
+													>
+														<Typography color='primary'>
+															{bill?.title}
+														</Typography>
+														<Typography variant='caption'>
+															{`${bill?.congress?.session_number}th - `}
+															{bill?.chamber ===
+															'House'
+																? 'H.R'
+																: 'S'}
+															{'. #'}
+															{bill?.number}
+														</Typography>
+													</Box>
+												</Link>
+											</ListItemButton>
+										</ListItem>
+									))}
+								</List>
+							</Card>
+						)}
 						{data.legislation_committee && (
 							<Card sx={{ mb: 2 }} variant='outlined'>
 								<Toolbar
@@ -281,61 +336,6 @@ export default async function CommitteePage({
 															{subcommittee.chamber
 																? `U.S. ${subcommittee.chamber}`
 																: 'Unknown Chamber'}
-														</Typography>
-													</Box>
-												</Link>
-											</ListItemButton>
-										</ListItem>
-									))}
-								</List>
-							</Card>
-						)}
-						{data.legislation.length > 0 && (
-							<Card variant='outlined'>
-								<Toolbar
-									disableGutters
-									sx={{
-										px: 2,
-										height: '35px',
-										minHeight: '35px',
-										display: 'flex',
-									}}
-									variant='dense'
-								>
-									Recent Legislation
-								</Toolbar>
-								<List dense>
-									{data.legislation.map((bill) => (
-										<ListItem
-											disablePadding
-											key={bill?.legislation_id}
-										>
-											<ListItemButton>
-												<Link
-													href={`/congress/bills/${bill?.legislation_id}`}
-													style={{
-														width: '100%',
-														display: 'block',
-													}}
-												>
-													<Box
-														sx={{
-															display: 'flex',
-															flexDirection:
-																'column',
-														}}
-													>
-														<Typography color='primary'>
-															{bill?.title}
-														</Typography>
-														<Typography variant='caption'>
-															{`${bill?.congress?.session_number}th - `}
-															{bill?.chamber ===
-															'House'
-																? 'H.R'
-																: 'S'}
-															{'. #'}
-															{bill?.number}
 														</Typography>
 													</Box>
 												</Link>
