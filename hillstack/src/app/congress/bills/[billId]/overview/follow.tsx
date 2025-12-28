@@ -28,14 +28,10 @@ export function LegislationFollow({
 		},
 	});
 
-	if (!session) {
-		return;
-	}
-
 	return (
 		<>
 			<Button
-				disabled={isFetching || mutation.isPending}
+				disabled={!session || isFetching || mutation.isPending}
 				loading={isFetching || mutation.isPending}
 				onClick={() => {
 					mutation.mutate({
@@ -46,7 +42,7 @@ export function LegislationFollow({
 				sx={{ width: '100%', mb: 2 }}
 				variant={following ? 'contained' : 'outlined'}
 			>
-				{following ? 'Unfollow' : 'Follow'}
+				{!session ? 'Login to Follow' : following ? 'Unfollow' : 'Follow'}
 			</Button>
 			<Divider sx={{ mb: 1 }} />
 		</>
