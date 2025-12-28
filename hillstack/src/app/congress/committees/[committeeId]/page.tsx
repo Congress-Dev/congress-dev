@@ -1,3 +1,4 @@
+import InboxIcon from '@mui/icons-material/Inbox';
 import PhoneIcon from '@mui/icons-material/Phone';
 import PlaceIcon from '@mui/icons-material/Place';
 import PublicIcon from '@mui/icons-material/Public';
@@ -27,6 +28,8 @@ export default async function CommitteePage({
 	const data = await api.committee.get({
 		id: Number(committeeId),
 	});
+
+	const sidebarCommittee = data.legislation_committee ?? data;
 
 	return (
 		<HydrateClient>
@@ -61,9 +64,18 @@ export default async function CommitteePage({
 									U.S. {data.chamber}
 								</Typography>
 							)}
+							{data.parent_id && (
+								<Typography
+									color='textDisabled'
+									sx={{ fontWeight: 100, mt: 2 }}
+									variant='h4'
+								>
+									Subcommitee of the {sidebarCommittee.name}
+								</Typography>
+							)}
 						</Box>
 						<Box sx={{ mt: 2, mb: 3 }}>
-							{data.url && (
+							{sidebarCommittee.url && (
 								<Box
 									sx={{
 										display: 'flex',
@@ -80,13 +92,16 @@ export default async function CommitteePage({
 										sx={{ lineHeight: 1 }}
 										variant='subtitle1'
 									>
-										<a href={data.url} target='_blank'>
-											{data.url}
+										<a
+											href={sidebarCommittee.url}
+											target='_blank'
+										>
+											{sidebarCommittee.url}
 										</a>
 									</Typography>
 								</Box>
 							)}
-							{data.address && (
+							{sidebarCommittee.address && (
 								<Box
 									sx={{
 										display: 'flex',
@@ -102,11 +117,11 @@ export default async function CommitteePage({
 										sx={{ lineHeight: 1 }}
 										variant='subtitle1'
 									>
-										{data.address}
+										{sidebarCommittee.address}
 									</Typography>
 								</Box>
 							)}
-							{data.phone && (
+							{sidebarCommittee.phone && (
 								<Box
 									sx={{
 										display: 'flex',
@@ -122,10 +137,10 @@ export default async function CommitteePage({
 										variant='subtitle1'
 									>
 										<a
-											href={`tel:${data.phone}`}
+											href={`tel:${sidebarCommittee.phone}`}
 											target='_blank'
 										>
-											{data.phone}
+											{sidebarCommittee.phone}
 										</a>
 									</Typography>
 								</Box>
@@ -134,7 +149,7 @@ export default async function CommitteePage({
 						<Button size='small' variant='outlined'>
 							Follow
 						</Button>
-						{data.jurisdiction && (
+						{sidebarCommittee.jurisdiction && (
 							<>
 								<Box
 									sx={{
@@ -142,7 +157,7 @@ export default async function CommitteePage({
 									}}
 								>
 									<Typography variant='subtitle1'>
-										{data.jurisdiction}
+										{sidebarCommittee.jurisdiction}
 									</Typography>
 								</Box>
 								<Divider />
@@ -156,7 +171,7 @@ export default async function CommitteePage({
 								gap: 1,
 							}}
 						>
-							{data?.youtube_id && (
+							{sidebarCommittee?.youtube_id && (
 								<Box
 									sx={{
 										display: 'flex',
@@ -169,7 +184,7 @@ export default async function CommitteePage({
 									/>
 									<Typography variant='subtitle1'>
 										<a
-											href={`https://youtube.com/channel/${data.youtube_id}`}
+											href={`https://youtube.com/channel/${sidebarCommittee.youtube_id}`}
 											target='_blank'
 										>
 											YouTube Channel
@@ -180,20 +195,20 @@ export default async function CommitteePage({
 						</Box>
 					</Box>
 					<Box sx={{ flexGrow: 1, my: { xs: 3 } }}>
-						{data.legislation.length > 0 && (
-							<Card sx={{ mb: 2 }} variant='outlined'>
-								<Toolbar
-									disableGutters
-									sx={{
-										px: 2,
-										height: '35px',
-										minHeight: '35px',
-										display: 'flex',
-									}}
-									variant='dense'
-								>
-									Recent Legislation
-								</Toolbar>
+						<Card sx={{ mb: 2 }} variant='outlined'>
+							<Toolbar
+								disableGutters
+								sx={{
+									px: 2,
+									height: '35px',
+									minHeight: '35px',
+									display: 'flex',
+								}}
+								variant='dense'
+							>
+								Recent Legislation
+							</Toolbar>
+							{data.legislation.length ? (
 								<List dense>
 									{data.legislation.map((bill) => (
 										<ListItem
@@ -233,8 +248,28 @@ export default async function CommitteePage({
 										</ListItem>
 									))}
 								</List>
-							</Card>
-						)}
+							) : (
+								<Box
+									sx={{
+										display: 'flex',
+										alignItems: 'center',
+										justifyContent: 'center',
+										height: 100,
+									}}
+								>
+									<InboxIcon
+										color='disabled'
+										sx={{ mr: 2 }}
+									/>
+									<Typography
+										color='textDisabled'
+										variant='h2'
+									>
+										No Content
+									</Typography>
+								</Box>
+							)}
+						</Card>
 						{data.legislation_committee && (
 							<Card sx={{ mb: 2 }} variant='outlined'>
 								<Toolbar
