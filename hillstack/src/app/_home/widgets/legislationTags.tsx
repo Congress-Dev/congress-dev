@@ -35,7 +35,11 @@ export function LegislationTags() {
 	const { data, isLoading, isError } = api.stats.tagRadar.useQuery();
 
 	return (
-		<DashboardWidgetContent isError={isError} isLoading={isLoading}>
+		<DashboardWidgetContent
+			isEmpty={data?.counts?.length === 0}
+			isError={isError}
+			isLoading={isLoading}
+		>
 			{data && <TagRadarChart data={data} />}
 		</DashboardWidgetContent>
 	);

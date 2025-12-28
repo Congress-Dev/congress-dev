@@ -1,4 +1,5 @@
 import ErrorIcon from '@mui/icons-material/Error';
+import InboxIcon from '@mui/icons-material/Inbox';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import type React from 'react';
 
@@ -28,8 +29,21 @@ export function DashboardWidgetLoading() {
 export function DashboardWidgetError() {
 	return (
 		<DashboardWidgetState>
-			<ErrorIcon sx={{ mr: 2 }} />
-			<Typography variant='h2'>Error Loading</Typography>
+			<ErrorIcon color='disabled' sx={{ mr: 2 }} />
+			<Typography color='textDisabled' variant='h2'>
+				Error Loading
+			</Typography>
+		</DashboardWidgetState>
+	);
+}
+
+export function DashboardWidgetNoContent() {
+	return (
+		<DashboardWidgetState>
+			<InboxIcon color='disabled' sx={{ mr: 2 }} />
+			<Typography color='textDisabled' variant='h2'>
+				No Content
+			</Typography>
 		</DashboardWidgetState>
 	);
 }
@@ -37,10 +51,12 @@ export function DashboardWidgetError() {
 export function DashboardWidgetContent({
 	isLoading,
 	isError,
+	isEmpty,
 	children,
 }: {
 	isLoading: boolean;
 	isError: boolean;
+	isEmpty: boolean;
 	children?: React.ReactNode;
 }) {
 	if (isLoading) {
@@ -49,6 +65,10 @@ export function DashboardWidgetContent({
 
 	if (isError) {
 		return <DashboardWidgetError />;
+	}
+
+	if (isEmpty) {
+		return <DashboardWidgetNoContent />;
 	}
 
 	return children;

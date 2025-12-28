@@ -194,7 +194,11 @@ export function LegislationCalendar() {
 	const { data, isLoading, isError } = api.stats.calendar.useQuery();
 
 	return (
-		<DashboardWidgetContent isError={isError} isLoading={isLoading}>
+		<DashboardWidgetContent
+			isEmpty={data?.length === 0}
+			isError={isError}
+			isLoading={isLoading}
+		>
 			{data && <HeatmapCalendar data={data} />}
 		</DashboardWidgetContent>
 	);

@@ -7,7 +7,11 @@ export function LegislatorFollowed() {
 	const { data, isLoading, isError } = api.user.legislatorFeed.useQuery();
 
 	return (
-		<DashboardWidgetContent isError={isError} isLoading={isLoading}>
+		<DashboardWidgetContent
+			isEmpty={data?.length === 0}
+			isError={isError}
+			isLoading={isLoading}
+		>
 			{data && (
 				<List dense>
 					{data.map((bill) => {
