@@ -8,7 +8,7 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
-import { AuthedHomePage } from '~/app/_home/authed';
+import { Dashboard } from '~/app/_home/dashboard';
 
 export function HomePage() {
 	const { data: session, status } = useSession();
@@ -19,34 +19,33 @@ export function HomePage() {
 
 	return (
 		<>
-			{session ? (
-				<AuthedHomePage />
-			) : (
-				<>
-					<Typography variant='h1'>
-						Welcome to Congress.dev
-					</Typography>
-					<Typography variant='subtitle2'>
-						Your Gateway to Understanding Federal Legislation.
-					</Typography>
-					<Typography sx={{ mt: 2 }}>
-						Welcome to Congress.dev, your trusted tool for exploring
-						and understanding federal legislation. In a world where
-						legislative processes can seem opaque and overwhelming,
-						our platform provides clarity by offering an intuitive
-						and powerful way to track, parse, and analyze federal
-						bills and resolutions in real time. Whether you're a
-						policy analyst, developer, journalist, or simply a
-						curious citizen, we empower you with the tools to stay
-						informed and engaged with the lawmaking process.
-					</Typography>
-					<Box
-						sx={{
-							display: { xs: 'block', md: 'flex' },
-							mt: 2,
-							gap: 2,
-						}}
-					>
+			<Typography variant='h1'>
+				{session ? 'Welcome back!' : 'Welcome to Congress.dev'}
+			</Typography>
+			<Typography variant='subtitle2'>
+				Your Gateway to Understanding Federal Legislation.
+			</Typography>
+			<Typography sx={{ mt: 2 }}>
+				Welcome to Congress.dev, your trusted tool for exploring and
+				understanding federal legislation. In a world where legislative
+				processes can seem opaque and overwhelming, our platform
+				provides clarity by offering an intuitive and powerful way to
+				track, parse, and analyze federal bills and resolutions in real
+				time. Whether you're a policy analyst, developer, journalist, or
+				simply a curious citizen, we empower you with the tools to stay
+				informed and engaged with the lawmaking process.
+			</Typography>
+			<Box
+				sx={{
+					display: { xs: 'block', md: 'flex' },
+					mt: 2,
+					gap: 2,
+				}}
+			>
+				{session ? (
+					<Dashboard />
+				) : (
+					<>
 						<Paper
 							elevation={3}
 							sx={{
@@ -195,9 +194,9 @@ export function HomePage() {
 								</Box>
 							</Box>
 						</Paper>
-					</Box>
-				</>
-			)}
+					</>
+				)}
+			</Box>
 		</>
 	);
 }

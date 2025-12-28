@@ -11,6 +11,7 @@ import {
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { api } from '~/trpc/react';
+import { DashboardWidgetContent } from './';
 
 type HeatmapProps = {
 	data: { date: string | undefined; count: number }[];
@@ -84,7 +85,17 @@ const HeatmapCalendar: React.FC<HeatmapProps> = ({ data }) => {
 	const weekdayLabels = ['S', 'M', 'T', 'W', 'Th', 'F', 'Sa'];
 
 	return (
-		<Box overflow='hidden' ref={containerRef} width='100%'>
+		<Box
+			overflow='hidden'
+			ref={containerRef}
+			sx={{
+				height: '200px',
+				display: 'flex',
+				alignItems: 'center',
+				justifyContent: 'center',
+			}}
+			width='100%'
+		>
 			<Box display='flex'>
 				{/* Weekday labels */}
 				<Box display='flex' flexDirection='column' mr={1} mt={3.25}>
@@ -178,8 +189,13 @@ const HeatmapCalendar: React.FC<HeatmapProps> = ({ data }) => {
 		</Box>
 	);
 };
-export function LegislationCalendar() {
-	const { data } = api.stats.calendar.useQuery();
 
-	return data ? <HeatmapCalendar data={data} /> : <>Loading</>;
+export function LegislationCalendar() {
+	const { data, isLoading, isError } = api.stats.calendar.useQuery();
+
+	return (
+		<DashboardWidgetContent isError={isError} isLoading={isLoading}>
+			{data && <HeatmapCalendar data={data} />}
+		</DashboardWidgetContent>
+	);
 }

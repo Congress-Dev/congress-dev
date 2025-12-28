@@ -2,6 +2,7 @@ import { Box } from '@mui/material';
 import { RadarChart } from '@mui/x-charts';
 import type React from 'react';
 import { api } from '~/trpc/react';
+import { DashboardWidgetContent } from './';
 
 type TagRadarChartProps = {
 	data: {
@@ -31,7 +32,11 @@ const TagRadarChart: React.FC<TagRadarChartProps> = ({ data }) => {
 export default TagRadarChart;
 
 export function LegislationTags() {
-	const { data } = api.stats.tagRadar.useQuery();
+	const { data, isLoading, isError } = api.stats.tagRadar.useQuery();
 
-	return data ? <TagRadarChart data={data} /> : <>Loading</>;
+	return (
+		<DashboardWidgetContent isError={isError} isLoading={isLoading}>
+			{data && <TagRadarChart data={data} />}
+		</DashboardWidgetContent>
+	);
 }
