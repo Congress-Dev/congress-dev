@@ -661,8 +661,8 @@ model legislation_version_tag {
 
 model account {
   provider            String    @db.VarChar
-  provider_account_id String    @db.VarChar
-  user_id             String    @db.VarChar
+  providerAccountId String    @db.VarChar @map("provider_account_id")
+  userId             String    @db.VarChar @map("user_id")
   type                String    @db.VarChar
   refresh_token       String?   @db.VarChar
   access_token        String?   @db.VarChar
@@ -671,33 +671,33 @@ model account {
   scope               String?   @db.VarChar
   id_token            String?   @db.VarChar
   session_state       String?   @db.VarChar
-  created_at          DateTime? @default(now()) @db.Timestamptz(6)
-  updated_at          DateTime? @default(now()) @db.Timestamptz(6)
-  user                user      @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  createdAt          DateTime? @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt          DateTime? @default(now()) @db.Timestamptz(6) @map("updated_at")
+  user                user      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
-  @@id([provider, provider_account_id], map: "account_pk")
+  @@id([provider, providerAccountId], map: "account_pk")
   @@schema("authentication")
 }
 
 model session {
-  session_token String    @id @db.VarChar
-  user_id       String    @db.VarChar
+  sessionToken String    @id @db.VarChar @map("session_token")
+  userId       String    @db.VarChar @map("user_id")
   expires       DateTime  @db.Timestamptz(6)
-  created_at    DateTime? @default(now()) @db.Timestamptz(6)
-  updated_at    DateTime? @default(now()) @db.Timestamptz(6)
-  user          user      @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  createdAt    DateTime? @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt    DateTime? @default(now()) @db.Timestamptz(6) @map("updated_at")
+  user          user      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
   @@schema("authentication")
 }
 
 model user {
-  id             String    @id @db.VarChar
+  id             String    @id @db.VarChar @default(cuid())
   name           String?   @db.VarChar
   email          String    @unique @db.VarChar
-  email_verified DateTime? @db.Timestamp(6)
+  emailVerified  DateTime? @db.Timestamp(6) @map("email_verified")
   image          String?   @db.VarChar
-  created_at     DateTime? @default(now()) @db.Timestamptz(6)
-  updated_at     DateTime? @default(now()) @db.Timestamptz(6)
+  createdAt      DateTime? @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt      DateTime? @default(now()) @db.Timestamptz(6) @map("updated_at")
   account        account[]
   session        session[]
 
