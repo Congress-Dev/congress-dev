@@ -19,6 +19,7 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
+		"@auth/prisma-adapter": "^2.11.1",
 		"@emotion/cache": "^11.14.0",
 		"@emotion/react": "^11.14.0",
 		"@emotion/styled": "^11.14.1",
@@ -32,7 +33,10 @@
 		"@trpc/client": "^11.0.0",
 		"@trpc/react-query": "^11.0.0",
 		"@trpc/server": "^11.0.0",
+		"google-auth-library": "^10.5.0",
+		"jsonwebtoken": "^9.0.3",
 		"next": "^15.5.7",
+		"next-auth": "5.0.0-beta.25",
 		"pg": "^8.16.3",
 		"react": "^19.0.0",
 		"react-dom": "^19.0.0",

@@ -3,6 +3,7 @@ import '~/styles/globals.css';
 import type { Metadata } from 'next';
 import { Nunito_Sans } from 'next/font/google';
 import ResponsiveAppBar from '~/components/appbar';
+import { SessionContext } from '~/contexts/session';
 import ThemeRegistry from '~/theme/registry';
 import { TRPCReactProvider } from '~/trpc/react';
 
@@ -24,11 +25,13 @@ export default function RootLayout({
 			<body className={nunito.className}>
 				<ThemeRegistry options={{ key: 'mui' }}>
 					<TRPCReactProvider>
-						<ResponsiveAppBar />
-						<main>
-							<section></section>
-							<section>{children}</section>
-						</main>
+						<SessionContext>
+							<ResponsiveAppBar />
+							<main>
+								<section></section>
+								<section>{children}</section>
+							</main>
+						</SessionContext>
 					</TRPCReactProvider>
 				</ThemeRegistry>
 			</body>

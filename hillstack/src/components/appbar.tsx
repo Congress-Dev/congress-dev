@@ -1,27 +1,48 @@
 'use client';
 
+import LoginIcon from '@mui/icons-material/Login';
+import LogoutIcon from '@mui/icons-material/Logout';
 import MenuIcon from '@mui/icons-material/Menu';
+import {
+	Avatar,
+	ListItemIcon,
+	ListItemText,
+	Menu,
+	Tooltip,
+} from '@mui/material';
 import AppBar from '@mui/material/AppBar';
-// import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
-// import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Toolbar from '@mui/material/Toolbar';
-// import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-// import type { MouseEvent } from 'react';
+import { signIn, signOut, useSession } from 'next-auth/react';
+import type { MouseEvent } from 'react';
 import { useMemo, useState } from 'react';
 import { navigationLinks } from '~/constants/navigation';
 
-// const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
-
 function ResponsiveAppBar() {
+	const { data: session } = useSession();
+
+	const settings = session
+		? [{ title: 'Logout', action: signOut, icon: LogoutIcon }]
+		: [
+				{
+					title: 'Login',
+					action: () => {
+						signIn('google', {
+							redirect: false,
+						});
+					},
+					icon: LoginIcon,
+				},
+			];
+
 	const pathname = usePathname();
 
 	const rootPath = useMemo(() => {
@@ -30,15 +51,15 @@ function ResponsiveAppBar() {
 
 	const [navOpen, setNavOpen] = useState(false);
 
-	// const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
+	const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
 
-	// const handleOpenUserMenu = (event: MouseEvent<HTMLElement>) => {
-	// 	setAnchorElUser(event.currentTarget);
-	// };
+	const handleOpenUserMenu = (event: MouseEvent<HTMLElement>) => {
+		setAnchorElUser(event.currentTarget);
+	};
 
-	// const handleCloseUserMenu = () => {
-	// 	setAnchorElUser(null);
-	// };
+	const handleCloseUserMenu = () => {
+		setAnchorElUser(null);
+	};
 
 	return (
 		<>
@@ -81,7 +102,7 @@ function ResponsiveAppBar() {
 							Congress.Dev
 						</Typography>
 
-						{/* <Box
+						<Box
 							sx={{
 								flexGrow: 1,
 								display: 'flex',
@@ -93,10 +114,14 @@ function ResponsiveAppBar() {
 									onClick={handleOpenUserMenu}
 									sx={{ p: 0 }}
 								>
-									<Avatar
-										alt='Remy Sharp'
-										src='/static/images/avatar/2.jpg'
-									/>
+									{session ? (
+										<Avatar
+											alt={session.user?.name ?? 'User'}
+											src={session.user?.image ?? ''}
+										/>
+									) : (
+										<Avatar />
+									)}
 								</IconButton>
 							</Tooltip>
 							<Menu
@@ -116,18 +141,25 @@ function ResponsiveAppBar() {
 							>
 								{settings.map((setting) => (
 									<MenuItem
-										key={setting}
-										onClick={handleCloseUserMenu}
+										key={setting.title}
+										onClick={() => {
+											setting.action();
+											handleCloseUserMenu();
+										}}
+										sx={{ minWidth: '170px' }}
 									>
-										<Typography
-											sx={{ textAlign: 'center' }}
-										>
-											{setting}
-										</Typography>
+										<ListItemIcon>
+											<setting.icon />
+										</ListItemIcon>
+										<ListItemText>
+											<Typography>
+												{setting.title}
+											</Typography>
+										</ListItemText>
 									</MenuItem>
 								))}
 							</Menu>
-						</Box> */}
+						</Box>
 					</Toolbar>
 				</Box>
 			</AppBar>
