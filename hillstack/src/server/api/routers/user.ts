@@ -2,6 +2,57 @@ import { z } from 'zod';
 import { createTRPCRouter, privateProcedure } from '~/server/api/trpc';
 
 export const userRouter = createTRPCRouter({
+	legislationFollowing: privateProcedure
+		.input(
+			z.object({
+				legislation_id: z.number(),
+			}),
+		)
+		.query(async ({ input, ctx }) => {
+			const existingFollow = await ctx.db.user_legislation.findFirst({
+				select: {
+					user_legislation_id: true,
+				},
+				where: {
+					legislation_id: input.legislation_id,
+					user_id: ctx.session.user.email,
+				},
+			});
+
+			return Boolean(existingFollow);
+		}),
+	legislationFollow: privateProcedure
+		.input(
+			z.object({
+				legislation_id: z.number(),
+			}),
+		)
+		.mutation(async ({ input, ctx }) => {
+			const existingFollow = await ctx.db.user_legislation.findFirst({
+				select: {
+					user_legislation_id: true,
+				},
+				where: {
+					legislation_id: input.legislation_id,
+					user_id: ctx.session.user.email,
+				},
+			});
+
+			if (existingFollow) {
+				await ctx.db.user_legislation.delete({
+					where: {
+						user_legislation_id: existingFollow.user_legislation_id,
+					},
+				});
+			} else {
+				await ctx.db.user_legislation.create({
+					data: {
+						legislation_id: input.legislation_id,
+						user_id: ctx.session.user.email,
+					},
+				});
+			}
+		}),
 	legislatorFollowing: privateProcedure
 		.input(
 			z.object({
@@ -28,10 +79,6 @@ export const userRouter = createTRPCRouter({
 			}),
 		)
 		.mutation(async ({ input, ctx }) => {
-			if (!ctx.session) {
-				throw Error('Unauthorized');
-			}
-
 			const existingFollow = await ctx.db.user_legislator.findFirst({
 				select: {
 					user_legislator_id: true,
