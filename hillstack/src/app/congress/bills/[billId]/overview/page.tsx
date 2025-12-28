@@ -7,6 +7,7 @@ import ReadMoreIcon from '@mui/icons-material/ReadMore';
 import SummarizeIcon from '@mui/icons-material/Summarize';
 import { Box, Chip, Divider, Typography } from '@mui/material';
 import type { Params } from 'next/dist/server/request/params';
+import Link from 'next/link';
 import { Timeline, TimelineNode } from '~/components/timeline';
 import { BillVersionEnum } from '~/enums';
 import { api, HydrateClient } from '~/trpc/server';
@@ -124,9 +125,13 @@ export default async function BillOverviewPage({
 						}}
 					>
 						<Typography variant='subtitle2'>Sponsor:</Typography>
-						<Typography variant='subtitle1'>
-							{sponsor?.legislator?.first_name}{' '}
-							{sponsor?.legislator?.last_name}
+						<Typography color='primary' variant='subtitle1'>
+							<Link
+								href={`/congress/legislators/${sponsor?.legislator?.bioguide_id}`}
+							>
+								{sponsor?.legislator?.first_name}{' '}
+								{sponsor?.legislator?.last_name}
+							</Link>
 						</Typography>
 					</Box>
 					<Divider />

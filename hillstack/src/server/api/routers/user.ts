@@ -2,13 +2,32 @@ import { z } from 'zod';
 import { createTRPCRouter, privateProcedure } from '~/server/api/trpc';
 
 export const userRouter = createTRPCRouter({
-	legislatorFollow: privateProcedure
+	legislatorFollowing: privateProcedure
 		.input(
 			z.object({
 				bioguide_id: z.string(),
 			}),
 		)
 		.query(async ({ input, ctx }) => {
+			const existingFollow = await ctx.db.user_legislator.findFirst({
+				select: {
+					user_legislator_id: true,
+				},
+				where: {
+					bioguide_id: input.bioguide_id,
+					user_id: ctx.session.user.email,
+				},
+			});
+
+			return Boolean(existingFollow);
+		}),
+	legislatorFollow: privateProcedure
+		.input(
+			z.object({
+				bioguide_id: z.string(),
+			}),
+		)
+		.mutation(async ({ input, ctx }) => {
 			if (!ctx.session) {
 				throw Error('Unauthorized');
 			}

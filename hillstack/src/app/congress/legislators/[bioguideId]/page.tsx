@@ -19,6 +19,7 @@ import {
 } from '@mui/material';
 import type { Params } from 'next/dist/server/request/params';
 import Link from 'next/link';
+import { LegislatorFollow } from '~/app/congress/legislators/[bioguideId]/follow';
 import { stateAbbreviations } from '~/constants';
 import { api, HydrateClient } from '~/trpc/server';
 
@@ -205,9 +206,7 @@ export default async function LegislatorPage({
 								</Typography>
 							</Box>
 						</Box>
-						<Button size='small' variant='outlined'>
-							Follow
-						</Button>
+						<LegislatorFollow bioguide_id={bioguideId as string} />
 						<Box
 							sx={{
 								my: 3,
