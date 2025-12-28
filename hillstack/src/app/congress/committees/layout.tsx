@@ -6,6 +6,7 @@ import { OmniSearchProvider } from '~/contexts';
 import type {
 	ToolbarFilterOption,
 	ToolbarFilterSortMap,
+	ToolbarSortOption,
 } from '~/types/components';
 
 const SESSIONS: ToolbarFilterOption<number>[] = [
@@ -26,11 +27,8 @@ const CHAMBERS: ToolbarFilterOption<legislationchamber>[] = [
 // 	{ value: 'Special', label: 'Special' },
 // ];
 
-const SORT: ToolbarFilterOption<
-	ToolbarFilterSortMap<Legislation_committeeScalarFieldEnum>
->[] = [
-	{ value: { name: 'asc' }, label: 'Name (A-Z)' },
-	{ value: { name: 'desc' }, label: 'Name (Z-A)' },
+const SORT: ToolbarSortOption<Legislation_committeeScalarFieldEnum>[] = [
+	{ value: 'name', label: 'Name' },
 ];
 
 const filterConfig = {
@@ -44,18 +42,22 @@ const filterConfig = {
 		options: CHAMBERS,
 		multiSelect: true as const,
 	},
-	sort: {
-		title: 'Sort',
-		options: SORT,
-		multiSelect: false as const,
-		searchable: false,
-	},
+	// sort: {
+	// 	title: 'Sort',
+	// 	options: SORT,
+	// 	multiSelect: false as const,
+	// 	searchable: false,
+	// },
 	// committeeType: {
 	// 	title: 'Type',
 	// 	options: TYPES,
 	// 	multiSelect: true as const,
 	// },
 };
+
+const sortConfig = {
+	options: SORT,
+}
 
 export type FilterConfigType = typeof filterConfig;
 
@@ -65,7 +67,7 @@ export default function CommitteesSearchLayout({
 	children: React.ReactNode;
 }) {
 	return (
-		<OmniSearchProvider filterConfig={filterConfig}>
+		<OmniSearchProvider filterConfig={filterConfig} sortConfig={sortConfig}>
 			{children}
 		</OmniSearchProvider>
 	);

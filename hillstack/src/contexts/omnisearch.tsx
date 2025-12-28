@@ -6,8 +6,9 @@ import React, {
 	useMemo,
 	useState,
 } from 'react';
-import { useFilterTags } from '~/hooks';
+import { useFilterTags, useFilterSort } from '~/hooks';
 import type {
+	ToolbarSortConfig,
 	ToolbarFilterConfig,
 	ToolbarFilterOptionMap,
 	ToolbarFilterSelections,
@@ -31,6 +32,9 @@ type OmniSearchContextType<T extends ToolbarFilterOptionMap> = {
 	filters: React.ReactNode;
 	tags: ToolbarFilterSelections<T>;
 	removeTag: (tag: string, selection: string) => void;
+	sorter?: React.ReactNode;
+	sort: string;
+	removeSort: () => void,
 } | null;
 
 export function OmniSearchContextFactory<T extends ToolbarFilterOptionMap>() {
@@ -41,9 +45,11 @@ const OmniSearchContext = OmniSearchContextFactory();
 
 export function OmniSearchProvider<T extends ToolbarFilterOptionMap>({
 	filterConfig,
+	sortConfig,
 	children,
 }: {
 	filterConfig: ToolbarFilterConfig<T>;
+	sortConfig?: ToolbarSortConfig<string>;
 	children: React.ReactNode;
 }) {
 	const [page, setPage] = useState(1);
@@ -51,15 +57,17 @@ export function OmniSearchProvider<T extends ToolbarFilterOptionMap>({
 	const [query, setQuery] = useState('');
 	const debouncedQuery = useDebounce<string>(query, 500);
 	const { filters, tags, removeTag } = useFilterTags(filterConfig);
+	const { sorter, sort, removeSort } = useFilterSort(sortConfig);
 
 	const config = useMemo(
 		() => ({
 			query,
 			tags,
+			sort,
 			page,
 			pageSize,
 		}),
-		[query, tags, page, pageSize],
+		[query, tags, sort, page, pageSize],
 	);
 
 	const contextValue = {
@@ -73,6 +81,9 @@ export function OmniSearchProvider<T extends ToolbarFilterOptionMap>({
 		filters,
 		tags,
 		removeTag,
+		sorter,
+		sort,
+		removeSort,
 		config,
 	};
 

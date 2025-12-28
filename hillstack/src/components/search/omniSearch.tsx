@@ -29,6 +29,9 @@ export function OmniSearch({ results, isLoading, children }: OmniSearchProps) {
 		filters,
 		tags,
 		removeTag,
+		sorter,
+		sort,
+		removeSort,
 	} = useOmniSearchContext();
 
 	return (
@@ -41,7 +44,7 @@ export function OmniSearch({ results, isLoading, children }: OmniSearchProps) {
 			/>
 			<Paper elevation={1} sx={{ mb: 2 }}>
 				<Box>
-					<Toolbar filters={filters} results={results} />
+					<Toolbar filters={filters} sorter={sorter} results={results} />
 					{isLoading && <LinearProgress />}
 					<List sx={{ py: 0 }}>
 						{Children.count(children) > 0 ? (
