@@ -169,7 +169,7 @@ export default async function CommitteePage({
 									/>
 									<Typography variant='subtitle1'>
 										<a
-											href={`https://youtube.com/channels/${data.youtube_id}`}
+											href={`https://youtube.com/channel/${data.youtube_id}`}
 											target='_blank'
 										>
 											YouTube Channel
