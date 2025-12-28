@@ -81,8 +81,14 @@ services:
     build:
       context: ../hillstack
       dockerfile: .docker/Dockerfile
+      AUTH_SECRET: changeme
+      GOOGLE_CLIENT_ID: changeme
+      GOOGLE_CLIENT_SECRET: changeme
     environment:
     - DATABASE_URL=postgresql://parser:parser@congress_postgres:5432/us_code_2025
+    - AUTH_SECRET=changeme
+    - GOOGLE_CLIENT_ID=changeme
+    - GOOGLE_CLIENT_SECRET=changeme
     ports:
     - "3001:3001"
     depends_on:
