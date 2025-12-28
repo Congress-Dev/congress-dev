@@ -20,6 +20,7 @@ export function LegislatorFollow({ bioguide_id }: { bioguide_id: string }) {
 	const mutation = api.user.legislatorFollow.useMutation({
 		onSuccess: () => {
 			utils.user.legislatorFollowing.invalidate();
+			utils.user.legislatorFeed.invalidate();
 		},
 	});
 

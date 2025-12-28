@@ -25,6 +25,7 @@ export function LegislationFollow({
 	const mutation = api.user.legislationFollow.useMutation({
 		onSuccess: () => {
 			utils.user.legislationFollowing.invalidate();
+			utils.user.legislationFeed.invalidate();
 		},
 	});
 
