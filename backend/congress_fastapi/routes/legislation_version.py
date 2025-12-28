@@ -1,7 +1,7 @@
 from typing import Dict, List
 
 from congress_fastapi.models.legislation.diff import BillDiffMetadataList
-from billparser.db.models import User
+from billparser.db.models import UserIdent
 from billparser.prompt_runners.utils import get_legis_by_parent_and_id, print_clause
 from congress_fastapi.handlers.user import get_llm_query_result, insert_llm_query_result
 from congress_fastapi.models.legislation.content import LegislationContent
@@ -192,7 +192,7 @@ async def post_legislation_version_llm(
     legislation_version_id: int,
     query_request: LLMRequest,
     request: Request,
-    user: User = Depends(user_from_cookie),
+    user: UserIdent = Depends(user_from_cookie),
 ) -> LLMResponse:
     """Returns a list of LegislationContent objects for a given legislation_id"""
     if user is None:

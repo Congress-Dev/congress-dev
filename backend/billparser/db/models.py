@@ -216,7 +216,7 @@ class LegislatorVote(Base):
     vote = Column(Enum(LegislatorVoteType))
 
 
-class User(SensitiveBase):
+class UserIdent(SensitiveBase):
     """
     Holds the relationships for the website user
     """
