@@ -23,14 +23,16 @@ const {
 	callbacks: {
 		async signIn({ user, account, profile }) {
 			const googleProfile = profile as GoogleProfile;
-			// Only run on first sign-in
-			if (account?.provider === 'google' && googleProfile?.picture) {
+			if (
+				account?.provider === 'google' &&
+				googleProfile?.picture &&
+				!user.image
+			) {
 				try {
 					const res = await fetch(googleProfile.picture);
 					const buffer = Buffer.from(await res.arrayBuffer());
 					const base64 = `data:image/jpeg;base64,${buffer.toString('base64')}`;
 
-					// Save base64 image directly to user record
 					await db.user.update({
 						where: { id: user.id },
 						data: { image: base64 },
