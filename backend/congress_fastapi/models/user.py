@@ -20,7 +20,7 @@ class UserLoginRequest(BaseModel):
 
 
 class UserLoginResponse(MappableBase):
-    user_id: Annotated[str, User.user_id]
+    user_id: Annotated[str, User.id]
     user_first_name: Annotated[str, User.user_first_name]
     user_last_name: Annotated[str, User.user_last_name]
     user_state: Annotated[Optional[str], User.user_state]
