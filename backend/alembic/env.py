@@ -5,7 +5,7 @@ from sqlalchemy import pool, MetaData
 
 from alembic import context
 
-from billparser.db.models import Base, AppropriationsBase, PromptsBase
+from billparser.db.models import Base, AppropriationsBase, PromptsBase, SensitiveBase, AuthenticationBase
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -33,6 +33,8 @@ def merge_metadata(*original_metadata) -> MetaData:
 # target_metadata = mymodel.Base.metadata
 target_metadata = merge_metadata(Base.metadata, AppropriationsBase.metadata)
 target_metadata = merge_metadata(target_metadata, PromptsBase.metadata)
+target_metadata = merge_metadata(target_metadata, SensitiveBase.metadata)
+target_metadata = merge_metadata(target_metadata, AuthenticationBase.metadata)
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")

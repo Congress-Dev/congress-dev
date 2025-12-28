@@ -6,9 +6,11 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
-import { initTRPC } from '@trpc/server';
+import { initTRPC, TRPCError } from '@trpc/server';
+import type { Session } from 'next-auth';
 import superjson from 'superjson';
 import { ZodError } from 'zod';
+import { auth } from '~/server/auth';
 
 import { db } from '~/server/db';
 
@@ -25,8 +27,11 @@ import { db } from '~/server/db';
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
+	const session: Session | null = await auth();
+
 	return {
 		db,
+		session,
 		...opts,
 	};
 };
@@ -98,6 +103,21 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
 	return result;
 });
 
+const authMiddleware = t.middleware(({ ctx, next }) => {
+	if (!ctx.session?.user?.email) {
+		throw new TRPCError({ code: 'UNAUTHORIZED' });
+	}
+
+	return next({
+		ctx: {
+			session: ctx.session,
+			user: {
+				email: ctx.session.user.email as string,
+			}, // optional shortcut
+		},
+	});
+});
+
 /**
  * Public (unauthenticated) procedure
  *
@@ -106,3 +126,10 @@ const timingMiddleware = t.middleware(async ({ next, path }) => {
  * are logged in.
  */
 export const publicProcedure = t.procedure.use(timingMiddleware);
+
+/**
+ * Private (authenticated procedure)
+ */
+export const privateProcedure = t.procedure
+	.use(timingMiddleware)
+	.use(authMiddleware);

@@ -8,7 +8,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  schemas  = ["appropriations", "prompts", "public", "sensitive"]
+  schemas  = ["appropriations", "authentication", "prompts", "public", "sensitive"]
 }
 
 model appropriation {
@@ -137,7 +137,7 @@ model legislation_committee {
   legislation_committee_id          Int                                 @id @default(autoincrement())
   system_code                       String?                             @db.VarChar
   chamber                           legislationchamber?
-  name                              String                             @db.VarChar
+  name                              String                              @db.VarChar
   committee_type                    String?                             @db.VarChar
   congress_id                       Int?
   thomas_id                         String?                             @db.VarChar
@@ -250,10 +250,10 @@ model legislation_sponsorship {
 
 model legislation_version {
   legislation_version_id   Int                        @id @default(autoincrement())
-  legislation_version      legislationversionenum
+  legislation_version      legislationversionenum?
   effective_date           DateTime?                  @db.Date
-  legislation_id           Int
-  version_id               Int
+  legislation_id           Int?
+  version_id               Int?
   created_at               DateTime?                  @default(now()) @db.Timestamp(6)
   completed_at             DateTime?                  @db.Timestamp(6)
   appropriation            appropriation[]
@@ -404,13 +404,13 @@ model usc_act_section {
 
 model usc_chapter {
   usc_chapter_id   Int                @id @default(autoincrement())
-  short_title      String            @db.VarChar
-  long_title       String            @db.VarChar
+  short_title      String?            @db.VarChar
+  long_title       String?            @db.VarChar
   document         String?            @db.VarChar
   usc_ident        String?            @db.VarChar
   created_at       DateTime?          @default(now()) @db.Timestamp(6)
   usc_release_id   Int?
-  version_id       Int
+  version_id       Int?
   usc_release      usc_release?       @relation(fields: [usc_release_id], references: [usc_release_id], onDelete: Cascade, onUpdate: NoAction)
   version          version?           @relation(fields: [version_id], references: [version_id], onDelete: Cascade, onUpdate: NoAction)
   usc_content_diff usc_content_diff[]
@@ -427,12 +427,12 @@ model usc_content {
   usc_guid          String?            @db.VarChar
   order_number      Int?
   number            String?            @db.VarChar
-  section_display   String            @db.VarChar
-  heading           String            @db.VarChar
-  content_str       String            @db.VarChar
+  section_display   String?            @db.VarChar
+  heading           String?            @db.VarChar
+  content_str       String?            @db.VarChar
   content_type      String?            @db.VarChar
-  usc_section_id    Int
-  version_id        Int
+  usc_section_id    Int?
+  version_id        Int?
   usc_content       usc_content?       @relation("usc_contentTousc_content", fields: [parent_id], references: [usc_content_id], onDelete: NoAction, onUpdate: NoAction)
   other_usc_content usc_content[]      @relation("usc_contentTousc_content")
   usc_section       usc_section?       @relation(fields: [usc_section_id], references: [usc_section_id], onDelete: Cascade, onUpdate: NoAction)
@@ -448,23 +448,23 @@ model usc_content {
 
 model usc_content_diff {
   usc_content_diff_id    Int                  @id @default(autoincrement())
-  usc_ident              String              @db.VarChar
-  usc_guid               String              @db.VarChar
-  order_number           Int
-  number                 String              @db.VarChar
-  section_display        String              @db.VarChar
-  heading                String              @db.VarChar
-  content_str            String              @db.VarChar
-  content_type           String              @db.VarChar
+  usc_ident              String?              @db.VarChar
+  usc_guid               String?              @db.VarChar
+  order_number           Int?
+  number                 String?              @db.VarChar
+  section_display        String?              @db.VarChar
+  heading                String?              @db.VarChar
+  content_str            String?              @db.VarChar
+  content_type           String?              @db.VarChar
   usc_content_id         Int
   usc_section_id         Int
   usc_chapter_id         Int
-  legislation_content_id Int
-  version_id             Int
+  legislation_content_id Int?
+  version_id             Int?
   legislation_content    legislation_content? @relation(fields: [legislation_content_id], references: [legislation_content_id], onDelete: Cascade, onUpdate: NoAction)
-  usc_chapter            usc_chapter?         @relation(fields: [usc_chapter_id], references: [usc_chapter_id], onDelete: Cascade, onUpdate: NoAction)
-  usc_content            usc_content?         @relation(fields: [usc_content_id], references: [usc_content_id], onDelete: Cascade, onUpdate: NoAction)
-  usc_section            usc_section?         @relation(fields: [usc_section_id], references: [usc_section_id], onDelete: Cascade, onUpdate: NoAction)
+  usc_chapter            usc_chapter          @relation(fields: [usc_chapter_id], references: [usc_chapter_id], onDelete: Cascade, onUpdate: NoAction)
+  usc_content            usc_content          @relation(fields: [usc_content_id], references: [usc_content_id], onDelete: Cascade, onUpdate: NoAction)
+  usc_section            usc_section          @relation(fields: [usc_section_id], references: [usc_section_id], onDelete: Cascade, onUpdate: NoAction)
   version                version?             @relation(fields: [version_id], references: [version_id], onDelete: Cascade, onUpdate: NoAction)
 
   @@index([legislation_content_id], map: "ix_usc_content_diff_legislation_content_id")
@@ -508,12 +508,12 @@ model usc_section {
   usc_ident         String?            @db.VarChar
   usc_guid          String?            @db.VarChar
   parent_id         Int?
-  number            String            @db.VarChar
-  section_display   String            @db.VarChar
-  heading           String            @db.VarChar
+  number            String?            @db.VarChar
+  section_display   String?            @db.VarChar
+  heading           String?            @db.VarChar
   content_type      String?            @db.VarChar
-  usc_chapter_id    Int
-  version_id        Int
+  usc_chapter_id    Int?
+  version_id        Int?
   usc_content       usc_content[]
   usc_content_diff  usc_content_diff[]
   usc_section       usc_section?       @relation("usc_sectionTousc_section", fields: [parent_id], references: [usc_section_id], onDelete: Cascade, onUpdate: NoAction)
@@ -657,6 +657,60 @@ model legislation_version_tag {
   @@index([prompt_batch_id], map: "ix_legislation_version_tag_prompt_batch_id")
   @@index([tags], map: "ix_legislation_version_tag_tags")
   @@schema("public")
+}
+
+model account {
+  provider            String    @db.VarChar
+  providerAccountId String    @db.VarChar @map("provider_account_id")
+  userId             String    @db.VarChar @map("user_id")
+  type                String    @db.VarChar
+  refresh_token       String?   @db.VarChar
+  access_token        String?   @db.VarChar
+  expires_at          Int?
+  token_type          String?   @db.VarChar
+  scope               String?   @db.VarChar
+  id_token            String?   @db.VarChar
+  session_state       String?   @db.VarChar
+  createdAt          DateTime? @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt          DateTime? @default(now()) @db.Timestamptz(6) @map("updated_at")
+  user                user      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([provider, providerAccountId], map: "account_pk")
+  @@schema("authentication")
+}
+
+model session {
+  sessionToken String    @id @db.VarChar @map("session_token")
+  userId       String    @db.VarChar @map("user_id")
+  expires       DateTime  @db.Timestamptz(6)
+  createdAt    DateTime? @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt    DateTime? @default(now()) @db.Timestamptz(6) @map("updated_at")
+  user          user      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@schema("authentication")
+}
+
+model user {
+  id             String    @id @db.VarChar @default(cuid())
+  name           String?   @db.VarChar
+  email          String    @unique @db.VarChar
+  emailVerified  DateTime? @db.Timestamp(6) @map("email_verified")
+  image          String?   @db.VarChar
+  createdAt      DateTime? @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt      DateTime? @default(now()) @db.Timestamptz(6) @map("updated_at")
+  account        account[]
+  session        session[]
+
+  @@schema("authentication")
+}
+
+model verification_token {
+  identifier String   @db.VarChar
+  token      String   @db.VarChar
+  expires    DateTime @db.Timestamptz(6)
+
+  @@id([identifier, token], map: "verification_token_pk")
+  @@schema("authentication")
 }
 
 enum legislationchamber {

@@ -2,16 +2,16 @@ import { Box, Card, Toolbar, Typography } from '@mui/material';
 import type { Params } from 'next/dist/server/request/params';
 import { api } from '~/trpc/server';
 
-const cleanStr = (input: string) =>
+const cleanStr = (input: string | null) =>
 	input?.replace(/<usccite\b[^>]*>(.*?)<\/usccite>/gs, '$1');
 
 interface TreeNode {
 	id: number;
 	usc_content_id: number;
-	section_display: string;
-	heading: string;
+	section_display: string | null;
+	heading: string | null;
 	parent_id: number | null;
-	content_str: string;
+	content_str: string | null;
 	children: TreeNode[];
 	isTarget: boolean;
 	isOnPath: boolean;
@@ -21,12 +21,12 @@ interface TreeNode {
 
 interface TreeNodeMetadata {
 	usc_chapter: {
-		short_title: string;
-		long_title: string;
+		short_title: string | null;
+		long_title: string | null;
 	} | null;
 	usc_section: {
-		number: string;
-		heading: string;
+		number: string | null;
+		heading: string | null;
 	} | null;
 }
 interface NodeProps {
@@ -37,17 +37,17 @@ interface NodeProps {
 
 interface Diff {
 	usc_content_id: number;
-	section_display: string;
-	heading: string;
-	content_str: string;
+	section_display: string | null;
+	heading: string | null;
+	content_str: string | null;
 	usc_section: {
-		number: string;
-		heading: string;
+		number: string | null;
+		heading: string | null;
 	} | null;
-	usc_content_diff_id: number;
+	usc_content_diff_id: number | null;
 	usc_chapter: {
-		short_title: string;
-		long_title: string;
+		short_title: string | null;
+		long_title: string | null;
 	} | null;
 }
 
