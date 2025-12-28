@@ -121,7 +121,6 @@ export default async function BillOverviewPage({
 					<LegislationFollow
 						legislation_id={Number(billId as string)}
 					/>
-					<Divider sx={{ mb: 1 }} />
 					<Box
 						sx={{
 							mb: 1,
