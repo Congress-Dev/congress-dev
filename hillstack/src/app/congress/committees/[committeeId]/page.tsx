@@ -1,0 +1,388 @@
+import InboxIcon from '@mui/icons-material/Inbox';
+import PhoneIcon from '@mui/icons-material/Phone';
+import PlaceIcon from '@mui/icons-material/Place';
+import PublicIcon from '@mui/icons-material/Public';
+import YouTubeIcon from '@mui/icons-material/YouTube';
+import {
+	Box,
+	Button,
+	Card,
+	Container,
+	Divider,
+	List,
+	ListItem,
+	ListItemButton,
+	Toolbar,
+	Typography,
+} from '@mui/material';
+import type { Params } from 'next/dist/server/request/params';
+import Link from 'next/link';
+import { api, HydrateClient } from '~/trpc/server';
+
+export default async function CommitteePage({
+	params,
+}: {
+	params: Promise<Params>;
+}) {
+	const { committeeId } = await params;
+	const data = await api.committee.get({
+		id: Number(committeeId),
+	});
+
+	const sidebarCommittee = data.legislation_committee ?? data;
+
+	return (
+		<HydrateClient>
+			<Container maxWidth='xl'>
+				<Box sx={{ display: { xs: 'block', md: 'flex' }, gap: 3 }}>
+					<Box
+						sx={{
+							flexBasis: '300px',
+							display: 'flex',
+							flexDirection: 'column',
+						}}
+					>
+						<Box
+							sx={{
+								display: 'flex',
+								justifyContent: { xs: 'center', md: 'left' },
+							}}
+						>
+							{/* <Avatar
+								src={data.image_url ?? ''}
+								sx={{ width: '200px', height: '200px' }}
+							/> */}
+						</Box>
+						<Box sx={{ mt: 3 }}>
+							<Typography variant='h1'>{`${data.name}`}</Typography>
+							{data.chamber && (
+								<Typography
+									color='textDisabled'
+									sx={{ fontWeight: 100 }}
+									variant='h2'
+								>
+									U.S. {data.chamber}
+								</Typography>
+							)}
+							{data.parent_id && (
+								<Typography
+									color='textDisabled'
+									sx={{ fontWeight: 100, mt: 2 }}
+									variant='h4'
+								>
+									Subcommitee of the {sidebarCommittee.name}
+								</Typography>
+							)}
+						</Box>
+						<Box sx={{ mt: 2, mb: 3 }}>
+							{sidebarCommittee.url && (
+								<Box
+									sx={{
+										display: 'flex',
+										alignItems: 'center',
+										mb: 1,
+									}}
+								>
+									<PublicIcon
+										color='disabled'
+										sx={{ fontSize: '16px', mr: 1 }}
+									/>
+									<Typography
+										color='primary'
+										sx={{ lineHeight: 1 }}
+										variant='subtitle1'
+									>
+										<a
+											href={sidebarCommittee.url}
+											target='_blank'
+										>
+											{sidebarCommittee.url}
+										</a>
+									</Typography>
+								</Box>
+							)}
+							{sidebarCommittee.address && (
+								<Box
+									sx={{
+										display: 'flex',
+										alignItems: 'center',
+										mb: 1,
+									}}
+								>
+									<PlaceIcon
+										color='disabled'
+										sx={{ fontSize: '16px', mr: 1 }}
+									/>
+									<Typography
+										sx={{ lineHeight: 1 }}
+										variant='subtitle1'
+									>
+										{sidebarCommittee.address}
+									</Typography>
+								</Box>
+							)}
+							{sidebarCommittee.phone && (
+								<Box
+									sx={{
+										display: 'flex',
+										alignItems: 'center',
+									}}
+								>
+									<PhoneIcon
+										color='disabled'
+										sx={{ fontSize: '16px', mr: 1 }}
+									/>
+									<Typography
+										sx={{ lineHeight: 1 }}
+										variant='subtitle1'
+									>
+										<a
+											href={`tel:${sidebarCommittee.phone}`}
+											target='_blank'
+										>
+											{sidebarCommittee.phone}
+										</a>
+									</Typography>
+								</Box>
+							)}
+						</Box>
+						<Button size='small' variant='outlined'>
+							Follow
+						</Button>
+						{sidebarCommittee.jurisdiction && (
+							<>
+								<Box
+									sx={{
+										my: 3,
+									}}
+								>
+									<Typography variant='subtitle1'>
+										{sidebarCommittee.jurisdiction}
+									</Typography>
+								</Box>
+								<Divider />
+							</>
+						)}
+						<Box
+							sx={{
+								mt: 3,
+								display: 'flex',
+								flexDirection: 'column',
+								gap: 1,
+							}}
+						>
+							{sidebarCommittee?.youtube_id && (
+								<Box
+									sx={{
+										display: 'flex',
+										alignItems: 'center',
+									}}
+								>
+									<YouTubeIcon
+										color='disabled'
+										sx={{ fontSize: '16px', mr: 1 }}
+									/>
+									<Typography variant='subtitle1'>
+										<a
+											href={`https://youtube.com/channel/${sidebarCommittee.youtube_id}`}
+											target='_blank'
+										>
+											YouTube Channel
+										</a>
+									</Typography>
+								</Box>
+							)}
+						</Box>
+					</Box>
+					<Box sx={{ flexGrow: 1, my: { xs: 3 } }}>
+						<Card sx={{ mb: 2 }} variant='outlined'>
+							<Toolbar
+								disableGutters
+								sx={{
+									px: 2,
+									height: '35px',
+									minHeight: '35px',
+									display: 'flex',
+								}}
+								variant='dense'
+							>
+								Recent Legislation
+							</Toolbar>
+							{data.legislation.length ? (
+								<List dense>
+									{data.legislation.map((bill) => (
+										<ListItem
+											disablePadding
+											key={bill?.legislation_id}
+										>
+											<ListItemButton>
+												<Link
+													href={`/congress/bills/${bill?.legislation_id}`}
+													style={{
+														width: '100%',
+														display: 'block',
+													}}
+												>
+													<Box
+														sx={{
+															display: 'flex',
+															flexDirection:
+																'column',
+														}}
+													>
+														<Typography color='primary'>
+															{bill?.title}
+														</Typography>
+														<Typography variant='caption'>
+															{`${bill?.congress?.session_number}th - `}
+															{bill?.chamber ===
+															'House'
+																? 'H.R'
+																: 'S'}
+															{'. #'}
+															{bill?.number}
+														</Typography>
+													</Box>
+												</Link>
+											</ListItemButton>
+										</ListItem>
+									))}
+								</List>
+							) : (
+								<Box
+									sx={{
+										display: 'flex',
+										alignItems: 'center',
+										justifyContent: 'center',
+										height: 100,
+									}}
+								>
+									<InboxIcon
+										color='disabled'
+										sx={{ mr: 2 }}
+									/>
+									<Typography
+										color='textDisabled'
+										variant='h2'
+									>
+										No Content
+									</Typography>
+								</Box>
+							)}
+						</Card>
+						{data.legislation_committee && (
+							<Card sx={{ mb: 2 }} variant='outlined'>
+								<Toolbar
+									disableGutters
+									sx={{
+										px: 2,
+										height: '35px',
+										minHeight: '35px',
+										display: 'flex',
+									}}
+									variant='dense'
+								>
+									Parent Committee
+								</Toolbar>
+								<List dense>
+									<ListItem
+										disablePadding
+										key={
+											data.legislation_committee
+												.legislation_committee_id
+										}
+									>
+										<ListItemButton>
+											<Link
+												href={`/congress/committees/${data.legislation_committee.legislation_committee_id}`}
+												style={{
+													width: '100%',
+													display: 'block',
+												}}
+											>
+												<Box
+													sx={{
+														display: 'flex',
+														flexDirection: 'column',
+													}}
+												>
+													<Typography color='primary'>
+														{
+															data
+																.legislation_committee
+																.name
+														}
+													</Typography>
+													<Typography variant='caption'>
+														{data
+															.legislation_committee
+															.chamber
+															? `U.S. ${data.legislation_committee.chamber}`
+															: 'Unknown Chamber'}
+													</Typography>
+												</Box>
+											</Link>
+										</ListItemButton>
+									</ListItem>
+								</List>
+							</Card>
+						)}
+						{data.subcommittees.length > 0 && (
+							<Card sx={{ mb: 2 }} variant='outlined'>
+								<Toolbar
+									disableGutters
+									sx={{
+										px: 2,
+										height: '35px',
+										minHeight: '35px',
+										display: 'flex',
+									}}
+									variant='dense'
+								>
+									Subcommittees
+								</Toolbar>
+								<List dense>
+									{data.subcommittees.map((subcommittee) => (
+										<ListItem
+											disablePadding
+											key={
+												subcommittee.legislation_committee_id
+											}
+										>
+											<ListItemButton>
+												<Link
+													href={`/congress/committees/${subcommittee.legislation_committee_id}`}
+													style={{
+														width: '100%',
+														display: 'block',
+													}}
+												>
+													<Box
+														sx={{
+															display: 'flex',
+															flexDirection:
+																'column',
+														}}
+													>
+														<Typography color='primary'>
+															{subcommittee.name}
+														</Typography>
+														<Typography variant='caption'>
+															{subcommittee.chamber
+																? `U.S. ${subcommittee.chamber}`
+																: 'Unknown Chamber'}
+														</Typography>
+													</Box>
+												</Link>
+											</ListItemButton>
+										</ListItem>
+									))}
+								</List>
+							</Card>
+						)}
+					</Box>
+				</Box>
+			</Container>
+		</HydrateClient>
+	);
+}

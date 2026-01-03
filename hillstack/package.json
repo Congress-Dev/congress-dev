@@ -1,0 +1,63 @@
+{
+	"name": "congress",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "next build",
+		"check": "biome check .",
+		"check:unsafe": "biome check --write --unsafe .",
+		"check:write": "biome check --write .",
+		"db:generate": "prisma migrate dev",
+		"db:migrate": "prisma migrate deploy",
+		"db:push": "prisma db push",
+		"db:studio": "prisma studio",
+		"dev": "next dev --turbo -p 3001",
+		"postinstall": "prisma generate",
+		"preview": "next build && next start",
+		"start": "PORT=3001 node .next/standalone/server.js",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@auth/prisma-adapter": "^2.11.1",
+		"@emotion/cache": "^11.14.0",
+		"@emotion/react": "^11.14.0",
+		"@emotion/styled": "^11.14.1",
+		"@mui/icons-material": "^7.3.6",
+		"@mui/lab": "7.0.1-beta.20",
+		"@mui/material": "^7.3.6",
+		"@mui/x-charts": "^8.23.0",
+		"@mui/x-data-grid": "^8.22.1",
+		"@prisma/adapter-pg": "^7.1.0",
+		"@prisma/client": "^7.1.0",
+		"@tanstack/react-query": "^5.69.0",
+		"@trpc/client": "^11.0.0",
+		"@trpc/react-query": "^11.0.0",
+		"@trpc/server": "^11.0.0",
+		"date-fns": "^4.1.0",
+		"google-auth-library": "^10.5.0",
+		"jsonwebtoken": "^9.0.3",
+		"next": "^15.5.7",
+		"next-auth": "5.0.0-beta.25",
+		"pg": "^8.16.3",
+		"react": "^19.0.0",
+		"react-dom": "^19.0.0",
+		"server-only": "^0.0.1",
+		"superjson": "^2.2.1",
+		"zod": "^4.1.13"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.2.5",
+		"@types/node": "^20.14.10",
+		"@types/pg": "^8.15.6",
+		"@types/react": "^19.0.0",
+		"@types/react-dom": "^19.0.0",
+		"prisma": "^7.1.0",
+		"typescript": "^5.8.2",
+		"zod-prisma-types": "^3.3.10"
+	},
+	"ct3aMetadata": {
+		"initVersion": "7.40.0"
+	},
+	"packageManager": "pnpm@10.18.2"
+}

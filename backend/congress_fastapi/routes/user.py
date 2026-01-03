@@ -1,6 +1,6 @@
 import traceback
 from typing import List, Optional
-from billparser.db.models import User
+from billparser.db.models import UserIdent
 from fastapi import (
     APIRouter,
     HTTPException,
@@ -46,7 +46,7 @@ from congress_fastapi.models.user import (
 router = APIRouter(tags=["User"])
 
 
-async def user_from_cookie(authentication: Optional[str] = Cookie()) -> Optional[User]:
+async def user_from_cookie(authentication: Optional[str] = Cookie()) -> Optional[UserIdent]:
     return await handle_get_user(authentication)
 
 
@@ -257,7 +257,7 @@ async def user_legislator_update(
 
 @router.get("/user/usc_tracking/folders")
 async def user_usc_tracking_folders(
-    user: User = Depends(user_from_cookie),
+    user: UserIdent = Depends(user_from_cookie),
 ) -> List[UserUSCContentFolder]:
     if user is None:
         raise HTTPException(
@@ -268,7 +268,7 @@ async def user_usc_tracking_folders(
 
 @router.get("/user/usc_tracking/folder/{folder_id}")
 async def user_usc_tracking_folder_results(
-    user: User = Depends(user_from_cookie),
+    user: UserIdent = Depends(user_from_cookie),
     folder_id: int = Path(...),
 )-> UserLegislationFeedResponse:
     if user is None:

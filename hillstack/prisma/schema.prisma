@@ -1,0 +1,772 @@
+generator client {
+  provider               = "prisma-client"
+  output                 = "../generated/prisma"
+  previewFeatures        = ["fullTextSearchPostgres"]
+  generatedFileExtension = "ts"
+  importFileExtension    = "ts"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["appropriations", "authentication", "prompts", "public", "sensitive"]
+}
+
+model appropriation {
+  appropriation_id       Int                  @id @default(autoincrement())
+  parent_id              Int?
+  legislation_version_id Int?
+  legislation_content_id Int?
+  content_str_indicies   Int[]
+  amount                 BigInt?
+  new_spending           Boolean
+  fiscal_years           Int[]
+  until_expended         Boolean
+  expiration_year        Int?
+  target                 String?              @db.VarChar
+  purpose                String?              @db.VarChar
+  prompt_batch_id        Int?
+  legislation_content    legislation_content? @relation(fields: [legislation_content_id], references: [legislation_content_id], onDelete: Cascade, onUpdate: NoAction)
+  legislation_version    legislation_version? @relation(fields: [legislation_version_id], references: [legislation_version_id], onDelete: Cascade, onUpdate: NoAction)
+  prompt_batch           prompt_batch?        @relation(fields: [prompt_batch_id], references: [prompt_batch_id], onDelete: Cascade, onUpdate: NoAction, map: "appropriation_prompt_batch_id_fk")
+
+  @@index([fiscal_years], map: "ix_appropriations_appropriation_fiscal_years")
+  @@index([legislation_content_id], map: "ix_appropriations_appropriation_legislation_content_id")
+  @@index([legislation_version_id], map: "ix_appropriations_appropriation_legislation_version_id")
+  @@index([prompt_batch_id], map: "ix_appropriations_appropriation_prompt_batch_id")
+  @@schema("appropriations")
+}
+
+model prompt {
+  prompt_id    Int            @id @default(autoincrement())
+  version      String         @db.VarChar
+  title        String         @db.VarChar
+  description  String?        @db.VarChar
+  prompt       String         @db.VarChar
+  model        String         @db.VarChar
+  prompt_batch prompt_batch[]
+
+  @@schema("prompts")
+}
+
+model prompt_batch {
+  prompt_batch_id             Int                           @id @default(autoincrement())
+  prompt_id                   Int?
+  legislation_version_id      Int?
+  created_at                  DateTime?                     @default(now()) @db.Timestamp(6)
+  completed_at                DateTime?                     @db.Timestamp(6)
+  attempted                   Int
+  successful                  Int
+  failed                      Int
+  skipped                     Int
+  appropriation               appropriation[]
+  legislation_version         legislation_version?          @relation(fields: [legislation_version_id], references: [legislation_version_id], onDelete: Cascade, onUpdate: NoAction)
+  prompt                      prompt?                       @relation(fields: [prompt_id], references: [prompt_id], onDelete: Cascade, onUpdate: NoAction)
+  legislation_content_summary legislation_content_summary[]
+  legislation_content_tag     legislation_content_tag[]
+  legislation_version_tag     legislation_version_tag[]
+
+  @@index([legislation_version_id], map: "ix_prompts_prompt_batch_legislation_version_id")
+  @@index([prompt_id], map: "ix_prompts_prompt_batch_prompt_id")
+  @@schema("prompts")
+}
+
+model alembic_version {
+  version_num String @id(map: "alembic_version_pkc") @db.VarChar(32)
+
+  @@schema("public")
+}
+
+model congress {
+  congress_id                       Int                                 @id @default(autoincrement())
+  session_number                    Int?
+  start_year                        Int?
+  end_year                          Int?
+  legislation                       legislation[]
+  legislation_committee             legislation_committee[]
+  legislation_committee_association legislation_committee_association[]
+  legislation_vote                  legislation_vote[]
+  legislative_policy_area           legislative_policy_area[]
+  legislative_subject               legislative_subject[]
+
+  @@schema("public")
+}
+
+model legislation {
+  legislation_id                      Int                                   @id @default(autoincrement())
+  chamber                             legislationchamber?
+  legislation_type                    legislationtype?
+  number                              Int?
+  title                               String?                               @db.VarChar
+  congress_id                         Int?
+  version_id                          Int?
+  policy_areas                        String[]                              @db.VarChar
+  legislative_subjects                String[]                              @db.VarChar
+  congress                            congress?                             @relation(fields: [congress_id], references: [congress_id], onDelete: Cascade, onUpdate: NoAction)
+  version                             version?                              @relation(fields: [version_id], references: [version_id], onDelete: Cascade, onUpdate: NoAction)
+  legislation_action                  legislation_action[]
+  legislation_committee_association   legislation_committee_association[]
+  legislation_sponsorship             legislation_sponsorship[]
+  legislation_version                 legislation_version[]
+  legislation_vote                    legislation_vote[]
+  legislative_policy_area_association legislative_policy_area_association[]
+  legislative_subject_association     legislative_subject_association[]
+  user_legislation                    user_legislation[]
+
+  @@unique([chamber, number, legislation_type, congress_id], map: "unq_bill")
+  @@index([chamber], map: "ix_legislation_chamber")
+  @@index([legislative_subjects], map: "ix_legislation_legislative_subjects")
+  @@index([policy_areas], map: "ix_legislation_policy_areas")
+  @@schema("public")
+}
+
+model legislation_action_parse {
+  legislation_action_parse_id Int                  @id @default(autoincrement())
+  legislation_version_id      Int?
+  legislation_content_id      Int?
+  actions                     Json[]
+  citations                   Json[]
+  legislation_content         legislation_content? @relation(fields: [legislation_content_id], references: [legislation_content_id], onDelete: Cascade, onUpdate: NoAction)
+  legislation_version         legislation_version? @relation(fields: [legislation_version_id], references: [legislation_version_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([legislation_content_id], map: "ix_legislation_action_parse_legislation_content_id")
+  @@index([legislation_version_id], map: "ix_legislation_action_parse_legislation_version_id")
+  @@schema("public")
+}
+
+model legislation_committee {
+  legislation_committee_id          Int                                 @id @default(autoincrement())
+  system_code                       String?                             @db.VarChar
+  chamber                           legislationchamber?
+  name                              String                              @db.VarChar
+  committee_type                    String?                             @db.VarChar
+  congress_id                       Int?
+  thomas_id                         String?                             @db.VarChar
+  parent_id                         Int?
+  url                               String?                             @db.VarChar
+  minority_url                      String?                             @db.VarChar
+  address                           String?                             @db.VarChar
+  phone                             String?                             @db.VarChar
+  rss_url                           String?                             @db.VarChar
+  jurisdiction                      String?                             @db.VarChar
+  youtube_id                        String?                             @db.VarChar
+  committee_id                      String?                             @db.VarChar
+  congress                          congress?                           @relation(fields: [congress_id], references: [congress_id], onDelete: Cascade, onUpdate: NoAction)
+  legislation_committee             legislation_committee?              @relation("legislation_committeeTolegislation_committee", fields: [parent_id], references: [legislation_committee_id], onDelete: Cascade, onUpdate: NoAction)
+  other_legislation_committee       legislation_committee[]             @relation("legislation_committeeTolegislation_committee")
+  legislation_committee_association legislation_committee_association[]
+
+  @@index([committee_id], map: "ix_legislation_committee_committee_id")
+  @@index([congress_id], map: "ix_legislation_committee_congress_id")
+  @@index([parent_id], map: "ix_legislation_committee_parent_id")
+  @@index([thomas_id], map: "ix_legislation_committee_thomas_id")
+  @@schema("public")
+}
+
+model legislation_committee_association {
+  committee_association_id Int                    @id @default(autoincrement())
+  legislation_committee_id Int?
+  referred_date            DateTime?              @db.Timestamp(6)
+  discharge_date           DateTime?              @db.Timestamp(6)
+  legislation_id           Int?
+  congress_id              Int?
+  congress                 congress?              @relation(fields: [congress_id], references: [congress_id], onDelete: Cascade, onUpdate: NoAction)
+  legislation_committee    legislation_committee? @relation(fields: [legislation_committee_id], references: [legislation_committee_id], onDelete: Cascade, onUpdate: NoAction)
+  legislation              legislation?           @relation(fields: [legislation_id], references: [legislation_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([congress_id], map: "ix_legislation_committee_association_congress_id")
+  @@index([legislation_committee_id], map: "ix_legislation_committee_association_legislation_committee_id")
+  @@index([legislation_id], map: "ix_legislation_committee_association_legislation_id")
+  @@schema("public")
+}
+
+model legislation_content {
+  legislation_content_id      Int                           @id @default(autoincrement())
+  parent_id                   Int?
+  lc_ident                    String?                       @db.VarChar
+  order_number                Int?
+  section_display             String?                       @db.VarChar
+  heading                     String?                       @db.VarChar
+  content_str                 String?                       @db.VarChar
+  content_type                String?                       @db.VarChar
+  legislation_version_id      Int?
+  appropriation               appropriation[]
+  legislation_action_parse    legislation_action_parse[]
+  legislation_version         legislation_version?          @relation(fields: [legislation_version_id], references: [legislation_version_id], onDelete: Cascade, onUpdate: NoAction)
+  legislation_content         legislation_content?          @relation("legislation_contentTolegislation_content", fields: [parent_id], references: [legislation_content_id], onDelete: NoAction, onUpdate: NoAction)
+  other_legislation_content   legislation_content[]         @relation("legislation_contentTolegislation_content")
+  legislation_content_summary legislation_content_summary[]
+  legislation_content_tag     legislation_content_tag[]
+  usc_content_diff            usc_content_diff[]
+
+  @@index([legislation_version_id], map: "ix_legislation_content_legislation_version_id")
+  @@schema("public")
+}
+
+model legislation_content_summary {
+  legislation_content_summary_id Int                  @id @default(autoincrement())
+  legislation_content_id         Int?
+  summary                        String?              @db.VarChar
+  prompt_batch_id                Int?
+  legislation_content            legislation_content? @relation(fields: [legislation_content_id], references: [legislation_content_id], onDelete: Cascade, onUpdate: NoAction)
+  prompt_batch                   prompt_batch?        @relation(fields: [prompt_batch_id], references: [prompt_batch_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([legislation_content_id], map: "ix_legislation_content_summary_legislation_content_id")
+  @@index([prompt_batch_id], map: "ix_legislation_content_summary_prompt_batch_id")
+  @@schema("public")
+}
+
+model legislation_content_tag {
+  legislation_content_tag_id Int                  @id @default(autoincrement())
+  prompt_batch_id            Int?
+  legislation_content_id     Int?
+  tags                       String[]             @db.VarChar
+  legislation_content        legislation_content? @relation(fields: [legislation_content_id], references: [legislation_content_id], onDelete: Cascade, onUpdate: NoAction)
+  prompt_batch               prompt_batch?        @relation(fields: [prompt_batch_id], references: [prompt_batch_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([legislation_content_id], map: "ix_legislation_content_tag_legislation_content_id")
+  @@index([prompt_batch_id], map: "ix_legislation_content_tag_prompt_batch_id")
+  @@index([tags], map: "ix_legislation_content_tag_tags")
+  @@schema("public")
+}
+
+model legislation_sponsorship {
+  legislation_sponsorship_id Int          @id @default(autoincrement())
+  legislator_bioguide_id     String?      @db.VarChar
+  legislation_id             Int?
+  cosponsor                  Boolean?
+  original                   Boolean?
+  sponsorship_date           DateTime?    @db.Date
+  sponsorship_withdrawn_date DateTime?    @db.Date
+  legislation                legislation? @relation(fields: [legislation_id], references: [legislation_id], onDelete: Cascade, onUpdate: NoAction)
+  legislator                 legislator?  @relation(fields: [legislator_bioguide_id], references: [bioguide_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([cosponsor], map: "ix_legislation_sponsorship_cosponsor")
+  @@index([legislation_id], map: "ix_legislation_sponsorship_legislation_id")
+  @@index([legislator_bioguide_id], map: "ix_legislation_sponsorship_legislator_bioguide_id")
+  @@index([original], map: "ix_legislation_sponsorship_original")
+  @@index([sponsorship_withdrawn_date], map: "ix_legislation_sponsorship_sponsorship_withdrawn_date")
+  @@schema("public")
+}
+
+model legislation_version {
+  legislation_version_id   Int                        @id @default(autoincrement())
+  legislation_version      legislationversionenum?
+  effective_date           DateTime?                  @db.Date
+  legislation_id           Int?
+  version_id               Int?
+  created_at               DateTime?                  @default(now()) @db.Timestamp(6)
+  completed_at             DateTime?                  @db.Timestamp(6)
+  appropriation            appropriation[]
+  prompt_batch             prompt_batch[]
+  legislation_action_parse legislation_action_parse[]
+  legislation_content      legislation_content[]
+  legislation              legislation?               @relation(fields: [legislation_id], references: [legislation_id], onDelete: Cascade, onUpdate: NoAction)
+  version                  version?                   @relation(fields: [version_id], references: [version_id], onDelete: Cascade, onUpdate: NoAction)
+  legislation_version_tag  legislation_version_tag[]
+  user_llm_query           user_llm_query[]
+
+  @@index([legislation_id], map: "ix_legislation_version_legislation_id")
+  @@index([legislation_version], map: "ix_legislation_version_legislation_version")
+  @@index([version_id], map: "ix_legislation_version_version_id")
+  @@index([legislation_version, legislation_id], map: "legis_version")
+  @@schema("public")
+}
+
+model legislation_vote {
+  id              Int                 @id @default(autoincrement())
+  number          Int
+  legislation_id  Int?
+  question        String?             @db.VarChar
+  independent     Json?
+  republican      Json?
+  democrat        Json?
+  total           Json?
+  passed          Boolean?
+  chamber         legislationchamber?
+  congress_id     Int?
+  datetime        DateTime?           @db.Timestamp(6)
+  congress        congress?           @relation(fields: [congress_id], references: [congress_id], onDelete: Cascade, onUpdate: NoAction)
+  legislation     legislation?        @relation(fields: [legislation_id], references: [legislation_id], onDelete: Cascade, onUpdate: NoAction)
+  legislator_vote legislator_vote[]
+
+  @@index([congress_id], map: "ix_legislation_vote_congress_id")
+  @@index([id], map: "ix_legislation_vote_id")
+  @@index([legislation_id], map: "ix_legislation_vote_legislation_id")
+  @@index([number], map: "ix_legislation_vote_number")
+  @@index([question], map: "ix_legislation_vote_question")
+  @@schema("public")
+}
+
+model legislative_policy_area {
+  legislative_policy_area_id          Int                                   @id @default(autoincrement())
+  name                                String?                               @unique(map: "ix_legislative_policy_area_name") @db.VarChar
+  congress_id                         Int?
+  congress                            congress?                             @relation(fields: [congress_id], references: [congress_id], onDelete: Cascade, onUpdate: NoAction)
+  legislative_policy_area_association legislative_policy_area_association[]
+
+  @@unique([name, congress_id], map: "unq_leg_pol")
+  @@index([congress_id], map: "ix_legislative_policy_area_congress_id")
+  @@schema("public")
+}
+
+model legislative_policy_area_association {
+  legislative_policy_area_association_id Int                      @id @default(autoincrement())
+  legislative_policy_area_id             Int?
+  legislation_id                         Int?
+  legislative_policy_area                legislative_policy_area? @relation(fields: [legislative_policy_area_id], references: [legislative_policy_area_id], onDelete: Cascade, onUpdate: NoAction, map: "legislative_policy_area_associa_legislative_policy_area_id_fkey")
+  legislation                            legislation?             @relation(fields: [legislation_id], references: [legislation_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([legislation_id], map: "ix_legislative_policy_area_association_legislation_id")
+  @@index([legislative_policy_area_id], map: "ix_legislative_policy_area_association_legislative_poli_2fd5")
+  @@schema("public")
+}
+
+model legislative_subject {
+  legislative_subject_id          Int                               @id @default(autoincrement())
+  subject                         String?                           @db.VarChar
+  congress_id                     Int?
+  congress                        congress?                         @relation(fields: [congress_id], references: [congress_id], onDelete: Cascade, onUpdate: NoAction)
+  legislative_subject_association legislative_subject_association[]
+
+  @@unique([subject, congress_id], map: "unq_leg_subj")
+  @@index([congress_id], map: "ix_legislative_subject_congress_id")
+  @@index([subject], map: "ix_legislative_subject_subject")
+  @@schema("public")
+}
+
+model legislative_subject_association {
+  legislative_subject_association_id Int                  @id @default(autoincrement())
+  legislative_subject_id             Int?
+  legislation_id                     Int?
+  legislation                        legislation?         @relation(fields: [legislation_id], references: [legislation_id], onDelete: Cascade, onUpdate: NoAction)
+  legislative_subject                legislative_subject? @relation(fields: [legislative_subject_id], references: [legislative_subject_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([legislation_id], map: "ix_legislative_subject_association_legislation_id")
+  @@index([legislative_subject_id], map: "ix_legislative_subject_association_legislative_subject_id")
+  @@schema("public")
+}
+
+model legislator {
+  legislator_id           Int                       @id @default(autoincrement())
+  bioguide_id             String?                   @unique(map: "ix_legislator_bioguide_id") @db.VarChar
+  first_name              String?                   @db.VarChar
+  middle_name             String?                   @db.VarChar
+  last_name               String?                   @db.VarChar
+  party                   String?                   @db.VarChar
+  state                   String?                   @db.VarChar
+  district                Int?
+  image_url               String?                   @db.VarChar
+  image_source            String?                   @db.VarChar
+  profile                 String?                   @db.VarChar
+  lis_id                  String?                   @db.VarChar
+  job                     legislatorjob?
+  congress_id             Int[]
+  twitter                 String?                   @db.VarChar
+  facebook                String?                   @db.VarChar
+  youtube                 String?                   @db.VarChar
+  instagram               String?                   @db.VarChar
+  legislation_sponsorship legislation_sponsorship[]
+  legislator_vote         legislator_vote[]
+  user_legislator         user_legislator[]
+
+  @@index([district], map: "ix_legislator_district")
+  @@index([lis_id], map: "ix_legislator_lis_id")
+  @@index([party], map: "ix_legislator_party")
+  @@index([state], map: "ix_legislator_state")
+  @@schema("public")
+}
+
+model legislator_vote {
+  id                     Int                 @id @default(autoincrement())
+  legislation_vote_id    Int?
+  legislator_bioguide_id String?             @db.VarChar
+  vote                   legislatorvotetype?
+  legislation_vote       legislation_vote?   @relation(fields: [legislation_vote_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  legislator             legislator?         @relation(fields: [legislator_bioguide_id], references: [bioguide_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([id], map: "ix_legislator_vote_id")
+  @@index([legislation_vote_id], map: "ix_legislator_vote_legislation_vote_id")
+  @@index([legislator_bioguide_id], map: "ix_legislator_vote_legislator_bioguide_id")
+  @@schema("public")
+}
+
+model usc_act_section {
+  usc_act_section_id  Int               @id @default(autoincrement())
+  act_section         String?           @db.VarChar
+  usc_title           String?           @db.VarChar
+  usc_section         String?           @db.VarChar
+  usc_popular_name_id Int?
+  usc_popular_name    usc_popular_name? @relation(fields: [usc_popular_name_id], references: [usc_popular_name_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([usc_popular_name_id], map: "ix_usc_act_section_usc_popular_name_id")
+  @@schema("public")
+}
+
+model usc_chapter {
+  usc_chapter_id   Int                @id @default(autoincrement())
+  short_title      String?            @db.VarChar
+  long_title       String?            @db.VarChar
+  document         String?            @db.VarChar
+  usc_ident        String?            @db.VarChar
+  created_at       DateTime?          @default(now()) @db.Timestamp(6)
+  usc_release_id   Int?
+  version_id       Int?
+  usc_release      usc_release?       @relation(fields: [usc_release_id], references: [usc_release_id], onDelete: Cascade, onUpdate: NoAction)
+  version          version?           @relation(fields: [version_id], references: [version_id], onDelete: Cascade, onUpdate: NoAction)
+  usc_content_diff usc_content_diff[]
+  usc_section      usc_section[]
+
+  @@index([version_id], map: "ix_usc_chapter_version_id")
+  @@schema("public")
+}
+
+model usc_content {
+  usc_content_id    Int                @id @default(autoincrement())
+  parent_id         Int?
+  usc_ident         String?            @db.VarChar
+  usc_guid          String?            @db.VarChar
+  order_number      Int?
+  number            String?            @db.VarChar
+  section_display   String?            @db.VarChar
+  heading           String?            @db.VarChar
+  content_str       String?            @db.VarChar
+  content_type      String?            @db.VarChar
+  usc_section_id    Int?
+  version_id        Int?
+  usc_content       usc_content?       @relation("usc_contentTousc_content", fields: [parent_id], references: [usc_content_id], onDelete: NoAction, onUpdate: NoAction)
+  other_usc_content usc_content[]      @relation("usc_contentTousc_content")
+  usc_section       usc_section?       @relation(fields: [usc_section_id], references: [usc_section_id], onDelete: Cascade, onUpdate: NoAction)
+  version           version?           @relation(fields: [version_id], references: [version_id], onDelete: Cascade, onUpdate: NoAction)
+  usc_content_diff  usc_content_diff[]
+
+  @@index([usc_ident, version_id], map: "content_ident")
+  @@index([parent_id], map: "ix_usc_content_parent_id")
+  @@index([usc_section_id], map: "ix_usc_content_usc_section_id")
+  @@index([version_id], map: "ix_usc_content_version_id")
+  @@schema("public")
+}
+
+model usc_content_diff {
+  usc_content_diff_id    Int                  @id @default(autoincrement())
+  usc_ident              String?              @db.VarChar
+  usc_guid               String?              @db.VarChar
+  order_number           Int?
+  number                 String?              @db.VarChar
+  section_display        String?              @db.VarChar
+  heading                String?              @db.VarChar
+  content_str            String?              @db.VarChar
+  content_type           String?              @db.VarChar
+  usc_content_id         Int
+  usc_section_id         Int
+  usc_chapter_id         Int
+  legislation_content_id Int?
+  version_id             Int?
+  legislation_content    legislation_content? @relation(fields: [legislation_content_id], references: [legislation_content_id], onDelete: Cascade, onUpdate: NoAction)
+  usc_chapter            usc_chapter          @relation(fields: [usc_chapter_id], references: [usc_chapter_id], onDelete: Cascade, onUpdate: NoAction)
+  usc_content            usc_content          @relation(fields: [usc_content_id], references: [usc_content_id], onDelete: Cascade, onUpdate: NoAction)
+  usc_section            usc_section          @relation(fields: [usc_section_id], references: [usc_section_id], onDelete: Cascade, onUpdate: NoAction)
+  version                version?             @relation(fields: [version_id], references: [version_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([legislation_content_id], map: "ix_usc_content_diff_legislation_content_id")
+  @@index([usc_chapter_id], map: "ix_usc_content_diff_usc_chapter_id")
+  @@index([usc_content_id], map: "ix_usc_content_diff_usc_content_id")
+  @@index([usc_section_id], map: "ix_usc_content_diff_usc_section_id")
+  @@index([version_id], map: "ix_usc_content_diff_version_id")
+  @@schema("public")
+}
+
+model usc_popular_name {
+  usc_popular_name_id Int               @id @default(autoincrement())
+  name                String?           @db.VarChar
+  public_law_number   String?           @db.VarChar
+  act_date            DateTime?         @db.Date
+  act_congress        Int?
+  usc_release_id      Int?
+  usc_act_section     usc_act_section[]
+  usc_release         usc_release?      @relation(fields: [usc_release_id], references: [usc_release_id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([usc_release_id], map: "ix_usc_popular_name_usc_release_id")
+  @@schema("public")
+}
+
+model usc_release {
+  usc_release_id   Int                @id @default(autoincrement())
+  short_title      String?            @db.VarChar
+  effective_date   DateTime?          @db.Date
+  long_title       String?            @db.VarChar
+  created_at       DateTime?          @default(now()) @db.Timestamp(6)
+  version_id       Int?
+  usc_chapter      usc_chapter[]
+  usc_popular_name usc_popular_name[]
+  version          version?           @relation(fields: [version_id], references: [version_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@schema("public")
+}
+
+model usc_section {
+  usc_section_id    Int                @id @default(autoincrement())
+  usc_ident         String?            @db.VarChar
+  usc_guid          String?            @db.VarChar
+  parent_id         Int?
+  number            String?            @db.VarChar
+  section_display   String?            @db.VarChar
+  heading           String?            @db.VarChar
+  content_type      String?            @db.VarChar
+  usc_chapter_id    Int?
+  version_id        Int?
+  usc_content       usc_content[]
+  usc_content_diff  usc_content_diff[]
+  usc_section       usc_section?       @relation("usc_sectionTousc_section", fields: [parent_id], references: [usc_section_id], onDelete: Cascade, onUpdate: NoAction)
+  other_usc_section usc_section[]      @relation("usc_sectionTousc_section")
+  usc_chapter       usc_chapter?       @relation(fields: [usc_chapter_id], references: [usc_chapter_id], onDelete: Cascade, onUpdate: NoAction)
+  version           version?           @relation(fields: [version_id], references: [version_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([parent_id], map: "ix_usc_section_parent_id")
+  @@index([usc_chapter_id], map: "ix_usc_section_usc_chapter_id")
+  @@index([version_id], map: "ix_usc_section_version_id")
+  @@schema("public")
+}
+
+model version {
+  version_id          Int                   @id @default(autoincrement())
+  base_id             Int?
+  legislation         legislation[]
+  legislation_version legislation_version[]
+  usc_chapter         usc_chapter[]
+  usc_content         usc_content[]
+  usc_content_diff    usc_content_diff[]
+  usc_release         usc_release[]
+  usc_section         usc_section[]
+  version             version?              @relation("versionToversion", fields: [base_id], references: [version_id], onDelete: Cascade, onUpdate: NoAction)
+  other_version       version[]             @relation("versionToversion")
+
+  @@index([base_id], map: "ix_version_base_id")
+  @@schema("public")
+}
+
+model user_ident {
+  user_id                 String                    @id @db.VarChar
+  user_first_name         String                    @db.VarChar
+  user_last_name          String                    @db.VarChar
+  user_state              String?                   @db.VarChar
+  user_image              String?                   @db.VarChar
+  user_auth_password      String?                   @db.VarChar
+  user_auth_google        String?                   @db.VarChar
+  user_auth_expiration    DateTime?                 @db.Timestamp(6)
+  user_auth_cookie        String?                   @db.VarChar
+  user_legislation        user_legislation[]
+  user_legislator         user_legislator[]
+  user_llm_query          user_llm_query[]
+  user_usc_content        user_usc_content[]
+  user_usc_content_folder user_usc_content_folder[]
+
+  @@schema("sensitive")
+}
+
+model user_legislation {
+  user_legislation_id Int          @id @default(autoincrement())
+  user_id             String?      @db.VarChar
+  legislation_id      Int?
+  legislation         legislation? @relation(fields: [legislation_id], references: [legislation_id], onDelete: Cascade, onUpdate: NoAction)
+  user_ident          user_ident?  @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([legislation_id], map: "ix_sensitive_user_legislation_legislation_id")
+  @@index([user_id], map: "ix_sensitive_user_legislation_user_id")
+  @@schema("sensitive")
+}
+
+model user_legislator {
+  user_legislator_id Int         @id @default(autoincrement())
+  user_id            String?     @db.VarChar
+  bioguide_id        String?     @db.VarChar
+  legislator         legislator? @relation(fields: [bioguide_id], references: [bioguide_id], onDelete: Cascade, onUpdate: NoAction)
+  user_ident         user_ident? @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([bioguide_id], map: "ix_sensitive_user_legislator_bioguide_id")
+  @@index([user_id], map: "ix_sensitive_user_legislator_user_id")
+  @@schema("sensitive")
+}
+
+model user_llm_query {
+  user_llm_query_id      Int                  @id @default(autoincrement())
+  user_id                String?              @db.VarChar
+  legislation_version_id Int?
+  query                  String               @db.VarChar
+  response               String               @db.VarChar
+  safe                   Boolean
+  created_at             DateTime?            @default(now()) @db.Timestamp(6)
+  legislation_version    legislation_version? @relation(fields: [legislation_version_id], references: [legislation_version_id], onDelete: Cascade, onUpdate: NoAction)
+  user_ident             user_ident?          @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([legislation_version_id], map: "ix_sensitive_user_llm_query_legislation_version_id")
+  @@index([query], map: "ix_sensitive_user_llm_query_query")
+  @@index([user_id], map: "ix_sensitive_user_llm_query_user_id")
+  @@schema("sensitive")
+}
+
+model user_usc_content {
+  user_usc_content_id        Int                      @id @default(autoincrement())
+  user_id                    String?                  @db.VarChar
+  user_usc_content_folder_id Int?
+  usc_ident                  String?                  @db.VarChar
+  user_ident                 user_ident?              @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+  user_usc_content_folder    user_usc_content_folder? @relation(fields: [user_usc_content_folder_id], references: [user_usc_content_folder_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id], map: "ix_sensitive_user_usc_content_user_id")
+  @@index([user_usc_content_folder_id], map: "ix_sensitive_user_usc_content_user_usc_content_folder_id")
+  @@schema("sensitive")
+}
+
+model user_usc_content_folder {
+  user_usc_content_folder_id Int                @id @default(autoincrement())
+  user_id                    String?            @db.VarChar
+  name                       String             @db.VarChar
+  user_usc_content           user_usc_content[]
+  user_ident                 user_ident?        @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_id], map: "ix_sensitive_user_usc_content_folder_user_id")
+  @@schema("sensitive")
+}
+
+model legislation_action {
+  legislation_action_id Int          @id @default(autoincrement())
+  legislation_id        Int?
+  action_date           DateTime?    @db.Date
+  text                  String?      @db.VarChar
+  action_type           String?      @db.VarChar
+  action_code           String?      @db.VarChar
+  source_code           String?      @db.VarChar
+  source_name           String?      @db.VarChar
+  raw                   Json?
+  created_at            DateTime?    @default(now()) @db.Timestamp(6)
+  legislation           legislation? @relation(fields: [legislation_id], references: [legislation_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([legislation_id], map: "ix_legislation_action_legislation_id")
+  @@schema("public")
+}
+
+model legislation_version_tag {
+  legislation_version_tag_id Int                  @id @default(autoincrement())
+  legislation_version_id     Int?
+  tags                       String[]             @db.VarChar
+  prompt_batch_id            Int?
+  legislation_version        legislation_version? @relation(fields: [legislation_version_id], references: [legislation_version_id], onDelete: Cascade, onUpdate: NoAction)
+  prompt_batch               prompt_batch?        @relation(fields: [prompt_batch_id], references: [prompt_batch_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([legislation_version_id], map: "ix_legislation_version_tag_legislation_version_id")
+  @@index([prompt_batch_id], map: "ix_legislation_version_tag_prompt_batch_id")
+  @@index([tags], map: "ix_legislation_version_tag_tags")
+  @@schema("public")
+}
+
+model account {
+  provider            String    @db.VarChar
+  providerAccountId String    @db.VarChar @map("provider_account_id")
+  userId             String    @db.VarChar @map("user_id")
+  type                String    @db.VarChar
+  refresh_token       String?   @db.VarChar
+  access_token        String?   @db.VarChar
+  expires_at          Int?
+  token_type          String?   @db.VarChar
+  scope               String?   @db.VarChar
+  id_token            String?   @db.VarChar
+  session_state       String?   @db.VarChar
+  createdAt          DateTime? @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt          DateTime? @default(now()) @db.Timestamptz(6) @map("updated_at")
+  user                user      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@id([provider, providerAccountId], map: "account_pk")
+  @@schema("authentication")
+}
+
+model session {
+  sessionToken String    @id @db.VarChar @map("session_token")
+  userId       String    @db.VarChar @map("user_id")
+  expires       DateTime  @db.Timestamptz(6)
+  createdAt    DateTime? @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt    DateTime? @default(now()) @db.Timestamptz(6) @map("updated_at")
+  user          user      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@schema("authentication")
+}
+
+model user {
+  id             String    @id @db.VarChar @default(cuid())
+  name           String?   @db.VarChar
+  email          String    @unique @db.VarChar
+  emailVerified  DateTime? @db.Timestamp(6) @map("email_verified")
+  image          String?   @db.VarChar
+  createdAt      DateTime? @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt      DateTime? @default(now()) @db.Timestamptz(6) @map("updated_at")
+  account        account[]
+  session        session[]
+
+  @@schema("authentication")
+}
+
+model verification_token {
+  identifier String   @db.VarChar
+  token      String   @db.VarChar
+  expires    DateTime @db.Timestamptz(6)
+
+  @@id([identifier, token], map: "verification_token_pk")
+  @@schema("authentication")
+}
+
+enum legislationchamber {
+  House
+  Senate
+
+  @@schema("public")
+}
+
+enum legislationtype {
+  Bill
+  CRes
+  Res
+  JRes
+
+  @@schema("public")
+}
+
+enum legislationversionenum {
+  IS
+  IH
+  RAS
+  RAH
+  RFS
+  RFH
+  RDS
+  RHS
+  RCS
+  RCH
+  RS
+  RH
+  PCS
+  PCH
+  CPS
+  CPH
+  EAS
+  EAH
+  ES
+  EH
+  ENR
+
+  @@schema("public")
+}
+
+enum legislatorjob {
+  Senator
+  Representative
+
+  @@schema("public")
+}
+
+enum legislatorvotetype {
+  yay
+  nay
+  present
+  abstain
+
+  @@schema("public")
+}

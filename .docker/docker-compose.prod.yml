@@ -23,6 +23,8 @@ services:
     - "yarn"
     command:
     - "build"
+  congress_hillstack:
+    restart: unless-stopped
   congress_postgres:
     image: tianon/true
 networks:

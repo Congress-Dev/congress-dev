@@ -12,7 +12,7 @@ from sqlalchemy.orm import aliased
 from billparser.db.models import (
     USCContent,
     USCContentDiff,
-    User,
+    UserIdent,
     Legislation,
     Legislator,
     UserLLMQuery,
@@ -254,7 +254,7 @@ async def handle_get_user(cookie):
 
     database = await get_database()
 
-    query = select(User).where(User.user_auth_cookie == cookie)
+    query = select(UserIdent).where(UserIdent.user_auth_cookie == cookie)
     result = await database.fetch_all(query)
 
     if len(result) > 0:
@@ -266,7 +266,7 @@ async def handle_get_user(cookie):
 async def handle_update_user_auth(user):
     database = await get_database()
 
-    query = insert(User).values(**user)
+    query = insert(UserIdent).values(**user)
     query = query.on_conflict_do_update(
         index_elements=["user_id"],
         set_={key: value for key, value in user.items() if key != "user_id"},
@@ -320,11 +320,11 @@ async def handle_user_logout(cookie) -> UserLogoutResponse:
     database = await get_database()
 
     try:
-        query = update(User)
+        query = update(UserIdent)
         query = query.values(
             user_auth_cookie=None, user_auth_google=None, user_auth_expiration=None
         )
-        query = query.where(User.user_auth_cookie == cookie)
+        query = query.where(UserIdent.user_auth_cookie == cookie)
 
         await database.execute(query)
     except Exception as e:

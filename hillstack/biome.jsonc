@@ -1,0 +1,78 @@
+{
+	"$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+	"root": true,
+	"vcs": {
+		"enabled": true,
+		"useIgnoreFile": true,
+		"clientKind": "git"
+	},
+	"assist": {
+		"enabled": true,
+		"actions": {
+			"recommended": true,
+			"source": {
+				"recommended": true,
+				"organizeImports": "on",
+				"useSortedAttributes": "on"
+			}
+		}
+	},
+	"formatter": {
+		"enabled": true,
+		"indentWidth": 4
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"nursery": {
+				"useSortedClasses": {
+					"level": "warn",
+					"fix": "safe",
+					"options": {
+						"functions": ["clsx", "cva", "cn"]
+					}
+				}
+			},
+			"suspicious": {
+				"noArrayIndexKey": "off"
+			}
+		}
+	},
+	"html": {
+		"formatter": {
+			"enabled": true
+		}
+	},
+	"javascript": {
+		"assist": {
+			"enabled": true
+		},
+		"formatter": {
+			"enabled": true,
+			"quoteStyle": "single",
+			"jsxQuoteStyle": "single"
+		},
+		"linter": {
+			"enabled": true
+		}
+	},
+	"css": {
+		"assist": {
+			"enabled": true
+		},
+		"formatter": {
+			"enabled": true
+		},
+		"linter": {
+			"enabled": true
+		},
+		"parser": {
+			"cssModules": true,
+			"tailwindDirectives": true
+		}
+	},
+	"files": {
+		"includes": ["src/**"]
+	}
+}

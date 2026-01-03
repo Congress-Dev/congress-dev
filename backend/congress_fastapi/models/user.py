@@ -3,12 +3,12 @@ from pydantic import BaseModel, Field
 from datetime import date
 
 from billparser.db.models import (
-    User,
     Legislation,
     Legislator,
     LegislationChamber,
     UserUSCContentFolder,
-    UserUSCContent
+    UserUSCContent,
+    UserIdent
 )
 from congress_fastapi.models.legislation import LegislatorMetadata, LegislationMetadata
 from congress_fastapi.models.abstract import MappableBase
@@ -20,10 +20,10 @@ class UserLoginRequest(BaseModel):
 
 
 class UserLoginResponse(MappableBase):
-    user_id: Annotated[str, User.user_id]
-    user_first_name: Annotated[str, User.user_first_name]
-    user_last_name: Annotated[str, User.user_last_name]
-    user_state: Annotated[Optional[str], User.user_state]
+    user_id: Annotated[str, UserIdent.user_id]
+    user_first_name: Annotated[str, UserIdent.user_first_name]
+    user_last_name: Annotated[str, UserIdent.user_last_name]
+    user_state: Annotated[Optional[str], UserIdent.user_state]
 
     user_image: Optional[str]
 

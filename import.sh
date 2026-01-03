@@ -4,7 +4,7 @@ cd /home/mustyoshi/Github/congress-dev/backend
 rm bills/*
 
 cd /home/mustyoshi/Github/congress-dev
-TABLE_NAME="us_code_2023"
+TABLE_NAME="us_code_2025"
 
 docker rm congress-bill-parser && true
 
