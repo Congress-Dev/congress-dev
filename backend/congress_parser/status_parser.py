@@ -17,7 +17,7 @@ from congress_db.models import (
     LegislativeSubject,
     LegislativeSubjectAssociation,
 )
-from congress_db.handler import Session
+from congress_db.session import Session
 
 
 def _ensure_committee_link(committee_id, legislation_id, referred_date, discharge_date):

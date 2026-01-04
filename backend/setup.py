@@ -9,10 +9,9 @@ setup(
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     url='https://github.com/Congress-Dev/congress-dev',
-    packages=find_packages(exclude=['tests'], include=["congress_parser", "congress_db", "congress_api", "congress_fastapi"]),
+    packages=find_packages(include=["congress_parser", "congress_db", "congress_api", "congress_fastapi"]),
+    license='MIT',
     classifiers=[
-        'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.8',
     ],

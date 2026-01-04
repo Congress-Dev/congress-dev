@@ -44,7 +44,7 @@ from congress_parser.metadata.sponsors import (
 
 from congress_parser.utils.logger import LogContext
 from congress_parser.utils.cite_parser import parse_action_for_cite, ActionObject
-from congress_db.handler import Session, init_session
+from congress_db.session import Session, init_session
 from congress_parser.translater import translate_paragraph
 
 from joblib import Parallel, delayed

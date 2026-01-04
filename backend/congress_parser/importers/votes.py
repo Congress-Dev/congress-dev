@@ -8,7 +8,7 @@ import re
 import time
 import os
 
-from congress_db.handler import Session
+from congress_db.session import Session
 from congress_db.models import LegislationVote, LegislatorVote, LegislatorVoteType, Legislation, LegislationChamber, Legislator, Congress
 from congress_parser.bioguide.manager import BioGuideImporter
 

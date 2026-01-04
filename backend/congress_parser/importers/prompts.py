@@ -8,7 +8,7 @@ import litellm
 
 
 from congress_db.models import PromptBatch, LegislationVersion, Prompt
-from congress_db.handler import Session
+from congress_db.session import Session
 
 from congress_parser.prompt_runners.appropriation_finder import appropriation_finder
 from congress_parser.prompt_runners.clause_tagger import clause_tagger

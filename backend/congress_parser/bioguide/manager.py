@@ -6,7 +6,7 @@ import json
 import io
 import json
 
-from congress_db.handler import Session
+from congress_db.session import Session
 from congress_db.models import Legislator
 from congress_parser.bioguide.types import BioGuideMember
 

@@ -5,7 +5,7 @@ from congress_db.models import LegislationActionParse, LegislationVersion
 from joblib import Parallel, delayed
 from sqlalchemy import func
 from congress_parser.actions.parser import parse_bill_for_actions
-from congress_db.handler import Session, init_session
+from congress_db.session import Session, init_session
 
 THREADS = int(os.environ.get("PARSE_THREADS", -4))
 

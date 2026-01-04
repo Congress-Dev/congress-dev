@@ -4,7 +4,7 @@ from congress_db.models import (
     LegislationContentTag,
     PromptBatch,
 )
-from congress_db.handler import Session
+from congress_db.session import Session
 import json
 from congress_parser.utils.logger import LogContext
 import jsonschema

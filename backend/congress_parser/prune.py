@@ -1,5 +1,5 @@
 from congress_db.models import Bill, BillVersion, Version, ContentDiff
-from congress_db.handler import Session
+from congress_db.session import Session
 
 
 def run_prune():

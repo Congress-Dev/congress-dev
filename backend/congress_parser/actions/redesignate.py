@@ -1,4 +1,4 @@
-from congress_db.handler import Session
+from congress_db.session import Session
 from congress_db.models import USCContentDiff, USCSection, USCContent
 from congress_parser.logger import log
 import re

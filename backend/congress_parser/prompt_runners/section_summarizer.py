@@ -1,13 +1,13 @@
 import logging
 from typing import List, Optional
 from congress_db.models import LegislationContent, PromptBatch
-from congress_db.handler import Session
+from congress_db.session import Session
 import json
 from congress_parser.utils.logger import LogContext
 import jsonschema
 from typing import List
 from congress_db.models import LegislationContentSummary
-from congress_db.handler import Session
+from congress_db.session import Session
 from congress_parser.prompt_runners.utils import (
     get_existing_batch_or_content,
     get_legis_by_parent_and_id,

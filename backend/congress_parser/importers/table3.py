@@ -9,7 +9,7 @@ from lxml import etree
 
 
 from congress_db.models import USCPopularName, USCActSection, USCRelease
-from congress_db.handler import Session
+from congress_db.session import Session
 
 
 popoular_name_url = "https://uscode.house.gov/popularnames/popularnames.htm"

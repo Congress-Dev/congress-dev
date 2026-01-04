@@ -1,5 +1,5 @@
 from congress_db.models import LegislationChamber, LegislationCommittee
-from congress_db.handler import Session
+from congress_db.session import Session
 import yaml
 import requests
 

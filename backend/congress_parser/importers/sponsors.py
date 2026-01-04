@@ -1,6 +1,6 @@
 from time import sleep
 
-from congress_db.handler import Session, init_session
+from congress_db.session import Session, init_session
 from congress_db.models import Legislation, LegislationSponsorship
 from congress_parser.metadata.sponsors import extract_sponsors_from_api
 

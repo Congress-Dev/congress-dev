@@ -2,7 +2,7 @@ import json
 from typing import List
 from congress_parser.appropriations import calculate_appropriation
 from congress_db.models import LegislationContent, Appropriation
-from congress_db.handler import Session
+from congress_db.session import Session
 from litellm import completion
 
 query = """class Appropriation(TypedDict):

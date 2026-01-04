@@ -2,7 +2,7 @@ from sqlalchemy import select, func
 from sqlalchemy.orm import aliased
 import os
 
-from congress_db.handler import engine, Session
+from congress_db.session import engine, Session
 from congress_db.models import USCRelease
 
 webhook_url = os.environ.get("DISCORD_WEBHOOK", None)

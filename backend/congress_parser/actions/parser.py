@@ -10,7 +10,7 @@ from congress_parser.utils.cite_parser import (
     parse_action_for_cite,
     parse_text_for_cite,
 )
-from congress_db.handler import Session, get_scoped_session
+from congress_db.session import Session, get_scoped_session
 
 from sqlalchemy import select, update
 from sqlalchemy.orm import aliased
