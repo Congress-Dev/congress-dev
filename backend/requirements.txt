@@ -1,4 +1,5 @@
 # Python tools
+pytest
 cachetools==2.1.0
 green
 joblib==1.2.0
@@ -6,12 +7,10 @@ python_dateutil >= 2.6.0
 python-json-logger~=2.0.4
 setuptools >= 21.0.0
 Unidecode==1.1.1
+requests==2.32.2
 
 # Flask tools
-connexion >= 2.5.0; python_version>="3.6"
-connexion >= 2.3.0; python_version=="3.5"
-connexion >= 2.3.0; python_version=="3.4"
-connexion == 2.4.0; python_version<="2.7"
+connexion >= 2.5.0
 Flask==2.0.2
 Flask-Cors==3.0.10
 Flask-Compress==1.10.1
@@ -21,11 +20,19 @@ jinja2~=3.1.3
 swagger-ui-bundle >= 0.0.2
 werkzeug<=2.0.0
 
-# SQLAlchemy tools
+# FastAPI tools
+fastapi~=0.108.0
+uvicorn[standard]
+slowapi~=0.1.9
+
+# Database tools
 alembic==1.16.5
 pydantic~=2.12.5
 psycopg2-binary~=2.9.11
 SQLAlchemy~=1.4.54
+databases[postgresql]~=0.8.0
+pyhumps~=3.8.0  # camelCase <-> snake_case
+chromadb~=0.6.3
 
 # Parsing tools
 lxml==6.0.2

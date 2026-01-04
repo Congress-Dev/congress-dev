@@ -9,7 +9,7 @@ setup(
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
     url='https://github.com/yourusername/billparser',
-    packages=find_packages(exclude=['tests'], include=["billparser"]),
+    packages=find_packages(exclude=['tests'], include=["billparser", "congress_api", "congress_fastapi"]),
     classifiers=[
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python',

@@ -9,4 +9,4 @@ RUN pip3 install -r requirements.txt
 COPY . /usr/src/app
 WORKDIR /usr/src/app
 
-ENTRYPOINT ["python3", "-m", "billparser"]
+ENTRYPOINT ["sh"]
