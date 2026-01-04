@@ -29,6 +29,7 @@ class ActionType(str, Enum):
     REDESIGNATE = "REDESIGNATE"
     REPEAL = "REPEAL"
     EFFECTIVE_DATE = "EFFECTIVE-DATE"
+    SUNSET = "SUNSET"
     TABLE_OF_CONTENTS = "TABLE-OF-CONTENTS"
     TABLE_OF_CHAPTERS = "TABLE-OF-CHAPTERS"
     INSERT_CHAPTER_AT_END = "INSERT-CHAPTER-AT-END"
@@ -38,6 +39,7 @@ class ActionType(str, Enum):
     DATE = "DATE"
     FINANCIAL = "FINANCIAL"
     TRANSFER_FUNDS = "TRANSFER-FUNDS"
+    RECISSION = "RECISSION"
 
 
 # TODO: This whole file is some honkin bullshit. It's entirely unsustainable, but at the same time, unless I can get them to follow standards, I'm not sure
@@ -134,6 +136,7 @@ regex_holder = {
     ],
     ActionType.EFFECTIVE_DATE: [
         r"The amendments made by this section shall apply to taxable years beginning after (?P<effective_date>.+?)\.",
+        r"The amendments made by (?P<target>.+?) shall take effect on (?P<effective_date>.+?), and",
         r"not later than (?P<amount>\d+) (?P<unit>(hour|day|week|month|year)s?) after the (?:date of )?(?:the )?enactment of (?:(this|the .*?)) Act",
         r"not later than (?P<amount>\d+) (?P<unit>(hour|day|week|month|year)s?) after the (?:date of )?(?:the )?enactment of (?:(this|the .*?)) Act",
         r"Beginning on the date that is (?P<amount>\d+) (?P<unit>(hour|day|week|month|year)s?) after the (?:date of )(?:the )?enactment of this Act",
@@ -145,6 +148,12 @@ regex_holder = {
         r"take effect (?P<amount>\d+) (?P<unit>(hour|day|week|month|year)s?) after the (?:date of )?(?:the )?enactment of this Act",
         r"(?P<amount>\d+) (?P<unit>(hour|day|week|month|year)s?) after the effective date of this Act.",
         r"This Act shall take effect (?P<amount>one) (?P<unit>(hour|day|week|month|year)s?) after the date of enactment.",
+    ],
+    ActionType.SUNSET: [
+        r"(?P<target>.+?) shall (?:cease to have effect|cease to be effective|expire|terminate) on (?P<sunset_date>.+?)\.",
+        r"(?P<target>.+?) shall (?:cease to have effect|cease to be effective|expire|terminate) (?P<amount>\d+) (?P<unit>(hour|day|week|month|year)s?) after (?P<trigger_date>.+?)\.",
+        r"The (?P<target>.+?) shall (?:cease to have effect|cease to be effective|expire|terminate) on (?P<sunset_date>.+?)\.",
+        r"The authority (?:provided by|under) (?P<target>.+?) shall (?:cease to have effect|cease to be effective|expire|terminate) on (?P<sunset_date>.+?)\.",
     ],
     ActionType.TABLE_OF_CONTENTS: [
         r"The table of contents (for|of) this Act is as follows:"
@@ -174,6 +183,11 @@ regex_holder = {
         r"Notwithstanding any other provision of law, amounts made available to carry out (?P<from_budget>.*) shall be made available to (?P<to_budget>.*) to carry out (?P<target>.*)",
         r"There is appropriated to the (?P<to_budget>.*?), out of any money in the (?P<from_budget>(Treasury)) not otherwise appropriated, (?P<amount>\$[\d,]*) for (?:the )?fiscal year (?P<fiscal_year>\d{4}), to remain available (?P<available>.*)\.",
     ],
+    ActionType.RECISSION: [
+        r"The (?P<target>unobligated balances of amounts appropriated by (?P<section_ref>section .+? of Public Law .+?)) (?:\((?P<stat_ref>.+?)\) )?are rescinded\.",
+        r"(?P<target>The unobligated balances of amounts appropriated by (?P<section_ref>section .+? of Public Law .+?)) (?:\((?P<stat_ref>.+?)\) )?are rescinded\.",
+        r"(?P<target>.+?) (?:appropriated by (?P<section_ref>section .+? of Public Law .+?)) (?:\((?P<stat_ref>.+?)\) )?are rescinded\.",
+    ],
 }
 
 SuchCodeRegex = re.compile(r"(Section|paragraph) (?P<section>\d*)\(", re.IGNORECASE)
@@ -199,6 +213,8 @@ class Action(TypedDict):
     to_remove_section: Optional[str]
     redesignation: Optional[str]
     effective_date: Optional[str]
+    sunset_date: Optional[str]
+    trigger_date: Optional[str]
     document_title: Optional[str]
     term: Optional[str]
     term_def: Optional[str]
@@ -212,6 +228,8 @@ class Action(TypedDict):
     fiscal_year: Optional[str]
     available: Optional[str]
     section: Optional[str]
+    section_ref: Optional[str]
+    stat_ref: Optional[str]
 
 
 def determine_action(text: str) -> Dict[ActionType, Action]:
@@ -251,6 +269,13 @@ def determine_action(text: str) -> Dict[ActionType, Action]:
                 if action == ActionType.INSERT_TEXT_BEFORE:
                     if gg.get("period_at_end", None) is None:
                         gg["period_at_end"] = True
+                if action == ActionType.SUNSET:
+                    if gg.get("amount", None) is not None:
+                        try:
+                            gg["amount"] = str(int(gg["amount"]))
+                        except:
+                            if gg["amount"] == "one":
+                                gg["amount"] = "1"
                 gg["REGEX"] = c
                 gg["action_type"] = action
                 actions[action] = gg
