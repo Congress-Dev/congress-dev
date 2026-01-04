@@ -13,10 +13,10 @@ from billparser.utils.citation import resolve_citations
 from billparser.db.models import USCSection
 from billparser.db.models import *
 
-username = os.environ.get("db_user", "bills")
-password = os.environ.get("db_pass", "bills")
-table = os.environ.get("db_table", "uscode")
-db_host = os.environ.get("db_host", "localhost:5401")
+username = os.environ.get("db_user", "parser")
+password = os.environ.get("db_pass", "parser")
+table = os.environ.get("db_table", "us_code_2025")
+db_host = os.environ.get("db_host", "0.0.0.0:5432")
 DATABASE_URI = f"postgresql://{username}:{password}@{db_host}/{table}"
 print(DATABASE_URI)
 engine = create_engine(
