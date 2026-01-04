@@ -3,8 +3,11 @@
 frontend/yarn-error.log
 .vscode
 .docker/docker-compose.local.yml
+.volume/
 backend/venv/
 venv/
+backend/.venv/
+.venv/
 
 .resources/
 *.backup

@@ -1,11 +1,30 @@
 ![congress dot dev](https://github.com/mustyoshi/congress-dev/raw/master/.github/banner.png "Congress.dev")
-[![forthebadge](https://forthebadge.com/images/badges/made-with-python.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/uses-js.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)](https://forthebadge.com)
+[![forthebadge](https://forthebadge.com/images/badges/made-with-python.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/made-with-typescript.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)](https://forthebadge.com)
 
 ---
 
 ## Setup
 
-### Required Software
+
+### Ubuntu
+```
+sudo apt-get update
+sudo apt install libpq-dev python3-dev python3.13-venv build-essential gcc gfortran libc6 libxml2-dev libxslt-dev
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+curl -fsSL https://get.pnpm.io/install.sh | sh -x
+
+cd backend/
+python3 -m venv .venv
+source .venv/bin/activate
+pip3 install -r requirements.txt -r requirements-fastapi.txt -r requirements-test.txt
+python3 setup.py develop
+
+cd ../hillstack
+cp .env.example .env
+pnpm install
+```
+
+### Docker
 
 #### Docker `>= 19.0`
 Docker is a set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.
