@@ -45,8 +45,8 @@ docker-compose -f .docker/docker-compose.yml up -d
 
 **Advance Usage** - If you rename [docker-compose.local-example.yml](./.docker/docker-compose.local-example.yml) to `docker-compose.local.yml` you can run this script to use our API instead of running the database yourself.
 ```bash
-chmod +x ./start_local.sh
-sh ./start_local.sh
+chmod +x ./scripts/start_local.sh
+sh ./scripts/start_local.sh
 ```
 
 ### Loading the database
@@ -59,14 +59,6 @@ python3 -m billparser.importers.releases
 python3 -m billparser.importers.bills
 
 ```
-
-A semi up to date postgres dump is available for [download](https://files.congress.dev/congress_beta.backup).
-
-Assuming you're running the normal docker-compose and an empty database named us_code, you can run this to restore from the backup.
-```bash
-pg_restore -h localhost -U parser -d us_code -F C us_code_beta.backup
-```
-
 ---
 
 ## Contributing

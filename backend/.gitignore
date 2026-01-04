@@ -3,14 +3,20 @@
 **.pyc
 **.zip
 
+
 *.code-workspace
 bills/
 notebooks/
 usc/
 .vscode/
 *.ipynb
+.pytest_cache
 
+**.pyc
 **.egg-info/
 dist/
 build/
 .sources/
+
+.venv
+venv
