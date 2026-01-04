@@ -5,7 +5,7 @@ from cachetools import TTLCache, cached
 from flask_sqlalchemy_session import current_session
 from sqlalchemy import desc
 
-from billparser.db.models import USCChapter, USCContent, USCRelease, USCSection
+from congress_db.models import USCChapter, USCContent, USCRelease, USCSection
 from congress_api.models.release_point_list import ReleasePointList
 from congress_api.models.release_point_metadata import ReleasePointMetadata
 from congress_api.models.usc_section_content import USCSectionContent

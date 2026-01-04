@@ -8,7 +8,7 @@ from sqlalchemy.orm import load_only
 from sqlalchemy import distinct
 from sqlalchemy.sql.functions import func
 from sqlalchemy.dialects import postgresql
-from billparser.db.models import (
+from congress_db.models import (
     Congress,
     Legislation,
     LegislationContent,

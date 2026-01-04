@@ -9,9 +9,9 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_sqlalchemy_session import current_session, flask_scoped_session
 from sqlalchemy.orm import sessionmaker
 
-from billparser.db.handler import DATABASE_URI
+from congress_db.handler import DATABASE_URI
 from congress_api import encoder
-from billparser.utils.logger import initialize_logger
+from congress_parser.utils.logger import initialize_logger
 
 initialize_logger()
 CACHE_HEADER_TIME = int(os.environ.get("CACHE_HEADER_TIME", 0))

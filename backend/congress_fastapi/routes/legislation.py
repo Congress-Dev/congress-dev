@@ -1,7 +1,7 @@
 from typing import List
-from billparser.db.models import LegislationVersionEnum
+from congress_db.models import LegislationVersionEnum
 
-from billparser.prompt_runners.utils import (
+from congress_parser.prompt_runners.utils import (
     get_legis_by_parent_and_id,
     get_usc_content_by_parent_and_id,
     print_clause,

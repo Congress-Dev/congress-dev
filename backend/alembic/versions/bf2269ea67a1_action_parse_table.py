@@ -13,7 +13,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import Text
-import billparser
+import congress_parser
 
 # revision identifiers, used by Alembic.
 revision: str = "bf2269ea67a1"
@@ -32,12 +32,12 @@ def upgrade() -> None:
         sa.Column("legislation_content_id", sa.Integer(), nullable=True),
         sa.Column(
             "actions",
-            billparser.db.models.CastingArray(JSONB(astext_type=Text())),
+            congress_db.models.CastingArray(JSONB(astext_type=Text())),
             nullable=True,
         ),
         sa.Column(
             "citations",
-            billparser.db.models.CastingArray(JSONB(astext_type=Text())),
+            congress_db.models.CastingArray(JSONB(astext_type=Text())),
             nullable=True,
         ),
         sa.ForeignKeyConstraint(

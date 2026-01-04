@@ -3,7 +3,7 @@ from typing import List, Optional, Tuple
 from sqlalchemy import select, and_, or_, func, asc, desc, insert, update, delete
 from sqlalchemy.orm import aliased
 
-from billparser.db.models import (
+from congress_db.models import (
     LegislationCommittee,
     LegislationChamber,
     Congress,

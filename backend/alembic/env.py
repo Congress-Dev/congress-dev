@@ -5,7 +5,7 @@ from sqlalchemy import pool, MetaData
 
 from alembic import context
 
-from billparser.db.models import Base, AppropriationsBase, PromptsBase, SensitiveBase, AuthenticationBase
+from congress_db.models import Base, AppropriationsBase, PromptsBase, SensitiveBase, AuthenticationBase
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

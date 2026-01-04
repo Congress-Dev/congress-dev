@@ -7,7 +7,7 @@ from chromadb.config import DEFAULT_TENANT, DEFAULT_DATABASE, Settings
 from sqlalchemy import select, or_
 
 from congress_fastapi.db.postgres import get_database
-from billparser.db.models import (
+from congress_db.models import (
     USCContent,
     USCChapter,
     USCSection,

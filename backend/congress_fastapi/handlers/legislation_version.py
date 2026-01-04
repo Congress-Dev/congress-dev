@@ -3,13 +3,13 @@ import time
 from typing import List
 from collections import defaultdict
 
-from billparser.prompt_runners.utils import run_query
+from congress_parser.prompt_runners.utils import run_query
 from congress_fastapi.models.legislation.llm import LLMResponse
 from sqlalchemy import select, text, and_, or_
 from sqlalchemy.orm import Session, load_only
 
 from congress_fastapi.db.postgres import get_database
-from billparser.db.models import (
+from congress_db.models import (
     LegislationContentTag,
     LegislationContent,
     LegislationContentSummary,

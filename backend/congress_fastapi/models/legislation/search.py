@@ -1,5 +1,5 @@
 from typing import List, Optional
-from billparser.db.models import LegislationChamber, LegislationVersionEnum
+from congress_db.models import LegislationChamber, LegislationVersionEnum
 from pydantic import BaseModel
 from datetime import date
 
