@@ -1,15 +1,8 @@
 import os
-import re
-import time
 
-from lxml import etree
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from sqlalchemy.pool import NullPool
-
-from congress_parser.utils.citation import resolve_citations
-from congress_db.models import USCSection
-from congress_db.models import *
 
 username = os.environ.get("db_user", "parser")
 password = os.environ.get("db_pass", "parser")

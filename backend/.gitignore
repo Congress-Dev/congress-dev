@@ -11,6 +11,7 @@ usc/
 .vscode/
 *.ipynb
 .pytest_cache
+__pycache__
 
 **.pyc
 **.egg-info/
