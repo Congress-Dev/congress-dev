@@ -12,4 +12,4 @@ jobs:
       - name: Build containers
         run: cd /home/mustyoshi/Github/congress-dev && docker-compose -f .docker/docker-compose.yml -f .docker/docker-compose.prod.yml build
       - name: Deploy
-        run: cd /home/mustyoshi/Github/congress-dev && bash start_prod.sh
+        run: cd /home/mustyoshi/Github/congress-dev && bash scripts/start_prod.sh

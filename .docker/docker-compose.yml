@@ -41,7 +41,7 @@ services:
     - db_table=us_code_2025
     build:
       context: ../backend
-      dockerfile: .docker/Dockerfile.fastapi
+      dockerfile: .docker/Dockerfile
     volumes:
     - ../backend:/usr/src/app/
     ports:
@@ -50,6 +50,13 @@ services:
       - congress_postgres
     networks:
       parser:
+    entrypoint: "uvicorn"
+    command:
+    - "congress_fastapi.app:app"
+    - "--host"
+    - "0.0.0.0"
+    - "--port"
+    - "8080"
   congress_viewer_app:
     image: congress_viewer_app:latest
     container_name: congress_viewer_app

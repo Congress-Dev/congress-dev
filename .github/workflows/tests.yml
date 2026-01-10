@@ -15,4 +15,4 @@ jobs:
             requirements-frozen.txt
           install-cmd: cd backend && pip install -r requirements.txt -r requirements-fastapi.txt -r requirements-test.txt && pip install -e .
       - name: Run tests
-        run: cd backend && pytest billparser
+        run: cd backend && pytest congress_parser

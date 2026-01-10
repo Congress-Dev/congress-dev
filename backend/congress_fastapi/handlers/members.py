@@ -2,7 +2,7 @@ from typing import List, Optional, Tuple
 
 from sqlalchemy import select, and_, or_, func, asc, desc
 
-from billparser.db.models import (
+from congress_db.models import (
     Legislation,
     LegislationSponsorship,
     Legislator,

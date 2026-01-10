@@ -50,7 +50,7 @@ export default async function BillOverviewPage({
 					>
 						{data?.legislation_version?.map((version) => (
 							<TimelineNode
-								date={version.effective_date ?? new Date()}
+								date={version.effective_date ?? version.created_at ?? new Date()}
 								icon={ReadMoreIcon}
 								key={version.legislation_version}
 								title={

@@ -19,7 +19,7 @@ from sqlalchemy.dialects import postgresql
 import sqlalchemy
 from sqlalchemy.orm import aliased
 from congress_fastapi.db.postgres import get_database
-from billparser.db.models import (
+from congress_db.models import (
     Appropriation,
     Congress,
     Legislation,

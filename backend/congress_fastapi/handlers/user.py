@@ -9,7 +9,7 @@ from sqlalchemy import select, update, join, delete, func, literal, or_
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import aliased
 
-from billparser.db.models import (
+from congress_db.models import (
     USCContent,
     USCContentDiff,
     UserIdent,

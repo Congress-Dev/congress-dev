@@ -1,13 +1,7 @@
-**.pyc
-**/node_modules
-frontend/yarn-error.log
+.DS_Store
+
 .vscode
 .docker/docker-compose.local.yml
-backend/venv/
-venv/
-
-.resources/
+.volume
+.resources
 *.backup
-import.sh
-
-.DS_Store

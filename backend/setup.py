@@ -1,24 +1,19 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='billparser',
-    version='0.8.8',
-    author='Bradley',
+    name='congress',
+    version='1.0.0',
+    author='Congress.Dev',
     author_email='mustyoshi@gmail.com',
-    description='Congress.dev bill parser',
+    description='Congress.Dev Packages',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
-    url='https://github.com/yourusername/billparser',
-    packages=find_packages(exclude=['tests'], include=["billparser"]),
+    url='https://github.com/Congress-Dev/congress-dev',
+    packages=find_packages(include=["congress_parser", "congress_db", "congress_api", "congress_fastapi"]),
+    license='MIT',
     classifiers=[
-        'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
     ],
-    install_requires=[
-        # list of your library dependencies
-    ],
+    install_requires=[],
 )

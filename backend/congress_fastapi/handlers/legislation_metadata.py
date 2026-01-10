@@ -10,7 +10,7 @@ from congress_fastapi.handlers.legislation.policy_subject import (
 )
 from sqlalchemy import select
 
-from billparser.db.models import (
+from congress_db.models import (
     Appropriation as AppropriationModel,
     Legislation,
     LegislationSponsorship,

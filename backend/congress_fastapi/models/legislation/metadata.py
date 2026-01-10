@@ -4,7 +4,7 @@ from pydantic import root_validator
 from datetime import datetime
 import json
 
-from billparser.db.models import (
+from congress_db.models import (
     Legislation,
     LegislationVersion,
     LegislationVote,

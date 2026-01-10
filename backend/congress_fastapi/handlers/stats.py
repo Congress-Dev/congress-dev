@@ -8,7 +8,7 @@ from typing import List
 from sqlalchemy import select, update, join, delete, func, literal
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import aliased
-from billparser.db.models import (
+from congress_db.models import (
     LegislationVersion
 )
 from congress_fastapi.db.postgres import get_database

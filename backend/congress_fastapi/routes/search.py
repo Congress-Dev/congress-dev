@@ -1,5 +1,5 @@
 from typing import List
-from billparser.db.models import LegislationChamber, LegislationVersionEnum
+from congress_db.models import LegislationChamber, LegislationVersionEnum
 
 from fastapi import APIRouter, HTTPException, Query, status
 

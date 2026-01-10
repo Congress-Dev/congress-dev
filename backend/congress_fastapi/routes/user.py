@@ -1,6 +1,6 @@
 import traceback
 from typing import List, Optional
-from billparser.db.models import UserIdent
+from congress_db.models import UserIdent
 from fastapi import (
     APIRouter,
     HTTPException,

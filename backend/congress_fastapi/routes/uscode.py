@@ -1,5 +1,5 @@
 from typing import Any, Dict, List
-from billparser.db.models import LegislationVersionEnum
+from congress_db.models import LegislationVersionEnum
 
 from congress_fastapi.handlers.uscode import read_usc_content, search_chroma
 from congress_fastapi.models.uscode import USCodeSearchRequest, USCodeSearchResponse
@@ -10,7 +10,7 @@ from congress_fastapi.handlers.legislation_metadata import (
 )
 from congress_fastapi.models.errors import Error
 from congress_fastapi.models.legislation import LegislationMetadata
-from billparser.prompt_runners.utils import (
+from congress_parser.prompt_runners.utils import (
     get_usc_content_by_parent_and_id,
     print_clause,
 )

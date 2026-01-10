@@ -43,7 +43,11 @@ export function LegislationFollow({
 				sx={{ width: '100%', mb: 2 }}
 				variant={following ? 'contained' : 'outlined'}
 			>
-				{!session ? 'Login to Follow' : following ? 'Unfollow' : 'Follow'}
+				{!session
+					? 'Login to Follow'
+					: following
+						? 'Unfollow'
+						: 'Follow'}
 			</Button>
 			<Divider sx={{ mb: 1 }} />
 		</>

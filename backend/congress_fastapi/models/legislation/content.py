@@ -2,7 +2,7 @@ from typing import Annotated, List, Optional
 
 from datetime import datetime
 
-from billparser.db.models import (
+from congress_db.models import (
     LegislationContent as LegislationContentModel,
 )
 from congress_fastapi.models.abstract import MappableBase

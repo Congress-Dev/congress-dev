@@ -4,7 +4,7 @@ from typing import List
 from cachetools import TTLCache, cached
 from flask_sqlalchemy_session import current_session
 
-from billparser.db.models import Congress
+from congress_db.models import Congress
 from congress_api.models.session_metadata import SessionMetadata  # noqa: E501
 
 CACHE_TIME = int(os.environ.get("CACHE_TIME", 0))

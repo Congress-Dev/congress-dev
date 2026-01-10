@@ -1,4 +1,4 @@
-// Source: backend/billparser/actions/__init__.py
+// Source: backend/congress_parser/actions/__init__.py
 export const VALID_ACTIONS = [
     "SHORT-TITLE",
     "PURPOSE",
