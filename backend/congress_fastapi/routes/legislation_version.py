@@ -1,8 +1,8 @@
 from typing import Dict, List
 
 from congress_fastapi.models.legislation.diff import BillDiffMetadataList
-from billparser.db.models import UserIdent
-from billparser.prompt_runners.utils import get_legis_by_parent_and_id, print_clause
+from congress_db.models import UserIdent
+from congress_parser.prompt_runners.utils import get_legis_by_parent_and_id, print_clause
 from congress_fastapi.handlers.user import get_llm_query_result, insert_llm_query_result
 from congress_fastapi.models.legislation.content import LegislationContent
 from congress_fastapi.handlers.legislation.actions import (

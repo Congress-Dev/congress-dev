@@ -10,7 +10,7 @@ from sqlalchemy.sql.functions import func
 from sqlalchemy.sql.expression import cast
 from sqlalchemy import Date
 
-from billparser.db.models import (
+from congress_db.models import (
     Congress,
     Legislation,
     LegislationChamber,

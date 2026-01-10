@@ -2,7 +2,7 @@ from typing import Annotated, List, Optional
 
 from datetime import datetime
 
-from billparser.db.models import (
+from congress_db.models import (
     LegislationActionParse as LegislationActionParseModel,
     LegislationAction as LegislationActionModel,
 )

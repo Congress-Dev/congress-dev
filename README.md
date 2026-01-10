@@ -1,11 +1,30 @@
 ![congress dot dev](https://github.com/mustyoshi/congress-dev/raw/master/.github/banner.png "Congress.dev")
-[![forthebadge](https://forthebadge.com/images/badges/made-with-python.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/uses-js.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)](https://forthebadge.com)
+[![forthebadge](https://forthebadge.com/images/badges/made-with-python.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/made-with-typescript.svg)](https://forthebadge.com) [![forthebadge](https://forthebadge.com/images/badges/built-with-love.svg)](https://forthebadge.com)
 
 ---
 
 ## Setup
 
-### Required Software
+
+### Ubuntu
+```
+sudo apt-get update
+sudo apt install libpq-dev python3-dev python3.13-venv build-essential gcc gfortran libc6 libxml2-dev libxslt-dev
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+curl -fsSL https://get.pnpm.io/install.sh | sh -x
+
+cd backend/
+python3 -m venv .venv
+source .venv/bin/activate
+pip3 install -r requirements.txt -r requirements-fastapi.txt -r requirements-test.txt
+python3 setup.py develop
+
+cd ../hillstack
+cp .env.example .env
+pnpm install
+```
+
+### Docker
 
 #### Docker `>= 19.0`
 Docker is a set of platform as a service products that use OS-level virtualization to deliver software in packages called containers.
@@ -26,8 +45,8 @@ docker-compose -f .docker/docker-compose.yml up -d
 
 **Advance Usage** - If you rename [docker-compose.local-example.yml](./.docker/docker-compose.local-example.yml) to `docker-compose.local.yml` you can run this script to use our API instead of running the database yourself.
 ```bash
-chmod +x ./start_local.sh
-sh ./start_local.sh
+chmod +x ./scripts/start_local.sh
+sh ./scripts/start_local.sh
 ```
 
 ### Loading the database
@@ -36,18 +55,10 @@ From the backend folder, you will need to tell it to parse some files before you
 ```bash
 docker exec -it docker_parser_api bash
 
-python3 -m billparser.importers.releases
-python3 -m billparser.importers.bills
+python3 -m congress_parser.importers.releases
+python3 -m congress_parser.importers.bills
 
 ```
-
-A semi up to date postgres dump is available for [download](https://files.congress.dev/congress_beta.backup).
-
-Assuming you're running the normal docker-compose and an empty database named us_code, you can run this to restore from the backup.
-```bash
-pg_restore -h localhost -U parser -d us_code -F C us_code_beta.backup
-```
-
 ---
 
 ## Contributing

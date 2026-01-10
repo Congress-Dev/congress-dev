@@ -2,7 +2,7 @@ from typing import Annotated, List, Optional
 
 from pydantic import BaseModel
 
-from billparser.db.models import (
+from congress_db.models import (
     Legislation,
     LegislationSponsorship,
     Legislator,
