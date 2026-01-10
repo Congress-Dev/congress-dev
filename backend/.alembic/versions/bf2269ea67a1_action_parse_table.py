@@ -13,7 +13,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import Text
-import congress_parser
+import congress_db
 
 # revision identifiers, used by Alembic.
 revision: str = "bf2269ea67a1"
