@@ -233,7 +233,7 @@ Key enums (from `congress_db/models.py`):
 
 ## CI/CD Pipeline
 
-1. **Tests** (`.github/workflows/tests.yml`): Runs on every push to any branch. Sets up Python 3.9 venv, installs dependencies, runs `pytest congress_parser`.
+1. **Tests** (`.github/workflows/tests.yml`): Runs on every push to any branch. Sets up Python 3.9 venv, installs from `requirements.txt`, runs `pytest congress_parser`.
 2. **Deploy** (`.github/workflows/deploy.yml`): Triggers on push to `master`. Pulls latest code, builds Docker containers with production compose overlay, runs `scripts/start_prod.sh`.
 
 ## Key Files for Common Tasks
