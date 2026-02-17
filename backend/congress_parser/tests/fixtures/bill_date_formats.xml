@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="billres.xsl"?>
+<!DOCTYPE bill PUBLIC "-//US Congress//DTDs/bill.dtd//EN" "bill.dtd">
+<bill bill-stage="Engrossed-in-Senate" bill-type="olc" dms-id="S4321" key="BILLS-119s10es" public-private="public">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dublinCore>
+      <dc:title>119 S 10 ES: Date Format Test Act</dc:title>
+      <dc:publisher>U.S. Senate</dc:publisher>
+      <dc:date>2025-06-15</dc:date>
+      <dc:format>text/xml</dc:format>
+      <dc:language>EN</dc:language>
+      <dc:rights>Pursuant to Title 17 Section 105 of the United States Code, this file is not subject to copyright protection and is in the public domain.</dc:rights>
+    </dublinCore>
+  </metadata>
+  <form>
+    <distribution-code display="yes">II</distribution-code>
+    <congress display="yes">119th CONGRESS</congress>
+    <session display="yes">1st Session</session>
+    <legis-num display="yes">S. 10</legis-num>
+    <current-chamber>IN THE SENATE OF THE UNITED STATES</current-chamber>
+    <action display="yes">
+      <action-date date="06/15/2025">June 15, 2025</action-date>
+      <action-desc>Engrossed in Senate</action-desc>
+    </action>
+    <legis-type>AN ACT</legis-type>
+    <official-title display="yes">To test date format handling.</official-title>
+  </form>
+  <legis-body id="legis-body" style="OLC">
+    <section id="sec1" section-type="section-one">
+      <enum>1.</enum>
+      <header>Short title</header>
+      <text>This Act may be cited as the "Date Format Test Act".</text>
+    </section>
+  </legis-body>
+</bill>

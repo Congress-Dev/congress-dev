@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="billres.xsl"?>
+<!DOCTYPE bill PUBLIC "-//US Congress//DTDs/bill.dtd//EN" "bill.dtd">
+<bill bill-stage="Introduced-in-House" bill-type="olc" dms-id="H1234" key="BILLS-119hr1ih" public-private="public">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dublinCore>
+      <dc:title>119 HR 1 IH: Laken Riley Act</dc:title>
+      <dc:publisher>U.S. House of Representatives</dc:publisher>
+      <dc:date>2025-01-03</dc:date>
+      <dc:format>text/xml</dc:format>
+      <dc:language>EN</dc:language>
+      <dc:rights>Pursuant to Title 17 Section 105 of the United States Code, this file is not subject to copyright protection and is in the public domain.</dc:rights>
+    </dublinCore>
+  </metadata>
+  <form>
+    <distribution-code display="yes">I</distribution-code>
+    <congress display="yes">119th CONGRESS</congress>
+    <session display="yes">1st Session</session>
+    <legis-num display="yes">H. R. 1</legis-num>
+    <current-chamber>IN THE HOUSE OF REPRESENTATIVES</current-chamber>
+    <action display="yes">
+      <action-date date="01/03/2025">January 3, 2025</action-date>
+      <action-desc>Mr. <sponsor name-id="C001115">Collins</sponsor> introduced the following bill</action-desc>
+    </action>
+    <legis-type>A BILL</legis-type>
+    <official-title display="yes">To require the Secretary of Homeland Security to detain aliens who have been charged with certain crimes.</official-title>
+  </form>
+  <legis-body id="legis-body" style="OLC">
+    <section id="sec1" section-type="section-one">
+      <enum>1.</enum>
+      <header>Short title</header>
+      <text>This Act may be cited as the "Laken Riley Act".</text>
+    </section>
+    <section id="sec2">
+      <enum>2.</enum>
+      <header>Detention of certain aliens</header>
+      <text>The Secretary of Homeland Security shall issue a detainer for an alien who is described in subsection (a).</text>
+      <subsection id="sec2a">
+        <enum>(a)</enum>
+        <header>Aliens described</header>
+        <text>An alien described in this subsection is an alien who has been charged with, arrested for, convicted of, or who has admitted having committed any of the following offenses:</text>
+        <paragraph id="sec2a1">
+          <enum>(1)</enum>
+          <text>Theft or burglary.</text>
+        </paragraph>
+        <paragraph id="sec2a2">
+          <enum>(2)</enum>
+          <text>Larceny or shoplifting.</text>
+        </paragraph>
+        <paragraph id="sec2a3">
+          <enum>(3)</enum>
+          <text>Assault of a law enforcement officer.</text>
+        </paragraph>
+      </subsection>
+      <subsection id="sec2b">
+        <enum>(b)</enum>
+        <header>Requirements for detention</header>
+        <text>The Secretary shall detain each alien described in subsection (a) until removal proceedings are completed.</text>
+      </subsection>
+    </section>
+    <section id="sec3">
+      <enum>3.</enum>
+      <header>Effective date</header>
+      <text>This Act shall take effect 90 days after the date of the enactment of this Act.</text>
+    </section>
+  </legis-body>
+</bill>

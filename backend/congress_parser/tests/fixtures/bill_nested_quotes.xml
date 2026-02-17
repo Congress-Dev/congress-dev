@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="billres.xsl"?>
+<!DOCTYPE bill PUBLIC "-//US Congress//DTDs/bill.dtd//EN" "bill.dtd">
+<bill bill-stage="Introduced-in-House" bill-type="olc" dms-id="H7777" key="BILLS-119hr100ih" public-private="public">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dublinCore>
+      <dc:title>119 HR 100 IH: Nested Quotes Test Act</dc:title>
+      <dc:publisher>U.S. House of Representatives</dc:publisher>
+      <dc:date>2025-01-10</dc:date>
+      <dc:format>text/xml</dc:format>
+      <dc:language>EN</dc:language>
+      <dc:rights>Pursuant to Title 17 Section 105 of the United States Code, this file is not subject to copyright protection and is in the public domain.</dc:rights>
+    </dublinCore>
+  </metadata>
+  <form>
+    <distribution-code display="yes">I</distribution-code>
+    <congress display="yes">119th CONGRESS</congress>
+    <session display="yes">1st Session</session>
+    <legis-num display="yes">H. R. 100</legis-num>
+    <current-chamber>IN THE HOUSE OF REPRESENTATIVES</current-chamber>
+    <action display="yes">
+      <action-date date="01/10/2025">January 10, 2025</action-date>
+      <action-desc>Mr. <sponsor name-id="S001145">Smith</sponsor> introduced the following bill</action-desc>
+    </action>
+    <legis-type>A BILL</legis-type>
+    <official-title display="yes">To test nested quote handling in XML parsing.</official-title>
+  </form>
+  <legis-body id="legis-body" style="OLC">
+    <section id="sec1" section-type="section-one">
+      <enum>1.</enum>
+      <header>Short title</header>
+      <text>This Act may be cited as the <quote>Nested Quotes Test Act</quote>.</text>
+    </section>
+    <section id="sec2">
+      <enum>2.</enum>
+      <header>Amendment with nested quotes</header>
+      <text>Section 200(a) of the Example Act is amended by adding at the end the following: <quote>For purposes of the preceding sentence, the term <quote>non-invasive</quote> means, with respect to a diagnostic device, that the device does not penetrate the skin.</quote>.</text>
+    </section>
+    <section id="sec3">
+      <enum>3.</enum>
+      <header>Multiple amendments</header>
+      <text>Title 18, United States Code, is amended-</text>
+      <subsection id="sec3a">
+        <enum>(a)</enum>
+        <header>First amendment</header>
+        <text>by striking <quote>Attorney General</quote> each place such term appears and inserting <quote>Secretary of Homeland Security</quote>; and</text>
+      </subsection>
+      <subsection id="sec3b">
+        <enum>(b)</enum>
+        <header>Second amendment</header>
+        <chapeau>in subsection (d)(1)-</chapeau>
+        <paragraph id="sec3b1">
+          <enum>(1)</enum>
+          <text>by striking <quote>shall</quote> and inserting <quote>may</quote>; and</text>
+        </paragraph>
+        <paragraph id="sec3b2">
+          <enum>(2)</enum>
+          <text>by adding at the end the following: <quote>The Secretary may waive this requirement upon a finding of good cause.</quote>.</text>
+        </paragraph>
+      </subsection>
+    </section>
+  </legis-body>
+</bill>

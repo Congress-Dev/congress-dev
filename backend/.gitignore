@@ -1,5 +1,6 @@
 **.csv
 **.xml
+!congress_parser/tests/fixtures/**
 **.pyc
 **.zip
 

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="billres.xsl"?>
+<!DOCTYPE bill PUBLIC "-//US Congress//DTDs/bill.dtd//EN" "bill.dtd">
+<bill bill-stage="Enrolled-Bill" bill-type="olc" dms-id="H9999" key="BILLS-119hr50enr" public-private="public">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dublinCore>
+      <dc:title>119 HR 50 ENR: Simple Amendment Act</dc:title>
+      <dc:publisher>U.S. House of Representatives</dc:publisher>
+      <dc:date>2025-03-15</dc:date>
+      <dc:format>text/xml</dc:format>
+      <dc:language>EN</dc:language>
+      <dc:rights>Pursuant to Title 17 Section 105 of the United States Code, this file is not subject to copyright protection and is in the public domain.</dc:rights>
+    </dublinCore>
+  </metadata>
+  <form>
+    <distribution-code display="yes">I</distribution-code>
+    <congress display="yes">119th CONGRESS</congress>
+    <session display="yes">1st Session</session>
+    <legis-num display="yes">H. R. 50</legis-num>
+    <current-chamber>IN THE HOUSE OF REPRESENTATIVES</current-chamber>
+    <action display="yes">
+      <action-date date="03/15/2025">March 15, 2025</action-date>
+      <action-desc>Enrolled bill</action-desc>
+    </action>
+    <legis-type>AN ACT</legis-type>
+    <official-title display="yes">To make a simple amendment.</official-title>
+  </form>
+  <legis-body id="legis-body" style="OLC">
+    <section id="sec1" section-type="section-one">
+      <enum>1.</enum>
+      <header>Short title</header>
+      <text>This Act may be cited as the "Simple Amendment Act".</text>
+    </section>
+    <section id="sec2">
+      <enum>2.</enum>
+      <header>Findings</header>
+      <text>Congress finds the following:</text>
+      <paragraph id="sec2p1">
+        <enum>(1)</enum>
+        <text>The current law needs updating.</text>
+      </paragraph>
+      <paragraph id="sec2p2">
+        <enum>(2)</enum>
+        <text>Modern approaches are more effective.</text>
+      </paragraph>
+    </section>
+    <section id="sec3">
+      <enum>3.</enum>
+      <header>Amendment</header>
+      <text>Section 101(a)(2) of title 42, United States Code, is amended by striking <quote>5 years</quote> and inserting <quote>10 years</quote>.</text>
+    </section>
+  </legis-body>
+</bill>
