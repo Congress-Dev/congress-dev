@@ -1,3 +1,19 @@
+"""
+Bill data downloader and ingestion entry point.
+
+Downloads bulk bill XML ZIP archives from govinfo.gov and feeds them into the
+parsing pipeline (run_through.parse_archives). For each Congress, there are up
+to 4 ZIPs: 2 sessions x 2 chambers (House + Senate).
+
+URL pattern:
+    https://www.govinfo.gov/bulkdata/BILLS/{congress}/{session}/{chamber}/
+        BILLS-{congress}-{session}-{chamber}.zip
+
+Usage:
+    python -m congress_parser.importers.bills              # Import all bills for current Congress
+    python -m congress_parser.importers.bills "HR 1234"    # Import a specific bill
+"""
+
 import os
 import sys
 import json
@@ -30,6 +46,11 @@ def download_path(url: str, *, dir_name: str = "bills"):
 
 
 def calculate_congress_from_year() -> int:
+    """
+    Derives the current Congress number from the calendar year.
+    Congress 107 started in 2001; a new Congress convenes every 2 years.
+    e.g. 2025 → ((2025-2001)//2)+107 = 119th Congress
+    """
     current_year = datetime.now().year
     congress = ((current_year - 2001) // 2) + 107
     return congress

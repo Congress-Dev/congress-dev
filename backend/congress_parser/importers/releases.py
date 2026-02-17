@@ -1,3 +1,40 @@
+"""
+US Code XML release point importer.
+
+Downloads and parses US Code XML releases from uscode.house.gov. The US Code
+is published as a set of XML files (one per title, e.g. usc01.xml through usc54.xml)
+packaged in ZIP archives at periodic "release points" tied to Public Law numbers.
+
+US Code XML structure (USLM schema, simplified):
+    <uscDoc>
+        <title identifier="/us/usc/t42">
+            <chapter identifier="/us/usc/t42/ch7">
+                <subchapter identifier="/us/usc/t42/ch7/schXVIII">
+                    <section id="GUID" identifier="/us/usc/t42/s1395">
+                        <num value="1395">§1395.</num>
+                        <heading>Prohibition against...</heading>
+                        <content>Full text...</content>
+                        <subsection id="GUID" identifier="/us/usc/t42/s1395/a">
+                            ...
+                        </subsection>
+                    </section>
+                </subchapter>
+            </chapter>
+        </title>
+    </uscDoc>
+
+Key attributes on elements:
+    - identifier: Hierarchical path (e.g. "/us/usc/t42/s1395/a/1")
+    - id: Unique GUID for the element
+    - value: Display number on <num> elements (e.g. "1395")
+
+Pipeline:
+    1. Scrape uscode.house.gov/download/priorreleasepoints.htm for release URLs
+    2. Download ZIP archive for each release point
+    3. For each title XML in the ZIP, parse the hierarchy into USCSection/USCContent
+    4. Store in database with version tracking for diff computation
+"""
+
 import argparse
 import html
 import string
@@ -35,7 +72,13 @@ def main():
 
 def open_usc(file_str):
     """
-    Pulls out all elements that have an identifier attribute
+    Parses a US Code title XML string and builds a lookup dictionary mapping
+    each element's 'identifier' attribute to its lxml Element.
+
+    Returns:
+        tuple: (lookup_dict, elements_list) where lookup_dict maps identifiers
+               like "/us/usc/t42/s1395" to Elements, and elements_list is the
+               ordered list of all identified elements for sequential iteration.
     """
     lookup = {}
     usc_root = etree.fromstring(file_str)
@@ -88,7 +131,23 @@ def get_number(ident: str) -> float:
 
 def import_title(chapter_file, chapter_number, version_string, release: USCRelease):
     """
-    chapter_file: file pointer to an xml file
+    Parses a single US Code title XML file and stores its hierarchical content.
+
+    The USLM XML uses a nested structure where organizational elements (chapter,
+    subchapter, part, etc.) contain sections, which in turn contain subsections,
+    paragraphs, and subparagraphs. This function:
+
+    1. Creates a USCChapter record for the title
+    2. Iterates over all elements with 'identifier' attributes
+    3. Creates USCSection records for organizational levels (chapter, subchapter, etc.)
+    4. For leaf sections (identifier depth = 5, e.g. /us/usc/tXX/sYYY), recursively
+       creates USCContent records for all nested content
+
+    Args:
+        chapter_file: Raw bytes of the XML file
+        chapter_number: Title number string (e.g. "42")
+        version_string: Version label (unused, kept for compatibility)
+        release: Dict with usc_release_id and version_id for DB foreign keys
     """
     session = Session()
     release_id = release["usc_release_id"]
@@ -96,7 +155,14 @@ def import_title(chapter_file, chapter_number, version_string, release: USCRelea
     version_id = release["version_id"]
 
     def recursive_content(section_id, content_id, search_element, order):
-        # if it has an id it is probably a thingy
+        """
+        Recursively stores section content (subsections, paragraphs, etc.)
+        as USCContent records. Each USLM element with both 'id' and 'identifier'
+        attributes is a content node. Child layout mirrors bill XML:
+            [0] = <num> (display number)
+            [1] = <heading> (or <content>/<chapeau> if no heading)
+            [2] = <content>/<chapeau>/<notes> (body text, if heading present)
+        """
         if "id" in search_element.attrib and "identifier" in search_element.attrib:
             enum = search_element[0]
             heading = search_element[1]
@@ -184,14 +250,18 @@ def import_title(chapter_file, chapter_number, version_string, release: USCRelea
     session.flush()
     sections = []
     parents = {}
+    # Track elements whose children should be handled by recursive_content
+    # rather than top-level iteration. None is pre-seeded so root-level
+    # elements pass through.
     is_handled = {None: True}
     current_parent = None
     current_depth = 0
     for elem in elements:
-        # Iterate over all the elements
+        # Elements use namespaced tags like "{http://xml.house.gov/...}section"
+        # Strip the namespace to get the plain tag name
         split_tag = elem.tag.split("}")[-1]
         if split_tag in ["uscDoc", "title"]:
-            # We do not want to handle these two
+            # Top-level container elements — skip, we process their children
             continue
         identifier = elem.attrib.get("identifier")
         parent_identifier = elem.getparent().attrib.get("identifier")
@@ -199,7 +269,8 @@ def import_title(chapter_file, chapter_number, version_string, release: USCRelea
             is_handled[identifier] = True
             continue
 
-        # According to the USLM guide, these are the levels we'll want to track
+        # Organizational levels per the USLM schema — these become USCSection
+        # records that serve as containers in the hierarchy above individual sections
         if split_tag in [
             "chapter",
             "subchapter",
@@ -240,6 +311,9 @@ def import_title(chapter_file, chapter_number, version_string, release: USCRelea
             current_parent = identifier
             current_depth += 1
         else:
+            # Check if this is a leaf section (depth 5 = /us/usc/tXX/sYYY).
+            # These are the actual statute sections that contain subsections/text.
+            # Identifier starts with "s" but not "st" (to exclude subtitles).
             chunks = identifier.split("/")
             if len(chunks) == 5:
                 if chunks[-1][0] == "s" and chunks[-1][1] != "t":
@@ -293,6 +367,14 @@ def process_single_release_point(url, release=None):
 
 
 def process_all_release_points():
+    """
+    Scrapes the USLM prior release points page for download links and
+    processes each release that isn't already in the database.
+
+    Release points are published around December 21 of even-numbered years,
+    corresponding to the end of each Congress. The ZIP filename contains the
+    Public Law number (e.g. xml_uscAll@117-328.zip).
+    """
     release_points = []
     response = requests.get(RELEASE_POINTS)
     tree = html.fromstring(response.content)

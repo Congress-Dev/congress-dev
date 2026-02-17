@@ -1,3 +1,21 @@
+"""
+Congressional roll-call vote importer.
+
+Fetches and parses roll-call vote XML from both chambers:
+
+    House: clerk.house.gov/evs/{year}/roll{index}.xml
+        - Uses <vote-metadata> for vote summary and <recorded-vote> for individual votes
+        - Vote types: YEA-AND-NAY (others are skipped)
+        - Legislators identified by name-id (bioguide ID)
+
+    Senate: senate.gov/legislative/LIS/roll_call_votes/vote{congress}{session}/vote_{congress}_{session}_{index}.xml
+        - Uses <count> for totals and <members><member> for individual votes
+        - Legislators identified by lis_member_id (LIS ID, mapped to bioguide)
+
+Both scrapers iterate sequentially from the last known vote number until they
+hit a 404 (House) or non-XML response (Senate), then stop.
+"""
+
 from datetime import datetime
 import requests
 from lxml import etree
@@ -56,6 +74,12 @@ def get_latest_senate_rollcall(session) -> int:
         return legislation_vote.number
 
 def download_house_rollcall(session, formatted, congress):
+    """
+    Fetches House roll-call votes starting from the last known index.
+    Parses each XML response to extract vote totals by party, individual
+    legislator votes, and links them to existing Legislation records.
+    Stops when a 404 response indicates no more votes exist.
+    """
     HOUSE_ROLL_TEMPLATE = "https://clerk.house.gov/evs/{year}/roll{h_index:03}.xml" # Index 3 digits
 
     rec = []
@@ -206,6 +230,12 @@ def download_house_rollcall(session, formatted, congress):
     return rec
 
 def download_senate_rollcall(session, formatted, congress):
+    """
+    Fetches Senate roll-call votes starting from the last known index.
+    Senate XML uses a different structure than House — vote totals are in
+    <count> and individual votes are in <members><member> with LIS IDs.
+    Stops when the response Content-Type is not text/xml (no more votes).
+    """
     SENATE_ROLL_TEMPLATE = "https://www.senate.gov/legislative/LIS/roll_call_votes/vote{congress}{session}/vote_{congress}_{session}_{s_index:05}.xml" #Index 5 digits
 
     rec = []

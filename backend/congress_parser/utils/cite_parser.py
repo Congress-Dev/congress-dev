@@ -1,3 +1,23 @@
+"""
+US Code citation extractor.
+
+Parses bill text to extract references to specific locations in the US Code.
+Bills reference existing law using several citation formats:
+
+    Full citations (complete=True):
+        "(42 U.S.C. 1395(b)(2)(A))"          → /us/usc/t42/s1395/b/2/A
+        "Section 101 of title 42, United..."  → /us/usc/t42/s101
+        "title 42, United States Code, section 101" → /us/usc/t42/s101
+
+    Partial citations (complete=False, need parent context):
+        "Section 101 of such title"           → /s101
+        "subsection (a)(1)"                   → /a/1
+        "paragraph (2)(A)"                    → /2/A
+
+Partial citations are resolved by combining them with the nearest ancestor's
+full citation during recursive tree traversal in actions/parser.py.
+"""
+
 from typing import Dict, List, Optional, TypedDict, Any
 import re
 import logging
@@ -5,26 +25,34 @@ import logging
 from congress_parser.actions import Action, ActionType
 from unidecode import unidecode
 
+# Tracks the most recently seen title for resolving "such title" references
 cite_contexts = {"last_title": None}
 
+# "Section 101(a) of title 42, United States Code" → full cite
+# Also handles "Subsection (b) of Section 101 of title 42..."
 SEC_TITLE_REGEX = re.compile(
     r"(?:(?:Subsection|paragraph) \((?P<finalsub>.*?)\) of )?Section (?P<section>.*?) of title (?P<title>[0-9Aa]*), United States Code",
     re.IGNORECASE,
 )
+# Alternate word order: "title 42, United States Code, section 101"
 TITLE_SEC_REGEX = re.compile(
     r"title (?P<title>[0-9Aa]*), United States Code, .*?section (?P<section>.*?)\s",
     re.IGNORECASE,
 )
 
+# Matches relative subsection references like "subsection (a)(1)(B)"
+# Captures the full parenthesized chain for splitting into path segments
 SUB_SEC_REGEX = re.compile(
     r"(?:section|subsection|paragraph|clause)\s(\d?(?:\([^()]*\))+)", re.IGNORECASE
 )
 
+# "Section 101(a)(1) of such title" — references the previously mentioned title
 SUCH_TITLE_REGEX = re.compile(
     r"Section (?P<section>\d*)(?:\((?P<sub1>.*?)\)(?:\((?P<sub2>.*?)\)(?:\((?P<sub3>.*?)\))?)?)? of such (title|act)",
     re.IGNORECASE,
 )
 
+# Inline USC citations like "(42 U.S.C. 1395(b)(2))"
 USC_CITE_REGEX = re.compile(
     r"\((?P<title>\d+?[aA]?) U\.S\.C\. (?P<section>.*?)\)(?:\s|,|\.)",
     re.IGNORECASE,
@@ -49,6 +77,12 @@ def split_section_text(text: str) -> List[str]:
 
 
 def extract_usc_cite(text: str) -> Optional[str]:
+    """
+    Extracts an inline USC citation like "(42 U.S.C. 1395(b)(2))" and converts
+    it to an identifier path like "/us/usc/t42/s1395/b/2".
+
+    Returns None if no citation is found in the text.
+    """
     regex_match = USC_CITE_REGEX.search(text)
     if regex_match:
         # We found a USC cite
@@ -86,23 +120,37 @@ class ActionObject(TypedDict):
 
 
 class CiteObject(TypedDict):
+    """
+    Represents a parsed US Code citation extracted from bill text.
+
+    complete=True means the cite is fully resolved to an absolute path:
+        /us/usc/t42/s18071     (fully resolved to a section)
+        /us/usc/t42            (fully resolved to a title)
+
+    complete=False means it's a relative/partial cite that must be combined
+    with an ancestor's cite during tree traversal:
+        /s18071                (section only, needs title prefix)
+        /a/1                   (subsection only, needs section+title prefix)
+
+    The consumer (actions/parser.py) resolves partial cites by walking up the
+    parent chain and prepending the first complete cite it finds.
+    """
     text: str
     cite: str
-
-    # If we believe the cite is entirely resolved
-    # /usc/t42/s18071 <- Fully resolved to a section
-    # /s18071 <- Partially resolved to a section
-    # /usc/t42 <- Fully resolved to a title
-    # /s18071/a <- Partially resolved to a subsection
-    # /a/1 <- Partially resolved to a subsubsection
-    # It's the expectation that whomever is consuming this data will be able to handle
-    # the partial resolution via combining it with the parent(s)
-    complete: bool = False
+    complete: bool
 
 
 def parse_text_for_cite(
     text: str, action_dict: Dict[ActionType, Action] = None
 ) -> List[CiteObject]:
+    """
+    Extracts all USC citations from bill clause text, trying multiple regex
+    patterns in priority order:
+    1. Inline USC cite: "(42 U.S.C. 1395)" → complete
+    2. Section-of-title: "Section 101 of title 42..." → complete
+    3. Such-title: "Section 101 of such title" → partial (needs title from parent)
+    4. Subsection ref: "subsection (a)(1)" → partial (needs section from parent)
+    """
     action_dict = action_dict or {}
     cites_found: List[CiteObject] = []
     cite = extract_usc_cite(text)

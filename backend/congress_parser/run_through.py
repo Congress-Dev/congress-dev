@@ -1,3 +1,37 @@
+"""
+Bill XML parsing and ingestion pipeline.
+
+This module is the primary entry point for parsing Congressional bill XML files
+from govinfo.gov bulk data downloads. It handles:
+
+1. Opening ZIP archives of bill XML files (one ZIP per congress/session/chamber)
+2. Extracting bill metadata (title, dates, sponsors) via XPath queries
+3. Recursively traversing the <legis-body> XML tree to store hierarchical
+   bill content (sections, subsections, paragraphs) in the database
+4. Parallelizing bill parsing across multiple processes via joblib
+
+Bill XML structure (simplified):
+    <bill>
+        <dublinCore><dc:title>...</dc:title></dublinCore>
+        <form><action><action-date date="...">...</action-date></action></form>
+        <legis-body>
+            <section id="..." >
+                <enum>1.</enum>
+                <header>Short title</header>
+                <text>This Act may be cited as...</text>
+                <subsection id="...">
+                    <enum>(a)</enum>
+                    <header>...</header>
+                    <text>...</text>
+                </subsection>
+            </section>
+        </legis-body>
+    </bill>
+
+ZIP filename convention: BILLS-{congress}{chamber}{number}{version}.xml
+    e.g. BILLS-118hr1234ih.xml = 118th Congress, House, bill 1234, Introduced in House
+"""
+
 from collections import defaultdict
 import os
 import re
@@ -52,6 +86,9 @@ from typing import Any, Dict, List, Optional
 from functools import lru_cache
 
 text_paths = ["legis-body/section/subsection/text", "legis-body/section/text"]
+
+# Parses govinfo.gov bulk data filenames like "BILLS-118hr1234ih.xml" into components:
+#   session=118, house=hr, bill_number=1234, bill_version=ih
 filename_regex = re.compile(
     r"BILLS-(?P<session>\d\d\d)(?P<house>\D+)(?P<bill_number>\d+)(?P<bill_version>\D+)\.xml"
 )
@@ -59,6 +96,7 @@ chamb = {"hr": "House", "s": "Senate"}
 BASE_VERSION = 1
 EXISTING_CONGRESS = {}
 CURRENT_CONGRESS = None
+# -1 tells joblib to use all available CPU cores
 THREADS = int(os.environ.get("PARSE_THREADS", -1))
 
 
@@ -98,6 +136,7 @@ def convert_to_text(element: Element, inside_quote: bool = False) -> str:
     return unidecode(ret + (element.tail or "")).replace("--", "-")
 
 
+# Abbreviation map for bill content hierarchy levels, used in cite construction
 ll = {"subsection": "ss", "paragraph": "p", "section": "s", "subparagraph": "sb"}
 
 
@@ -166,14 +205,25 @@ def recursive_bill_content(
     parent_cite: str = "",
     session: "SQLAlchemy.session" = None,
 ) -> List[LegislationContent]:
-    # logging.debug(' '.join(search_element.itertext()).strip().replace('\n', ' '))
-    # if it has an id it is probably a thingy
+    """
+    Recursively traverses the bill XML tree starting from <legis-body>,
+    creating LegislationContent records for each structural element.
+
+    Bill XML elements follow a consistent child layout:
+        [0] = <enum> (e.g. "(a)", "1.", "SEC. 2.")
+        [1] = <header>/<heading> (section title) OR <text>/<content> if no heading
+        [2] = <text>/<content>/<chapeau>/<notes> (body text, if heading exists)
+
+    Only elements with an "id" attribute are considered structural (sections,
+    subsections, paragraphs, etc.). Elements without "id" are skipped during
+    recursion.
+    """
     extracted_action = []
     res: List[LegislationContent] = []
     content = None
 
     if search_element.tag == "legis-body":
-        # Root node for us
+        # Root node of the bill body — container for all sections
         content = LegislationContent(
             content_type=search_element.tag,
             parent_id=content_id,
@@ -183,6 +233,8 @@ def recursive_bill_content(
             content_str=None,
         )
     elif ("id" in search_element.attrib) and len(search_element) > 1:
+        # Structural element with children: extract enum, heading, and content text.
+        # Child layout: [0]=enum, [1]=heading (or content if no heading), [2]=content text
         enum = search_element[0]
         heading = search_element[1]
         content_str = None
@@ -196,6 +248,7 @@ def recursive_bill_content(
             ):
                 content_str = convert_to_text(content_elem)
         if "head" in heading.tag:
+            # Standard case: [1] is a heading element (e.g. <header>, <heading>)
             content = LegislationContent(
                 content_type=search_element.tag,
                 parent_id=content_id,
@@ -207,6 +260,7 @@ def recursive_bill_content(
                 lc_ident=search_element.attrib.get("id", None),
             )
         else:
+            # No heading — [1] is actually content/text, not a heading
             content_elem = heading
             if (
                 "content" in content_elem.tag
@@ -328,6 +382,17 @@ def retrieve_existing_legislations(session) -> List[dict]:
 def parse_bill(
     f: str, path: str, bill_obj: object, archive_obj: object
 ) -> LegislationVersion:
+    """
+    Parses a single bill's XML content and stores it in the database.
+
+    Steps:
+    1. Parse the raw XML string into an lxml Element tree
+    2. Skip if this bill version was already ingested (idempotency check)
+    3. Extract the bill title from <dublinCore> metadata
+    4. Extract the effective date from <form><action><action-date>
+    5. Extract sponsor information via the congress.gov API
+    6. Recursively traverse <legis-body> to store all content in LegislationContent
+    """
     init_session()
     with LogContext(
         {
@@ -344,13 +409,15 @@ def parse_bill(
             int(bill_obj["congress_session"]), session
         )
         try:
+            # Parse the raw XML string into an element tree
             root: Element = etree.fromstring(f)
             found = check_for_existing_legislation_version(bill_obj)
             if found:
                 logging.info(f"Skipping {archive_obj.get('file')}")
                 if found.effective_date is None:
                     logging.info("Missing effective date, re-parsing")
-                    # Certain versions use a different date format
+                    # Certain bill versions use <action-date date="..."> while
+                    # others use <date>text</date> — try both XPath patterns
                     form_dates = root.xpath("//form/action/action-date") + root.xpath("//form/action/date")
                     if len(form_dates) > 0:
                         last_date = form_dates[-1]
@@ -456,6 +523,12 @@ def parse_bill(
 
 
 def open_usc(title):
+    """
+    Opens a US Code XML file for the given title number and builds a lookup
+    dictionary mapping USC identifiers (e.g. "/us/usc/t42/s1395") to their
+    corresponding lxml Elements. This enables O(1) lookups when resolving
+    cross-references from bill amendment actions.
+    """
     lookup = {}
     with open("usc/usc{}.xml".format(title), "rb") as file:
         usc_root = etree.fromstring(file.read())

@@ -1,3 +1,27 @@
+"""
+Legislative action type definitions and regex-based text classification.
+
+Bills amend existing law through standardized amendment language. This module
+classifies bill clause text into action types (strike, insert, replace, repeal,
+etc.) using regex pattern matching. Each action type has one or more regex
+patterns with named capture groups that extract the operands of the amendment.
+
+Example bill clause text and how it maps to actions:
+    "by striking '5 years' and inserting '10 years'"
+        → ActionType.STRIKE_TEXT with to_remove_text="5 years", to_replace="10 years"
+
+    "Section 101(a) of title 42, United States Code, is amended to read as follows:"
+        → ActionType.REPLACE_SECTION with target="Section 101(a)", within="title 42..."
+
+    "is amended by adding at the end the following:"
+        → ActionType.INSERT_END
+
+Pattern ordering within each action type matters: more specific patterns are
+listed first, with general fallback patterns last. The first matching pattern
+wins, so specific patterns can capture additional named groups that general
+patterns would miss.
+"""
+
 import re
 from typing import Dict, Optional, TypedDict
 from congress_parser.logger import log
@@ -46,8 +70,14 @@ class ActionType(str, Enum):
 # I can actually do anything else but maintain a long ass list of regexes.
 
 
-# These regexes all have named capture groups, because they are incredibly useful
-# The capture groups are typically consistent, especially when the same functions are used between different 'actions'
+# Master dictionary mapping each ActionType to an ordered list of regex patterns.
+# All regexes use named capture groups for structured data extraction.
+# Common capture group names across patterns:
+#   target       - The section/subsection being modified (e.g. "subsection (a)(1)")
+#   within       - The broader context (e.g. "title 42, United States Code")
+#   to_remove_text - Quoted text to strike from existing law
+#   to_replace   - Quoted text to insert in place of struck text
+#   to_insert_text - Quoted text to insert (without striking)
 regex_holder = {
     ActionType.SHORT_TITLE: [
         r"This (?P<context_type>(?:Act|(?:sub)?title|part)) may be cited as the \"?(?P<title>.+?)\"? or the \"?(?P<short_title>.+?)\"?\.",
@@ -190,11 +220,16 @@ regex_holder = {
     ],
 }
 
+# Matches "Section 1234(" or "paragraph 5(" to extract the section number
 SuchCodeRegex = re.compile(r"(Section|paragraph) (?P<section>\d*)\(", re.IGNORECASE)
+# Matches parenthesized subsection references like "(a)", "(1)", "(A)(ii)"
 SubParts = re.compile(r"\((.*?)\)")
+# Detects duplicate path segments in constructed citations (e.g. "/a/a" → "/a")
 DupeFinder = re.compile(r"(\/.{1,}\b)\1")
 
 
+# Pre-compile all regex patterns at module load time for performance.
+# Case-insensitive matching since legislative text varies in capitalization.
 for action in regex_holder:
     regex_holder[action] = [re.compile(x, flags=re.I) for x in regex_holder[action]]
 
