@@ -1,3 +1,39 @@
+"""
+Bill status XML parser.
+
+Parses bill status XML files that contain metadata about a bill's lifecycle:
+actions taken, committee assignments, policy areas, and legislative subjects.
+These status files come from the congress.gov API / bulk data and follow a
+different schema than the bill text XML.
+
+Status XML structure (simplified):
+    <billStatus>
+        <bill>
+            <billNumber>1234</billNumber>
+            <originChamber>House</originChamber>
+            <congress>118</congress>
+            <number>1234</number>
+            <actions>
+                <item>
+                    <actionDate>2025-01-20</actionDate>
+                    <text>Introduced in House</text>
+                    <type>IntroReferral</type>
+                </item>
+            </actions>
+            <billCommittees>
+                <item>
+                    <systemCode>hsju00</systemCode>
+                    <name>Judiciary Committee</name>
+                    <chamber>House</chamber>
+                    <activities><item><name>Referred to</name><date>...</date></item></activities>
+                </item>
+            </billCommittees>
+            <policyArea><name>Law</name></policyArea>
+            <legislativeSubjects><item><name>Criminal law</name></item></legislativeSubjects>
+        </bill>
+    </billStatus>
+"""
+
 from zipfile import ZipFile
 from typing import List
 from lxml import etree
@@ -46,7 +82,10 @@ def _ensure_committee_link(committee_id, legislation_id, referred_date, discharg
 
 def _nested_dict(element: Element):
     """
-    Recursively converts an xml element to a nested dictionary
+    Recursively converts an XML element tree to a nested Python dictionary.
+    Leaf elements (no children) map tag→text; branch elements map tag→nested dict.
+    This is preferred over repeated XPath queries when the full structure is needed,
+    e.g. for storing the raw action dict in the database for deduplication.
     """
     return {e.tag: e.text if len(e) == 0 else _nested_dict(e) for e in element}
 
@@ -108,6 +147,11 @@ def parse_status_actions(actions: List[Element], bill_object: Legislation):
 
 
 def handle_committees(committee_elements: List[Element], bill_object: Legislation):
+    """
+    Creates or updates LegislationCommittee records and their association to
+    the bill, including subcommittee relationships. Extracts referral and
+    discharge dates from <activities> child elements.
+    """
     # TODO: Create Committee records using https://github.com/unitedstates/congress-legislators/tree/master/scripts
 
     session = Session()
@@ -259,8 +303,15 @@ def handle_policy_area(policy_area: Element, bill_object: Legislation):
 
 
 def parse_status(input_str: str):
+    """
+    Main entry point for parsing a bill status XML document. Extracts bill
+    metadata via XPath, matches it to an existing Legislation record in the
+    database, then delegates to specialized handlers for each data category:
+    committees, actions, policy areas, and legislative subjects.
+    """
     try:
         root = etree.fromstring(input_str)
+        # Extract top-level data using XPath queries against the status XML
         bill_element = root.xpath("//bill")[0]
         actions = root.xpath("//actions/item")
         committees = root.xpath("//billCommittees/item")

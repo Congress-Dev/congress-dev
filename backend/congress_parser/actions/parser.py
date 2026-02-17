@@ -1,3 +1,24 @@
+"""
+Action application engine — applies parsed legislative actions to generate US Code diffs.
+
+This module is the second stage of bill analysis (after initial XML parsing in
+run_through.py). It takes the hierarchical LegislationContent stored in the
+database and:
+
+1. Classifies each content node's text into action types (via determine_action)
+2. Resolves USC citations from the text (via parse_text_for_cite)
+3. Applies the classified actions against the current US Code to produce
+   USCContentDiff records that represent the predicted changes
+
+The diff records are what the frontend displays as red/green change highlights.
+
+Key concepts:
+    - Citations are resolved hierarchically: a subsection's partial cite "/a/1"
+      is combined with its parent section's full cite "/us/usc/t42/s1395"
+    - QueryInjector ensures all USC queries target the correct base version
+    - quoted-block elements in bill XML contain the new text to be inserted
+"""
+
 from congress_parser.utils.logger import LogContext
 from congress_parser.actions import ActionObject, ActionType, determine_action
 from congress_parser.actions.utils import strike_emulation
@@ -36,6 +57,22 @@ PARSER_SESSION = None
 
 
 class QueryInjector:
+    """
+    Context manager that monkey-patches session.execute to automatically inject
+    a WHERE clause filtering by version_id on queries involving the target table.
+
+    This ensures all USCContent/USCSection queries return data from the correct
+    US Code release version, without requiring every query call-site to manually
+    add the version filter. Supports nesting (e.g. one for USCContent, another
+    for USCSection).
+
+    Usage:
+        with QueryInjector(session, USCContent.version_id == base_id, USCContent.__table__):
+            # All session.execute() calls that SELECT from usc_content
+            # will automatically have "WHERE version_id = base_id" appended
+            results = session.execute(select(USCContent).where(...))
+    """
+
     def __init__(self, session: "Session", where_clause, target_table: Table):
         self.session = session
         self.where_clause = where_clause
@@ -50,6 +87,7 @@ class QueryInjector:
         self.session.execute = self.original_execute
 
     def _execute_with_injection(self, query, *args, **kwargs):
+        # Only inject the WHERE clause for SELECT queries that involve our target table
         if isinstance(query, Select) and any(
             self.target_table.name == x.name for x in query.froms if hasattr(x, "name")
         ):
@@ -57,7 +95,6 @@ class QueryInjector:
             compiled_query = query.compile(
                 dialect=postgresql.dialect(), compile_kwargs={"literal_binds": True}
             )
-            # print(f"Modified query: {compiled_query}")
         return self.original_execute(query, *args, **kwargs)
 
 
@@ -645,6 +682,20 @@ def recursively_extract_actions(
     parent_actions: List[LegislationActionParse] = [],
     version_id: int = 0,
 ):
+    """
+    Depth-first traversal of bill content that extracts actions and applies them.
+
+    For each content node with text, it:
+    1. Runs determine_action() to classify the text into action types
+    2. Runs parse_text_for_cite() to extract USC citations
+    3. Creates a LegislationActionParse record
+    4. Calls apply_action() to generate USCContentDiff records
+    5. Passes the accumulated parent_actions down to children so they can
+       resolve partial citations against their ancestors' full citations
+
+    quoted-block nodes are skipped — their content is consumed by the parent
+    action that references them (e.g. INSERT_END reads its quote-block child).
+    """
     with LogContext(
         {
             "legislation_version": {
@@ -687,7 +738,11 @@ def recursively_extract_actions(
 
 
 def parse_bill_for_actions(legislation_version: LegislationVersion):
-    # Inside a transaction, we will generate all of the actions for a bill
+    """
+    Main entry point for action parsing. Given a legislation version, retrieves
+    all its content from the database, builds a parent→children lookup, and
+    kicks off recursive action extraction with version-filtered queries.
+    """
     global PARSER_SESSION
     if PARSER_SESSION is None:
         PARSER_SESSION = get_scoped_session()
