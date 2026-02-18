@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet type="text/xsl" href="billres.xsl"?>
+<!DOCTYPE bill PUBLIC "-//US Congress//DTDs/bill.dtd//EN" "bill.dtd">
+<bill bill-stage="Introduced-in-House" bill-type="olc" dms-id="H5678" key="BILLS-119hr22ih" public-private="public">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+    <dublinCore>
+      <dc:title>119 HR 22 IH: Voter Registration Modernization Act</dc:title>
+      <dc:publisher>U.S. House of Representatives</dc:publisher>
+      <dc:date>2025-01-06</dc:date>
+      <dc:format>text/xml</dc:format>
+      <dc:language>EN</dc:language>
+      <dc:rights>Pursuant to Title 17 Section 105 of the United States Code, this file is not subject to copyright protection and is in the public domain.</dc:rights>
+    </dublinCore>
+  </metadata>
+  <form>
+    <distribution-code display="yes">I</distribution-code>
+    <congress display="yes">119th CONGRESS</congress>
+    <session display="yes">1st Session</session>
+    <legis-num display="yes">H. R. 22</legis-num>
+    <current-chamber>IN THE HOUSE OF REPRESENTATIVES</current-chamber>
+    <action display="yes">
+      <action-date date="01/06/2025">January 6, 2025</action-date>
+      <action-desc>Ms. <sponsor name-id="J000032">Jackson Lee</sponsor> introduced the following bill</action-desc>
+    </action>
+    <legis-type>A BILL</legis-type>
+    <official-title display="yes">To modernize voter registration.</official-title>
+  </form>
+  <legis-body id="legis-body" style="OLC">
+    <section id="sec1" section-type="section-one">
+      <enum>1.</enum>
+      <header>Short title</header>
+      <text>This Act may be cited as the <quote>Voter Registration Modernization Act</quote> or the <quote>VRMA</quote>.</text>
+    </section>
+    <section id="sec2">
+      <enum>2.</enum>
+      <header>Amendments to voter registration requirements</header>
+      <text>Section 5 of the National Voter Registration Act of 1993 (52 U.S.C. 20504) is amended-</text>
+      <subsection id="sec2a">
+        <enum>(a)</enum>
+        <header>Automatic registration</header>
+        <text>in subsection (a)(1), by striking <quote>Each State motor vehicle driver's license application</quote> and inserting <quote>Subject to the requirements under section 8(j), each State motor vehicle driver's license application</quote>.</text>
+      </subsection>
+      <subsection id="sec2b">
+        <enum>(b)</enum>
+        <header>Additional requirements</header>
+        <text>by adding at the end the following new subsection:</text>
+      </subsection>
+    </section>
+  </legis-body>
+</bill>

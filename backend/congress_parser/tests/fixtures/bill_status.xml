@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<billStatus>
+  <bill>
+    <billNumber>1</billNumber>
+    <billType>HR</billType>
+    <originChamber>House</originChamber>
+    <type>HR</type>
+    <congress>119</congress>
+    <number>1</number>
+    <title>Laken Riley Act</title>
+    <actions>
+      <item>
+        <actionDate>2025-01-03</actionDate>
+        <sourceSystem>
+          <name>House floor actions</name>
+          <code>2</code>
+        </sourceSystem>
+        <text>Introduced in House</text>
+        <type>IntroReferral</type>
+        <actionCode>1000</actionCode>
+      </item>
+      <item>
+        <actionDate>2025-01-07</actionDate>
+        <sourceSystem>
+          <name>House floor actions</name>
+          <code>2</code>
+        </sourceSystem>
+        <text>Referred to the Committee on the Judiciary.</text>
+        <type>IntroReferral</type>
+        <actionCode>H11100</actionCode>
+      </item>
+      <item>
+        <actionDate>2025-01-22</actionDate>
+        <sourceSystem>
+          <name>Senate</name>
+        </sourceSystem>
+        <text>Passed Senate with an amendment by Yea-Nay Vote. 64 - 35. Record Vote Number: 7.</text>
+        <type>Floor</type>
+        <recordedVotes>
+          <recordedVote>
+            <rollNumber>7</rollNumber>
+            <url>https://www.senate.gov/legislative/LIS/roll_call_votes/vote1191/vote_119_1_00007.xml</url>
+            <chamber>Senate</chamber>
+            <congress>119</congress>
+            <date>2025-01-22T23:30:58Z</date>
+            <sessionNumber>1</sessionNumber>
+          </recordedVote>
+        </recordedVotes>
+      </item>
+    </actions>
+    <billCommittees>
+      <item>
+        <systemCode>hsju00</systemCode>
+        <name>Judiciary Committee</name>
+        <chamber>House</chamber>
+        <type>Standing</type>
+        <activities>
+          <item>
+            <name>Referred to</name>
+            <date>2025-01-07T14:00:00Z</date>
+          </item>
+        </activities>
+        <subcommittees>
+          <item>
+            <systemCode>hsju01</systemCode>
+            <name>Immigration Integrity, Security, and Enforcement Subcommittee</name>
+            <activities>
+              <item>
+                <name>Referred to</name>
+                <date>2025-01-08T14:00:00Z</date>
+              </item>
+            </activities>
+          </item>
+        </subcommittees>
+      </item>
+    </billCommittees>
+    <policyArea>
+      <name>Immigration</name>
+    </policyArea>
+    <legislativeSubjects>
+      <item>
+        <name>Criminal law and procedure</name>
+      </item>
+      <item>
+        <name>Detention of persons</name>
+      </item>
+      <item>
+        <name>Immigration status and procedures</name>
+      </item>
+    </legislativeSubjects>
+  </bill>
+</billStatus>

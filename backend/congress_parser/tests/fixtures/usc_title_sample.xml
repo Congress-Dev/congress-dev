@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<uscDoc xmlns="http://xml.house.gov/schemas/uslm/1.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <meta>
+    <dc:title>Title 42 - The Public Health And Welfare</dc:title>
+  </meta>
+  <title identifier="/us/usc/t42" id="t42-guid">
+    <num value="42">Title 42</num>
+    <heading>THE PUBLIC HEALTH AND WELFARE</heading>
+    <chapter identifier="/us/usc/t42/ch7" id="ch7-guid">
+      <num value="7">CHAPTER 7</num>
+      <heading>SOCIAL SECURITY</heading>
+      <subchapter identifier="/us/usc/t42/ch7/schXVIII" id="schXVIII-guid">
+        <num value="XVIII">SUBCHAPTER XVIII</num>
+        <heading>HEALTH INSURANCE FOR AGED AND DISABLED</heading>
+        <section identifier="/us/usc/t42/s1395" id="s1395-guid">
+          <num value="1395">&#167;1395.</num>
+          <heading>Prohibition against any Federal interference</heading>
+          <content>Nothing in this subchapter shall be construed to authorize any Federal officer or employee to exercise any supervision or control over the practice of medicine.</content>
+          <subsection identifier="/us/usc/t42/s1395/a" id="s1395a-guid">
+            <num value="a">(a)</num>
+            <heading>General rule</heading>
+            <content>The insurance program established by this subchapter shall not apply to any individual.</content>
+          </subsection>
+          <subsection identifier="/us/usc/t42/s1395/b" id="s1395b-guid">
+            <num value="b">(b)</num>
+            <heading>Exceptions</heading>
+            <content>Subsection (a) shall not apply in the case of-</content>
+            <paragraph identifier="/us/usc/t42/s1395/b/1" id="s1395b1-guid">
+              <num value="1">(1)</num>
+              <content>an individual who is entitled to benefits under part A, or</content>
+            </paragraph>
+            <paragraph identifier="/us/usc/t42/s1395/b/2" id="s1395b2-guid">
+              <num value="2">(2)</num>
+              <content>an individual who is enrolled under part B.</content>
+            </paragraph>
+          </subsection>
+        </section>
+        <section identifier="/us/usc/t42/s1395a" id="s1395a-section-guid">
+          <num value="1395a">&#167;1395a.</num>
+          <heading>Free choice by patient guaranteed</heading>
+          <content>Any individual entitled to insurance benefits under this subchapter may obtain health services from any institution, agency, or person qualified to participate.</content>
+          <subsection identifier="/us/usc/t42/s1395a/a" id="s1395a-a-guid">
+            <num value="a">(a)</num>
+            <heading>Basic rule</heading>
+            <content>Subject to the provisions of this section, any individual may choose any qualified provider.</content>
+          </subsection>
+        </section>
+      </subchapter>
+    </chapter>
+    <chapter identifier="/us/usc/t42/ch8" id="ch8-guid">
+      <num value="8">CHAPTER 8</num>
+      <heading>LOW-INCOME HOUSING</heading>
+      <section identifier="/us/usc/t42/s1401" id="s1401-guid">
+        <num value="1401">&#167;1401.</num>
+        <heading>Declaration of policy</heading>
+        <content>It is the policy of the United States to promote the general welfare of the Nation.</content>
+      </section>
+    </chapter>
+  </title>
+</uscDoc>
