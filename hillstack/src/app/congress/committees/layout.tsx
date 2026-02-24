@@ -15,6 +15,10 @@ const CHAMBERS: ToolbarFilterOption<legislationchamber>[] = [
 	{ value: 'Senate', label: 'Senate' },
 ];
 
+const HAS_LEGISLATION: ToolbarFilterOption<boolean>[] = [
+	{ value: true, label: 'Has Legislation' },
+];
+
 // const TYPES: ToolbarFilterOption<string>[] = [
 // 	{ value: 'Standing', label: 'Standing' },
 // 	{ value: 'Joint', label: 'Joint' },
@@ -31,6 +35,11 @@ const filterConfig = {
 	chamber: {
 		title: 'Chamber',
 		options: CHAMBERS,
+		multiSelect: true as const,
+	},
+	hasLegislation: {
+		title: 'Legislation',
+		options: HAS_LEGISLATION,
 		multiSelect: true as const,
 	},
 	// committeeType: {

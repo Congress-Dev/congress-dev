@@ -87,12 +87,13 @@ export const committeeRouter = createTRPCRouter({
 				congress: z.optional(z.array(z.number())),
 				chamber: z.optional(z.array(z.nativeEnum(legislationchamber))),
 				committeeType: z.optional(z.array(z.string())),
+				hasLegislation: z.optional(z.array(z.boolean())),
 				page: z.number(),
 				pageSize: z.number(),
 			}),
 		)
 		.query(async ({ input, ctx }) => {
-			const { query, congress, chamber, committeeType, page, pageSize } =
+			const { query, congress, chamber, committeeType, hasLegislation, page, pageSize } =
 				input;
 
 			const where = {
@@ -104,6 +105,9 @@ export const committeeRouter = createTRPCRouter({
 					? { congress: { session_number: { in: congress } } }
 					: {}),
 				...(chamber ? { chamber: { in: chamber } } : {}),
+				...(hasLegislation?.includes(true)
+					? { legislation_committee_association: { some: {} } }
+					: {}),
 				...(query
 					? {
 							name: {
