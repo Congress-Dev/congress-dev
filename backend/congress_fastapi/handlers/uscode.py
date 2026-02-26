@@ -14,7 +14,12 @@ from congress_db.models import (
 )
 
 chroma_host = (
-    os.environ.get("LLM_HOST", "10.0.0.120").split("http://")[-1].split(":")[0]
+    os.environ.get(
+        "CHROMA_HOST",
+        os.environ.get("LLM_HOST", "10.0.0.120"),
+    )
+    .split("http://")[-1]
+    .split(":")[0]
 )
 
 
