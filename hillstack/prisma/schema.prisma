@@ -554,6 +554,7 @@ model user_ident {
   user_auth_google        String?                   @db.VarChar
   user_auth_expiration    DateTime?                 @db.Timestamp(6)
   user_auth_cookie        String?                   @db.VarChar
+  user_interest           user_interest[]
   user_legislation        user_legislation[]
   user_legislator         user_legislator[]
   user_llm_query          user_llm_query[]
@@ -601,6 +602,34 @@ model user_llm_query {
   @@index([legislation_version_id], map: "ix_sensitive_user_llm_query_legislation_version_id")
   @@index([query], map: "ix_sensitive_user_llm_query_query")
   @@index([user_id], map: "ix_sensitive_user_llm_query_user_id")
+  @@schema("sensitive")
+}
+
+model user_interest {
+  user_interest_id          Int                         @id @default(autoincrement())
+  user_id                   String?                     @db.VarChar
+  interest_text             String?                     @db.Text
+  created_at                DateTime?                   @default(now()) @db.Timestamp(6)
+  updated_at                DateTime?                   @default(now()) @db.Timestamp(6)
+  user_ident                user_ident?                 @relation(fields: [user_id], references: [user_id], onDelete: Cascade, onUpdate: NoAction)
+  user_interest_usc_content user_interest_usc_content[]
+
+  @@index([user_id], map: "ix_sensitive_user_interest_user_id")
+  @@schema("sensitive")
+}
+
+model user_interest_usc_content {
+  user_interest_usc_content_id Int            @id @default(autoincrement())
+  user_interest_id             Int?
+  usc_ident                    String?        @db.VarChar
+  match_source                 String?        @db.VarChar
+  is_active                    Boolean?       @default(true)
+  match_rank                   Int?
+  created_at                   DateTime?      @default(now()) @db.Timestamp(6)
+  user_interest                user_interest? @relation(fields: [user_interest_id], references: [user_interest_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([user_interest_id], map: "ix_sensitive_user_interest_usc_content_user_interest_id")
+  @@index([usc_ident], map: "ix_sensitive_user_interest_usc_content_usc_ident")
   @@schema("sensitive")
 }
 

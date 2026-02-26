@@ -9,11 +9,11 @@ import SellIcon from '@mui/icons-material/Sell';
 import { Card, Grid, Toolbar } from '@mui/material';
 import Box from '@mui/material/Box';
 import type React from 'react';
-import { DashboardWidgetNoContent } from '~/app/_home/widgets';
 import { LegislationCalendar } from '~/app/_home/widgets/legislationCalendar';
 import { LegislationFollowed } from '~/app/_home/widgets/legislationFollowed';
 import { LegislationTags } from '~/app/_home/widgets/legislationTags';
 import { LegislatorFollowed } from '~/app/_home/widgets/legislatorFollowed';
+import { InterestFeed } from '~/app/_home/widgets/interestFeed';
 
 function DashboardWidget({
 	title,
@@ -82,9 +82,9 @@ export function Dashboard() {
 				<Grid size={{ xs: 12, md: 12 }}>
 					<DashboardWidget
 						Icon={LocalPoliceIcon}
-						title='USC Tracking'
+						title='Your Interest Areas'
 					>
-						<DashboardWidgetNoContent />
+						<InterestFeed />
 					</DashboardWidget>
 				</Grid>
 			</Grid>

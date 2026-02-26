@@ -87,6 +87,8 @@ services:
     container_name: congress_hillstack
     tty: true
     stdin_open: true
+    environment:
+    - FASTAPI_URL=http://congress_parser_fastapi:8080
     build:
       context: ../hillstack
       dockerfile: .docker/Dockerfile
@@ -94,6 +96,7 @@ services:
     - "3001:3001"
     depends_on:
       - congress_postgres
+      - congress_parser_fastapi
     networks:
       parser:
   congress_postgres:
