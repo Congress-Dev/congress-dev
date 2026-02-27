@@ -307,9 +307,14 @@ async def run_import(
         ids: list[str] = []
         documents: list[str] = []
         metadatas: list[dict] = []
+        seen_in_batch: set[str] = set()
 
         for row in rows:
             usc_ident: str = row["usc_ident"]
+            if usc_ident in seen_in_batch:
+                skipped += 1
+                continue
+            seen_in_batch.add(usc_ident)
             doc_text = build_document(row)
             if not doc_text.strip():
                 skipped += 1
