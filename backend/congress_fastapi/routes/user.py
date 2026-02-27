@@ -1,6 +1,7 @@
 import traceback
 from typing import List, Optional
 from congress_db.models import UserIdent
+from pydantic import BaseModel
 from fastapi import (
     APIRouter,
     HTTPException,
@@ -27,6 +28,13 @@ from congress_fastapi.handlers.user import (
     handle_get_user_stats,
     InvalidTokenException,
     handle_get_usc_tracking_folders
+)
+from congress_fastapi.handlers.interest import (
+    handle_get_interest,
+    handle_save_interest,
+    handle_toggle_interest_section,
+    handle_add_interest_section,
+    handle_get_interest_legislation,
 )
 from congress_fastapi.models.errors import Error
 from congress_fastapi.models.user import (
@@ -277,3 +285,78 @@ async def user_usc_tracking_folder_results(
         )
 
     return await handle_get_usc_tracking_results(user.user_id, folder_id)
+
+
+class InterestSaveRequest(BaseModel):
+    interest_text: str
+
+
+class InterestToggleRequest(BaseModel):
+    usc_ident: str
+    is_active: bool
+
+
+class InterestAddSectionRequest(BaseModel):
+    usc_ident: str
+
+
+@router.get("/user/interest")
+async def user_interest_get(
+    user: UserIdent = Depends(user_from_cookie),
+) -> dict:
+    if user is None:
+        raise HTTPException(
+            status_code=403, detail="Invalid or expired authentication token"
+        )
+    return await handle_get_interest(user.user_id)
+
+
+@router.post("/user/interest")
+async def user_interest_save(
+    body: InterestSaveRequest,
+    user: UserIdent = Depends(user_from_cookie),
+) -> dict:
+    if user is None:
+        raise HTTPException(
+            status_code=403, detail="Invalid or expired authentication token"
+        )
+    return await handle_save_interest(user.user_id, body.interest_text)
+
+
+@router.patch("/user/interest/section")
+async def user_interest_toggle_section(
+    body: InterestToggleRequest,
+    user: UserIdent = Depends(user_from_cookie),
+) -> dict:
+    if user is None:
+        raise HTTPException(
+            status_code=403, detail="Invalid or expired authentication token"
+        )
+    await handle_toggle_interest_section(
+        user.user_id, body.usc_ident, body.is_active
+    )
+    return {"ok": True}
+
+
+@router.post("/user/interest/section")
+async def user_interest_add_section(
+    body: InterestAddSectionRequest,
+    user: UserIdent = Depends(user_from_cookie),
+) -> dict:
+    if user is None:
+        raise HTTPException(
+            status_code=403, detail="Invalid or expired authentication token"
+        )
+    await handle_add_interest_section(user.user_id, body.usc_ident)
+    return {"ok": True}
+
+
+@router.get("/user/interest/legislation")
+async def user_interest_legislation(
+    user: UserIdent = Depends(user_from_cookie),
+) -> dict:
+    if user is None:
+        raise HTTPException(
+            status_code=403, detail="Invalid or expired authentication token"
+        )
+    return await handle_get_interest_legislation(user.user_id)

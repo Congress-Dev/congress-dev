@@ -39,6 +39,7 @@ services:
     - db_user=parser
     - db_pass=parser
     - db_table=us_code_2025
+    - CHROMA_HOST=congress_chromadb
     build:
       context: ../backend
       dockerfile: .docker/Dockerfile
@@ -48,6 +49,7 @@ services:
     - "9091:8080"
     depends_on:
       - congress_postgres
+      - congress_chromadb
     networks:
       parser:
     entrypoint: "uvicorn"
@@ -85,6 +87,8 @@ services:
     container_name: congress_hillstack
     tty: true
     stdin_open: true
+    environment:
+    - FASTAPI_URL=http://congress_parser_fastapi:8080
     build:
       context: ../hillstack
       dockerfile: .docker/Dockerfile
@@ -92,6 +96,7 @@ services:
     - "3001:3001"
     depends_on:
       - congress_postgres
+      - congress_parser_fastapi
     networks:
       parser:
   congress_postgres:
@@ -107,9 +112,28 @@ services:
       - postgres-volume:/var/lib/postgresql/data
     networks:
       parser:
+  congress_chromadb:
+    image: chromadb/chroma:0.6.3
+    container_name: congress_chromadb
+    environment:
+      - IS_PERSISTENT=TRUE
+      - PERSIST_DIRECTORY=/chroma/chroma
+      - ANONYMIZED_TELEMETRY=False
+    volumes:
+      - chromadb-volume:/chroma/chroma
+    ports:
+      - "8000:8000"
+    networks:
+      parser:
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 networks:
   parser:
     external:
       name: docker_parser
 volumes:
   postgres-volume:
+  chromadb-volume:

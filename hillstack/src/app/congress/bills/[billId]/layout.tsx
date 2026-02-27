@@ -3,6 +3,7 @@ import MergeTypeIcon from '@mui/icons-material/MergeType';
 
 import { Box, Chip, Container, Paper, Typography } from '@mui/material';
 import type { Params } from 'next/dist/server/request/params';
+import { InterestBadge } from '~/app/congress/bills/[billId]/interestBadge';
 import { BillTabs } from '~/app/congress/bills/[billId]/tabs';
 import { BillVersionEnum } from '~/enums';
 import { api, HydrateClient } from '~/trpc/server';
@@ -118,7 +119,8 @@ export default async function BillLayout({
 					)}
 				</Box>
 
-				<BillTabs />
+				<InterestBadge legislationId={Number(billId)} />
+			<BillTabs />
 				<Paper
 					elevation={0}
 					sx={{

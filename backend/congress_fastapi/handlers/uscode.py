@@ -14,7 +14,12 @@ from congress_db.models import (
 )
 
 chroma_host = (
-    os.environ.get("LLM_HOST", "10.0.0.120").split("http://")[-1].split(":")[0]
+    os.environ.get(
+        "CHROMA_HOST",
+        os.environ.get("LLM_HOST", "10.0.0.120"),
+    )
+    .split("http://")[-1]
+    .split(":")[0]
 )
 
 
@@ -108,5 +113,6 @@ async def search_chroma(query: str, num: int) -> List[dict]:
             result["title"] = short_title.capitalize()
         result["section_display"] = content.heading.strip()
         result["usc_link"] = f"{short_title[1:]}/{content.number}"
+        result["usc_ident"] = ident
         results_by_id[ident] = result
     return [results_by_id[ident] for ident in response["ids"][0]]

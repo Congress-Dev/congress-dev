@@ -321,6 +321,49 @@ class UserUSCContent(SensitiveBase):
     usc_ident = Column(String)
 
 
+class UserInterest(SensitiveBase):
+    """
+    Natural language interest statement for a user, used to auto-match USC sections
+    """
+
+    __tablename__ = "user_interest"
+
+    user_interest_id = Column(Integer, primary_key=True)
+
+    user_id = Column(
+        String,
+        ForeignKey("sensitive.user_ident.user_id", ondelete="CASCADE"),
+        index=True,
+    )
+    interest_text = Column(String)
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+
+class UserInterestUscContent(SensitiveBase):
+    """
+    USC content sections matched to a user's interest, either automatically or manually
+    """
+
+    __tablename__ = "user_interest_usc_content"
+
+    user_interest_usc_content_id = Column(Integer, primary_key=True)
+
+    user_interest_id = Column(
+        Integer,
+        ForeignKey(
+            "sensitive.user_interest.user_interest_id",
+            ondelete="CASCADE",
+        ),
+        index=True,
+    )
+    usc_ident = Column(String, index=True)
+    match_source = Column(String, default="auto")  # 'auto' or 'manual'
+    is_active = Column(Boolean, default=True)
+    match_rank = Column(Integer, nullable=True)
+    created_at = Column(DateTime, server_default=func.now())
+
+
 class UserLLMQuery(SensitiveBase):
     """
     Acts as a log of all user queries into legislation, for tracking purposes
