@@ -115,4 +115,4 @@ async def search_chroma(query: str, num: int) -> List[dict]:
         result["usc_link"] = f"{short_title[1:]}/{content.number}"
         result["usc_ident"] = ident
         results_by_id[ident] = result
-    return [results_by_id[ident] for ident in response["ids"][0]]
+    return [results_by_id[ident] for ident in response["ids"][0] if ident in results_by_id]
