@@ -120,7 +120,7 @@ export default async function BillLayout({
 				</Box>
 
 				<InterestBadge legislationId={Number(billId)} />
-			<BillTabs />
+				<BillTabs />
 				<Paper
 					elevation={0}
 					sx={{

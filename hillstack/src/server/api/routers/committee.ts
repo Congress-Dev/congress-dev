@@ -93,8 +93,15 @@ export const committeeRouter = createTRPCRouter({
 			}),
 		)
 		.query(async ({ input, ctx }) => {
-			const { query, congress, chamber, committeeType, hasLegislation, page, pageSize } =
-				input;
+			const {
+				query,
+				congress,
+				chamber,
+				committeeType,
+				hasLegislation,
+				page,
+				pageSize,
+			} = input;
 
 			const where = {
 				parent_id: null,

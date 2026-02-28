@@ -1,5 +1,6 @@
 import { billRouter } from '~/server/api/routers/bill';
 import { statsRouter } from '~/server/api/routers/stats';
+import { uscodeRouter } from '~/server/api/routers/uscode';
 import { userRouter } from '~/server/api/routers/user';
 import { createCallerFactory, createTRPCRouter } from '~/server/api/trpc';
 import { committeeRouter } from './routers/committee';
@@ -15,6 +16,7 @@ export const appRouter = createTRPCRouter({
 	legislator: legislatorRouter,
 	committee: committeeRouter,
 	stats: statsRouter,
+	uscode: uscodeRouter,
 	user: userRouter,
 });
 
