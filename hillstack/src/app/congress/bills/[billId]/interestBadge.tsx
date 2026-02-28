@@ -40,9 +40,7 @@ export function InterestBadge({ legislationId }: { legislationId: number }) {
 						return (
 							<li key={ident}>
 								<Typography variant='caption'>
-									{heading
-										? `${slug} — ${heading}`
-										: slug}
+									{heading ? `${slug} — ${heading}` : slug}
 								</Typography>
 							</li>
 						);

@@ -1,6 +1,13 @@
 'use client';
 
-import { Box, Button, List, ListItem, ListItemButton, Typography } from '@mui/material';
+import {
+	Box,
+	Button,
+	List,
+	ListItem,
+	ListItemButton,
+	Typography,
+} from '@mui/material';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
 import type { RouterOutputs } from '~/trpc/react';
@@ -71,8 +78,8 @@ export function InterestFeed() {
 					textAlign='center'
 					variant='body2'
 				>
-					No bills found yet. Set up your interests to track
-					relevant legislation.
+					No bills found yet. Set up your interests to track relevant
+					legislation.
 				</Typography>
 				<Button
 					component={Link}
@@ -97,10 +104,7 @@ export function InterestFeed() {
 					{data.slice(0, 8).map((bill: InterestBill) => {
 						const summary = matchedSummary(bill);
 						return (
-							<ListItem
-								disablePadding
-								key={bill.legislation_id}
-							>
+							<ListItem disablePadding key={bill.legislation_id}>
 								<ListItemButton>
 									<Link
 										href={`/congress/bills/${bill.legislation_id}`}

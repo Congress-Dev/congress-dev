@@ -124,9 +124,9 @@ export default function InterestsPage() {
 				Your Policy Interests
 			</Typography>
 			<Typography color='textSecondary' sx={{ mb: 3 }} variant='body2'>
-				Describe what policy areas you care about in plain language.
-				The system will find matching US Code sections and alert you
-				when new legislation touches them.
+				Describe what policy areas you care about in plain language. The
+				system will find matching US Code sections and alert you when
+				new legislation touches them.
 			</Typography>
 
 			<Paper elevation={2} sx={{ p: 3, mb: 3 }}>
@@ -144,7 +144,12 @@ export default function InterestsPage() {
 					value={text}
 				/>
 				<Box
-					sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 1 }}
+					sx={{
+						mt: 2,
+						display: 'flex',
+						alignItems: 'center',
+						gap: 1,
+					}}
 				>
 					<Button
 						disabled={
@@ -216,12 +221,9 @@ export default function InterestsPage() {
 											?.split('/')
 											.slice(3)
 											.join('/') ?? '';
-									const heading =
-										match.usc_ident
-											? sectionHeadings[
-													match.usc_ident
-												]
-											: undefined;
+									const heading = match.usc_ident
+										? sectionHeadings[match.usc_ident]
+										: undefined;
 									return (
 										<Box
 											key={
@@ -266,7 +268,10 @@ export default function InterestsPage() {
 												</IconButton>
 											</Tooltip>
 											<Typography
-												sx={{ fontFamily: 'monospace', flexShrink: 0 }}
+												sx={{
+													fontFamily: 'monospace',
+													flexShrink: 0,
+												}}
 												variant='body2'
 											>
 												{sectionSlug}
@@ -277,7 +282,8 @@ export default function InterestsPage() {
 													sx={{
 														ml: 1,
 														overflow: 'hidden',
-														textOverflow: 'ellipsis',
+														textOverflow:
+															'ellipsis',
 														whiteSpace: 'nowrap',
 													}}
 													variant='body2'
@@ -290,7 +296,10 @@ export default function InterestsPage() {
 												<Chip
 													label='manual'
 													size='small'
-													sx={{ ml: 1, flexShrink: 0 }}
+													sx={{
+														ml: 1,
+														flexShrink: 0,
+													}}
 													variant='outlined'
 												/>
 											)}
@@ -349,15 +358,12 @@ export default function InterestsPage() {
 				</Paper>
 			)}
 
-			{interest &&
-				rawMatches.length === 0 &&
-				!isLoading && (
-					<Alert severity='info'>
-						No matching sections found. Try a more specific
-						interest description, or make sure ChromaDB has been
-						indexed.
-					</Alert>
-				)}
+			{interest && rawMatches.length === 0 && !isLoading && (
+				<Alert severity='info'>
+					No matching sections found. Try a more specific interest
+					description, or make sure ChromaDB has been indexed.
+				</Alert>
+			)}
 		</Container>
 	);
 }
