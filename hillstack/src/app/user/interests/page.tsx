@@ -79,6 +79,9 @@ export default function InterestsPage() {
 		},
 	});
 
+	const sectionHeadings: Record<string, string> =
+		interest?.sectionHeadings ?? {};
+
 	const rawMatches: MatchItem[] = (
 		interest?.user_interest_usc_content ?? []
 	).map((m) => ({
@@ -213,6 +216,12 @@ export default function InterestsPage() {
 											?.split('/')
 											.slice(3)
 											.join('/') ?? '';
+									const heading =
+										match.usc_ident
+											? sectionHeadings[
+													match.usc_ident
+												]
+											: undefined;
 									return (
 										<Box
 											key={
@@ -256,15 +265,32 @@ export default function InterestsPage() {
 													)}
 												</IconButton>
 											</Tooltip>
-											<Typography variant='body2'>
+											<Typography
+												sx={{ fontFamily: 'monospace', flexShrink: 0 }}
+												variant='body2'
+											>
 												{sectionSlug}
 											</Typography>
+											{heading && (
+												<Typography
+													color='textSecondary'
+													sx={{
+														ml: 1,
+														overflow: 'hidden',
+														textOverflow: 'ellipsis',
+														whiteSpace: 'nowrap',
+													}}
+													variant='body2'
+												>
+													— {heading}
+												</Typography>
+											)}
 											{match.match_source ===
 												'manual' && (
 												<Chip
 													label='manual'
 													size='small'
-													sx={{ ml: 1 }}
+													sx={{ ml: 1, flexShrink: 0 }}
 													variant='outlined'
 												/>
 											)}
