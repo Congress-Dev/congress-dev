@@ -36,7 +36,7 @@ async def get_usc_content_by_citations(citations: List[str]) -> List[USCContent]
         USCContent,
     ).where(
         or_(*[USCContent.usc_ident == cite for cite in citations]),
-        USCContent.version_id == 74573,
+        USCContent.version_id == 1,
     )
     results = await database.fetch_all(query)
     return results
@@ -61,7 +61,7 @@ async def get_usc_chapter_by_short_titles(short_titles: List[str]) -> List[USCCh
         USCChapter,
     ).where(
         or_(*[USCChapter.short_title == title for title in short_titles]),
-        USCChapter.version_id == 74573,
+        USCChapter.usc_release_id == 1,
     )
     results = await database.fetch_all(query)
     return results
