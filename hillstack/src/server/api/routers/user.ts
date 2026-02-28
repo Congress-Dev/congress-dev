@@ -265,12 +265,14 @@ export const userRouter = createTRPCRouter({
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({
 						query: input.interest_text,
-						results: 50,
+						results: 20,
 					}),
 				});
 				if (res.ok) {
 					chromaMatches = await res.json();
-				}
+				} else{
+          console.error('ChromaDB search failed:', await res.text());
+        }
 			} catch {
 				// ChromaDB unavailable — interest saved, matches will be empty
 			}
