@@ -13,6 +13,7 @@ class USCodeSearchRequest(BaseModel):
         return v
 
 class USCodeSearchResponse(BaseModel):
+    usc_ident: str
     usc_link: str
     section_display: str
     title: str
