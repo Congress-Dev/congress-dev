@@ -214,7 +214,7 @@ export const userRouter = createTRPCRouter({
 	// ── Interest procedures ──────────────────────────────────────────────────
 
 	interestGet: privateProcedure.query(async ({ ctx }) => {
-		return ctx.db.user_interest.findFirst({
+		const interest = await ctx.db.user_interest.findFirst({
 			where: { user_id: ctx.user.email },
 			include: {
 				user_interest_usc_content: {
@@ -222,6 +222,59 @@ export const userRouter = createTRPCRouter({
 				},
 			},
 		});
+
+		if (
+			!interest ||
+			interest.user_interest_usc_content.length === 0
+		) {
+			return interest
+				? { ...interest, sectionHeadings: {} as Record<string, string> }
+				: null;
+		}
+
+		const idents = interest.user_interest_usc_content
+			.map((m) => m.usc_ident)
+			.filter((id): id is string => Boolean(id));
+
+		if (idents.length === 0) {
+			return { ...interest, sectionHeadings: {} as Record<string, string> };
+		}
+
+		// Look up section headings from usc_section
+		const sectionRows = await ctx.db.usc_section.findMany({
+			where: { usc_ident: { in: idents } },
+			select: { usc_ident: true, heading: true, section_display: true },
+			distinct: ['usc_ident'],
+			orderBy: { version_id: 'desc' },
+		});
+
+		const sectionHeadings: Record<string, string> = {};
+		for (const row of sectionRows) {
+			if (row.usc_ident && row.heading) {
+				sectionHeadings[row.usc_ident] = row.heading;
+			}
+		}
+
+		// For idents not found in usc_section, try usc_content
+		const missingIdents = idents.filter((id) => !sectionHeadings[id]);
+		if (missingIdents.length > 0) {
+			const contentRows = await ctx.db.usc_content.findMany({
+				where: {
+					usc_ident: { in: missingIdents },
+					heading: { not: null },
+				},
+				select: { usc_ident: true, heading: true, section_display: true },
+				distinct: ['usc_ident'],
+				orderBy: { version_id: 'desc' },
+			});
+			for (const row of contentRows) {
+				if (row.usc_ident && row.heading) {
+					sectionHeadings[row.usc_ident] = row.heading;
+				}
+			}
+		}
+
+		return { ...interest, sectionHeadings };
 	}),
 
 	interestSave: privateProcedure
@@ -422,6 +475,7 @@ export const userRouter = createTRPCRouter({
 			.map((_, i) => `uc.usc_ident ILIKE $${i + 1}`)
 			.join(' OR ');
 
+		// Collect matched ident per bill using array_agg
 		type LegislationRow = {
 			legislation_id: bigint;
 			title: string;
@@ -430,6 +484,7 @@ export const userRouter = createTRPCRouter({
 			legislation_type: string;
 			chamber: string;
 			effective_date: Date | null;
+			matched_idents: string[];
 		};
 
 		const rows = await ctx.db.$queryRawUnsafe<LegislationRow[]>(
@@ -440,7 +495,8 @@ export const userRouter = createTRPCRouter({
 				c.session_number,
 				l.legislation_type,
 				l.chamber,
-				MIN(lv.effective_date) AS effective_date
+				MIN(lv.effective_date) AS effective_date,
+				ARRAY_AGG(DISTINCT uc.usc_ident) AS matched_idents
 			FROM usc_content uc
 			JOIN usc_content_diff ucd ON ucd.usc_content_id = uc.usc_content_id
 			JOIN legislation_version lv ON lv.version_id = ucd.version_id
@@ -453,10 +509,56 @@ export const userRouter = createTRPCRouter({
 			...identsWithWildcard,
 		);
 
+		// Gather all matched idents to look up headings in bulk
+		const allMatchedIdents = [
+			...new Set(rows.flatMap((r) => r.matched_idents ?? [])),
+		];
+
+		const headingsMap: Record<string, string> = {};
+		if (allMatchedIdents.length > 0) {
+			const sectionRows = await ctx.db.usc_section.findMany({
+				where: { usc_ident: { in: allMatchedIdents } },
+				select: { usc_ident: true, heading: true },
+				distinct: ['usc_ident'],
+				orderBy: { version_id: 'desc' },
+			});
+			for (const row of sectionRows) {
+				if (row.usc_ident && row.heading) {
+					headingsMap[row.usc_ident] = row.heading;
+				}
+			}
+
+			const missingIdents = allMatchedIdents.filter(
+				(id) => !headingsMap[id],
+			);
+			if (missingIdents.length > 0) {
+				const contentRows = await ctx.db.usc_content.findMany({
+					where: {
+						usc_ident: { in: missingIdents },
+						heading: { not: null },
+					},
+					select: { usc_ident: true, heading: true },
+					distinct: ['usc_ident'],
+					orderBy: { version_id: 'desc' },
+				});
+				for (const row of contentRows) {
+					if (row.usc_ident && row.heading) {
+						headingsMap[row.usc_ident] = row.heading;
+					}
+				}
+			}
+		}
+
 		// BigInt → number for JSON serialisation
 		return rows.map((r) => ({
 			...r,
 			legislation_id: Number(r.legislation_id),
+			matched_idents: r.matched_idents ?? [],
+			matched_headings: Object.fromEntries(
+				(r.matched_idents ?? [])
+					.filter((id) => headingsMap[id])
+					.map((id) => [id, headingsMap[id]]),
+			),
 		}));
 	}),
 
@@ -473,11 +575,18 @@ export const userRouter = createTRPCRouter({
 				},
 			});
 
+			const emptyResult = {
+				matches: false,
+				matchedIdents: [] as string[],
+				matchedHeadings: {} as Record<string, string>,
+				interestText: interest?.interest_text ?? '',
+			};
+
 			if (
 				!interest ||
 				interest.user_interest_usc_content.length === 0
 			) {
-				return { matches: false, matchedIdents: [] as string[] };
+				return emptyResult;
 			}
 
 			const idents = interest.user_interest_usc_content
@@ -485,7 +594,7 @@ export const userRouter = createTRPCRouter({
 				.filter((id): id is string => Boolean(id));
 
 			if (idents.length === 0) {
-				return { matches: false, matchedIdents: [] as string[] };
+				return emptyResult;
 			}
 
 			const identsWithWildcard = idents.map((id) => `${id}%`);
@@ -506,9 +615,50 @@ export const userRouter = createTRPCRouter({
 				...identsWithWildcard,
 			);
 
+			const matchedIdents = rows.map((r) => r.usc_ident);
+
+			// Look up section headings for the matched idents
+			const matchedHeadings: Record<string, string> = {};
+			if (matchedIdents.length > 0) {
+				const sectionRows = await ctx.db.usc_section.findMany({
+					where: { usc_ident: { in: matchedIdents } },
+					select: { usc_ident: true, heading: true },
+					distinct: ['usc_ident'],
+					orderBy: { version_id: 'desc' },
+				});
+				for (const row of sectionRows) {
+					if (row.usc_ident && row.heading) {
+						matchedHeadings[row.usc_ident] = row.heading;
+					}
+				}
+
+				// Fall back to usc_content for any missing
+				const missingIdents = matchedIdents.filter(
+					(id) => !matchedHeadings[id],
+				);
+				if (missingIdents.length > 0) {
+					const contentRows = await ctx.db.usc_content.findMany({
+						where: {
+							usc_ident: { in: missingIdents },
+							heading: { not: null },
+						},
+						select: { usc_ident: true, heading: true },
+						distinct: ['usc_ident'],
+						orderBy: { version_id: 'desc' },
+					});
+					for (const row of contentRows) {
+						if (row.usc_ident && row.heading) {
+							matchedHeadings[row.usc_ident] = row.heading;
+						}
+					}
+				}
+			}
+
 			return {
 				matches: rows.length > 0,
-				matchedIdents: rows.map((r) => r.usc_ident),
+				matchedIdents,
+				matchedHeadings,
+				interestText: interest.interest_text ?? '',
 			};
 		}),
 });

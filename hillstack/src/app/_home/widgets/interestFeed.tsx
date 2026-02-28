@@ -9,6 +9,24 @@ import { DashboardWidgetContent } from './';
 
 type InterestBill = RouterOutputs['user']['interestLegislation'][number];
 
+function matchedSummary(bill: InterestBill): string {
+	const headings = Object.values(bill.matched_headings ?? {});
+	if (headings.length > 0) {
+		const display = headings.slice(0, 2).join(', ');
+		const extra = headings.length > 2 ? ` +${headings.length - 2}` : '';
+		return `${display}${extra}`;
+	}
+	const idents = bill.matched_idents ?? [];
+	if (idents.length > 0) {
+		const slugs = idents
+			.slice(0, 2)
+			.map((id: string) => id.split('/').slice(3).join('/'));
+		const extra = idents.length > 2 ? ` +${idents.length - 2}` : '';
+		return `${slugs.join(', ')}${extra}`;
+	}
+	return '';
+}
+
 export function InterestFeed() {
 	const { data: session } = useSession();
 	const { data, isLoading, isError } = api.user.interestLegislation.useQuery(
@@ -76,40 +94,66 @@ export function InterestFeed() {
 		>
 			{data && (
 				<List dense>
-					{data.slice(0, 8).map((bill: InterestBill) => (
-						<ListItem
-							disablePadding
-							key={bill.legislation_id}
-						>
-							<ListItemButton>
-								<Link
-									href={`/congress/bills/${bill.legislation_id}`}
-									style={{
-										width: '100%',
-										display: 'block',
-									}}
-								>
-									<Box
-										sx={{
-											display: 'flex',
-											flexDirection: 'column',
+					{data.slice(0, 8).map((bill: InterestBill) => {
+						const summary = matchedSummary(bill);
+						return (
+							<ListItem
+								disablePadding
+								key={bill.legislation_id}
+							>
+								<ListItemButton>
+									<Link
+										href={`/congress/bills/${bill.legislation_id}`}
+										style={{
+											width: '100%',
+											display: 'block',
 										}}
 									>
-										<Typography color='primary'>
-											{bill.title}
-										</Typography>
-										<Typography variant='caption'>
-											{`${bill.session_number}th · `}
-											{bill.chamber === 'house'
-												? 'H.R.'
-												: 'S.'}
-											{` #${bill.number}`}
-										</Typography>
-									</Box>
-								</Link>
-							</ListItemButton>
-						</ListItem>
-					))}
+										<Box
+											sx={{
+												display: 'flex',
+												flexDirection: 'column',
+											}}
+										>
+											<Typography color='primary'>
+												{bill.title}
+											</Typography>
+											<Box
+												sx={{
+													display: 'flex',
+													alignItems: 'center',
+													gap: 1,
+												}}
+											>
+												<Typography variant='caption'>
+													{`${bill.session_number}th · `}
+													{bill.chamber === 'house'
+														? 'H.R.'
+														: 'S.'}
+													{` #${bill.number}`}
+												</Typography>
+												{summary && (
+													<Typography
+														color='textSecondary'
+														sx={{
+															overflow: 'hidden',
+															textOverflow:
+																'ellipsis',
+															whiteSpace:
+																'nowrap',
+														}}
+														variant='caption'
+													>
+														· {summary}
+													</Typography>
+												)}
+											</Box>
+										</Box>
+									</Link>
+								</ListItemButton>
+							</ListItem>
+						);
+					})}
 				</List>
 			)}
 		</DashboardWidgetContent>
