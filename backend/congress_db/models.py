@@ -45,6 +45,13 @@ class CastingArray(ARRAY):
         return sa.cast(bindvalue, self)
 
 
+class CRECSection(str, enum.Enum):
+    Senate = "Senate"
+    House = "House"
+    Extensions = "Extensions"
+    DailyDigest = "DailyDigest"
+
+
 class LegislatorJob(str, enum.Enum):
     Senator = "Senator"
     Representative = "Representative"
@@ -1260,6 +1267,137 @@ class Appropriation(AppropriationsBase):
     target = Column(String, nullable=True)
 
     purpose = Column(String, default="")
+
+
+class CRECIssue(Base):
+    """
+    One row per daily Congressional Record issue
+    """
+
+    __tablename__ = "crec_issue"
+
+    crec_issue_id = Column(Integer, primary_key=True)
+    issue_date = Column(Date, unique=True, index=True)
+    congress_id = Column(
+        Integer, ForeignKey("congress.congress_id", ondelete="CASCADE"), index=True
+    )
+    package_id = Column(String, unique=True)
+    created_at = Column(DateTime(timezone=False), server_default=func.now())
+
+    granules = relationship("CRECGranule", back_populates="issue")
+
+
+class CRECGranule(Base):
+    """
+    A discrete item/debate/segment within a daily Congressional Record issue
+    """
+
+    __tablename__ = "crec_granule"
+
+    crec_granule_id = Column(Integer, primary_key=True)
+    crec_issue_id = Column(
+        Integer,
+        ForeignKey("crec_issue.crec_issue_id", ondelete="CASCADE"),
+        index=True,
+    )
+    granule_id = Column(String, unique=True)
+    section = Column(Enum(CRECSection), index=True)
+    title = Column(String)
+    page_start = Column(String, nullable=True)
+    page_end = Column(String, nullable=True)
+    order_number = Column(Integer, default=0)
+    created_at = Column(DateTime(timezone=False), server_default=func.now())
+
+    issue = relationship("CRECIssue", back_populates="granules")
+    speeches = relationship("CRECSpeech", back_populates="granule")
+
+
+class CRECSpeech(Base):
+    """
+    Individual speech segment within a granule, with speaker attribution
+    """
+
+    __tablename__ = "crec_speech"
+
+    crec_speech_id = Column(Integer, primary_key=True)
+    crec_granule_id = Column(
+        Integer,
+        ForeignKey("crec_granule.crec_granule_id", ondelete="CASCADE"),
+        index=True,
+    )
+    speaker_raw = Column(String, nullable=True)
+    legislator_bioguide_id = Column(
+        String,
+        ForeignKey("legislator.bioguide_id", ondelete="SET NULL"),
+        index=True,
+        nullable=True,
+    )
+    order_number = Column(Integer, default=0)
+    content_text = Column(String)
+    word_count = Column(Integer, default=0)
+    created_at = Column(DateTime(timezone=False), server_default=func.now())
+
+    granule = relationship("CRECGranule", back_populates="speeches")
+    bill_references = relationship("CRECBillReference", back_populates="speech")
+
+
+class CRECBillReference(Base):
+    """
+    Bill citations found within speech text in the Congressional Record
+    """
+
+    __tablename__ = "crec_bill_reference"
+
+    crec_bill_reference_id = Column(Integer, primary_key=True)
+    crec_speech_id = Column(
+        Integer,
+        ForeignKey("crec_speech.crec_speech_id", ondelete="CASCADE"),
+        index=True,
+    )
+    legislation_id = Column(
+        Integer,
+        ForeignKey("legislation.legislation_id", ondelete="SET NULL"),
+        index=True,
+        nullable=True,
+    )
+    cite_text = Column(String)
+    cite_type = Column(String)
+    start_offset = Column(Integer)
+    end_offset = Column(Integer)
+
+    speech = relationship("CRECSpeech", back_populates="bill_references")
+
+
+class CRECSummary(PromptsBase):
+    """
+    LLM-generated summaries of Congressional Record debates
+    """
+
+    __tablename__ = "crec_summary"
+    __table_args__ = {"schema": "prompts"}
+
+    crec_summary_id = Column(Integer, primary_key=True)
+    crec_granule_id = Column(
+        Integer,
+        ForeignKey("crec_granule.crec_granule_id", ondelete="CASCADE"),
+        index=True,
+        nullable=True,
+    )
+    crec_issue_id = Column(
+        Integer,
+        ForeignKey("crec_issue.crec_issue_id", ondelete="CASCADE"),
+        index=True,
+        nullable=True,
+    )
+    summary = Column(String)
+    summary_type = Column(String)
+    prompt_batch_id = Column(
+        Integer,
+        ForeignKey(PromptBatch.prompt_batch_id, ondelete="CASCADE"),
+        index=True,
+        nullable=True,
+    )
+    created_at = Column(DateTime(timezone=False), server_default=func.now())
 
 
 class User(AuthenticationBase):

@@ -59,6 +59,78 @@ USC_CITE_REGEX = re.compile(
 )
 SUB_OF_REGEX = re.compile(r"sub(?:section)?\s\((.)\)", re.IGNORECASE)
 
+# Congressional bill reference patterns for detecting citations in debate text
+# Matches: H.R. 1234, S. 567, H.J.Res. 12, S.Con.Res. 5, H.Res. 89, etc.
+BILL_REF_REGEX = re.compile(
+    r"(?P<prefix>"
+    r"H\.?\s*R\.?"
+    r"|S\.?\s*J\.?\s*Res\.?"
+    r"|H\.?\s*J\.?\s*Res\.?"
+    r"|S\.?\s*Con\.?\s*Res\.?"
+    r"|H\.?\s*Con\.?\s*Res\.?"
+    r"|H\.?\s*Res\.?"
+    r"|S\.?\s*Res\.?"
+    r"|S\.?"
+    r")\s*(?P<number>\d+)",
+    re.IGNORECASE,
+)
+
+# Map from citation prefix patterns to (chamber, legislation_type) tuples
+BILL_PREFIX_MAP = {
+    "hr": ("House", "Bill"),
+    "s": ("Senate", "Bill"),
+    "hjres": ("House", "Joint Resolution"),
+    "sjres": ("Senate", "Joint Resolution"),
+    "hconres": ("House", "Continuing Resolution"),
+    "sconres": ("Senate", "Continuing Resolution"),
+    "hres": ("House", "Resolution"),
+    "sres": ("Senate", "Resolution"),
+}
+
+
+class BillRefObject(TypedDict):
+    cite_text: str
+    chamber: str
+    legislation_type: str
+    number: int
+    cite_type: str
+    start: int
+    end: int
+
+
+def _normalize_prefix(prefix: str) -> str:
+    """Normalize a bill prefix like 'H. R.' or 'H.J. Res.' to a lookup key."""
+    return re.sub(r"[\s.]", "", prefix).lower()
+
+
+def extract_bill_references(text: str) -> List[BillRefObject]:
+    """
+    Extract Congressional bill references from text (e.g. debate transcripts).
+
+    Returns a list of BillRefObject dicts with cite_text, chamber, legislation_type,
+    number, start/end character offsets, and cite_type="bill".
+    """
+    results: List[BillRefObject] = []
+    for match in BILL_REF_REGEX.finditer(text):
+        prefix = _normalize_prefix(match.group("prefix"))
+        number = int(match.group("number"))
+
+        mapping = BILL_PREFIX_MAP.get(prefix)
+        if mapping is None:
+            continue
+
+        chamber, leg_type = mapping
+        results.append({
+            "cite_text": match.group(0),
+            "chamber": chamber,
+            "legislation_type": leg_type,
+            "number": number,
+            "cite_type": "bill",
+            "start": match.start(),
+            "end": match.end(),
+        })
+    return results
+
 
 def find_extra_clause_references(snippet):
     """
