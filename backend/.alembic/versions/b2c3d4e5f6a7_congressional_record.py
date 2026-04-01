@@ -9,6 +9,7 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.dialects.postgresql import ENUM
 
 revision: str = 'b2c3d4e5f6a7'
 down_revision: Union[str, None] = 'a1b2c3d4e5f6'
@@ -17,9 +18,11 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # Create CRECSection enum type
-    crec_section = sa.Enum('Senate', 'House', 'Extensions', 'DailyDigest', name='crecsection')
-    crec_section.create(op.get_bind(), checkfirst=True)
+    # Create CRECSection enum type only if it doesn't exist
+    op.execute("DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'crecsection') THEN CREATE TYPE crecsection AS ENUM ('Senate', 'House', 'Extensions', 'DailyDigest'); END IF; END $$;")
+
+    # Use create_type=False so SQLAlchemy doesn't try to re-create the existing enum
+    crec_section_ref = ENUM('Senate', 'House', 'Extensions', 'DailyDigest', name='crecsection', create_type=False)
 
     op.create_table(
         'crec_issue',
@@ -38,7 +41,7 @@ def upgrade() -> None:
         sa.Column('crec_granule_id', sa.Integer(), primary_key=True, autoincrement=True),
         sa.Column('crec_issue_id', sa.Integer(), sa.ForeignKey('crec_issue.crec_issue_id', ondelete='CASCADE'), nullable=True),
         sa.Column('granule_id', sa.String(), nullable=True),
-        sa.Column('section', crec_section, nullable=True),
+        sa.Column('section', crec_section_ref, nullable=True),
         sa.Column('title', sa.String(), nullable=True),
         sa.Column('page_start', sa.String(), nullable=True),
         sa.Column('page_end', sa.String(), nullable=True),

@@ -1,17 +1,15 @@
 """
 Congressional Record importer.
 
-Downloads and parses daily Congressional Record bulk data from govinfo.gov.
-Each daily issue is a ZIP containing HTML/XML files organized by section
-(Senate, House, Extensions of Remarks, Daily Digest).
+Downloads and parses daily Congressional Record PDFs from govinfo.gov.
 
-Bulk data URL pattern:
-    https://www.govinfo.gov/bulkdata/CREC/{year}/{month:02d}/{day:02d}/CREC-{year}-{month:02d}-{day:02d}.zip
+PDF URL pattern:
+    https://www.govinfo.gov/content/pkg/CREC-{year}-{month:02d}-{day:02d}/pdf/CREC-{year}-{month:02d}-{day:02d}.pdf
 
 The importer:
     1. Iterates through dates in the current Congress (119th, starting Jan 2025)
-    2. Downloads daily ZIP packages
-    3. Parses HTML/XML granules to extract debate segments
+    2. Downloads daily PDF
+    3. Extracts text and splits by section (Senate, House, Extensions, Daily Digest)
     4. Identifies speakers and resolves them to legislator bioguide IDs
     5. Extracts bill references from speech text
     6. Stores everything in the crec_* tables
@@ -23,13 +21,11 @@ Usage:
 from datetime import datetime, date, timedelta
 import io
 import logging
-import os
 import re
 import requests
-import tempfile
-import zipfile
 
-from lxml import etree, html
+from pdfminer.high_level import extract_text_to_fp
+from pdfminer.layout import LAParams
 from unidecode import unidecode
 
 from congress_db.session import Session
@@ -45,11 +41,23 @@ from congress_db.models import (
     LegislationChamber,
     LegislationType,
 )
+
 from congress_parser.utils.cite_parser import extract_bill_references
 
 logger = logging.getLogger(__name__)
 
-BULK_DATA_URL = "https://www.govinfo.gov/bulkdata/CREC/{year}/{month:02d}/{day:02d}/CREC-{year}-{month:02d}-{day:02d}.zip"
+PDF_URL = "https://www.govinfo.gov/content/pkg/CREC-{year}-{month:02d}-{day:02d}/pdf/CREC-{year}-{month:02d}-{day:02d}.pdf"
+
+# Section header patterns in the PDF
+SECTION_HEADERS = {
+    re.compile(r"^\s*SENATE\s*$", re.MULTILINE): CRECSection.Senate,
+    re.compile(r"^\s*HOUSE OF REPRESENTATIVES\s*$", re.MULTILINE): CRECSection.House,
+    re.compile(r"^\s*EXTENSIONS OF REMARKS\s*$", re.MULTILINE): CRECSection.Extensions,
+    re.compile(r"^\s*DAILY DIGEST\s*$", re.MULTILINE): CRECSection.DailyDigest,
+}
+
+# Heading pattern: all-caps line that marks a new topic/granule
+HEADING_PATTERN = re.compile(r"^([A-Z][A-Z0-9 \-\'\.,]{4,})$")
 
 
 def calculate_congress_from_year() -> int:
@@ -169,111 +177,113 @@ def resolve_bill_reference(ref: dict, congress_id: int, session) -> int:
     return legislation.legislation_id if legislation else None
 
 
-def parse_htm_content(content: str) -> list:
+def extract_pdf_text(pdf_bytes: bytes) -> str:
+    """Extract plain text from PDF bytes using pdfminer."""
+    output = io.StringIO()
+    laparams = LAParams(line_margin=0.5, word_margin=0.1)
+    extract_text_to_fp(io.BytesIO(pdf_bytes), output, laparams=laparams, output_type="text", codec="utf-8")
+    return output.getvalue()
+
+
+def split_pdf_into_sections(text: str) -> list:
     """
-    Parse an HTML granule file and extract speech segments.
+    Split raw PDF text into sections (Senate, House, Extensions, DailyDigest).
+    Returns a list of dicts: {section: CRECSection, text: str}
+    """
+    # Find all section header positions
+    positions = []
+    for pattern, section in SECTION_HEADERS.items():
+        for m in pattern.finditer(text):
+            positions.append((m.start(), section, m.end()))
+
+    if not positions:
+        return [{"section": CRECSection.Senate, "text": text}]
+
+    positions.sort(key=lambda x: x[0])
+    sections = []
+    for i, (start, section, end) in enumerate(positions):
+        section_text = text[end: positions[i + 1][0] if i + 1 < len(positions) else len(text)]
+        sections.append({"section": section, "text": section_text.strip()})
+
+    return sections
+
+
+def split_section_into_granules(section_text: str, section: CRECSection) -> list:
+    """
+    Split a section's text into granules (topics) based on all-caps headings.
+    Returns a list of dicts: {title: str, text: str}
+    """
+    lines = section_text.split("\n")
+    granules = []
+    current_title = "General"
+    current_lines = []
+
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            current_lines.append(line)
+            continue
+        if HEADING_PATTERN.match(stripped) and len(stripped) > 5:
+            if current_lines and any(l.strip() for l in current_lines):
+                granules.append({"title": current_title, "text": "\n".join(current_lines).strip()})
+            current_title = stripped.title()
+            current_lines = []
+        else:
+            current_lines.append(line)
+
+    if current_lines and any(l.strip() for l in current_lines):
+        granules.append({"title": current_title, "text": "\n".join(current_lines).strip()})
+
+    return granules if granules else [{"title": "General", "text": section_text}]
+
+
+def parse_granule_speeches(granule_text: str) -> list:
+    """
+    Parse a granule's text into speech segments by speaker.
     Returns a list of dicts: {speaker_raw, content_text, order_number}
     """
-    try:
-        doc = html.fromstring(content)
-    except Exception:
-        return []
-
     speeches = []
     current_speaker = ""
-    current_paragraphs = []
+    current_lines = []
     order = 0
 
-    paragraphs = doc.xpath("//body//p") or doc.xpath("//p")
-    if not paragraphs:
-        text = doc.text_content().strip()
-        if text:
-            speeches.append({
-                "speaker_raw": "",
-                "content_text": text,
-                "order_number": 0,
-            })
-        return speeches
-
-    for p in paragraphs:
-        text = p.text_content().strip()
+    for line in granule_text.split("\n"):
+        text = unidecode(line.strip())
         if not text:
+            if current_lines:
+                current_lines.append("")
             continue
 
-        text = unidecode(text)
         speaker = extract_speaker_name(text)
-
         if speaker and speaker != current_speaker:
-            if current_paragraphs:
-                full_text = "\n".join(current_paragraphs)
-                speeches.append({
-                    "speaker_raw": current_speaker,
-                    "content_text": full_text,
-                    "order_number": order,
-                })
-                order += 1
+            if current_lines:
+                full_text = "\n".join(current_lines).strip()
+                if full_text:
+                    speeches.append({
+                        "speaker_raw": current_speaker,
+                        "content_text": full_text,
+                        "order_number": order,
+                    })
+                    order += 1
             current_speaker = speaker
-            current_paragraphs = [text]
+            current_lines = [text]
         else:
-            current_paragraphs.append(text)
+            current_lines.append(text)
 
-    if current_paragraphs:
-        full_text = "\n".join(current_paragraphs)
-        speeches.append({
-            "speaker_raw": current_speaker,
-            "content_text": full_text,
-            "order_number": order,
-        })
+    if current_lines:
+        full_text = "\n".join(current_lines).strip()
+        if full_text:
+            speeches.append({
+                "speaker_raw": current_speaker,
+                "content_text": full_text,
+                "order_number": order,
+            })
 
     return speeches
 
 
-def parse_mods_xml(mods_content: str) -> dict:
-    """
-    Parse the MODS XML metadata file for a daily CREC package.
-    Returns a dict of granule_id -> {title, section, page_start, page_end}.
-    """
-    try:
-        root = etree.fromstring(mods_content)
-    except Exception:
-        return {}
-
-    ns = {"mods": "http://www.loc.gov/mods/v3"}
-    granules = {}
-
-    for related in root.findall(".//mods:relatedItem[@type='constituent']", ns):
-        identifier_el = related.find("mods:identifier[@type='preferred citation']", ns)
-        title_el = related.find("mods:titleInfo/mods:title", ns)
-
-        if identifier_el is None:
-            continue
-
-        granule_id = identifier_el.text.strip() if identifier_el.text else None
-        title = title_el.text.strip() if title_el is not None and title_el.text else ""
-
-        page_start = None
-        page_end = None
-        extent_el = related.find("mods:part/mods:extent", ns)
-        if extent_el is not None:
-            start_el = extent_el.find("mods:start", ns)
-            end_el = extent_el.find("mods:end", ns)
-            if start_el is not None and start_el.text:
-                page_start = start_el.text.strip()
-            if end_el is not None and end_el.text:
-                page_end = end_el.text.strip()
-
-        if granule_id:
-            granules[granule_id] = {
-                "title": title,
-                "page_start": page_start,
-                "page_end": page_end,
-            }
-
-    return granules
-
-
 def import_daily_record(issue_date: date, session, congress_id: int):
-    """Import a single day's Congressional Record."""
+    """Import a single day's Congressional Record from the PDF."""
     package_id = f"CREC-{issue_date.isoformat()}"
 
     existing = session.query(CRECIssue).filter(
@@ -283,7 +293,7 @@ def import_daily_record(issue_date: date, session, congress_id: int):
         logger.info(f"Skipping {package_id} - already imported")
         return
 
-    url = BULK_DATA_URL.format(
+    url = PDF_URL.format(
         year=issue_date.year,
         month=issue_date.month,
         day=issue_date.day,
@@ -291,7 +301,7 @@ def import_daily_record(issue_date: date, session, congress_id: int):
 
     logger.info(f"Downloading {url}")
     try:
-        resp = requests.get(url, timeout=60)
+        resp = requests.get(url, timeout=120)
     except requests.RequestException as e:
         logger.warning(f"Failed to download {url}: {e}")
         return
@@ -303,6 +313,13 @@ def import_daily_record(issue_date: date, session, congress_id: int):
         logger.warning(f"Unexpected status {resp.status_code} for {url}")
         return
 
+    logger.info(f"Extracting text from {package_id} PDF ({len(resp.content)} bytes)")
+    try:
+        full_text = extract_pdf_text(resp.content)
+    except Exception as e:
+        logger.warning(f"Failed to extract PDF text for {package_id}: {e}")
+        return
+
     issue = CRECIssue(
         issue_date=issue_date,
         congress_id=congress_id,
@@ -311,106 +328,73 @@ def import_daily_record(issue_date: date, session, congress_id: int):
     session.add(issue)
     session.flush()
 
-    try:
-        zf = zipfile.ZipFile(io.BytesIO(resp.content))
-    except zipfile.BadZipFile:
-        logger.warning(f"Bad ZIP file for {package_id}")
-        session.rollback()
-        return
-
-    mods_metadata = {}
-    for name in zf.namelist():
-        if name.endswith("mods.xml"):
-            try:
-                mods_content = zf.read(name)
-                mods_metadata = parse_mods_xml(mods_content)
-            except Exception as e:
-                logger.warning(f"Failed to parse MODS {name}: {e}")
-            break
-
-    htm_files = sorted([
-        n for n in zf.namelist()
-        if n.endswith(".htm") or n.endswith(".html")
-    ])
-
     speaker_cache = {}
     granule_order = 0
 
-    for htm_file in htm_files:
-        basename = os.path.splitext(os.path.basename(htm_file))[0]
-        section = map_section(htm_file)
+    sections = split_pdf_into_sections(full_text)
+    for sec in sections:
+        section = sec["section"]
+        granules = split_section_into_granules(sec["text"], section)
 
-        meta = mods_metadata.get(basename, {})
-        title = meta.get("title", basename)
-        page_start = meta.get("page_start")
-        page_end = meta.get("page_end")
-
-        granule = CRECGranule(
-            crec_issue_id=issue.crec_issue_id,
-            granule_id=f"{package_id}/{basename}",
-            section=section,
-            title=title,
-            page_start=page_start,
-            page_end=page_end,
-            order_number=granule_order,
-        )
-        session.add(granule)
-        session.flush()
-        granule_order += 1
-
-        try:
-            content = zf.read(htm_file).decode("utf-8", errors="replace")
-        except Exception as e:
-            logger.warning(f"Failed to read {htm_file}: {e}")
-            continue
-
-        speech_segments = parse_htm_content(content)
-
-        for seg in speech_segments:
-            speaker_raw = seg["speaker_raw"]
-
-            if speaker_raw in speaker_cache:
-                bioguide_id = speaker_cache[speaker_raw]
-            else:
-                bioguide_id = resolve_speaker(speaker_raw, section, session)
-                speaker_cache[speaker_raw] = bioguide_id
-
-            content_text = seg["content_text"]
-            word_count = len(content_text.split())
-
-            speech = CRECSpeech(
-                crec_granule_id=granule.crec_granule_id,
-                speaker_raw=speaker_raw or None,
-                legislator_bioguide_id=bioguide_id,
-                order_number=seg["order_number"],
-                content_text=content_text,
-                word_count=word_count,
+        for gran in granules:
+            granule = CRECGranule(
+                crec_issue_id=issue.crec_issue_id,
+                granule_id=f"{package_id}/{section.value}/{granule_order}",
+                section=section,
+                title=gran["title"],
+                order_number=granule_order,
             )
-            session.add(speech)
+            session.add(granule)
             session.flush()
+            granule_order += 1
 
-            bill_refs = extract_bill_references(content_text)
-            seen_refs = set()
-            for ref in bill_refs:
-                ref_key = (ref["chamber"], ref["number"], ref["legislation_type"])
-                if ref_key in seen_refs:
-                    continue
-                seen_refs.add(ref_key)
+            speech_segments = parse_granule_speeches(gran["text"])
+            for seg in speech_segments:
+                speaker_raw = seg["speaker_raw"]
 
-                legislation_id = resolve_bill_reference(ref, congress_id, session)
+                if speaker_raw in speaker_cache:
+                    bioguide_id = speaker_cache[speaker_raw]
+                else:
+                    bioguide_id = resolve_speaker(speaker_raw, section, session)
+                    speaker_cache[speaker_raw] = bioguide_id
 
-                bill_reference = CRECBillReference(
-                    crec_speech_id=speech.crec_speech_id,
-                    legislation_id=legislation_id,
-                    cite_text=ref["cite_text"],
-                    cite_type=ref["cite_type"],
-                    start_offset=ref["start"],
-                    end_offset=ref["end"],
+                content_text = seg["content_text"]
+                word_count = len(content_text.split())
+
+                speech = CRECSpeech(
+                    crec_granule_id=granule.crec_granule_id,
+                    speaker_raw=speaker_raw or None,
+                    legislator_bioguide_id=bioguide_id,
+                    order_number=seg["order_number"],
+                    content_text=content_text,
+                    word_count=word_count,
                 )
-                session.add(bill_reference)
+                session.add(speech)
+                session.flush()
+
+                bill_refs = extract_bill_references(content_text)
+                seen_refs = set()
+                for ref in bill_refs:
+                    ref_key = (ref["chamber"], ref["number"], ref["legislation_type"])
+                    if ref_key in seen_refs:
+                        continue
+                    seen_refs.add(ref_key)
+
+                    legislation_id = resolve_bill_reference(ref, congress_id, session)
+
+                    bill_reference = CRECBillReference(
+                        crec_speech_id=speech.crec_speech_id,
+                        legislation_id=legislation_id,
+                        cite_text=ref["cite_text"],
+                        cite_type=ref["cite_type"],
+                        start_offset=ref["start"],
+                        end_offset=ref["end"],
+                    )
+                    session.add(bill_reference)
 
     session.commit()
     logger.info(f"Imported {package_id}: {granule_order} granules")
+    return True
 
 
 def run_import(start_date: date = None, end_date: date = None):
@@ -447,6 +431,7 @@ def run_import(start_date: date = None, end_date: date = None):
         if current.weekday() < 5:
             try:
                 import_daily_record(current, db, congress_id)
+
             except Exception as e:
                 logger.error(f"Error importing {current}: {e}", exc_info=True)
                 db.rollback()
