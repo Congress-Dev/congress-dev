@@ -223,10 +223,7 @@ export const userRouter = createTRPCRouter({
 			},
 		});
 
-		if (
-			!interest ||
-			interest.user_interest_usc_content.length === 0
-		) {
+		if (!interest || interest.user_interest_usc_content.length === 0) {
 			return interest
 				? { ...interest, sectionHeadings: {} as Record<string, string> }
 				: null;
@@ -237,7 +234,10 @@ export const userRouter = createTRPCRouter({
 			.filter((id): id is string => Boolean(id));
 
 		if (idents.length === 0) {
-			return { ...interest, sectionHeadings: {} as Record<string, string> };
+			return {
+				...interest,
+				sectionHeadings: {} as Record<string, string>,
+			};
 		}
 
 		// Look up section headings from usc_section
@@ -263,7 +263,11 @@ export const userRouter = createTRPCRouter({
 					usc_ident: { in: missingIdents },
 					heading: { not: null },
 				},
-				select: { usc_ident: true, heading: true, section_display: true },
+				select: {
+					usc_ident: true,
+					heading: true,
+					section_display: true,
+				},
 				distinct: ['usc_ident'],
 				orderBy: { version_id: 'desc' },
 			});
@@ -323,9 +327,9 @@ export const userRouter = createTRPCRouter({
 				});
 				if (res.ok) {
 					chromaMatches = await res.json();
-				} else{
-          console.error('ChromaDB search failed:', await res.text());
-        }
+				} else {
+					console.error('ChromaDB search failed:', await res.text());
+				}
 			} catch {
 				// ChromaDB unavailable — interest saved, matches will be empty
 			}
@@ -417,13 +421,12 @@ export const userRouter = createTRPCRouter({
 			});
 			if (!interest) return;
 
-			const existing =
-				await ctx.db.user_interest_usc_content.findFirst({
-					where: {
-						user_interest_id: interest.user_interest_id,
-						usc_ident: input.usc_ident,
-					},
-				});
+			const existing = await ctx.db.user_interest_usc_content.findFirst({
+				where: {
+					user_interest_id: interest.user_interest_id,
+					usc_ident: input.usc_ident,
+				},
+			});
 
 			if (existing) {
 				await ctx.db.user_interest_usc_content.update({
@@ -456,10 +459,7 @@ export const userRouter = createTRPCRouter({
 			},
 		});
 
-		if (
-			!interest ||
-			interest.user_interest_usc_content.length === 0
-		) {
+		if (!interest || interest.user_interest_usc_content.length === 0) {
 			return [];
 		}
 
@@ -582,10 +582,7 @@ export const userRouter = createTRPCRouter({
 				interestText: interest?.interest_text ?? '',
 			};
 
-			if (
-				!interest ||
-				interest.user_interest_usc_content.length === 0
-			) {
+			if (!interest || interest.user_interest_usc_content.length === 0) {
 				return emptyResult;
 			}
 

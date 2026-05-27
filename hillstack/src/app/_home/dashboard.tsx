@@ -9,11 +9,11 @@ import SellIcon from '@mui/icons-material/Sell';
 import { Card, Grid, Toolbar } from '@mui/material';
 import Box from '@mui/material/Box';
 import type React from 'react';
+import { InterestFeed } from '~/app/_home/widgets/interestFeed';
 import { LegislationCalendar } from '~/app/_home/widgets/legislationCalendar';
 import { LegislationFollowed } from '~/app/_home/widgets/legislationFollowed';
 import { LegislationTags } from '~/app/_home/widgets/legislationTags';
 import { LegislatorFollowed } from '~/app/_home/widgets/legislatorFollowed';
-import { InterestFeed } from '~/app/_home/widgets/interestFeed';
 
 function DashboardWidget({
 	title,
