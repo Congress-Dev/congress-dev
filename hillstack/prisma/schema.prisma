@@ -64,6 +64,7 @@ model prompt_batch {
   legislation_content_summary legislation_content_summary[]
   legislation_content_tag     legislation_content_tag[]
   legislation_version_tag     legislation_version_tag[]
+  crec_summary                crec_summary[]
 
   @@index([legislation_version_id], map: "ix_prompts_prompt_batch_legislation_version_id")
   @@index([prompt_id], map: "ix_prompts_prompt_batch_prompt_id")
@@ -87,6 +88,7 @@ model congress {
   legislation_vote                  legislation_vote[]
   legislative_policy_area           legislative_policy_area[]
   legislative_subject               legislative_subject[]
+  crec_issue                        crec_issue[]
 
   @@schema("public")
 }
@@ -111,6 +113,7 @@ model legislation {
   legislative_policy_area_association legislative_policy_area_association[]
   legislative_subject_association     legislative_subject_association[]
   user_legislation                    user_legislation[]
+  crec_bill_reference                 crec_bill_reference[]
 
   @@unique([chamber, number, legislation_type, congress_id], map: "unq_bill")
   @@index([chamber], map: "ix_legislation_chamber")
@@ -368,6 +371,7 @@ model legislator {
   legislation_sponsorship legislation_sponsorship[]
   legislator_vote         legislator_vote[]
   user_legislator         user_legislator[]
+  crec_speech             crec_speech[]
 
   @@index([district], map: "ix_legislator_district")
   @@index([lis_id], map: "ix_legislator_lis_id")
@@ -740,6 +744,100 @@ model verification_token {
 
   @@id([identifier, token], map: "verification_token_pk")
   @@schema("authentication")
+}
+
+model crec_issue {
+  crec_issue_id Int            @id @default(autoincrement())
+  issue_date    DateTime?      @unique(map: "ix_crec_issue_issue_date") @db.Date
+  congress_id   Int?
+  package_id    String?        @unique(map: "uq_crec_issue_package_id") @db.VarChar
+  created_at    DateTime?      @default(now()) @db.Timestamp(6)
+  congress      congress?      @relation(fields: [congress_id], references: [congress_id], onDelete: Cascade, onUpdate: NoAction)
+  crec_granule  crec_granule[]
+  crec_summary  crec_summary[]
+
+  @@index([congress_id], map: "ix_crec_issue_congress_id")
+  @@schema("public")
+}
+
+model crec_granule {
+  crec_granule_id Int            @id @default(autoincrement())
+  crec_issue_id   Int?
+  granule_id      String?        @unique(map: "uq_crec_granule_granule_id") @db.VarChar
+  section         crecsection?
+  title           String?        @db.VarChar
+  page_start      String?        @db.VarChar
+  page_end        String?        @db.VarChar
+  order_number    Int?
+  created_at      DateTime?      @default(now()) @db.Timestamp(6)
+  crec_issue      crec_issue?    @relation(fields: [crec_issue_id], references: [crec_issue_id], onDelete: Cascade, onUpdate: NoAction)
+  crec_speech     crec_speech[]
+  crec_summary    crec_summary[]
+
+  @@index([crec_issue_id], map: "ix_crec_granule_crec_issue_id")
+  @@index([section], map: "ix_crec_granule_section")
+  @@schema("public")
+}
+
+model crec_speech {
+  crec_speech_id         Int                  @id @default(autoincrement())
+  crec_granule_id        Int?
+  speaker_raw            String?              @db.VarChar
+  legislator_bioguide_id String?              @db.VarChar
+  order_number           Int?
+  content_text           String?              @db.VarChar
+  word_count             Int?
+  created_at             DateTime?            @default(now()) @db.Timestamp(6)
+  crec_granule           crec_granule?        @relation(fields: [crec_granule_id], references: [crec_granule_id], onDelete: Cascade, onUpdate: NoAction)
+  legislator             legislator?          @relation(fields: [legislator_bioguide_id], references: [bioguide_id], onDelete: SetNull, onUpdate: NoAction)
+  crec_bill_reference    crec_bill_reference[]
+
+  @@index([crec_granule_id], map: "ix_crec_speech_crec_granule_id")
+  @@index([legislator_bioguide_id], map: "ix_crec_speech_legislator_bioguide_id")
+  @@schema("public")
+}
+
+model crec_bill_reference {
+  crec_bill_reference_id Int          @id @default(autoincrement())
+  crec_speech_id         Int?
+  legislation_id         Int?
+  cite_text              String?      @db.VarChar
+  cite_type              String?      @db.VarChar
+  start_offset           Int?
+  end_offset             Int?
+  crec_speech            crec_speech? @relation(fields: [crec_speech_id], references: [crec_speech_id], onDelete: Cascade, onUpdate: NoAction)
+  legislation            legislation? @relation(fields: [legislation_id], references: [legislation_id], onDelete: SetNull, onUpdate: NoAction)
+
+  @@index([crec_speech_id], map: "ix_crec_bill_reference_crec_speech_id")
+  @@index([legislation_id], map: "ix_crec_bill_reference_legislation_id")
+  @@schema("public")
+}
+
+model crec_summary {
+  crec_summary_id Int           @id @default(autoincrement())
+  crec_granule_id Int?
+  crec_issue_id   Int?
+  summary         String?       @db.VarChar
+  summary_type    String?       @db.VarChar
+  prompt_batch_id Int?
+  created_at      DateTime?     @default(now()) @db.Timestamp(6)
+  crec_granule    crec_granule? @relation(fields: [crec_granule_id], references: [crec_granule_id], onDelete: Cascade, onUpdate: NoAction)
+  crec_issue      crec_issue?   @relation(fields: [crec_issue_id], references: [crec_issue_id], onDelete: Cascade, onUpdate: NoAction)
+  prompt_batch    prompt_batch? @relation(fields: [prompt_batch_id], references: [prompt_batch_id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([crec_granule_id], map: "ix_crec_summary_crec_granule_id")
+  @@index([crec_issue_id], map: "ix_crec_summary_crec_issue_id")
+  @@index([prompt_batch_id], map: "ix_crec_summary_prompt_batch_id")
+  @@schema("prompts")
+}
+
+enum crecsection {
+  Senate
+  House
+  Extensions
+  DailyDigest
+
+  @@schema("public")
 }
 
 enum legislationchamber {

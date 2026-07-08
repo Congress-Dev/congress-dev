@@ -1,4 +1,5 @@
 import AccountBalanceOutlinedIcon from '@mui/icons-material/AccountBalanceOutlined';
+import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
 import AutoGraphIcon from '@mui/icons-material/AutoGraph';
 import ChevronLeftOutlinedIcon from '@mui/icons-material/ChevronLeftOutlined';
 import Diversity2Icon from '@mui/icons-material/Diversity2';
@@ -48,9 +49,15 @@ export const congressTabs: NavigationTabs = {
 		icon: <AutoGraphIcon />,
 		label: 'Insights',
 	},
+	'/congress/record': {
+		id: 6,
+		icon: <ArticleOutlinedIcon />,
+		label: 'Record',
+	},
 };
 
 import DifferenceIcon from '@mui/icons-material/Difference';
+import ForumIcon from '@mui/icons-material/Forum';
 import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import ManageSearchIcon from '@mui/icons-material/ManageSearch';
 import SmartButtonIcon from '@mui/icons-material/SmartButton';
@@ -81,6 +88,11 @@ export const congressBillTabs = ({
 			id: 3,
 			icon: <LocalAtmIcon />,
 			label: 'Spending',
+		},
+		[`/congress/bills/${params.billId}/debates`]: {
+			id: 4,
+			icon: <ForumIcon />,
+			label: 'Debates',
 		},
 	};
 };

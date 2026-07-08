@@ -19,6 +19,7 @@ import {
 import type { Params } from 'next/dist/server/request/params';
 import Link from 'next/link';
 import { LegislatorFollow } from '~/app/congress/legislators/[bioguideId]/follow';
+import { LegislatorSpeakingStats } from '~/components/record/LegislatorSpeakingStats';
 import { stateAbbreviations } from '~/constants';
 import { api, HydrateClient } from '~/trpc/server';
 
@@ -363,6 +364,7 @@ export default async function LegislatorPage({
 								))}
 							</List>
 						</Card>
+						<LegislatorSpeakingStats bioguideId={bioguideId as string} />
 					</Box>
 				</Box>
 			</Container>
