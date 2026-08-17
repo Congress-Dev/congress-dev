@@ -3,7 +3,7 @@
 Findings from a manual run of `import.sh` on the `parser` host (10.0.0.171) on
 2026-08-16. The script ran to completion, but with real failures.
 
-## 1. Sponsors import is fully broken (invalid `CONGRESS_API_KEY`)
+## 1. Sponsors import failed with `API_KEY_MISSING` — likely a test-run artifact, not a dead key
 
 Every request to `api.congress.gov` during the `billparser.importers.sponsors`
 step failed:
@@ -13,17 +13,32 @@ step failed:
 Failed to fetch data. Status code: 403
 ```
 
-This repeated for the entire step — no sponsor data was updated in this run.
+**Correction:** the manual run this was observed in was started as plain
+`bash import.sh`, without the `CONGRESS_API_KEY=...` prefix that the crontab
+entry normally supplies. The deployed script's `bills` step has the key
+hardcoded directly (so it isn't affected), but `sponsors`/`actions` only ever
+read `${CONGRESS_API_KEY}` from the environment — which was empty for that
+manual run. So this failure is most likely explained by the test invocation,
+not an actually-revoked key. Treat "the key is dead" as unconfirmed until a
+run with the env var properly set (e.g. the real cron run, or a manual
+`CONGRESS_API_KEY=<value> bash scripts/import.sh`) is checked.
 
 **Fix:**
-- Obtain/verify a working `api.congress.gov` API key.
-- Rotate the key out of the crontab entry and `import.sh` (both currently
-  hardcode `CONGRESS_API_KEY` in plaintext) into a proper secrets store /
-  `.env` file that `import.sh` sources, not committed to the repo or crontab.
+- Confirm on the next real cron run (or a manual run with the key set)
+  whether sponsors actually succeeds now that `scripts/import.sh` no longer
+  hardcodes the key on the `bills` step and uses `${CONGRESS_API_KEY}`
+  consistently everywhere (see accompanying script change).
+- If it's still failing with a properly-set key, then it needs replacing —
+  get a working `api.congress.gov` key.
+- Regardless, get the key out of plaintext in the crontab entry (still
+  hardcoded there) into a proper secrets store / `.env` file that
+  `import.sh` sources, rather than an inline cron env assignment.
 - Add a check after the sponsors step that fails loudly (non-zero exit /
   explicit log line) if every request 403s, instead of silently continuing.
 
-## 2. `docker run --name congress-bill-parser` container-name collisions skip steps
+## 2. `docker run --name congress-bill-parser` container-name collisions skip steps — FIXED
+
+**Status: fixed in `scripts/import.sh`** on this branch — see commit history.
 
 `import.sh` only calls `docker rm congress-bill-parser` between *some* of the
 importer steps, not all of them. Missing cleanup between:
@@ -45,15 +60,19 @@ the step (in this run, `releases`) never actually executes — the new US Code
 release point does not get imported that cycle.
 
 **Fix:**
-- Add `docker rm congress-bill-parser && true` (or switch every `docker run`
-  to use `--rm`) before *every* `docker run --name congress-bill-parser`
-  invocation, not just some of them.
-- Prefer `--rm` on the `docker run` calls generally, so containers are always
-  cleaned up automatically regardless of exit status, removing the need to
-  track manual `docker rm` calls between every pair of steps.
-- Add `set -e` (or explicit exit-code checks per step) so a genuine failure
-  stops the script / surfaces clearly instead of continuing silently into
-  later steps.
+- [x] Added `--rm` to every `docker run --name congress-bill-parser` /
+  `congress-bill-cleanup` invocation, so containers are always cleaned up
+  automatically regardless of exit status. Removed the now-redundant manual
+  `docker rm ... && true` calls between steps, keeping a single
+  `docker rm congress-bill-parser || true` pre-flight check at the top as a
+  safety net for a container left over from a previous crashed run.
+- [x] Also fixed the `bills` step to use `${CONGRESS_API_KEY}` /
+  `${DISCORD_WEBHOOK}` consistently instead of a hardcoded literal, matching
+  the other steps.
+- [ ] Not done: `set -e` (or explicit exit-code checks per step). Left out of
+  this pass since several steps in the script are expected to tolerate
+  partial failures; adding it needs a closer look at which failures should
+  actually stop the run vs. just get logged.
 
 ## 3. High volume of action-parsing errors during the `actions` step
 
@@ -92,9 +111,10 @@ still broken.
 
 ## Suggested order of work
 
-1. Fix the `docker rm` gaps (#2) — cheap, mechanical, and currently causing a
-   real release-import step to be skipped every run.
-2. Rotate/fix the `CONGRESS_API_KEY` (#1) and get it out of plaintext in the
-   crontab/script.
+1. ~~Fix the `docker rm` gaps (#2)~~ — done, see `scripts/import.sh` on this
+   branch.
+2. Confirm whether the `CONGRESS_API_KEY` sponsors failure (#1) reproduces
+   with the key actually supplied; only rotate it if it does. Either way, get
+   it out of plaintext in the crontab entry.
 3. Fix cron failure notifications (#4) so future regressions are visible.
 4. Triage the action-parser error volume (#3) as a separate follow-up.
