@@ -7,7 +7,12 @@ from congress_fastapi.handlers.legislation.search import (
     search_legislation,
     get_legislation_tag_options,
 )
+from congress_fastapi.handlers.legislation.text_search import search_bill_text
 from congress_fastapi.models.errors import Error
+from congress_fastapi.models.legislation.text_search import (
+    BillTextSearchRequest,
+    BillTextSearchResponse,
+)
 from congress_fastapi.models.legislation.search import SearchResponse, SearchResult
 
 router = APIRouter(tags=["Legislation"])
@@ -19,6 +24,15 @@ router = APIRouter(tags=["Legislation"])
 async def get_search_tags() -> List[str]:
     """Returns a list of tags for all legislation"""
     return await get_legislation_tag_options()
+
+
+@router.post("/legislation/search/text", tags=["MCP"])
+async def post_search_bill_text(body: BillTextSearchRequest) -> BillTextSearchResponse:
+    """Semantic search over bill text; returns section-level hits across bill versions"""
+    try:
+        return await search_bill_text(body)
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc))
 
 
 @router.get("/legislation/search", tags=["MCP"])
