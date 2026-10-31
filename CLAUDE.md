@@ -150,6 +150,18 @@ bash scripts/start_prod.sh
 - **Formatter**: Prettier (tabWidth: 4, double quotes, semicolons, trailing commas)
 - Path aliases configured in `jsconfig.json` for components, context, pages, styles
 
+## Commits and Pull Requests
+
+Work is tracked in Linear (team key `LAP`). Start every commit message subject and every PR title with the ticket ID, followed by a colon and a short description:
+
+```
+LAP-5: Add design doc for MCP legislation server
+```
+
+- Use the ticket the work belongs to; if a commit spans several tickets, use the primary one and mention the others in the body.
+- If there is no ticket, ask for one or create it before committing rather than omitting the prefix.
+- The Linear branch name (e.g. `mustyoshi/lap-5-...`) can be used for the branch; the ticket ID in the commit and PR title is what matters.
+
 ## Architecture Notes
 
 ### Dual API Design
