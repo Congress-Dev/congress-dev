@@ -4,6 +4,7 @@ from congress_parser.appropriations import calculate_appropriation
 from congress_db.models import LegislationContent, Appropriation
 from congress_db.session import Session
 from litellm import completion
+from congress_parser.prompt_runners.utils import openrouter_model, resolve_model
 
 query = """class Appropriation(TypedDict):
     amount: float
@@ -30,16 +31,15 @@ def llm_parse(legislation_version_id: int,
         
         for content in contents:
             response = completion(
-                model="ollama/dolphin-mixtral:8x7b",
+                model=openrouter_model(resolve_model("appropriations_parser")),
                 messages=[
                     {
                         "role": "user",
                         "content": query.format(clause=content.content_str)
                     }
                 ],
-                api_base="http://10.0.0.120:11434",
-                format = "json",
-                timeout=60,
+                response_format={"type": "json_object"},
+                timeout=120,
                 max_tokens=10000
                 )
             try:

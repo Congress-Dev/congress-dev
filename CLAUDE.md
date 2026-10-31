@@ -216,6 +216,8 @@ Key enums (from `congress_db/models.py`):
 | `STAGE` | `dev` | Environment (dev/prod) |
 | `PORT` | `9090` | API port |
 | `CACHE_HEADER_TIME` | `0` | HTTP cache header duration |
+| `OPENROUTER_API_KEY` | — | OpenRouter key for all LLM calls (litellm `openrouter/` provider) |
+| `LLM_MODEL_SECTION_SUMMARY`, `LLM_MODEL_BILL_TAGGER`, `LLM_MODEL_CLAUSE_TAGGER`, `LLM_MODEL_APPROPRIATION_FINDER`, `LLM_MODEL_APPROPRIATION_FINDER_FALLBACK`, `LLM_MODEL_APPROPRIATIONS_PARSER`, `LLM_MODEL_TALK_TO_BILL` | unset | OpenRouter model id per use case (e.g. `vendor/model-name`); no default, the use case errors until set. `prompts.prompt.model` overrides where a prompt row has one |
 
 ### Hillstack
 | Variable | Description |

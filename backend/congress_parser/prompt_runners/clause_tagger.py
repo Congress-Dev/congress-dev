@@ -12,6 +12,7 @@ from collections import defaultdict
 
 from datetime import datetime
 from congress_parser.prompt_runners.utils import (
+    resolve_model,
     get_existing_batch_or_content,
     get_legis_by_parent_and_id,
     print_clause,
@@ -81,7 +82,7 @@ def clause_tagger(legis_version_id: int, prompt_id: int):
                         legis_by_id, legis_by_parent, lc.legislation_content_id
                     )
                     query = prompt_text.format(clause=clause)
-                    response = run_query(query, prompt.model or "ollama/qwen2.5:32b")
+                    response = run_query(query, resolve_model("clause_tagger", prompt.model))
                     resp_dict = json.loads(response.choices[0].message.content)
                     jsonschema.validate(resp_dict, SCHEMA)
                     tags = normalize_tags(resp_dict["tags"])

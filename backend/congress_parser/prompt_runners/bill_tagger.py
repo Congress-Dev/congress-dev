@@ -11,6 +11,7 @@ import jsonschema
 
 from datetime import datetime
 from congress_parser.prompt_runners.utils import (
+    resolve_model,
     get_existing_batch_or_content,
     get_legis_by_parent_and_id,
     print_clause,
@@ -82,8 +83,7 @@ def bill_tagger(legis_version_id: int, prompt_id: int):
             query = prompt_text.format(clause=clause)
             response = run_query(
                 query,
-                prompt.model or "ollama/hf.co/bartowski/Qwen2.5-14B-Instruct-1M-GGUF:latest",
-                num_ctx=100000,
+                resolve_model("bill_tagger", prompt.model),
             )
             resp_dict = json.loads(response.choices[0].message.content)
             jsonschema.validate(resp_dict, SCHEMA)

@@ -9,6 +9,7 @@ from typing import List
 from congress_db.models import LegislationContentSummary
 from congress_db.session import Session
 from congress_parser.prompt_runners.utils import (
+    resolve_model,
     get_existing_batch_or_content,
     get_legis_by_parent_and_id,
     print_clause,
@@ -93,7 +94,9 @@ def section_summarizer(
                         )
                         query = section_prompt.format(section=section_text)
                         try:
-                            response = run_query(query, model=prompt.model or "ollama/gemma2:27b")
+                            response = run_query(
+                                query, model=resolve_model("section_summary", prompt.model)
+                            )
                             obj = json.loads(
                                 response.json()["choices"][0]["message"]["content"]
                             )
@@ -116,7 +119,7 @@ def section_summarizer(
             logging.debug(f"Summarizing all sections for {legislation_version_id}")
             try:
                 query = summary_prompt.format(summaries="\n".join(x for x in summaries))
-                resp = run_query(query, model="ollama/gemma2:27b")
+                resp = run_query(query, model=resolve_model("section_summary", prompt.model))
                 result = json.loads(resp.choices[0].message.content)
                 jsonschema.validate(result, SCHEMA)
                 summary_lc = LegislationContentSummary(

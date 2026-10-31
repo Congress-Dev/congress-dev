@@ -10,26 +10,58 @@ import os
 litellm.turn_off_message_logging = True
 litellm._logging._disable_debugging()
 
-llm_host = os.environ.get("LLM_HOST", "http://10.0.0.120:11434")
+# Model per use case, read from the environment. Intentionally no defaults:
+# a use case without a configured model fails loudly instead of silently
+# picking one.
+MODEL_ENV_VARS = {
+    "section_summary": "LLM_MODEL_SECTION_SUMMARY",
+    "bill_tagger": "LLM_MODEL_BILL_TAGGER",
+    "clause_tagger": "LLM_MODEL_CLAUSE_TAGGER",
+    "appropriation_finder": "LLM_MODEL_APPROPRIATION_FINDER",
+    "appropriation_finder_fallback": "LLM_MODEL_APPROPRIATION_FINDER_FALLBACK",
+    "appropriations_parser": "LLM_MODEL_APPROPRIATIONS_PARSER",
+    "talk_to_bill": "LLM_MODEL_TALK_TO_BILL",
+}
+
+
+def resolve_model(use_case: str, override: Optional[str] = None) -> str:
+    """
+    Return the OpenRouter model for ``use_case``: ``override`` (e.g. the
+    ``prompts.prompt.model`` column) if set, else the use case's env var.
+    """
+    model = override or os.environ.get(MODEL_ENV_VARS[use_case], "")
+    if not model.strip():
+        raise ValueError(
+            f"No LLM model configured for '{use_case}'. "
+            f"Set {MODEL_ENV_VARS[use_case]} (e.g. 'vendor/model-name' from openrouter.ai/models)."
+        )
+    return model.strip()
+
+
+def openrouter_model(model: str) -> str:
+    if model.startswith("ollama/"):
+        raise ValueError(
+            f"Model '{model}' is an Ollama model, which is no longer supported. "
+            "Use an OpenRouter model id (e.g. 'vendor/model-name')."
+        )
+    return model if model.startswith("openrouter/") else f"openrouter/{model}"
 
 
 def run_query(
     query: str,
-    model: str = "ollama/qwen2.5:32b",
+    model: str,
     *,
-    num_ctx: int = 4096,
     json: bool = True,
     max_tokens: int = 10000,
 ) -> dict:
+    """Run a single-turn prompt through OpenRouter (needs OPENROUTER_API_KEY)."""
     start_time = time.time()
     response = completion(
-        model=model,
+        model=openrouter_model(model),
         messages=[{"role": "user", "content": query}],
-        api_base=llm_host,
-        format="json" if json else None,
-        timeout=60,
+        response_format={"type": "json_object"} if json else None,
+        timeout=120,
         max_tokens=max_tokens,
-        num_ctx=num_ctx,
     )
     end_time = time.time()
     log_obj = {

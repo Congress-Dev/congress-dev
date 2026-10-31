@@ -3,7 +3,7 @@ import time
 from typing import List
 from collections import defaultdict
 
-from congress_parser.prompt_runners.utils import run_query
+from congress_parser.prompt_runners.utils import resolve_model, run_query
 from congress_fastapi.models.legislation.llm import LLMResponse
 from sqlalchemy import select, text, and_, or_
 from sqlalchemy.orm import Session, load_only
@@ -115,9 +115,8 @@ async def run_talk_to_bill_prompt(
     start_time = time.time()
     response = run_query(
         prompt,
-        model="ollama/hf.co/bartowski/Qwen2.5-14B-Instruct-1M-GGUF:latest",
+        model=resolve_model("talk_to_bill"),
         json=False,
-        num_ctx=50000,
     )
     end_time = time.time()
     content = response.json()["choices"][0]["message"]["content"]

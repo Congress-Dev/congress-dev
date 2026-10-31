@@ -8,7 +8,11 @@ import jsonschema
 from typing import List
 from congress_db.models import Appropriation, PromptBatch
 from congress_db.session import Session
-from congress_parser.prompt_runners.utils import get_existing_batch_or_content, run_query
+from congress_parser.prompt_runners.utils import (
+    get_existing_batch_or_content,
+    resolve_model,
+    run_query,
+)
 from datetime import datetime
 
 SCHEMA = {
@@ -83,7 +87,10 @@ def appropriation_finder(
                         continue
                     query = prompt_text.format(clause=content.content_str)
                     try:
-                        response = run_query(query, model=prompt.model or "ollama/qwen2.5:32b")
+                        response = run_query(
+                            query,
+                            model=resolve_model("appropriation_finder", prompt.model),
+                        )
                         obj = json.loads(
                             response.json()["choices"][0]["message"]["content"]
                         )
@@ -148,7 +155,10 @@ def appropriation_finder(
                 ):
                     query = prompt_text.format(clause=content.content_str)
                     try:
-                        response = run_query(query, model="ollama/nemotron:latest")
+                        response = run_query(
+                            query,
+                            model=resolve_model("appropriation_finder_fallback"),
+                        )
                         obj = json.loads(
                             response.json()["choices"][0]["message"]["content"]
                         )
