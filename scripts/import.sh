@@ -5,85 +5,82 @@ rm bills/*
 
 cd /home/mustyoshi/Github/congress-dev
 TABLE_NAME="us_code_2025"
+DISCORD_WEBHOOK="https://discord.com/api/webhooks/817897502442913822/M-6FpliQvtba68dSnL6AqviGkRgSZb5Jan0Hte841WrIxmJiWFWoEN5caWSxahf0Ydha"
 
-docker rm congress-bill-parser && true
+# Pre-flight: clean up any container left over from a previous crashed run.
+# Every docker run below uses --rm, so this is just a safety net, not
+# something later steps depend on.
+docker rm congress-bill-parser || true
 
 docker-compose -f .docker/docker-compose.yml build congress_parser_api
 
 # Import bills first
-docker run --name congress-bill-parser --entrypoint "python3" \
+docker run --rm --name congress-bill-parser --entrypoint "python3" \
  --env db_host=10.0.0.248 --env db_user=parser --env db_pass=parser \
-  --env CONGRESS_API_KEY=By7KBbvlbNsDfoBPLxVAaZj3hvm7aQOnwLOhxvOo \
+ --env CONGRESS_API_KEY=${CONGRESS_API_KEY} \
  --env db_table=${TABLE_NAME} --env PARSE_THREADS=16 \
- --env DISCORD_WEBHOOK=https://discord.com/api/webhooks/817897502442913822/M-6FpliQvtba68dSnL6AqviGkRgSZb5Jan0Hte841WrIxmJiWFWoEN5caWSxahf0Ydha \
+ --env DISCORD_WEBHOOK=${DISCORD_WEBHOOK} \
  -v /home/mustyoshi/Github/congress-dev/backend/bills:/bills \
  congress_parser_api -m congress_parser.importers.bills
 
-docker rm congress-bill-parser && true
 # Run prompts
-docker run --name congress-bill-parser --entrypoint "python3" \
+docker run --rm --name congress-bill-parser --entrypoint "python3" \
  --env db_host=10.0.0.248 --env db_user=parser --env db_pass=parser \
  --env db_table=${TABLE_NAME} \
- --env DISCORD_WEBHOOK=https://discord.com/api/webhooks/817897502442913822/M-6FpliQvtba68dSnL6AqviGkRgSZb5Jan0Hte841WrIxmJiWFWoEN5caWSxahf0Ydha \
+ --env DISCORD_WEBHOOK=${DISCORD_WEBHOOK} \
  -v /home/mustyoshi/Github/congress-dev/backend/bills:/bills \
  congress_parser_api -m congress_parser.importers.prompts
 
-docker run --name congress-bill-parser --entrypoint "python3" \
+docker run --rm --name congress-bill-parser --entrypoint "python3" \
  --env db_host=10.0.0.248 --env db_user=parser --env db_pass=parser \
  --env db_table=${TABLE_NAME} \
- --env DISCORD_WEBHOOK=https://discord.com/api/webhooks/817897502442913822/M-6FpliQvtba68dSnL6AqviGkRgSZb5Jan0Hte841WrIxmJiWFWoEN5caWSxahf0Ydha \
+ --env DISCORD_WEBHOOK=${DISCORD_WEBHOOK} \
  -v /home/mustyoshi/Github/congress-dev/backend/bills:/bills \
  congress_parser_api -m congress_parser.importers.bioguide
-docker rm congress-bill-parser && true
+
 # Grab sponsors
-docker run --name congress-bill-parser --entrypoint "python3" \
+docker run --rm --name congress-bill-parser --entrypoint "python3" \
  --env db_host=10.0.0.248 --env db_user=parser --env db_pass=parser \
  --env db_table=${TABLE_NAME} \
  --env CONGRESS_API_KEY=${CONGRESS_API_KEY} \
- --env DISCORD_WEBHOOK=https://discord.com/api/webhooks/817897502442913822/M-6FpliQvtba68dSnL6AqviGkRgSZb5Jan0Hte841WrIxmJiWFWoEN5caWSxahf0Ydha \
+ --env DISCORD_WEBHOOK=${DISCORD_WEBHOOK} \
  -v /home/mustyoshi/Github/congress-dev/backend/bills:/bills \
  congress_parser_api -m congress_parser.importers.sponsors
 
-docker run --name congress-bill-parser --entrypoint "python3" \
+docker run --rm --name congress-bill-parser --entrypoint "python3" \
  --env db_host=10.0.0.248 --env db_user=parser --env db_pass=parser \
  --env db_table=${TABLE_NAME} \
- --env DISCORD_WEBHOOK=https://discord.com/api/webhooks/817897502442913822/M-6FpliQvtba68dSnL6AqviGkRgSZb5Jan0Hte841WrIxmJiWFWoEN5caWSxahf0Ydha \
+ --env DISCORD_WEBHOOK=${DISCORD_WEBHOOK} \
  -v /home/mustyoshi/Github/congress-dev/backend/bills:/bills \
  congress_parser_api -m congress_parser.importers.releases --release-point="https://uscode.house.gov/download/releasepoints/us/pl/118/209not159/xml_uscAll@118-209not159.zip"
-docker rm congress-bill-parser && true
+
 # Run action importer
-docker run --name congress-bill-parser --entrypoint "python3" \
+docker run --rm --name congress-bill-parser --entrypoint "python3" \
  --env db_host=10.0.0.248 --env db_user=parser --env db_pass=parser \
  --env db_table=${TABLE_NAME} \
  --env CONGRESS_API_KEY=${CONGRESS_API_KEY} \
- --env DISCORD_WEBHOOK=https://discord.com/api/webhooks/817897502442913822/M-6FpliQvtba68dSnL6AqviGkRgSZb5Jan0Hte841WrIxmJiWFWoEN5caWSxahf0Ydha \
+ --env DISCORD_WEBHOOK=${DISCORD_WEBHOOK} \
  -v /home/mustyoshi/Github/congress-dev/backend/bills:/bills \
  congress_parser_api -m congress_parser.importers.actions
 
-docker rm congress-bill-parser && true
-# Run action importer
-docker run --name congress-bill-parser --entrypoint "python3" \
+# Run votes importer
+docker run --rm --name congress-bill-parser --entrypoint "python3" \
  --env db_host=10.0.0.248 --env db_user=parser --env db_pass=parser \
  --env db_table=${TABLE_NAME} \
- --env DISCORD_WEBHOOK=https://discord.com/api/webhooks/817897502442913822/M-6FpliQvtba68dSnL6AqviGkRgSZb5Jan0Hte841WrIxmJiWFWoEN5caWSxahf0Ydha \
+ --env DISCORD_WEBHOOK=${DISCORD_WEBHOOK} \
  -v /home/mustyoshi/Github/congress-dev/backend/bills:/bills \
  congress_parser_api -m congress_parser.importers.votes
 
-docker rm congress-bill-parser && true
-# Run action importer
-docker run --name congress-bill-parser --entrypoint "python3" \
+# Run statuses importer
+docker run --rm --name congress-bill-parser --entrypoint "python3" \
  --env db_host=10.0.0.248 --env db_user=parser --env db_pass=parser \
  --env db_table=${TABLE_NAME} \
- --env DISCORD_WEBHOOK=https://discord.com/api/webhooks/817897502442913822/M-6FpliQvtba68dSnL6AqviGkRgSZb5Jan0Hte841WrIxmJiWFWoEN5caWSxahf0Ydha \
+ --env DISCORD_WEBHOOK=${DISCORD_WEBHOOK} \
  -v /home/mustyoshi/Github/congress-dev/backend/bills:/bills \
  congress_parser_api -m congress_parser.importers.statuses
 
-docker rm congress-bill-parser && true
-
-docker run --name congress-bill-cleanup --entrypoint "python3" \
+docker run --rm --name congress-bill-cleanup --entrypoint "python3" \
  --env db_host=10.0.0.248 --env db_user=parser --env db_pass=parser \
  --env db_table=${TABLE_NAME} --env PARSE_THREADS=16 \
- --env DISCORD_WEBHOOK=https://discord.com/api/webhooks/817897502442913822/M-6FpliQvtba68dSnL6AqviGkRgSZb5Jan0Hte841WrIxmJiWFWoEN5caWSxahf0Ydha \
+ --env DISCORD_WEBHOOK=${DISCORD_WEBHOOK} \
   congress_parser_api -m congress_parser.importers.cleanup
-
-docker rm congress-bill-cleanup && true
